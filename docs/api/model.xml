@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<model>
+<namespace fullname="plupload" name="plupload">
+<class extends="plupload.Runtime" fullname="plupload.FlashRuntime" name="FlashRuntime" static="true" summary="FlashRuntime implementation.">
+<description>FlashRuntime implementation.
+</description>
+<members>
+<method name="isSupported" static="true" summary="Checks if the Flash is installed or not.">
+<description>Checks if the Flash is installed or not.
+</description>
+<return type="boolean">
+<description>true/false if the runtime exists.</description>
+</return>
+</method>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+</method>
+</members>
+<super-classes>
+<class-ref class="plupload.Runtime"/>
+</super-classes>
+</class>
+<class extends="plupload.Runtime" fullname="plupload.GearsRuntime" name="GearsRuntime" static="true" summary="Gears implementation.">
+<description>Gears implementation.
+</description>
+<members>
+<method name="isSupported" static="true" summary="Checks if the Google Gears is installed or not.">
+<description>Checks if the Google Gears is installed or not.
+</description>
+<return type="boolean">
+<description>true/false if the runtime exists.</description>
+</return>
+</method>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+</method>
+</members>
+<super-classes>
+<class-ref class="plupload.Runtime"/>
+</super-classes>
+</class>
+<class extends="plupload.Runtime" fullname="plupload.Html5Runtime" name="Html5Runtime" static="true" summary="HMTL5 implementation.">
+<description>HMTL5 implementation.
+</description>
+<members>
+<method name="isSupported" static="true" summary="Checks if the browser has HTML 5 upload support or not.">
+<description>Checks if the browser has HTML 5 upload support or not.
+</description>
+<return type="boolean">
+<description>true/false if the runtime exists.</description>
+</return>
+</method>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+</method>
+</members>
+<super-classes>
+<class-ref class="plupload.Runtime"/>
+</super-classes>
+</class>
+<class fullname="plupload.Uploader" name="Uploader" summary="Uploader class, an instance of this class will be created for each upload field.">
+<description>Uploader class, an instance of this class will be created for each upload field.
+</description>
+<members>
+<property name="files" summary="Array of File instances." type="Array">
+<description>Array of File instances.
+</description>
+<see class="plupload.File"/>
+</property>
+<property name="settings" summary="Object with name/value settings." type="Object">
+<description>Object with name/value settings.
+</description>
+</property>
+<property name="total" summary="Total progess information." type="plupload.QueueProgress">
+<description>Total progess information.
+</description>
+</property>
+<property name="id" summary="Unique id for the Uploader instance." type="String">
+<description>Unique id for the Uploader instance.
+</description>
+</property>
+<method name="init" summary="Initializes the Uploader instance and adds internal event listeners.">
+<description>Initializes the Uploader instance and adds internal event listeners.
+</description>
+</method>
+<method name="browse" summary="Browse for files to upload.">
+<description>Browse for files to upload.
+</description>
+<param name="browse_settings" type="Object">
+<description>name/value collection of settings.</description>
+</param>
+</method>
+<method name="start" summary="Starts uploading the queued files.">
+<description>Starts uploading the queued files.
+</description>
+</method>
+<method name="stop" summary="Stops the upload of the queued files.">
+<description>Stops the upload of the queued files.
+</description>
+</method>
+<method name="getFile" summary="Returns the specified file object by id.">
+<description>Returns the specified file object by id.
+</description>
+<param name="id" type="String">
+<description>File id to look for.</description>
+</param>
+<return type="plupload.File">
+<description>File object or undefined if it wasn't found;</description>
+</return>
+</method>
+<method name="removeFile" summary="Removes a specific file.">
+<description>Removes a specific file.
+</description>
+<param name="file" type="plupload.File">
+<description>File to remove from queue.</description>
+</param>
+</method>
+<method name="removeAll" summary="Clears the upload queue.">
+<description>Clears the upload queue. All pending, finished or failed files will be removed from queue.
+</description>
+</method>
+<method name="trigger" summary="Dispatches the specified event name and it's arguments to all listeners.">
+<description>Dispatches the specified event name and it's arguments to all listeners.
+
+</description>
+<param name="name" type="String">
+<description>Event name to fire.</description>
+</param>
+<param name="Multiple" type="Object..">
+<description>arguments to pass along to the listener functions.</description>
+</param>
+</method>
+<method name="bind" summary="Adds an event listener by name.">
+<description>Adds an event listener by name.
+</description>
+<param name="name" type="String">
+<description>Event name to listen for.</description>
+</param>
+<param name="func" type="function">
+<description>Function to call ones the event gets fired.</description>
+</param>
+<param name="scope" type="Object">
+<description>Optional scope to execute the specified function in.</description>
+</param>
+</method>
+<method name="unbind" summary="Removes the specified event listener.">
+<description>Removes the specified event listener.
+</description>
+<param name="name" type="String">
+<description>Name of event to remove.</description>
+</param>
+<param name="func" type="function">
+<description>Function to remove from listener.</description>
+</param>
+</method>
+<event name="UploadFile" summary="Fires when a file is to be uploaded by the runtime.">
+<description>Fires when a file is to be uploaded by the runtime.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+<param name="file" type="plupload.File">
+<description>File to be uploaded.</description>
+</param>
+</event>
+</members>
+</class>
+<class fullname="plupload.File" name="File" summary="File instance.">
+<description>File instance.
+</description>
+<param name="name" type="String">
+<description>Name of the file.</description>
+</param>
+<param name="size" type="Number">
+<description>File size.</description>
+</param>
+<members>
+<property name="id" summary="File id this is a globally unique id for the specific file." type="String">
+<description>File id this is a globally unique id for the specific file.
+</description>
+</property>
+<property name="name" summary="File name for example &quot;myfile." type="String">
+<description>File name for example "myfile.gif".
+</description>
+</property>
+<property name="size" summary="File size in bytes." type="Number">
+<description>File size in bytes.
+</description>
+</property>
+<property name="loaded" summary="Number of bytes uploaded of the files total size." type="Number">
+<description>Number of bytes uploaded of the files total size.
+</description>
+</property>
+<property name="percent" summary="Number of percentage uploaded of the file." type="Number">
+<description>Number of percentage uploaded of the file.
+</description>
+</property>
+<property name="status" summary="Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE." type="Number">
+<description>Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+</description>
+</property>
+</members>
+</class>
+<class fullname="plupload.Runtime" name="Runtime" static="true" summary="Runtime class gets implemented by each upload runtime.">
+<description>Runtime class gets implemented by each upload runtime.
+</description>
+<members>
+<method name="isSupported" static="true" summary="Checks if the runtime is supported by the browser or not.">
+<description>Checks if the runtime is supported by the browser or not.
+</description>
+<return type="boolean">
+<description>true/false if the runtime exists.</description>
+</return>
+</method>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+</method>
+</members>
+</class>
+<class fullname="plupload.QueueProgress" name="QueueProgress" summary="Runtime class gets implemented by each upload runtime.">
+<description>Runtime class gets implemented by each upload runtime.
+</description>
+<members>
+<property name="size" summary="Total queue file size." type="Number">
+<description>Total queue file size.
+</description>
+</property>
+<property name="loaded" summary="Total bytes uploaded." type="Number">
+<description>Total bytes uploaded.
+</description>
+</property>
+<property name="uploaded" summary="Number of files uploaded." type="Number">
+<description>Number of files uploaded.
+</description>
+</property>
+<property name="failed" summary="Number of files failed to upload." type="Number">
+<description>Number of files failed to upload.
+</description>
+</property>
+<property name="queued" summary="Number of files yet to be uploaded." type="Number">
+<description>Number of files yet to be uploaded.
+</description>
+</property>
+<property name="percent" summary="Total percent of the uploaded bytes." type="Number">
+<description>Total percent of the uploaded bytes.
+</description>
+</property>
+<method name="reset" summary="Resets the progress to it's initial values.">
+<description>Resets the progress to it's initial values.
+</description>
+</method>
+</members>
+</class>
+<class extends="plupload.Runtime" fullname="plupload.SilverlightRuntime" name="SilverlightRuntime" static="true" summary="Silverlight implementation.">
+<description>Silverlight implementation.
+</description>
+<members>
+<method name="isSupported" static="true" summary="Checks if Silverlight is installed or not.">
+<description>Checks if Silverlight is installed or not.
+</description>
+<return type="boolean">
+<description>true/false if the runtime exists.</description>
+</return>
+</method>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+</method>
+</members>
+<super-classes>
+<class-ref class="plupload.Runtime"/>
+</super-classes>
+</class>
+</namespace>
+<class fullname="plupload" name="plupload" static="true" summary="Plupload class with some global constants and functions.">
+<description>Plupload class with some global constants and functions.
+</description>
+<members>
+<property final="true" name="STOPPED" static="true" summary="Inital state of the queue and also the state ones it's finished all it's uploads." type="Object">
+<description>Inital state of the queue and also the state ones it's finished all it's uploads.
+</description>
+</property>
+<property final="true" name="STARTED" static="true" summary="Upload process is running" type="Object">
+<description>Upload process is running
+</description>
+</property>
+<property final="true" name="QUEUED" static="true" summary="File is queued for upload" type="Object">
+<description>File is queued for upload
+</description>
+</property>
+<property final="true" name="UPLOADING" static="true" summary="File is being uploaded" type="Object">
+<description>File is being uploaded
+</description>
+</property>
+<property final="true" name="FAILED" static="true" summary="File has failed to be uploaded" type="Object">
+<description>File has failed to be uploaded
+</description>
+</property>
+<property final="true" name="DONE" static="true" summary="File has been uploaded successfully" type="Object">
+<description>File has been uploaded successfully
+</description>
+</property>
+<method name="extend" static="true" summary="Extends the specified object with another object.">
+<description>Extends the specified object with another object.
+</description>
+<param name="target" type="Object">
+<description>Object to extend.</description>
+</param>
+<param name="obj" type="Object..">
+<description>Multiple objects to extend with.</description>
+</param>
+<return type="Object">
+<description>Same as target, the extended object.</description>
+</return>
+</method>
+<method name="cleanName" static="true" summary="Cleans the specified name from national characters.">
+<description>Cleans the specified name from national characters. The result will be a name with only a-z, 0-9 and _.
+</description>
+<param name="s" type="String">
+<description>String to clean up.</description>
+</param>
+<return type="String">
+<description>Cleaned string.</description>
+</return>
+</method>
+<method name="addRuntime" static="true" summary="Adds a specific upload runtime like for example flash or gears.">
+<description>Adds a specific upload runtime like for example flash or gears.
+</description>
+<param name="name" type="String">
+<description>Runtime name for example flash.</description>
+</param>
+<param name="obj" type="Object">
+<description>Object containing init/destroy method.</description>
+</param>
+</method>
+<method name="guid" static="true" summary="Generates an unique ID.">
+<description>Generates an unique ID. This is 99.99% unique since it takes the current time and 5 random numbers.
+The only way a user would be able to get the same ID is if the two persons at the same exact milisecond manages
+to get 5 the same random numbers between 0-65535 it also uses a counter so each call will be guaranteed to be page unique.
+It's more probable for the earth to be hit with an ansteriod.
+</description>
+<return type="String">
+<description>Virtually unique id.</description>
+</return>
+</method>
+<method name="formatSize" static="true" summary="Formats the specified number as a size string for example 1024 becomes 1 KB.">
+<description>Formats the specified number as a size string for example 1024 becomes 1 KB.
+</description>
+<param name="size" type="Number">
+<description>Size to format as string.</description>
+</param>
+<return type="String">
+<description>Formatted size string.</description>
+</return>
+</method>
+<method name="getPos" static="true" summary="Returns the absolute x, y position of a node.">
+<description>Returns the absolute x, y position of a node. The position will be returned in a object with x, y fields.
+</description>
+<param name="node">
+<type fullname="Element"/>
+<type fullname="String"/>
+<description>HTML element or element id to get x, y position from.</description>
+</param>
+<param name="root" type="Element">
+<description>Optional root element to stop calculations at.</description>
+</param>
+<return type="object">
+<description>Absolute position of the specified element object with x, y fields.</description>
+</return>
+</method>
+<method name="parseSize" static="true" summary="Parses the specified size string into a byte value.">
+<description>Parses the specified size string into a byte value. For example 10kb becomes 10240.
+</description>
+<param name="size">
+<type fullname="String"/>
+<type fullname="Number"/>
+<description>String to parse or number to just pass through.</description>
+</param>
+<return type="Number">
+<description>Size in bytes.</description>
+</return>
+</method>
+<method name="xmlEncode" static="true" summary="Encodes the specified string.">
+<description>Encodes the specified string.
+</description>
+<param name="s" type="String">
+<description>String to encode.</description>
+</param>
+<return type="String">
+<description>Encoded string.</description>
+</return>
+</method>
+<method name="toArray" static="true" summary="Forces anything into an array.">
+<description>Forces anything into an array.
+</description>
+<param name="obj" type="Object">
+<description>Object with length field.</description>
+</param>
+<return type="Array">
+<description>Array object containing all items.</description>
+</return>
+</method>
+</members>
+</class>
+</model>

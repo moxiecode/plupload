@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Plupload" default="build" basedir=".">
+	<!-- Path properties -->
+	<property description="Export directory" name="export_dir" value="export" />
+
+	<!-- Setup classpath for js-build-tools ant tasks -->
+	<path id="tasks.classpath">
+		<pathelement location="."/>
+
+		<fileset dir="tools\ant">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<!-- Register new js-build-tools ant tasks -->
+	<taskdef name="preprocess" classname="com.moxiecode.ant.tasks.PreProcessTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
+	<taskdef name="yuicompress" classname="com.moxiecode.ant.tasks.YuiCompressTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
+	<taskdef name="moxiedoc" classname="com.moxiecode.ant.tasks.MoxieDocTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" /> 
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
+
+	<!-- Generate JS documentation -->
+	<target name="moxiedoc" depends="" description="Generates HTML documentation out of js source">
+		<delete quiet="true">
+			<fileset dir="docs\api" includes="**/*"/>
+		</delete>
+
+		<moxiedoc outdir="docs\api" templatedir="tools\templates" msintellisense="docs\api\plupload.vsdoc.js" title="Plupload API">
+			<fileset dir="js">
+				<exclude name="jquery.*" />
+				<exclude name="gears_init.js" />
+				<exclude name="**/*.min.js" />
+				<include name="**/*.js" /> 
+			</fileset>
+		</moxiedoc>
+	</target>
+
+	<target name="build">
+		<!-- Concat multuple JS files together -->
+		<concat destfile="js/plupload.full.tmp.js">
+			<fileset dir="src/javascript" includes="plupload.js" />
+			<fileset dir="src/javascript" includes="plupload.gears.js" />
+			<fileset dir="src/javascript" includes="plupload.silverlight.js" />
+			<fileset dir="src/javascript" includes="plupload.flash.js" />
+			<fileset dir="src/javascript" includes="plupload.html5.js" />
+		</concat>
+
+		<!-- Compress Plupload full and base using the YUI Compressor -->
+		<yuicompress infile="js/plupload.full.tmp.js" outfile="js/plupload.full.min.js" />
+		<yuicompress infile="src/javascript/jquery.plupload.queue.js" outfile="js/jquery.plupload.queue.min.js" />
+		<yuicompress infile="src/javascript/jquery.plupload.single.js" outfile="js/jquery.plupload.single.min.js" />
+		<yuicompress infile="src/javascript/plupload.js" outfile="js/plupload.min.js" />
+		<yuicompress infile="src/javascript/plupload.gears.js" outfile="js/plupload.gears.min.js" />
+		<yuicompress infile="src/javascript/plupload.silverlight.js" outfile="js/plupload.silverlight.min.js" />
+		<yuicompress infile="src/javascript/plupload.flash.js" outfile="js/plupload.flash.min.js" />
+		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.min.js" />
+
+		<delete file="js/plupload.full.tmp.js" quiet="true" />
+	</target>
+
+	<target name="release">
+		<!-- Export -->
+		<delete dir="${export_dir}/plupload" quiet="true" />
+
+		<svn javahl="${javahl}">
+			<export srcUrl="http://plupload.googlecode.com/svn/trunk/" destPath="${export_dir}/plupload" />
+		</svn>
+
+		<!-- Parse minor version, major version and release date from changelog -->
+		<loadfile property="changelog" srcFile="${export_dir}/plupload/changelog.txt" />
+		<propertyregex property="version" input="${changelog}" regexp="^Version ([0-9xabrc.]+)" select="\1" />
+		<propertyregex property="release_date" input="${changelog}" regexp="^Version [^\(]+\(([^\)]+)\)" select="\1" />
+		<propertyregex property="file_version" input="${version}" regexp="\." replace="_" />
+
+		<!-- Compress production package -->
+		<delete file="${export_dir}/plupload_${file_version}.zip" quiet="true" />
+		<zip destfile="${export_dir}/plupload_${file_version}.zip">
+			<fileset dir="${export_dir}/plupload">
+				<include name="*/**" />
+				<exclude name="tools/**" />
+				<exclude name="build.xml" />
+				<exclude name="build.bat" />
+			</fileset>
+		</zip>
+
+		<!-- Compress dev package -->
+		<delete file="${export_dir}/plupload_${file_version}_dev.zip" quiet="true" />
+		<zip destfile="${export_dir}/plupload_${file_version}_dev.zip">
+			<fileset dir="${export_dir}/plupload">
+				<include name="*/**" />
+			</fileset>
+		</zip>
+	</target>
+</project>
