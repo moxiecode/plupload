@@ -4,8 +4,8 @@
  * Copyright 2009, Moxiecode Systems AB
  * Released under GPL License.
  *
- * License: http://www.plupload/license
- * Contributing: http://www.plupload/contributing
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
  */
 
 (function(plupload) {

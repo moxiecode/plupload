@@ -3,6 +3,7 @@
  *
  * @author Moxiecode
  * @copyright Copyright © 2007, Moxiecode Systems AB, All rights reserved.
+ * @license http://www.plupload.com/license
  */
 
 package com.moxiecode.plupload {
