@@ -1,10 +1,11 @@
 ﻿/**
- * $Id: Page.xaml.cs 490 2008-10-21 16:04:35Z spocke $
+ * Page.xaml.cs
  *
- * @package MCManagerCore
- * @author Moxiecode
- * @copyright Copyright © 2007, Moxiecode Systems AB, All rights reserved.
- * @license http://www.plupload.com/license
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
  */
 
 using System;

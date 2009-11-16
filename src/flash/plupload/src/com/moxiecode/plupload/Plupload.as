@@ -1,9 +1,11 @@
 /**
- * $Id: Plupload.as 617 2008-11-27 15:48:31Z spocke $
+ * Plupload.as
  *
- * @author Moxiecode
- * @copyright Copyright © 2007, Moxiecode Systems AB, All rights reserved.
- * @license http://www.plupload.com/license
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
  */
 
 package com.moxiecode.plupload {
