@@ -193,12 +193,13 @@
 
 					// Should we scale it
 					if (width || height) {
-						scaleImage(nativeFile.getAsDataURL(), width, width, function(res) {
+						scaleImage(nativeFile.getAsDataURL(), width, height, function(res) {
 							// If it was scaled send the scaled image if it failed then
 							// send the raw image and let the server do the scaling
-							if (res.success)
+							if (res.success) {
+								file.size = res.data.length;
 								xhr.sendAsBinary(res.data);
-							else
+							} else
 								xhr.sendAsBinary(nativeFile.getAsBinary());
 						});
 					} else

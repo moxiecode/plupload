@@ -143,7 +143,8 @@ package com.plupload {
 
 					fireEvent("UploadProcess", {
 						id : file.id,
-						loaded : e.bytesLoaded
+						loaded : e.bytesLoaded,
+						size : e.bytesTotal
 					});
 				});
 
@@ -257,13 +258,16 @@ package com.plupload {
 		 * @param id File id to upload.
 		 * @param url Url to upload the file to.
 		 * @param chunk_size Size of the each chunk.
+		 * @param width Image width to scale down to. Zero or negative number will disable the scaling.
+		 * @param height Image height to scale down to. Zero or negative number will disable the scaling.
+		 * @param quality Image quiality to use when scaling the image.
 		 */
-		private function uploadFile(id:String, url:String, chunk_size:int):void {
+		private function uploadFile(id:String, url:String, chunk_size:int, width:int, height:int, quality:int):void {
 			var file:File = this.files[id] as File;
 
 			if (file) {
 				this.currentFile = file;
-				file.upload(url, chunk_size);
+				file.upload(url, chunk_size, width, height, quality);
 			}
 		}
 

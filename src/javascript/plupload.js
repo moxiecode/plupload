@@ -355,7 +355,8 @@
 		settings = plupload.extend({
 			chunk_size : '1mb',
 			max_file_size : '1gb',
-			multi_selection : true
+			multi_selection : true,
+			image_quality : 90
 		}, settings);
 
 		// Private methods

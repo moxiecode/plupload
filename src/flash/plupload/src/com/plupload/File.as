@@ -9,7 +9,13 @@
  */
 
 package com.plupload {
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.DisplayObject;
+	import flash.display.Stage;
 	import flash.events.EventDispatcher;
+	import flash.geom.Rectangle;
+	import flash.geom.Matrix;
 	import flash.net.FileReference;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -17,6 +23,7 @@ package com.plupload {
 	import flash.events.ProgressEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.events.DataEvent;
+	import flash.net.FileReferenceList;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestHeader;
@@ -25,6 +32,8 @@ package com.plupload {
 	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
 	import flash.external.ExternalInterface;
+	import flash.utils.setTimeout;
+	import mx.graphics.codec.JPEGEncoder;
 
 	/**
 	 * Container class for file references, this handles upload logic for individual files.
@@ -34,7 +43,7 @@ package com.plupload {
 		private var _fileRef:FileReference, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String;
 		private var _chunk:int, _chunks:int, _chunkSize:int;
-		private var _id:String, _fileName:String, _size:uint;
+		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
 
 		/**
 		 * Id property of file.
@@ -84,8 +93,12 @@ package com.plupload {
 		 *
 		 * @param url Url to upload the file to.
 		 * @param chunk_size Chunk size to use.
+		 * @param width Image width to scale down to.
+		 * @param height Image height to scale down to.
 		 */
-		public function upload(url:String, chunk_size:int):void {
+		public function upload(url:String, chunk_size:int, width:int, height:int, quality:int):void {
+			var file:File = this;
+
 			// Setup internal vars
 			this._uploadUrl = url;
 			this._chunkSize = chunk_size;
@@ -101,7 +114,35 @@ package com.plupload {
 
 			// When file is loaded start uploading
 			this._fileRef.addEventListener(Event.COMPLETE, function(e:Event):void {
-				uploadNextChunk();
+				var loader:flash.display.Loader;
+
+				// Load JPEG file and scale it down if needed
+				if (width || height) {
+					loader = new flash.display.Loader();
+					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void {
+						var loadedBitmapData:BitmapData = Bitmap(e.target.content).bitmapData;
+						var matrix:Matrix = new Matrix();
+
+						// Setup scale matrix
+						matrix.scale(width / loadedBitmapData.width, height / loadedBitmapData.height);
+
+						// Draw loaded bitmap into scaled down bitmap
+						var outputBitmapData:BitmapData = new BitmapData(width, height);
+						outputBitmapData.draw(loadedBitmapData, matrix);
+
+						// Encode bitmap as JPEG
+						var encoder:JPEGEncoder = new JPEGEncoder(quality);
+						file._imageData = encoder.encode(outputBitmapData);
+						file._imageData.position = 0;
+						file._size = file._imageData.length;
+
+						// Start uploading the scaled down image
+						uploadNextChunk();
+					});
+
+					loader.loadBytes(file._fileRef.data);
+				} else
+					uploadNextChunk();
 			});
 
 			// File load IO error
@@ -158,11 +199,17 @@ package com.plupload {
 		 */
 		private function uploadNextChunk():void {
 			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
-			var urlStream:URLStream, url:String;
+			var urlStream:URLStream, url:String, file:File = this;
 
 			// Slice out a chunk
 			chunkData = new ByteArray();
-			fileData = this._fileRef.data;
+
+			// Use image data if it exists, will exist if the image was resized
+			if (this._imageData != null)
+				fileData = this._imageData;
+			else
+				fileData = this._fileRef.data;
+
 			fileData.readBytes(chunkData, 0, fileData.position + this._chunkSize > fileData.length ? fileData.length - fileData.position : this._chunkSize);
 
 			// Setup URL stream
@@ -173,7 +220,7 @@ package com.plupload {
 				var response:String;
 
 				// Upload is cancelled, then stop everything
-				if (this._cancelled)
+				if (file._cancelled)
 					return;
 
 				response = urlStream.readUTFBytes(urlStream.bytesAvailable);
@@ -191,7 +238,7 @@ package com.plupload {
 				dispatchEvent(uploadChunkEvt);
 
 				// Fake progress event since Flash doesn't have a progress event for streaming data up to the server
-				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, fileData.position, _fileRef.size);
+				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, fileData.position, file._size);
 				dispatchEvent(pe);
 
 				// Upload next chunk

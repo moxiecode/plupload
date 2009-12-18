@@ -127,23 +127,31 @@
 				initialized = true;
 
 				// Convert extensions to flash format
-				for (i = 0; i < filters; i++)
+				for (i = 0; i < filters.length; i++)
 					filters[i].extensions = "*." + filters[i].extensions.replace(/,/g, ";*.");
 
 				getFlashObj().setFileFilters(filters, uploader.settings.multi_selection);
 
 				uploader.bind("UploadFile", function(up, file) {
-					var url = up.settings.url;
+					var settings = up.settings, url = settings.url;
 
 					url += (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
 
-					getFlashObj().uploadFile(lookup[file.id], url, up.settings.chunk_size);
+					getFlashObj().uploadFile(
+						lookup[file.id],
+						url,
+						settings.chunk_size,
+						settings.image_width,
+						settings.image_height,
+						settings.image_quality
+					);
 				});
 
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
 					var file = up.getFile(lookup[flash_file.id]);
 
 					file.loaded = flash_file.loaded;
+					file.size = flash_file.size;
 
 					up.trigger('UploadProgress', file);
 				});

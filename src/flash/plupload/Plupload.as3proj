@@ -32,6 +32,8 @@
     <option useResourceBundleMetadata="True" />
     <option warnings="True" />
     <option verboseStackTraces="False" />
+    <option linkReport="" />
+    <option loadExterns="" />
     <option additional="" />
     <option customSDK="" />
   </build>
@@ -61,7 +63,7 @@
   </library>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\com\moxiecode\plupload\Plupload.as" />
+    <compile path="src\com\plupload\Plupload.as" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

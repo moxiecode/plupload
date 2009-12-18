@@ -11,6 +11,27 @@
 (function(plupload) {
 	var blobs = {};
 
+	function scaleImage(image_blob, width, height, quality) {
+		var width, height, percentage, canvas, context;
+
+		// Setup canvas and scale
+		canvas = google.gears.factory.create('beta.canvas');
+		canvas.decode(image_blob);
+		scale = Math.min(width / canvas.width, height / canvas.height);
+
+		if (scale < 1) {
+			width = Math.round(canvas.width * scale);
+			height = Math.round(canvas.height * scale);
+		} else {
+			width = canvas.width;
+			height = canvas.height;
+		}
+
+		canvas.resize(width, height);
+
+		return canvas.encode('image/jpeg', {quality : quality / 100});
+	};
+
 	/**
 	 * Gears implementation.
 	 *
@@ -38,6 +59,10 @@
 
 				chunkSize = up.settings.chunk_size;
 				chunks = Math.ceil(file.size / chunkSize);
+
+				// Scale the image
+				blobs[file.id] = scaleImage(blobs[file.id], up.settings.image_width, up.settings.image_height, up.settings.image_quality);
+				file.size = blobs[file.id].length;
 
 				// Start uploading chunks
 				uploadNextChunk();
