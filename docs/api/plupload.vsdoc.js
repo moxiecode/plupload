@@ -2,6 +2,20 @@
 plupload = {}
 
 // Classes
+plupload.SimulatorRuntime = function() {
+	/// <summary>Simulator implementation.</summary>
+}
+
+plupload.SimulatorRuntime.isSupported = function() {
+	/// <summary>Checks if the browserplus runtime is available.</summary>
+	/// <returns type="boolean">true/false if the runtime exists.</returns>
+}
+
+plupload.SimulatorRuntime.init = function(uploader) {
+	/// <summary>Initializes the upload runtime.</summary>
+	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+}
+
 plupload.FlashRuntime = function() {
 	/// <summary>FlashRuntime implementation.</summary>
 }
@@ -170,7 +184,7 @@ plupload.extend = function(target, obj) {
 }
 
 plupload.cleanName = function(s) {
-	/// <summary>Cleans the specified name from national characters.</summary>
+	/// <summary>Cleans the specified name from national characters (diacritics).</summary>
 	/// <param name="s" type="String">String to clean up.</param>
 	/// <returns type="String">Cleaned string.</returns>
 }

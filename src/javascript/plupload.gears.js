@@ -20,22 +20,19 @@
 	 */
 	plupload.GearsRuntime = plupload.addRuntime("gears", {
 		/**
-		 * Checks if the Google Gears is installed or not.
-		 *
-		 * @method isSupported
-		 * @return {boolean} true/false if the runtime exists.
-		 */
-		isSupported : function() {
-			return !!(window.google && google.gears);
-		},
-
-		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
-		init : function(uploader) {
+		init : function(uploader, callback) {
+			// Check for gears support
+			if (!window.google || !google.gears) {
+				callback({success : false});
+				return;
+			}
+
 			uploader.bind("UploadFile", function(up, file) {
 				var chunk = 0, chunks, chunkSize, loaded = 0;
 
@@ -107,10 +104,10 @@
 				var desk = google.gears.factory.create('beta.desktop'), filters = [], i, a;
 
 				for (i = 0; i < up.settings.filters.length; i++) {
-					ext = up.settings.filters[i].extensions.split(';');
+					ext = up.settings.filters[i].extensions.split(',');
 
 					for (a = 0; a < ext.length; a++)
-						filters.push(ext[a].replace(/^[^.]+\./, '.'));
+						filters.push('.' + ext[a]);
 				}
 
 				desk.openFiles(function(selected_files) {
@@ -131,6 +128,8 @@
 					uploader.trigger("FilesSelected", files);
 				}, {singleFile : !up.settings.multi_selection, filter : filters});
 			});
+
+			callback({success : true});
 		}
 	});
 })(plupload);

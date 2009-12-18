@@ -24,7 +24,8 @@
 
 	// 5 minutes execution time
 	@set_time_limit(5 * 60);
-usleep(5000);
+	// usleep(5000);
+
 	// Get parameters
 	$chunk = isset($_REQUEST["chunk"]) ? $_REQUEST["chunk"] : 0;
 	$chunks = isset($_REQUEST["chunks"]) ? $_REQUEST["chunks"] : 0;
@@ -51,22 +52,59 @@ usleep(5000);
 	} else
 		die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
 
-	// Open temp file
-	$out = fopen($targetDir . DIRECTORY_SEPARATOR . $fileName, $chunk == 0 ? "wb" : "ab");
-	if ($out) {
-		// Read binary input stream and append it to temp file
-		$in = fopen("php://input", "rb");
+	if (isset($_REQUEST["multipart"])) {
+		if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name']))
+			rename($_FILES['file']['tmp_name'], $targetDir . DIRECTORY_SEPARATOR . $fileName);
+		else
+			die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."}, "id" : "id"}');
+	} else {
+		// Open temp file
+		$out = fopen($targetDir . DIRECTORY_SEPARATOR . $fileName, $chunk == 0 ? "wb" : "ab");
+		if ($out) {
+			// Read binary input stream and append it to temp file
+			$in = fopen("php://input", "rb");
 
-		if ($in) {
-			while ($buff = fread($in, 4096))
-				fwrite($out, $buff);
+			if ($in) {
+				while ($buff = fread($in, 4096))
+					fwrite($out, $buff);
+			} else
+				die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
+
+			fclose($out);
 		} else
-			die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
-
-		fclose($out);
-	} else
-		die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
+			die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
+	}
 
 	// Return JSON-RPC response
 	die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
-?>
+?>					for ($i=0; isset($_FILES['file' . $i]['tmp_name']); $i++) {
+						$filename = utf8_encode($input["name" . $i]);
+
+						// Do nothing in demo mode
+						if (checkBool($config['general.demo'])) {
+							$result->add("DEMO_ERROR", $man->encryptPath($file->getAbsolutePath()), "{#error.demo}");
+							continue;
+						}
+
+						// No access, tool disabled
+						if (in_array("upload", explode(',', $config['general.disabled_tools'])) || !$file->canWrite() || !checkBool($config["filesystem.writable"])) {
+							$result->add("ACCESS_ERROR", $man->encryptPath($file->getAbsolutePath()), "{#error.no_access}");
+							continue;
+						}
+
+						// Get ext to glue back on
+						$ext = "";
+						if (strpos(basename($_FILES['file' . $i]['name']), ".") > 0) {
+							$ar = explode('.', basename($_FILES['file' . $i]['name']));
+							$ext = array_pop($ar);
+						}
+
+						$file =& $man->getFile($path, $filename . "." . $ext, "", MC_IS_FILE);
+						if ($man->verifyFile($file, "upload") < 0) {
+							$result->add("ACCESS_ERROR", $man->encryptPath($file->getAbsolutePath()), $man->getInvalidFileMsg());
+							continue;
+						}
+
+						$config = $file->getConfig();
+
+						if (is_uploaded_file($_FILES['file' . $i]['tmp_name'])) {

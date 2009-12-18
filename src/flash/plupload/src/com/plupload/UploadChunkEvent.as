@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-package com.moxiecode.plupload {
+package com.plupload {
 	import flash.events.DataEvent;
 
 	/**

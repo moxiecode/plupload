@@ -12,7 +12,7 @@
 	var uploaders = {};
 
 	function _(str) {
-		return str;
+		return plupload.translate(str) || str;
 	};
 
 	function renderUI(id, target) {
@@ -173,7 +173,7 @@
 					});
 				}
 
-				uploader.bind('PreInit', function() {
+				uploader.bind('Init', function() {
 					renderUI(id, target);
 
 					$('a.plupload_add', target).click(function(e) {

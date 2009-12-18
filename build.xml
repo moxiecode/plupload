@@ -25,11 +25,10 @@
 		</delete>
 
 		<moxiedoc outdir="docs\api" templatedir="tools\templates" msintellisense="docs\api\plupload.vsdoc.js" title="Plupload API">
-			<fileset dir="js">
+			<fileset dir="src">
 				<exclude name="jquery.*" />
 				<exclude name="gears_init.js" />
-				<exclude name="**/*.min.js" />
-				<include name="**/*.js" /> 
+				<include name="javascript/**/*.js" /> 
 			</fileset>
 		</moxiedoc>
 	</target>
@@ -41,6 +40,7 @@
 			<fileset dir="src/javascript" includes="plupload.gears.js" />
 			<fileset dir="src/javascript" includes="plupload.silverlight.js" />
 			<fileset dir="src/javascript" includes="plupload.flash.js" />
+			<fileset dir="src/javascript" includes="plupload.browserplus.js" />
 			<fileset dir="src/javascript" includes="plupload.html5.js" />
 		</concat>
 

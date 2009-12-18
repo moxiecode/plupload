@@ -9,10 +9,56 @@
  */
 
 (function() {
-	var count = 0, runtimes = [];
+	var count = 0, runtimes = [], i18n = {}, mimes = {};
+
+	// Parses the default mime types string into a mimes lookup map
+	(function(mime_data) {
+		var items = mime_data.split(/,/), i, y, ext;
+
+		for (i = 0; i < items.length; i += 2) {
+			ext = items[i + 1].split(/ /);
+
+			for (y = 0; y < ext.length; y++)
+				mimes[ext[y]] = items[i];
+		}
+	})(
+		"application/msword,doc dot," +
+		"application/pdf,pdf," +
+		"application/pgp-signature,pgp," +
+		"application/postscript,ps ai eps," +
+		"application/rtf,rtf," +
+		"application/vnd.ms-excel,xls xlb," +
+		"application/vnd.ms-powerpoint,ppt pps pot," +
+		"application/zip,zip," +
+		"application/x-shockwave-flash,swf swfl," +
+		"application/vnd.openxmlformats,docx pptx xlsx," +
+		"audio/mpeg,mpga mpega mp2 mp3," +
+		"audio/x-wav,wav," +
+		"image/bmp,bmp," +
+		"image/gif,gif," +
+		"image/jpeg,jpeg jpg jpe," +
+		"image/png,png," +
+		"image/svg+xml,svg svgz," +
+		"image/tiff,tiff tif," +
+		"text/html,htm html xhtml," +
+		"text/rtf,rtf," +
+		"video/mpeg,mpeg mpg mpe," +
+		"video/quicktime,qt mov," +
+		"video/x-flv,flv," +
+		"video/vnd.rn-realvideo,rv," +
+		"text/plain,asc txt text diff log," +
+		"application/octet-stream,exe"
+	);
 
 	/**
 	 * Plupload class with some global constants and functions.
+	 *
+	 * @example
+	 * // Encode entities
+	 * console.log(plupload.xmlEncode("My string <>&."));
+	 *
+	 * // Generate unique id
+	 * console.log(plupload.guid());
 	 *
 	 * @static
 	 * @class plupload
@@ -67,6 +113,15 @@
 		DONE : 5,
 
 		/**
+		 * Mime type lookup table.
+		 *
+		 * @property mimeTypes
+		 * @type Object
+		 * @final
+		 */
+		mimeTypes : mimes,
+
+		/**
 		 * Extends the specified object with another object.
 		 *
 		 * @method extend
@@ -88,7 +143,7 @@
 		},
 
 		/**
-		 * Cleans the specified name from national characters. The result will be a name with only a-z, 0-9 and _.
+		 * Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
 		 *
 		 * @method cleanName
 		 * @param {String} s String to clean up.
@@ -238,12 +293,14 @@
 		 * @param {String} s String to encode.
 		 * @return {String} Encoded string.
 		 */
-		xmlEncode : function(s) {
-			var lo = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'};
+		xmlEncode : function(str) {
+			var lookup = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'}, regExp = /[<>&\"\']/g;
 
-			return s ? ('' + s).replace(/[<>&\"\']/g, function(c) {
-				return lo[c] ? '&' + lo[c] + ';' : c;
-			}) : s;
+			return (this.xmlEncode = function(str) {
+				return str ? ('' + str).replace(regExp, function(chr) {
+					return lookup[chr] ? '&' + lookup[chr] + ';' : chr;
+				}) : str;
+			})(str);
 		},
 
 		/**
@@ -260,6 +317,26 @@
 				arr[i] = obj[i];
 
 			return arr;
+		},
+
+		/**
+		 * Extends the language pack object with new items.
+		 *
+		 * @param {Object} pack Language pack items to add.
+		 * @return {Object} Extended language pack object.
+		 */
+		addI18n : function(pack) {
+			return plipload.extend(i18n, pack);
+		},
+
+		/**
+		 * Translates the specified string by checking for the english string in the language pack lookup.
+		 *
+		 * @param {String} str String to look for.
+		 * @reutrn {String} Translated string or the input string if it wasn't found.
+		 */
+		translate : function(str) {
+			return i18n[str] || str;
 		}
 	};
 
@@ -320,6 +397,12 @@
 
 		// Add public methods
 		plupload.extend(this, {
+			/**
+			 * Current state of the total uploading progress.
+			 *
+			 * @property state
+			 * @type Number
+			 */
 			state : plupload.STOPPED,
 
 			/**
@@ -361,7 +444,7 @@
 			 * @method init
 			 */
 			init : function() {
-				var i, runtimeList, a;
+				var self = this, i, runtimeList, a, runTimeIndex = 0, items;
 
 				settings.page_url = settings.page_url || document.location.pathname.replace(/\/[^\/]+$/g, '/');
 
@@ -373,35 +456,8 @@
 				settings.chunk_size = plupload.parseSize(settings.chunk_size);
 				settings.max_file_size = plupload.parseSize(settings.max_file_size);
 
-				// Find a suitable runtime
-				if (settings.runtimes) {
-					runtimeList = settings.runtimes.split(',');
-
-					for (i = 0; i < runtimeList.length; i++) {
-						runtime = runtimes[runtimeList[i]];
-
-						// Look for suitable runtime
-						if (runtime && runtime.isSupported() !== false) {
-							this.runtime = runtime;
-							this.trigger('PreInit', runtime.name);
-							break;
-						}
-					}
-				} else {
-					for (i = 0; i < runtimes.length; i++) {
-						runtime = runtimes[i];
-
-						// Look for suitable runtime
-						if (runtime && runtime.isSupported() !== false) {
-							this.runtime = runtime;
-							this.trigger('PreInit', runtime.name);
-							break;
-						}
-					}
-				}
-
 				// Add files to queue
-				this.bind('FilesSelected', function(up, selected_files) {
+				self.bind('FilesSelected', function(up, selected_files) {
 					var i, file;
 
 					for (i = 0; i < selected_files.length; i++) {
@@ -417,10 +473,10 @@
 						files.push(file);
 					}
 
-					this.trigger("QueueChanged");
+					self.trigger("QueueChanged");
 				});
 
-				this.bind('UploadProgress', function(up, file) {
+				self.bind('UploadProgress', function(up, file) {
 					if (file.status == plupload.QUEUED)
 						file.status = plupload.UPLOADING;
 
@@ -428,19 +484,39 @@
 					calc();
 				});
 
-				this.bind('QueueChanged', calc);
+				self.bind('QueueChanged', calc);
 
-				this.bind("FileUploaded", function(up, file) {
+				self.bind("FileUploaded", function(up, file) {
 					file.status = plupload.DONE;
 					up.trigger('UploadProgress', file);
-					uploadNext.call(this);
+					uploadNext.call(self);
 				});
 
-				// Initialize runtime
-				if (this.runtime) {
-					this.runtime.init(this);
-					this.trigger('Init', this.runtime.name);
-				}
+				// Setup runtimeList
+				if (settings.runtimes) {
+					runtimeList = [];
+					items = settings.runtimes.split(/,/);
+					for (i = 0; i < items.length; i++)
+						runtimeList.push(runtimes[items[i]]);
+				} else
+					runtimeList = runtimes;
+
+				// Call init on each runtime in sequence
+				function callNextInit() {
+					var runtime = runtimeList[runTimeIndex++];
+
+					if (runtime) {
+						runtime.init(self, function(res) {
+							if (res.success) {
+								self.trigger('Init', runtime.name);
+								self.refresh();
+							} else
+								callNextInit();
+						});
+					}
+				};
+
+				callNextInit();
 			},
 
 			/**
@@ -451,6 +527,17 @@
 			 */
 			browse : function(browse_settings) {
 				this.trigger("SelectFiles", plupload.extend({}, settings, browse_settings));
+			},
+
+			/**
+			 * Refreshes the upload instance by dispatching out a refresh event to all runtimes.
+			 * This would for example reposition flash shims on the page.
+			 *
+			 * @method refresh
+			 * @param {Object} browse_settings name/value collection of settings.
+			 */
+			refresh : function(browse_settings) {
+				this.trigger("Refresh");
 			},
 
 			/**
@@ -615,7 +702,7 @@
 	 * @param {Number} size File size.
 	 */
 	plupload.File = function(id, name, size) {
-		var t = this;
+		var self = this; // Setup alias for self to reduce code size when it's compressed
 
 		/**
 		 * File id this is a globally unique id for the specific file.
@@ -623,7 +710,7 @@
 		 * @property id
 		 * @type String
 		 */
-		t.id = id;
+		self.id = id;
 
 		/**
 		 * File name for example "myfile.gif".
@@ -631,7 +718,7 @@
 		 * @property name
 		 * @type String
 		 */
-		t.name = name;
+		self.name = name;
 
 		/**
 		 * File size in bytes.
@@ -639,7 +726,7 @@
 		 * @property size
 		 * @type Number
 		 */
-		t.size = size;
+		self.size = size;
 
 		/**
 		 * Number of bytes uploaded of the files total size.
@@ -647,7 +734,7 @@
 		 * @property loaded
 		 * @type Number
 		 */
-		t.loaded = 0;
+		self.loaded = 0;
 
 		/**
 		 * Number of percentage uploaded of the file.
@@ -655,15 +742,16 @@
 		 * @property percent
 		 * @type Number
 		 */
-		t.percent = 0;
+		self.percent = 0;
 
 		/**
 		 * Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
 		 *
 		 * @property status
 		 * @type Number
+		 * @see plupload
 		 */
-		t.status = 0;
+		self.status = 0;
 	};
 
 	/**
@@ -674,21 +762,13 @@
 	 */
 	plupload.Runtime = function() {
 		/**
-		 * Checks if the runtime is supported by the browser or not.
-		 *
-		 * @method isSupported
-		 * @return {boolean} true/false if the runtime exists.
-		 */
-		this.isSupported = function() {
-		};
-
-		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
+		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize.
 		 */
-		this.init = function(uploader) {
+		this.init = function(uploader, callback) {
 		};
 	};
 
@@ -698,7 +778,7 @@
 	 * @class plupload.QueueProgress
 	 */
 	 plupload.QueueProgress = function() {
-		var t = this;
+		var self = this; // Setup alias for self to reduce code size when it's compressed
 
 		/**
 		 * Total queue file size.
@@ -706,7 +786,7 @@
 		 * @property size
 		 * @type Number
 		 */
-		t.size = 0;
+		self.size = 0;
 
 		/**
 		 * Total bytes uploaded.
@@ -714,7 +794,7 @@
 		 * @property loaded
 		 * @type Number
 		 */
-		t.loaded = 0;
+		self.loaded = 0;
 
 		/**
 		 * Number of files uploaded.
@@ -722,7 +802,7 @@
 		 * @property uploaded
 		 * @type Number
 		 */
-		t.uploaded = 0;
+		self.uploaded = 0;
 
 		/**
 		 * Number of files failed to upload.
@@ -730,7 +810,7 @@
 		 * @property failed
 		 * @type Number
 		 */
-		t.failed = 0;
+		self.failed = 0;
 
 		/**
 		 * Number of files yet to be uploaded.
@@ -738,7 +818,7 @@
 		 * @property queued
 		 * @type Number
 		 */
-		t.queued = 0;
+		self.queued = 0;
 
 		/**
 		 * Total percent of the uploaded bytes.
@@ -746,15 +826,15 @@
 		 * @property percent
 		 * @type Number
 		 */
-		t.percent = 0;
+		self.percent = 0;
 
 		/**
 		 * Resets the progress to it's initial values.
 		 *
 		 * @method reset
 		 */
-		t.reset = function() {
-			t.size = t.loaded = t.uploaded = t.failed = t.queued = t.percent = 0;
+		self.reset = function() {
+			self.size = self.loaded = self.uploaded = self.failed = self.queued = self.percent = 0;
 		};
 	 };
 

@@ -30,6 +30,12 @@
 </table>
 <div class="classDescription">Plupload class with some global constants and functions.
 </div>
+<h4>Example</h4>
+<pre class="brush: js;">// Encode entities
+console.log(plupload.xmlEncode("My string <>&."));
+
+// Generate unique id
+console.log(plupload.guid());</pre>
 <div class="summaryLists">
 <h2>Public Properties</h2>
 <table class="Properties summary">
@@ -119,7 +125,7 @@
 <div>
 <a class="memberName" href="class_plupload.html#cleanName">cleanName</a>(s:String):String</div>
 <div class="summary">
-<span class="static">[static] </span>Cleans the specified name from national characters.</div>
+<span class="static">[static] </span>Cleans the specified name from national characters (diacritics).</div>
 </td>
 <td class="last">plupload</td>
 </tr>
@@ -261,7 +267,7 @@
 </h3>
 <code class="syntax">public static 
 						function cleanName(s:String):String</code>
-<div class="memberDescription">Cleans the specified name from national characters. The result will be a name with only a-z, 0-9 and _.
+<div class="memberDescription">Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
 </div>
 <h4>Parameters</h4>
 <table class="params">

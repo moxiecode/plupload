@@ -31,6 +31,13 @@
 	};
 
 	plupload.flash = {
+		/**
+		 * Will be executed by the Flash runtime when it sends out events.
+		 *
+		 * @param {String} id If for the upload instance.
+		 * @param {String} name Event name to trigger.
+		 * @param {Object} obj Parameters to be passed with event.
+		 */
 		trigger : function(id, name, obj) {
 			// Detach the call so that error handling in the browser is presented correctly
 			setTimeout(function() {
@@ -51,23 +58,19 @@
 	 */
 	plupload.FlashRuntime = plupload.addRuntime("flash", {
 		/**
-		 * Checks if the Flash is installed or not.
-		 *
-		 * @method isSupported
-		 * @return {boolean} true/false if the runtime exists.
-		 */
-		isSupported : function() {
-			return getFlashVersion() >= 10;
-		},
-
-		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
-		init : function(uploader) {
-			var browseButton, flashContainer, flashVars;
+		init : function(uploader, callback) {
+			var browseButton, flashContainer, flashVars, initialized, waitCount = 0;
+
+			if (getFlashVersion() < 10) {
+				callback({success : false});
+				return;
+			}
 
 			uploadInstances[uploader.id] = uploader;
 
@@ -101,14 +104,33 @@
 				return document.getElementById(uploader.id + '_flash');
 			};
 
+			function waitLoad() {
+				// Wait for 5 sec
+				if (waitCount++ > 5000) {
+					callback({success : false});
+					return;
+				}
+
+				if (!initialized)
+					setTimeout(waitLoad, 1);
+			};
+
+			waitLoad();
+
 			// Fix IE memory leaks
 			browseButton = flashContainer = null;
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {
-				var lookup = {};
+				var lookup = {}, i, filters = uploader.settings.filters;
 
-				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+				initialized = true;
+
+				// Convert extensions to flash format
+				for (i = 0; i < filters; i++)
+					filters[i].extensions = "*." + filters[i].extensions.replace(/,/g, ";*.");
+
+				getFlashObj().setFileFilters(filters, uploader.settings.multi_selection);
 
 				uploader.bind("UploadFile", function(up, file) {
 					var url = up.settings.url;
@@ -185,9 +207,11 @@
 				uploader.bind("StateChanged", function(up) {
 					uploader.trigger("Flash:PositionAtBrowseButton");
 				});
+
+				callback({success : true});
 			});
 
-			uploader.bind("Flash:PositionAtBrowseButton", function(up) {
+			uploader.bind("Refresh", function(up) {
 				var browseButton, browsePos;
 
 				browseButton = document.getElementById(up.settings.browse_button);
@@ -200,8 +224,6 @@
 					height : browseButton.clientHeight + 'px'
 				});
 			});
-
-			uploader.trigger("Flash:PositionAtBrowseButton");
 		}
 	});
 })(plupload);

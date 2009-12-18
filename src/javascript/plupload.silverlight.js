@@ -97,23 +97,20 @@
 	 */
 	plupload.SilverlightRuntime = plupload.addRuntime("silverlight", {
 		/**
-		 * Checks if Silverlight is installed or not.
-		 *
-		 * @method isSupported
-		 * @return {boolean} true/false if the runtime exists.
-		 */
-		isSupported : function() {
-			return isInstalled('2.0.31005.0');
-		},
-
-		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
-		init : function(uploader) {
+		init : function(uploader, callback) {
 			var silverlightContainer;
+
+			// Check if Silverlight is installed
+			if (!isInstalled('2.0.31005.0')) {
+				callback({success : false});
+				return;
+			}
 
 			uploadInstances[uploader.id] = uploader;
 
@@ -148,8 +145,8 @@
 				uploader.bind("SelectFiles", function(up) {
 					var i, filter = '', filters = up.settings.filters;
 
-					for (i = 0; i < filters.length; i++)
-						filter += (filter != '' ? '|' : '') + filters[i].title + " | " + filters[i].extensions;
+					for (i = 0; i < filters.length; i++) 
+						filter += (filter != '' ? '|' : '') + filters[i].title + " | *." + filters[i].extensions.replace(/,/g, ';*.');
 
 					selectedFiles = [];
 					getSilverlightObj().SelectFiles(filter, up.settings.multi_selection);
@@ -220,6 +217,8 @@
 					getSilverlightObj().UploadFile(lookup[file.id], url, up.settings.chunk_size);
 				});
 			});
+
+			callback({success : true});
 		}
 	});
 })(plupload);

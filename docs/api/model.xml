@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <model>
 <namespace fullname="plupload" name="plupload">
+<class extends="plupload.Runtime" fullname="plupload.SimulatorRuntime" name="SimulatorRuntime" static="true" summary="Simulator implementation.">
+<description>Simulator implementation. This will fake uploads, errors and simulate different upload speeds.
+</description>
+<members>
+<method name="isSupported" static="true" summary="Checks if the browserplus runtime is available.">
+<description>Checks if the browserplus runtime is available.
+</description>
+<return type="boolean">
+<description>true/false if the runtime exists.</description>
+</return>
+</method>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+</method>
+</members>
+<super-classes>
+<class-ref class="plupload.Runtime"/>
+</super-classes>
+</class>
 <class extends="plupload.Runtime" fullname="plupload.FlashRuntime" name="FlashRuntime" static="true" summary="FlashRuntime implementation.">
 <description>FlashRuntime implementation.
 </description>
@@ -294,6 +317,13 @@
 <class fullname="plupload" name="plupload" static="true" summary="Plupload class with some global constants and functions.">
 <description>Plupload class with some global constants and functions.
 </description>
+<example>
+<example>// Encode entities
+console.log(plupload.xmlEncode("My string &lt;&gt;&amp;."));
+
+// Generate unique id
+console.log(plupload.guid());</example>
+</example>
 <members>
 <property final="true" name="STOPPED" static="true" summary="Inital state of the queue and also the state ones it's finished all it's uploads." type="Object">
 <description>Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -332,8 +362,8 @@
 <description>Same as target, the extended object.</description>
 </return>
 </method>
-<method name="cleanName" static="true" summary="Cleans the specified name from national characters.">
-<description>Cleans the specified name from national characters. The result will be a name with only a-z, 0-9 and _.
+<method name="cleanName" static="true" summary="Cleans the specified name from national characters (diacritics).">
+<description>Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
 </description>
 <param name="s" type="String">
 <description>String to clean up.</description>
