@@ -1,0 +1,11 @@
+export
+bin
+obj
+tmp
+.settings
+*~
+*.diff
+*.patch
+*.bak
+*.log
+.DS_Store

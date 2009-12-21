@@ -475,6 +475,7 @@
 					}
 
 					self.trigger("QueueChanged");
+					self.refresh();
 				});
 
 				self.bind('UploadProgress', function(up, file) {

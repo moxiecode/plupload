@@ -13,7 +13,11 @@ using System.IO;
 using System.Threading;
 using System.Windows.Threading;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Windows.Browser;
+using FluxJpeg.Core.Decoder;
+using FluxJpeg.Core.Encoder;
+using FluxJpeg.Core;
 
 namespace Moxiecode.Plupload {
 	/// <summary>
@@ -26,6 +30,8 @@ namespace Moxiecode.Plupload {
 		private SynchronizationContext syncContext;
 		private int chunk, chunks, chunkSize;
 		private bool cancelled;
+        private long size;
+        private Stream fileStream;
 		#endregion
 
 		/// <summary>Upload compleate delegate.</summary>
@@ -40,6 +46,9 @@ namespace Moxiecode.Plupload {
 		/// <summary>Upload progress delegate.</summary>
 		public delegate void ProgressHandler(object sender, ProgressEventArgs e);
 
+        /// <summary>Upload progress delegate.</summary>
+        public delegate void ResizeProgressHandler(object sender, ResizeProgressEventArgs e);
+
 		/// <summary>Upload complete event</summary>
 		public event UploadCompleteHandler UploadComplete;
 
@@ -49,8 +58,11 @@ namespace Moxiecode.Plupload {
 		/// <summary>Error event</summary>
 		public event ErrorHandler Error;
 
-		/// <summary>IO Error event</summary>
+		/// <summary>Progress event</summary>
 		public event ProgressHandler Progress;
+
+        /// <summary>Resize event</summary>
+        public event ResizeProgressHandler ResizeProgress;
 
 		/// <summary>
 		///  Main constructor for the file reference.
@@ -61,6 +73,7 @@ namespace Moxiecode.Plupload {
 			this.id = id;
 			this.name = info.Name;
 			this.info = info;
+            this.size = info.Length;
 		}
 
 		/// <summary>Unique id for the file reference.</summary>
@@ -76,7 +89,7 @@ namespace Moxiecode.Plupload {
 
 		/// <summary>File size for the selected file.</summary>
 		public long Size {
-			get { return this.info.Length; }
+			get { return this.size; }
 		}
 
 		/// <summary>
@@ -84,14 +97,48 @@ namespace Moxiecode.Plupload {
 		/// </summary>
 		/// <param name="upload_url">URL to upload to.</param>
 		/// <param name="chunk_size">Chunk size to use.</param>
-		public void Upload(string upload_url, int chunk_size) {
+        /// <param name="image_width">Image width to scale to.</param>
+        /// <param name="image_height">Image height to scale to.</param>
+        /// <param name="image_quality">Image quality to store as.</param>
+		public void Upload(string upload_url, int chunk_size, int image_width, int image_height, int image_quality) {
 			this.chunk = 0;
 			this.chunkSize = chunk_size;
 			this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunk_size);
 			this.cancelled = false;
 			this.uploadUrl = upload_url;
 
-			this.UploadNextChunk();
+            try {
+                // Is jpeg and image size is defined
+                if (Regex.IsMatch(this.name, @"\.(jpeg|jpg)$", RegexOptions.IgnoreCase) && (image_width != 0 || image_height != 0)) {
+                    JpegDecoder decoder = new JpegDecoder(this.info.OpenRead());
+                    this.ResizeProgress(this, new ResizeProgressEventArgs(0));
+                    DecodedJpeg jpeg = decoder.Decode();
+                    ImageResizer resizer;
+                    Image resizedImage;
+
+                    if (ImageResizer.ResizeNeeded(jpeg.Image, Math.Max(image_width, image_height))) {
+                        resizer = new ImageResizer(jpeg.Image);
+                        this.ResizeProgress(this, new ResizeProgressEventArgs(33));
+                        resizedImage = resizer.Resize(image_width, image_height, FluxJpeg.Core.Filtering.ResamplingFilters.NearestNeighbor);
+
+                        this.ResizeProgress(this, new ResizeProgressEventArgs(66));
+                        this.fileStream = new MemoryStream();
+
+                        JpegEncoder encoder = new JpegEncoder(resizedImage, image_quality, this.fileStream);
+                        encoder.Encode();
+                        this.fileStream.Seek(0, SeekOrigin.Begin);
+                        this.size = this.fileStream.Length;
+                        this.ResizeProgress(this, new ResizeProgressEventArgs(100));
+                    }
+                } else
+                    this.fileStream = this.info.OpenRead();
+            } catch (Exception ex) {
+                syncContext.Send(delegate {
+                    this.OnIOError(new ErrorEventArgs(ex.Message, 0, this.chunks));
+                }, this);
+            }
+
+            this.UploadNextChunk();
 		}
 
 		/// <summary>
@@ -151,13 +198,10 @@ namespace Moxiecode.Plupload {
 			byte[] buffer = new byte[4096];
 			int bytes, loaded = 0, end;
 			int percent, lastPercent = 0;
-			Stream data = null;
 
 			try {
-				data = this.info.OpenRead();
-
 				// Move to start
-				data.Seek(this.chunk * this.chunkSize, SeekOrigin.Begin);
+				this.fileStream.Seek(this.chunk * this.chunkSize, SeekOrigin.Begin);
 				loaded = this.chunk * this.chunkSize;
 
 				// Find end
@@ -167,7 +211,7 @@ namespace Moxiecode.Plupload {
 
 				requestStream = request.EndGetRequestStream(ar);
 
-				while (loaded < end && (bytes = data.Read(buffer, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
+                while (loaded < end && (bytes = this.fileStream.Read(buffer, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
 					loaded += bytes;
 					percent = (int) Math.Round((double) loaded / (double) this.Size * 100.0);
 
@@ -198,8 +242,8 @@ namespace Moxiecode.Plupload {
 				}
 
 				try {
-					if (data != null)
-	            		data.Close();
+                    if (this.fileStream != null)
+                        this.fileStream.Close();
 				} catch (Exception ex) {
 					syncContext.Send(delegate {
 						this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
@@ -400,4 +444,12 @@ namespace Moxiecode.Plupload {
 			get { return loaded; }
 		}
 	}
+
+    public class ResizeProgressEventArgs : EventArgs {
+        public ResizeProgressEventArgs(int percent) {
+            this.Percent = percent;
+        }
+
+        public int Percent { set; get; }
+    }
 }

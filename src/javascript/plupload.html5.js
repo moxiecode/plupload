@@ -9,8 +9,8 @@
  */
 
 (function(plupload) {
-	function scaleImage(image_data_url, max_width, max_height, callback) {
-		var canvas, context, img;
+	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
+		var canvas, context, img, data;
 
 		// Setup canvas and context
 		canvas = document.createElement("canvas");
@@ -38,9 +38,14 @@
 			canvas.height = height;
 			context.drawImage(img, 0, 0, width, height);
 
-			// Get canvas as binary jpeg data and remove the canvas
-			callback({success : true, data : atob(canvas.toDataURL('image/jpeg').substring(23))});
+			// Remove data prefix information and grab the base64 encoded data and decode it
+			data = canvas.toDataURL(mime);
+			data = data.substring(data.indexOf('base64,') + 7);
+			data = atob(data);
+
+			// Remove canvas and execute callback with decoded image data
 			canvas.parentNode.removeChild(canvas);
+			callback({success : true, data : data});
 		};
 
 		img.src = image_data_url;
@@ -156,7 +161,7 @@
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
-				var xhr = new XMLHttpRequest(), upload, url = up.settings.url, width, height, nativeFile;
+				var xhr = new XMLHttpRequest(), upload, url = up.settings.url, imageWidth, imageHeight, nativeFile;
 
 				// File upload finished
 				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED)
@@ -188,12 +193,12 @@
 				nativeFile = html5files[file.id]; 
 
 				if (xhr.sendAsBinary) {
-					width = up.settings.image_width;
-					height = up.settings.image_height;
+					imageWidth = up.settings.image_width;
+					imageHeight = up.settings.image_height;
 
 					// Should we scale it
-					if (width || height) {
-						scaleImage(nativeFile.getAsDataURL(), width, height, function(res) {
+					if (/\.(png|jpg|jpeg)$/i.test(file.name) && (imageWidth || imageHeight)) {
+						scaleImage(nativeFile.getAsDataURL(), imageWidth, imageHeight, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
 							// If it was scaled send the scaled image if it failed then
 							// send the raw image and let the server do the scaling
 							if (res.success) {

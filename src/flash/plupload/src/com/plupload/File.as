@@ -34,6 +34,7 @@ package com.plupload {
 	import flash.external.ExternalInterface;
 	import flash.utils.setTimeout;
 	import mx.graphics.codec.JPEGEncoder;
+	import mx.graphics.codec.PNGEncoder;
 
 	/**
 	 * Container class for file references, this handles upload logic for individual files.
@@ -117,7 +118,7 @@ package com.plupload {
 				var loader:flash.display.Loader;
 
 				// Load JPEG file and scale it down if needed
-				if (width || height) {
+				if (/\.(jpeg|jpg|png)$/i.test(file._fileName) && (width || height)) {
 					loader = new flash.display.Loader();
 					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void {
 						var loadedBitmapData:BitmapData = Bitmap(e.target.content).bitmapData;
@@ -131,8 +132,12 @@ package com.plupload {
 						outputBitmapData.draw(loadedBitmapData, matrix);
 
 						// Encode bitmap as JPEG
-						var encoder:JPEGEncoder = new JPEGEncoder(quality);
-						file._imageData = encoder.encode(outputBitmapData);
+						if (/\.(jpeg|jpg)$/gi.test(this._fileName))
+							file._imageData = new JPEGEncoder(quality).encode(outputBitmapData);
+						else
+							file._imageData = new PNGEncoder().encode(outputBitmapData);
+
+						// Update file size and buffer position
 						file._imageData.position = 0;
 						file._size = file._imageData.length;
 

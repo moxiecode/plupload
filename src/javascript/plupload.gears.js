@@ -11,7 +11,7 @@
 (function(plupload) {
 	var blobs = {};
 
-	function scaleImage(image_blob, width, height, quality) {
+	function scaleImage(image_blob, width, height, quality, mime) {
 		var width, height, percentage, canvas, context;
 
 		// Setup canvas and scale
@@ -29,7 +29,7 @@
 
 		canvas.resize(width, height);
 
-		return canvas.encode('image/jpeg', {quality : quality / 100});
+		return canvas.encode(mime, {quality : quality / 100});
 	};
 
 	/**
@@ -55,13 +55,18 @@
 			}
 
 			uploader.bind("UploadFile", function(up, file) {
-				var chunk = 0, chunks, chunkSize, loaded = 0;
+				var chunk = 0, chunks, chunkSize, loaded = 0, imageWidth, imageHeight;
+
+				imageWidth = up.settings.image_width;
+				imageHeight = up.settings.image_height;
 
 				chunkSize = up.settings.chunk_size;
 				chunks = Math.ceil(file.size / chunkSize);
 
 				// Scale the image
-				blobs[file.id] = scaleImage(blobs[file.id], up.settings.image_width, up.settings.image_height, up.settings.image_quality);
+				if (/\.(png|jpg|jpeg)$/i.test(file.name) && (imageWidth || imageHeight))
+					blobs[file.id] = scaleImage(blobs[file.id], imageWidth, imageHeight, up.settings.image_quality, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
+
 				file.size = blobs[file.id].length;
 
 				// Start uploading chunks
@@ -126,7 +131,7 @@
 			});
 
 			uploader.bind("SelectFiles", function(up) {
-				var desk = google.gears.factory.create('beta.desktop'), filters = [], i, a;
+				var desk = google.gears.factory.create('beta.desktop'), filters = [], i, a, ext;
 
 				for (i = 0; i < up.settings.filters.length; i++) {
 					ext = up.settings.filters[i].extensions.split(',');

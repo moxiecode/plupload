@@ -104,7 +104,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
 		init : function(uploader, callback) {
-			var silverlightContainer;
+			var silverlightContainer, filter = '', filters = uploader.settings.filters, i;
 
 			// Check if Silverlight is installed
 			if (!isInstalled('2.0.31005.0')) {
@@ -120,19 +120,24 @@
 
 			plupload.extend(silverlightContainer.style, {
 				position : 'absolute',
-				top : '-1000px',
+				top : '0',
 				background : uploader.settings.silverlight_bgcolor || 'transparent',
-				width : '1px',
-				height : '1px'
+				width : '100px',
+				height : '100px'
 			});
 
 			silverlightContainer.className = 'plupload_silverlight';
 			document.body.appendChild(silverlightContainer);
 
+			for (i = 0; i < filters.length; i++) 
+				filter += (filter != '' ? '|' : '') + filters[i].title + " | *." + filters[i].extensions.replace(/,/g, ';*.');
+
 			// Insert the Silverlight object inide the Silverlight container
-			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" width="1" height="1">' +
+			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%">' +
 				'<param name="source" value="' + uploader.settings.silverlight_xap_url + '"/>' +
-				'<param name="initParams" value="id=' + uploader.id + '"/>' +
+				'<param name="background" value="Transparent"/>' +
+				'<param name="windowless" value="true"/>' +
+				'<param name="initParams" value="id=' + uploader.id + ',filter=' + filter + '"/>' +
 				'<param name="onerror" value="onSilverlightError" /></object>';
 
 			function getSilverlightObj() {
@@ -142,14 +147,8 @@
 			uploader.bind("Silverlight:Init", function() {
 				var selectedFiles, lookup = {};
 
-				uploader.bind("SelectFiles", function(up) {
-					var i, filter = '', filters = up.settings.filters;
-
-					for (i = 0; i < filters.length; i++) 
-						filter += (filter != '' ? '|' : '') + filters[i].title + " | *." + filters[i].extensions.replace(/,/g, ';*.');
-
+				uploader.bind("Silverlight:StartSelectFiles", function(up) {
 					selectedFiles = [];
-					getSilverlightObj().SelectFiles(filter, up.settings.multi_selection);
 				});
 
 				uploader.bind("Silverlight:SelectFile", function(up, sl_id, name, size) {
@@ -171,10 +170,35 @@
 				uploader.bind("Silverlight:UploadFileProgress", function(up, sl_id, loaded, total) {
 					var file = up.getFile(lookup[sl_id]);
 
+					file.size = total;
 					file.loaded = loaded;
 
 					up.trigger('UploadProgress', file);
 				});
+
+				uploader.bind("Refresh", function(up) {
+					var browseButton, browsePos;
+
+					browseButton = document.getElementById(up.settings.browse_button);
+					browsePos = plupload.getPos(browseButton);
+
+					plupload.extend(document.getElementById(up.id + '_silverlight_container').style, {
+						top : browsePos.y + 'px',
+						left : browsePos.x + 'px',
+						width : browseButton.clientWidth + 'px',
+						height : browseButton.clientHeight + 'px'
+					});
+				});
+
+				/*
+				uploader.bind("Silverlight:ImageResizeProgress", function(up, sl_id, percent) {
+					var file = up.getFile(lookup[sl_id]);
+
+					file.imageResizePercent = percent;
+
+					up.trigger('ImageResizeProgress', file);
+				});
+				*/
 
 				uploader.bind("Silverlight:UploadChunkSuccessful", function(up, sl_id, chunk, chunks, text) {
 					var chunkArgs, file = up.getFile(lookup[sl_id]);
@@ -214,11 +238,11 @@
 
 					url += (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
 
-					getSilverlightObj().UploadFile(lookup[file.id], url, up.settings.chunk_size);
+					getSilverlightObj().UploadFile(lookup[file.id], url, up.settings.chunk_size, up.settings.image_width, up.settings.image_height, up.settings.image_quality);
 				});
-			});
 
-			callback({success : true});
+				callback({success : true});
+			});
 		}
 	});
 })(plupload);

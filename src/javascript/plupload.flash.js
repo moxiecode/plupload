@@ -83,9 +83,10 @@
 
 			plupload.extend(flashContainer.style, {
 				position : 'absolute',
+				top : '0px',
 				background : uploader.settings.flash_bgcolor || 'transparent',
-				width : '100px',
-				height : '100px'
+				width : '100%',
+				height : '100%'
 			});
 
 			flashContainer.className = 'plupload_flash';
@@ -216,21 +217,21 @@
 					uploader.trigger("Flash:PositionAtBrowseButton");
 				});
 
-				callback({success : true});
-			});
+				uploader.bind("Refresh", function(up) {
+					var browseButton, browsePos;
 
-			uploader.bind("Refresh", function(up) {
-				var browseButton, browsePos;
+					browseButton = document.getElementById(up.settings.browse_button);
+					browsePos = plupload.getPos(browseButton);
 
-				browseButton = document.getElementById(up.settings.browse_button);
-				browsePos = plupload.getPos(browseButton);
-
-				plupload.extend(document.getElementById(up.id + '_flash_container').style, {
-					top : browsePos.y + 'px',
-					left : browsePos.x + 'px',
-					width : browseButton.clientWidth + 'px',
-					height : browseButton.clientHeight + 'px'
+					plupload.extend(document.getElementById(up.id + '_flash_container').style, {
+						top : browsePos.y + 'px',
+						left : browsePos.x + 'px',
+						width : browseButton.clientWidth + 'px',
+						height : browseButton.clientHeight + 'px'
+					});
 				});
+
+				callback({success : true});
 			});
 		}
 	});

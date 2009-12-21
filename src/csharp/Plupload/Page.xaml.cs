@@ -25,163 +25,167 @@ using System.Threading;
 using Moxiecode.Plupload;
 
 namespace Moxiecode.Plupload {
-	/// <summary>
-	///  Partial page class for the Silverlight page.
-	/// </summary>
-	public partial class Page : UserControl {
-		#region private fields
-		private Dictionary<string, FileReference> files;
-		private int idCount = 0;
-		private FileReference currentFile;
-		private string id;
-		#endregion
+    /// <summary>
+    ///  Partial page class for the Silverlight page.
+    /// </summary>
+    public partial class Page : UserControl {
+        #region private fields
+        private Dictionary<string, FileReference> files;
+        private int idCount = 0;
+        private FileReference currentFile;
+        private string id, filter;
+        #endregion
 
-		/// <summary>
-		///  Main constructor.
-		/// </summary>
-		/// <param name="init_params">Silverlight init params.</param>
-		public Page(IDictionary<string, string> init_params) {
-			InitializeComponent();
+        /// <summary>
+        ///  Main constructor.
+        /// </summary>
+        /// <param name="init_params">Silverlight init params.</param>
+        public Page(IDictionary<string, string> init_params) {
+            InitializeComponent();
 
-			HtmlPage.RegisterScriptableObject("Upload", this);
+            HtmlPage.RegisterScriptableObject("Upload", this);
 
-			this.files = new Dictionary<string, FileReference>();
-			this.id = init_params["id"];
+            this.files = new Dictionary<string, FileReference>();
+            this.id = init_params["id"];
+            this.filter = init_params["filter"];
 
-			this.FireEvent("Init");
-		}
+            this.FireEvent("Init");
+            this.MouseLeftButtonUp += new MouseButtonEventHandler(OnClick);
+        }
 
-		/// <summary>
-		///  Reference to page level $.multiUpload script object.
-		/// </summary>
-		public ScriptObject PluploadScriptObject {
-			get { return ((ScriptObject) HtmlPage.Window.Eval("plupload.silverlight")); }
-		}
+        private void OnClick(object sender, MouseEventArgs e) {
+            OpenFileDialog dlg = new OpenFileDialog();
 
-		/// <summary>
-		///  Fires a specific event to the page level multi upload script.
-		/// </summary>
-		/// <param name="name">Event name to fire.</param>
-		public void FireEvent(string name) {
-			this.PluploadScriptObject.Invoke("trigger", new string[] {this.id, name});
-		}
+            this.FireEvent("StartSelectFiles");
 
-		/// <summary>
-		///  Fires a specific event to the page level multi upload script.
-		/// </summary>
-		/// <param name="name">Event name to fire.</param>
-		/// <param name="paramlist">Numerous parameters to send.</param>
-		public void FireEvent(string name, params object[] paramlist) {
-			List<object> args = new List<object>(paramlist);
+            try {
+                dlg.Multiselect = true;
+                dlg.Filter = this.filter;
 
-			args.Insert(0, name);
-			args.Insert(0, this.id);
+                if ((bool)dlg.ShowDialog()) {
+                    foreach (FileInfo file in dlg.Files) {
+                        FileReference uploadFile = new FileReference("u" + this.idCount++, file);
 
-			this.PluploadScriptObject.Invoke("trigger", args.ToArray());
-		}
+                        uploadFile.UploadChunkComplete += delegate(object up_sender, UploadEventArgs args) {
+                            FileReference evtFile = (FileReference) up_sender;
 
-		[ScriptableMember]
-		/// <summary>
-		///  Opens the file dialog and lets the user select files.
-		/// </summary>
-		/// <param name="filter">Filter pattern to use.</param>
-		/// <param name="multi">Multiple files.</param>
-		public void SelectFiles(string filter, bool multi) {
-			OpenFileDialog dlg = new OpenFileDialog();
+                            this.FireEvent("UploadChunkSuccessful", evtFile.Id, args.Chunk, args.Chunks, args.Response);
+                        };
 
-			try {
-				dlg.Multiselect = multi;
-				dlg.Filter = filter;
+                        uploadFile.UploadComplete += delegate(object up_sender, UploadEventArgs args) {
+                            FileReference evtFile = (FileReference) up_sender;
 
-				if ((bool) dlg.ShowDialog()) {
-					foreach (FileInfo file in dlg.Files) {
-						FileReference uploadFile = new FileReference("u" + this.idCount++, file);
+                            this.FireEvent("UploadSuccessful", evtFile.Id, args.Response);
+                        };
 
-						uploadFile.UploadChunkComplete += delegate(object sender, UploadEventArgs args) {
-							FileReference evtFile = (FileReference) sender;
+                        uploadFile.Error += delegate(object up_sender, ErrorEventArgs args) {
+                            FileReference evtFile = (FileReference) up_sender;
 
-							this.FireEvent("UploadChunkSuccessful", evtFile.Id, args.Chunk, args.Chunks, args.Response);
-						};
+                            this.FireEvent("UploadChunkError", evtFile.Id, args.Chunk, args.Chunks, args.Message);
+                        };
 
-						uploadFile.UploadComplete += delegate(object sender, UploadEventArgs args) {
-							FileReference evtFile = (FileReference) sender;
+                        uploadFile.Progress += delegate(object up_sender, ProgressEventArgs args) {
+                            FileReference evtFile = (FileReference) up_sender;
 
-							this.FireEvent("UploadSuccessful", evtFile.Id, args.Response);
-						};
+                            this.FireEvent("UploadFileProgress", evtFile.Id, args.Loaded, args.Total);
+                        };
 
-						uploadFile.Error += delegate(object sender, ErrorEventArgs args) {
-							FileReference evtFile = (FileReference) sender;
+                        uploadFile.ResizeProgress += delegate(object up_sender, ResizeProgressEventArgs args) {
+                            FileReference evtFile = (FileReference)up_sender;
 
-							this.FireEvent("UploadChunkError", evtFile.Id, args.Chunk, args.Chunks, args.Message);
-						};
+                            this.FireEvent("ImageResizeProgress", evtFile.Id, args.Percent);
+                        };
 
-						uploadFile.Progress += delegate(object sender, ProgressEventArgs args) {
-							FileReference evtFile = (FileReference) sender;
+                        this.FireEvent("SelectFile", uploadFile.Id, uploadFile.Name, uploadFile.Size);
+                        this.files[uploadFile.Id] = uploadFile;
+                    }
 
-							this.FireEvent("UploadFileProgress", evtFile.Id, args.Loaded, args.Total);
-						};
+                    this.FireEvent("SelectSuccessful");
+                } else
+                    this.FireEvent("SelectCancelled");
+            } catch (Exception ex) {
+                this.FireEvent("SelectError", ex.Message);
+            }
+        }
 
-						this.FireEvent("SelectFile", uploadFile.Id, uploadFile.Name, uploadFile.Size);
-						this.files[uploadFile.Id] = uploadFile;
-					}
+        /// <summary>
+        ///  Reference to page level plupload.silverlight script object.
+        /// </summary>
+        public ScriptObject PluploadScriptObject {
+            get { return ((ScriptObject)HtmlPage.Window.Eval("plupload.silverlight")); }
+        }
 
-					this.FireEvent("SelectSuccessful");
-				} else
-					this.FireEvent("SelectCancelled");
-			} catch (Exception ex) {
-				this.FireEvent("SelectError", ex.Message);
-			}
-		}
+        /// <summary>
+        ///  Fires a specific event to the page level multi upload script.
+        /// </summary>
+        /// <param name="name">Event name to fire.</param>
+        public void FireEvent(string name) {
+            this.PluploadScriptObject.Invoke("trigger", new string[] { this.id, name });
+        }
 
-		[ScriptableMember]
-		/// <summary>
-		///  Uploads a specific file by id to the specific url and using a chunks.
-		/// </summary>
-		/// <param name="id">File id to upload.</param>
-		/// <param name="upload_url">Url to upload to.</param>
-		/// <param name="chunk_size">Chunk size to use.</param>
-		public void UploadFile(string id, string upload_url, int chunk_size) {
-			if (this.files.ContainsKey(id)) {
-				FileReference file = this.files[id];
+        /// <summary>
+        ///  Fires a specific event to the page level multi upload script.
+        /// </summary>
+        /// <param name="name">Event name to fire.</param>
+        /// <param name="paramlist">Numerous parameters to send.</param>
+        public void FireEvent(string name, params object[] paramlist) {
+            List<object> args = new List<object>(paramlist);
 
-				this.currentFile = file;
-				file.Upload(upload_url, chunk_size);
-			}
-		}
+            args.Insert(0, name);
+            args.Insert(0, this.id);
 
-		[ScriptableMember]
-		/// <summary>
-		///  Removes the specified file by id.
-		/// </summary>
-		/// <param name="id">File id to remove.</param>
-		public void RemoveFile(string id) {
-			if (this.files.ContainsKey(id))
-				this.files[id] = null;
-		}
+            this.PluploadScriptObject.Invoke("trigger", args.ToArray());
+        }
 
-		[ScriptableMember]
-		/// <summary>
-		///  Clears all files.
-		/// </summary>
-		public void ClearFiles() {
-			this.files = new Dictionary<string, FileReference>();
-		}
+        [ScriptableMember]
+        /// <summary>
+        ///  Uploads a specific file by id to the specific url and using a chunks.
+        /// </summary>
+        /// <param name="id">File id to upload.</param>
+        /// <param name="upload_url">Url to upload to.</param>
+        /// <param name="chunk_size">Chunk size to use.</param>
+        public void UploadFile(string id, string upload_url, int chunk_size, int image_width, int image_height, int image_quality) {
+            if (this.files.ContainsKey(id)) {
+                FileReference file = this.files[id];
 
-		[ScriptableMember]
-		/// <summary>
-		///  Cancels the current upload.
-		/// </summary>
-		public void CancelUpload() {
-			if (this.currentFile != null)
-				this.currentFile.CancelUpload();
-		}
+                this.currentFile = file;
+                file.Upload(upload_url, chunk_size, image_width, image_height, image_quality);
+            }
+        }
 
-		/// <summary>
-		///  Send debug message to firebug console.
-		/// </summary>
-		/// <param name="msg">Message to write.</param>
-		private void Debug(string msg) {
-			((ScriptObject) HtmlPage.Window.Eval("console")).Invoke("log", new string[] {msg});
-		}
-	}
+        [ScriptableMember]
+        /// <summary>
+        ///  Removes the specified file by id.
+        /// </summary>
+        /// <param name="id">File id to remove.</param>
+        public void RemoveFile(string id) {
+            if (this.files.ContainsKey(id))
+                this.files[id] = null;
+        }
+
+        [ScriptableMember]
+        /// <summary>
+        ///  Clears all files.
+        /// </summary>
+        public void ClearFiles() {
+            this.files = new Dictionary<string, FileReference>();
+        }
+
+        [ScriptableMember]
+        /// <summary>
+        ///  Cancels the current upload.
+        /// </summary>
+        public void CancelUpload() {
+            if (this.currentFile != null)
+                this.currentFile.CancelUpload();
+        }
+
+        /// <summary>
+        ///  Send debug message to firebug console.
+        /// </summary>
+        /// <param name="msg">Message to write.</param>
+        private void Debug(string msg) {
+            ((ScriptObject)HtmlPage.Window.Eval("console")).Invoke("log", new string[] { msg });
+        }
+    }
 }

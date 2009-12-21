@@ -52,6 +52,7 @@
 		<yuicompress infile="src/javascript/plupload.gears.js" outfile="js/plupload.gears.min.js" />
 		<yuicompress infile="src/javascript/plupload.silverlight.js" outfile="js/plupload.silverlight.min.js" />
 		<yuicompress infile="src/javascript/plupload.flash.js" outfile="js/plupload.flash.min.js" />
+		<yuicompress infile="src/javascript/plupload.browserplus.js" outfile="js/plupload.browserplus.min.js" />
 		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.min.js" />
 
 		<delete file="js/plupload.full.tmp.js" quiet="true" />

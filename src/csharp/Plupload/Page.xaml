@@ -3,4 +3,5 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	x:Class="Moxiecode.Plupload.Page"
 	Width="640" Height="480">
+    <Canvas Background="Transparent"></Canvas>
 </UserControl>
