@@ -11,6 +11,15 @@
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {};
 
+	// IE W3C like event funcs
+	function preventDefault() {
+		this.returnValue = false;
+	};
+
+	function stopPropagation() {
+		this.cancelBubble = true;
+	};
+
 	// Parses the default mime types string into a mimes lookup map
 	(function(mime_data) {
 		var items = mime_data.split(/,/), i, y, ext;
@@ -337,6 +346,30 @@
 		 */
 		translate : function(str) {
 			return i18n[str] || str;
+		},
+
+		/**
+		 * Adds an event handler to the specified object.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Name to add event listener to.
+		 * @param {function} callback Function to call when event occurs.
+		 */
+		addEvent : function(obj, name, callback) {
+			if (obj.attachEvent) {
+				obj.attachEvent('on' + name, function() {
+					var evt = window.event;
+
+					if (!evt.target)
+						evt.target = evt.srcElement;
+
+					evt.preventDefault = preventDefault;
+					evt.stopPropagation = stopPropagation;
+
+					callback(evt);
+				});
+			} else if (obj.addEventListener)
+				obj.addEventListener(name, callback, false);
 		}
 	};
 
@@ -511,6 +544,7 @@
 						runtime.init(self, function(res) {
 							if (res.success) {
 								self.trigger('Init', runtime.name);
+								self.trigger('PostInit');
 								self.refresh();
 							} else
 								callNextInit();

@@ -388,8 +388,7 @@ namespace Moxiecode.Plupload {
 				}
 
 				return imageStream;
-			} catch(Exception ex) {
-				Debug(ex.Message);
+			} catch {
 				// Ignore the error and let the server resize the image
 			}
 

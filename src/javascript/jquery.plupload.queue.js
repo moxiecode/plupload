@@ -36,7 +36,7 @@
 								'<div class="plupload_clearer">&nbsp;</div>' +
 							'</div>' +
 
-							'<ul class="plupload_filelist"></ul>' +
+							'<ul id="' + id + '_container" class="plupload_filelist"></ul>' +
 
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
@@ -182,6 +182,7 @@
 					}).css('display', 'block').attr('id', id + '_browse');
 
 					uploader.settings.browse_button = id + '_browse';
+					uploader.settings.drop_element = id + '_container';
 
 					$('a.plupload_start', target).click(function(e) {
 						if (!$(this).hasClass('plupload_disabled'))

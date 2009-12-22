@@ -48,11 +48,56 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
 		init : function(uploader, callback) {
+			var desktop;
+
 			// Check for gears support
 			if (!window.google || !google.gears) {
 				callback({success : false});
 				return;
 			}
+
+			desktop = google.gears.factory.create('beta.desktop');
+
+			function addSelectedFiles(selected_files) {
+				var file, i, files = [], id;
+
+				// Add the selected files to the file queue
+				for (i = 0; i < selected_files.length; i++) {
+					file = selected_files[i];
+
+					// Store away gears blob internally
+					id = plupload.guid();
+					blobs[id] = file.blob;
+
+					files.push(new plupload.File(id, file.name, file.blob.length));
+				}
+
+				// Fire FilesSelected event
+				uploader.trigger("FilesSelected", files);
+			};
+
+			// Add drop handler
+			uploader.bind("PostInit", function() {
+				var dropElm = document.getElementById(uploader.settings.drop_element);
+
+				// Block browser default drag over
+				plupload.addEvent(dropElm, 'dragover', function(e) {
+					e.preventDefault();
+				});
+
+				// Attach drop handler and grab files from Gears
+				plupload.addEvent(dropElm, 'drop', function(e) {
+					var dragData = desktop.getDragData(e, 'application/x-gears-files');
+
+					if (dragData)
+						addSelectedFiles(dragData.files);
+
+					e.preventDefault();
+				});
+
+				// Prevent IE leak
+				dropElm = 0;
+			});
 
 			uploader.bind("UploadFile", function(up, file) {
 				var chunk = 0, chunks, chunkSize, loaded = 0, imageWidth, imageHeight;
@@ -131,7 +176,7 @@
 			});
 
 			uploader.bind("SelectFiles", function(up) {
-				var desk = google.gears.factory.create('beta.desktop'), filters = [], i, a, ext;
+				var filters = [], i, a, ext;
 
 				for (i = 0; i < up.settings.filters.length; i++) {
 					ext = up.settings.filters[i].extensions.split(',');
@@ -140,23 +185,7 @@
 						filters.push('.' + ext[a]);
 				}
 
-				desk.openFiles(function(selected_files) {
-					var file, i, files = [], id;
-
-					// Add the selected files to the file queue
-					for (i = 0; i < selected_files.length; i++) {
-						file = selected_files[i];
-
-						// Store away gears blob internally
-						id = plupload.guid();
-						blobs[id] = file.blob;
-
-						files.push(new plupload.File(id, file.name, file.blob.length));
-					}
-
-					// Fire FilesSelected event
-					uploader.trigger("FilesSelected", files);
-				}, {singleFile : !up.settings.multi_selection, filter : filters});
+				desktop.openFiles(addSelectedFiles, {singleFile : !up.settings.multi_selection, filter : filters});
 			});
 
 			callback({success : true});
