@@ -1,5 +1,4 @@
 ﻿using System;
-using FluxJpeg.Core.Decoder;
 
 namespace FluxJpeg.Core
 {

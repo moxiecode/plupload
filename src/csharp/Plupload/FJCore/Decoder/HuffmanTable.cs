@@ -151,7 +151,7 @@ namespace FluxJpeg.Core
         }
 
         /// <summary>Figure F.16 - Reads the huffman code bit-by-bit.</summary>
-        public int Decode(JPEGBinaryReader JPEGStream)
+        /*public int Decode(JPEGBinaryReader JPEGStream)
         {
             int i = 0;
             short code = (short)JPEGStream.ReadBits(1);
@@ -165,7 +165,7 @@ namespace FluxJpeg.Core
             if (val < 0)
                 val = 256 + val;
             return val;
-        }
+        }*/
 
                 /// <summary>
         /// HuffmanBlockEncoder run length encodes and Huffman encodes the quantized data.

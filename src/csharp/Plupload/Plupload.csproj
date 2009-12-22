@@ -52,6 +52,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <UsePlatformExtensions>true</UsePlatformExtensions>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -65,8 +66,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>PdbOnly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>obj</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>SILVERLIGHT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>false</DebugSymbols>
@@ -85,9 +86,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Net">
-      <HintPath>C:\Program Files %28x86%29\Microsoft SDKs\Silverlight\v2.0\Reference Assemblies\System.Net.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Net" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Browser" />
     <Reference Include="System.Xml" />
@@ -106,13 +105,15 @@
     <Compile Include="FJCore\DecodedJpeg.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FJCore\Decoder\HuffmanTable.cs" />
-    <Compile Include="FJCore\Decoder\JpegComponent.cs" />
-    <Compile Include="FJCore\Decoder\JpegDecoder.cs" />
-    <Compile Include="FJCore\Decoder\JpegFrame.cs" />
-    <Compile Include="FJCore\Decoder\JpegHuffmanTable.cs" />
-    <Compile Include="FJCore\Decoder\JpegQuantizationTable.cs" />
-    <Compile Include="FJCore\Decoder\JpegScan.cs" />
+    <Compile Include="FJCore\Decoder\HuffmanTable.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Decoder\JpegHuffmanTable.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Decoder\JpegQuantizationTable.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FJCore\Encoder\JpegEncoder.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -137,13 +138,7 @@
     <Compile Include="FJCore\Image.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FJCore\IO\BinaryReader.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="FJCore\IO\BinaryWriter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="FJCore\IO\JpegBinaryReader.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FJCore\JpegMarker.cs">
@@ -161,6 +156,17 @@
     <Compile Include="Page.xaml.cs">
       <DependentUpon>Page.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PngEncoder\Adler32.cs" />
+    <Compile Include="PngEncoder\CRC32.cs" />
+    <Compile Include="PngEncoder\Deflater.cs" />
+    <Compile Include="PngEncoder\DeflaterConstants.cs" />
+    <Compile Include="PngEncoder\DeflaterEngine.cs" />
+    <Compile Include="PngEncoder\DeflaterHuffman.cs" />
+    <Compile Include="PngEncoder\DeflaterOutputStream.cs" />
+    <Compile Include="PngEncoder\DeflaterPending.cs" />
+    <Compile Include="PngEncoder\IChecksum.cs" />
+    <Compile Include="PngEncoder\PngEncoder.cs" />
+    <Compile Include="PngEncoder\PendingBuffer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Page Include="Page.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -204,7 +210,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y plupload.silverlight.xap ..\..\..\..\..\js\plupload.silverlight.xap</PostBuildEvent>
+    <PostBuildEvent>copy /Y plupload.silverlight.xap ..\..\..\..\js\plupload.silverlight.xap</PostBuildEvent>
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>

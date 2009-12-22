@@ -16,11 +16,16 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Browser;
 using System.Windows.Media.Imaging;
-using FluxJpeg.Core.Decoder;
 using FluxJpeg.Core.Encoder;
 using FluxJpeg.Core;
+using Plupload.PngEncoder;
 
 namespace Moxiecode.Plupload {
+	enum ImageType {
+		Jpeg,
+		Png
+	}
+
 	/// <summary>
 	/// Description of File.
 	/// </summary>
@@ -47,9 +52,6 @@ namespace Moxiecode.Plupload {
 		/// <summary>Upload progress delegate.</summary>
 		public delegate void ProgressHandler(object sender, ProgressEventArgs e);
 
-        /// <summary>Upload progress delegate.</summary>
-        public delegate void ResizeProgressHandler(object sender, ResizeProgressEventArgs e);
-
 		/// <summary>Upload complete event</summary>
 		public event UploadCompleteHandler UploadComplete;
 
@@ -61,9 +63,6 @@ namespace Moxiecode.Plupload {
 
 		/// <summary>Progress event</summary>
 		public event ProgressHandler Progress;
-
-        /// <summary>Resize event</summary>
-        public event ResizeProgressHandler ResizeProgress;
 
 		/// <summary>
 		///  Main constructor for the file reference.
@@ -110,8 +109,12 @@ namespace Moxiecode.Plupload {
 
             try {
                 // Is jpeg and image size is defined
-				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg)$", RegexOptions.IgnoreCase) && (image_width != 0 || image_height != 0)) {
-					this.fileStream = this.ResizeImage(this.info.OpenRead(), image_width, image_height, image_quality);
+				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase) && (image_width != 0 || image_height != 0)) {
+					if (Regex.IsMatch(this.name, @"\.png$"))
+						this.fileStream = this.ResizeImage(this.info.OpenRead(), image_width, image_height, image_quality, ImageType.Png);
+					else
+						this.fileStream = this.ResizeImage(this.info.OpenRead(), image_width, image_height, image_quality, ImageType.Jpeg);
+
 					this.fileStream.Seek(0, SeekOrigin.Begin);
 					this.size = this.fileStream.Length;
 				}  else
@@ -308,7 +311,7 @@ namespace Moxiecode.Plupload {
 			((ScriptObject) HtmlPage.Window.Eval("console")).Invoke("log", new string[] {msg});
 		}
 
-        private Stream ResizeImage(Stream image_stream, int width, int height, int quality) {
+        private Stream ResizeImage(Stream image_stream, int width, int height, int quality, ImageType type) {
 			try {
 				// Load the image as a writeablebitmap
 				WriteableBitmap writableBitmap;
@@ -326,10 +329,10 @@ namespace Moxiecode.Plupload {
 				int w = writableBitmap.PixelWidth;
 				int h = writableBitmap.PixelHeight;
 				int[] p = writableBitmap.Pixels;
-				byte[][,] pixelsForJpeg = new byte[3][,]; // RGB colors
-				pixelsForJpeg[0] = new byte[w, h];
-				pixelsForJpeg[1] = new byte[w, h];
-				pixelsForJpeg[2] = new byte[w, h];
+				byte[][,] imageRaster = new byte[3][,]; // RGB colors
+				imageRaster[0] = new byte[w, h];
+				imageRaster[1] = new byte[w, h];
+				imageRaster[2] = new byte[w, h];
 
 				// Copy WriteableBitmap data into buffer for FluxJpeg
 				int i = 0;
@@ -337,16 +340,16 @@ namespace Moxiecode.Plupload {
 					for (int x = 0; x < w; x++) {
 						int color = p[i++];
 
-						pixelsForJpeg[0][x, y] = (byte) (color >> 16); // R
-						pixelsForJpeg[1][x, y] = (byte) (color >> 8);  // G
-						pixelsForJpeg[2][x, y] = (byte) (color);       // B
+						imageRaster[0][x, y] = (byte) (color >> 16); // R
+						imageRaster[1][x, y] = (byte) (color >> 8);  // G
+						imageRaster[2][x, y] = (byte) (color);       // B
 					}
 				}
 
 				// Create new FluxJpeg image based on pixel data
 				FluxJpeg.Core.Image jpegImage = new FluxJpeg.Core.Image(new ColorModel {
 					colorspace = ColorSpace.RGB
-				}, pixelsForJpeg);
+				}, imageRaster);
 
 				// Calc new proportional size
 				width = (int) Math.Round(writableBitmap.PixelWidth * scale);
@@ -354,15 +357,39 @@ namespace Moxiecode.Plupload {
 
 				// Resize the image
 				ImageResizer resizer = new ImageResizer(jpegImage);
-				Image resizedImage = resizer.Resize(width, height, FluxJpeg.Core.Filtering.ResamplingFilters.NearestNeighbor);
-
-				// Encode the resized image as Jpeg
+				Image resizedImage = resizer.Resize(width, height, FluxJpeg.Core.Filtering.ResamplingFilters.LowpassAntiAlias);
 				Stream imageStream = new MemoryStream();
-				JpegEncoder encoder = new JpegEncoder(resizedImage, quality, imageStream);
-				encoder.Encode();
+
+				if (type == ImageType.Jpeg) {
+					// Encode the resized image as Jpeg
+					JpegEncoder jpegEncoder = new JpegEncoder(resizedImage, quality, imageStream);
+					jpegEncoder.Encode();
+				} else {
+					int[] pixelBuffer = new int[resizedImage.Height * resizedImage.Width];
+					byte[][,] resizedRaster = resizedImage.Raster;
+
+					// Convert FJCore raster to PixelBuffer
+					for (int y = 0; y < resizedImage.Height; y++) {
+						for (int x = 0; x < resizedImage.Width; x++) {
+							int color = 0;
+
+							color = color | resizedRaster[0][x, y] << 16; // R
+							color = color | resizedRaster[1][x, y] << 8;  // G
+							color = color | resizedRaster[2][x, y];       // B
+
+							pixelBuffer[(y * resizedImage.Width) + x] = color;
+						}
+					}
+
+					// Encode the resized image as Png
+					PngEncoder pngEncoder = new PngEncoder(pixelBuffer, resizedImage.Width, resizedImage.Height, false, PngEncoder.FILTER_NONE, Deflater.BEST_COMPRESSION);
+					byte[] pngBuffer = pngEncoder.pngEncode();
+					imageStream.Write(pngBuffer, 0, pngBuffer.Length);
+				}
 
 				return imageStream;
-			} catch {
+			} catch(Exception ex) {
+				Debug(ex.Message);
 				// Ignore the error and let the server resize the image
 			}
 
@@ -489,12 +516,4 @@ namespace Moxiecode.Plupload {
 			get { return loaded; }
 		}
 	}
-
-    public class ResizeProgressEventArgs : EventArgs {
-        public ResizeProgressEventArgs(int percent) {
-            this.Percent = percent;
-        }
-
-        public int Percent { set; get; }
-    }
 }
