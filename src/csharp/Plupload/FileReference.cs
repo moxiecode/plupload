@@ -15,6 +15,7 @@ using System.Windows.Threading;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Browser;
+using System.Windows.Media.Imaging;
 using FluxJpeg.Core.Decoder;
 using FluxJpeg.Core.Encoder;
 using FluxJpeg.Core;
@@ -109,29 +110,12 @@ namespace Moxiecode.Plupload {
 
             try {
                 // Is jpeg and image size is defined
-                if (Regex.IsMatch(this.name, @"\.(jpeg|jpg)$", RegexOptions.IgnoreCase) && (image_width != 0 || image_height != 0)) {
-                    JpegDecoder decoder = new JpegDecoder(this.info.OpenRead());
-                    this.ResizeProgress(this, new ResizeProgressEventArgs(0));
-                    DecodedJpeg jpeg = decoder.Decode();
-                    ImageResizer resizer;
-                    Image resizedImage;
-
-                    if (ImageResizer.ResizeNeeded(jpeg.Image, Math.Max(image_width, image_height))) {
-                        resizer = new ImageResizer(jpeg.Image);
-                        this.ResizeProgress(this, new ResizeProgressEventArgs(33));
-                        resizedImage = resizer.Resize(image_width, image_height, FluxJpeg.Core.Filtering.ResamplingFilters.NearestNeighbor);
-
-                        this.ResizeProgress(this, new ResizeProgressEventArgs(66));
-                        this.fileStream = new MemoryStream();
-
-                        JpegEncoder encoder = new JpegEncoder(resizedImage, image_quality, this.fileStream);
-                        encoder.Encode();
-                        this.fileStream.Seek(0, SeekOrigin.Begin);
-                        this.size = this.fileStream.Length;
-                        this.ResizeProgress(this, new ResizeProgressEventArgs(100));
-                    }
-                } else
-                    this.fileStream = this.info.OpenRead();
+				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg)$", RegexOptions.IgnoreCase) && (image_width != 0 || image_height != 0)) {
+					this.fileStream = this.ResizeImage(this.info.OpenRead(), image_width, image_height, image_quality);
+					this.fileStream.Seek(0, SeekOrigin.Begin);
+					this.size = this.fileStream.Length;
+				}  else
+					this.fileStream = this.info.OpenRead();
             } catch (Exception ex) {
                 syncContext.Send(delegate {
                     this.OnIOError(new ErrorEventArgs(ex.Message, 0, this.chunks));
@@ -323,6 +307,67 @@ namespace Moxiecode.Plupload {
 		private void Debug(string msg) {
 			((ScriptObject) HtmlPage.Window.Eval("console")).Invoke("log", new string[] {msg});
 		}
+
+        private Stream ResizeImage(Stream image_stream, int width, int height, int quality) {
+			try {
+				// Load the image as a writeablebitmap
+				WriteableBitmap writableBitmap;
+				BitmapImage bitmapImage = new BitmapImage();
+				bitmapImage.SetSource(image_stream);
+				writableBitmap = new WriteableBitmap(bitmapImage);
+				image_stream.Close();
+				double scale = Math.Min((double) width / writableBitmap.PixelWidth, (double) height / writableBitmap.PixelHeight);
+
+				// No resize needed
+				if (scale >= 1.0)
+					return image_stream;
+
+				// Setup shorter names and pixelbuffers
+				int w = writableBitmap.PixelWidth;
+				int h = writableBitmap.PixelHeight;
+				int[] p = writableBitmap.Pixels;
+				byte[][,] pixelsForJpeg = new byte[3][,]; // RGB colors
+				pixelsForJpeg[0] = new byte[w, h];
+				pixelsForJpeg[1] = new byte[w, h];
+				pixelsForJpeg[2] = new byte[w, h];
+
+				// Copy WriteableBitmap data into buffer for FluxJpeg
+				int i = 0;
+				for (int y = 0; y < h; y++) {
+					for (int x = 0; x < w; x++) {
+						int color = p[i++];
+
+						pixelsForJpeg[0][x, y] = (byte) (color >> 16); // R
+						pixelsForJpeg[1][x, y] = (byte) (color >> 8);  // G
+						pixelsForJpeg[2][x, y] = (byte) (color);       // B
+					}
+				}
+
+				// Create new FluxJpeg image based on pixel data
+				FluxJpeg.Core.Image jpegImage = new FluxJpeg.Core.Image(new ColorModel {
+					colorspace = ColorSpace.RGB
+				}, pixelsForJpeg);
+
+				// Calc new proportional size
+				width = (int) Math.Round(writableBitmap.PixelWidth * scale);
+				height = (int) Math.Round(writableBitmap.PixelHeight * scale);
+
+				// Resize the image
+				ImageResizer resizer = new ImageResizer(jpegImage);
+				Image resizedImage = resizer.Resize(width, height, FluxJpeg.Core.Filtering.ResamplingFilters.NearestNeighbor);
+
+				// Encode the resized image as Jpeg
+				Stream imageStream = new MemoryStream();
+				JpegEncoder encoder = new JpegEncoder(resizedImage, quality, imageStream);
+				encoder.Encode();
+
+				return imageStream;
+			} catch {
+				// Ignore the error and let the server resize the image
+			}
+
+			return image_stream;
+        }
 
 		#endregion
 	}

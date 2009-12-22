@@ -37,6 +37,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -49,7 +50,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -100,8 +100,12 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FJCore\DCT.cs" />
-    <Compile Include="FJCore\DecodedJpeg.cs" />
+    <Compile Include="FJCore\DCT.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\DecodedJpeg.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FJCore\Decoder\HuffmanTable.cs" />
     <Compile Include="FJCore\Decoder\JpegComponent.cs" />
     <Compile Include="FJCore\Decoder\JpegDecoder.cs" />
@@ -109,21 +113,51 @@
     <Compile Include="FJCore\Decoder\JpegHuffmanTable.cs" />
     <Compile Include="FJCore\Decoder\JpegQuantizationTable.cs" />
     <Compile Include="FJCore\Decoder\JpegScan.cs" />
-    <Compile Include="FJCore\Encoder\JpegEncoder.cs" />
-    <Compile Include="FJCore\FDCT.cs" />
-    <Compile Include="FJCore\Filter\Convolution.cs" />
-    <Compile Include="FJCore\Filter\FilterBase.cs" />
-    <Compile Include="FJCore\Filter\FilterLowpassResize.cs" />
-    <Compile Include="FJCore\Filter\FilterNNResize.cs" />
-    <Compile Include="FJCore\Filter\GrayImage.cs" />
-    <Compile Include="FJCore\Image.cs" />
-    <Compile Include="FJCore\IO\BinaryReader.cs" />
-    <Compile Include="FJCore\IO\BinaryWriter.cs" />
-    <Compile Include="FJCore\IO\JpegBinaryReader.cs" />
-    <Compile Include="FJCore\JpegMarker.cs" />
-    <Compile Include="FJCore\Resize\ImageResizer.cs" />
-    <Compile Include="FJCore\YCbCr.cs" />
-    <Compile Include="FJCore\ZigZag.cs" />
+    <Compile Include="FJCore\Encoder\JpegEncoder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\FDCT.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Filter\Convolution.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Filter\FilterBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Filter\FilterLowpassResize.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Filter\FilterNNResize.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Filter\GrayImage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Image.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\IO\BinaryReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\IO\BinaryWriter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\IO\JpegBinaryReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\JpegMarker.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\Resize\ImageResizer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\YCbCr.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FJCore\ZigZag.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Page.xaml.cs">
       <DependentUpon>Page.xaml</DependentUpon>
     </Compile>
@@ -161,15 +195,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="FJCore\IJG.txt" />
     <Content Include="FJCore\JAI.txt" />
     <Content Include="FJCore\License.txt" />
     <Content Include="FJCore\README.txt" />
-    <Content Include="test.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="FJCore\Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <PropertyGroup>
