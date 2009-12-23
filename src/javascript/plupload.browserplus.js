@@ -9,6 +9,8 @@
  */
 
 (function(plupload) {
+	var TRUE = true, FALSE = false;
+
 	/**
 	 * Yahoo BrowserPlus implementation.
 	 *
@@ -25,10 +27,27 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
 		init : function(uploader, callback) {
-			var browserPlus = window.BrowserPlus, browserPlusFiles = {}, imageWidth, imageHeight;
+			var browserPlus = window.BrowserPlus, browserPlusFiles = {}, imageWidth, imageHeight, settings = uploader.settings;
 
-			imageWidth = uploader.settings.image_width;
-			imageHeight = uploader.settings.image_height;
+			imageWidth = settings.image_width;
+			imageHeight = settings.image_height;
+
+			function addSelectedFiles(native_files) {
+				var files, i, selectedFiles = [], file, id;
+
+				// Add the native files and setup plupload files
+				for (i = 0; i < native_files.length; i++) {
+					file = native_files[i];
+					id = plupload.guid();
+					browserPlusFiles[id] = file;
+
+					selectedFiles.push(new plupload.File(id, file.name, file.size));
+				}
+
+				// Any files selected fire event
+				if (i)
+					uploader.trigger("FilesSelected", selectedFiles);
+			};
 
 			// Check for browserplus object
 			if (browserPlus) {
@@ -59,6 +78,79 @@
 
 			// Setup event listeners if browserplus was initialized
 			function setup() {
+				// Add drop handler
+				uploader.bind("PostInit", function() {
+					var dropTargetElm, dropElmId = settings.drop_element,
+						dropTargetId = uploader.id + '_droptarget',
+						dropElm = document.getElementById(dropElmId),
+						lastState;
+
+					if (dropElm) {
+						// Enable/disable drop support for the drop target
+						// this is needed to resolve IE bubbeling issues and make it possible to drag/drop
+						// files into gears runtimes on the same page
+						function addDropHandler(id, end_callback) {
+							// Add drop target and listener
+							browserPlus.DragAndDrop.AddDropTarget({id : id}, function(res) {
+								browserPlus.DragAndDrop.AttachCallbacks({
+									id : id,
+									hover : function(res) {
+										if (!res && end_callback)
+											end_callback();
+									},
+									drop : function(res) {
+										if (end_callback)
+											end_callback();
+
+										addSelectedFiles(res);
+									}
+								}, function(){});
+							});
+						};
+
+						// Since IE has issues with bubbeling when it comes to the drop of files
+						// we need to do this hack where we show a drop target div element while dropping
+						if (document.attachEvent && (/MSIE/gi).test(navigator.userAgent)) {
+							// Create drop target
+							dropTargetElm = document.createElement('div');
+							dropTargetElm.setAttribute('id', dropTargetId);
+							plupload.extend(dropTargetElm.style, {
+								position : 'absolute',
+								top : '-1000px',
+								background : 'red',
+								filter : 'alpha(opacity=0)',
+								opacity : 0
+							});
+
+							document.body.appendChild(dropTargetElm);
+
+							plupload.addEvent(dropElm, 'dragenter', function(e) {
+								var dropElm, dropElmPos;
+
+								dropElm = document.getElementById(dropElmId);
+								dropElmPos = plupload.getPos(dropElm);
+
+								plupload.extend(document.getElementById(dropTargetId).style, {
+									top : dropElmPos.y + 'px',
+									left : dropElmPos.x + 'px',
+									width : dropElm.offsetWidth + 'px',
+									height : dropElm.offsetHeight + 'px'
+								});
+							});
+	
+							function hide() {
+								document.getElementById(dropTargetId).style.top = '-1000px';
+							};
+
+							addDropHandler(dropTargetId, hide);
+						} else
+							addDropHandler(dropElmId);
+
+						// Prevent IE leaks
+						dropElm = dropTarget = 0;
+					}
+				});
+
 				uploader.bind("SelectFiles", function(up) {
 					var mimeTypes = [], i, a, filters = up.settings.filters, ext;
 
@@ -73,21 +165,8 @@
 					browserPlus.FileBrowse.OpenBrowseDialog({
 						mimeTypes : mimeTypes
 					}, function(res) {
-						var files, i, selectedFiles = [], file, id;
-
-						if (res.success) {
-							files = res.value;
-
-							for (i = 0; i < files.length; i++) {
-								file = files[i];
-								id = plupload.guid();
-								browserPlusFiles[id] = file;
-
-								selectedFiles.push(new plupload.File(id, file.name, file.size));
-							}
-
-							uploader.trigger("FilesSelected", selectedFiles);
-						}
+						if (res.success)
+							addSelectedFiles(res.value);
 					});
 				});
 
@@ -131,7 +210,14 @@
 						uploadFile(nativeFile);
 				});
 
-				callback({success : true});
+				uploader.features = {
+					dragdrop : TRUE,
+					jpgresize : TRUE,
+					pngresize : TRUE,
+					chunks : FALSE
+				};
+
+				callback({success : TRUE});
 			};
 		}
 	});

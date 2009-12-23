@@ -54,7 +54,7 @@
 								'<div class="plupload_file_size"><span class="plupload_total_file_size">0 b</span></div>' +
 								'<div class="plupload_progress">' +
 									'<div class="plupload_progress_container">' +
-										'<div class="plupload_progress_bar" style="width:0"></div>' +
+										'<div class="plupload_progress_bar"></div>' +
 									'</div>' +
 								'</div>' +
 								'<div class="plupload_clearer">&nbsp;</div>' +
@@ -173,7 +173,7 @@
 					});
 				}
 
-				uploader.bind('Init', function() {
+				uploader.bind('Init', function(up) {
 					renderUI(id, target);
 
 					$('a.plupload_add', target).click(function(e) {
@@ -181,8 +181,11 @@
 						e.preventDefault();
 					}).css('display', 'block').attr('id', id + '_browse');
 
-					uploader.settings.browse_button = id + '_browse';
-					uploader.settings.drop_element = id + '_container';
+					up.settings.browse_button = id + '_browse';
+					up.settings.drop_element = id + '_container';
+
+					if (up.features.dragdrop)
+						$('#' + id + '_container').append('<li class="plupload_droptext">Drag files here.</li>');
 
 					$('a.plupload_start', target).click(function(e) {
 						if (!$(this).hasClass('plupload_disabled'))

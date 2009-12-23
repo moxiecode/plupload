@@ -145,6 +145,7 @@ li.plupload_done a {
 	padding: 1px;
 }
 .plupload_progress_bar {
+	width: 0px;
 	height: 7px;
 	background: #CDEB8B;
 }
@@ -160,4 +161,12 @@ li.plupload_done a {
 	display: block;
 	font-size: 0;
 	line-height: 0;	
+}
+
+li.plupload_droptext {
+	background: transparent;
+	text-align: center;
+	vertical-align: middle;
+	border: 0;
+	line-height: 165px;
 }

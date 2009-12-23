@@ -123,7 +123,8 @@
 				top : '0',
 				background : uploader.settings.silverlight_bgcolor || 'transparent',
 				width : '100px',
-				height : '100px'
+				height : '100px',
+				opacity : 0.01
 			});
 
 			silverlightContainer.className = 'plupload_silverlight';

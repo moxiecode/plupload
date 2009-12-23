@@ -9,10 +9,10 @@
  */
 
 (function(plupload) {
-	var blobs = {};
+	var blobs = {}, TRUE = true;
 
 	function scaleImage(image_blob, width, height, quality, mime) {
-		var width, height, percentage, canvas, context;
+		var percentage, canvas, context;
 
 		// Setup canvas and scale
 		canvas = google.gears.factory.create('beta.canvas');
@@ -51,12 +51,15 @@
 			var desktop;
 
 			// Check for gears support
-			if (!window.google || !google.gears) {
-				callback({success : false});
-				return;
-			}
+			if (!window.google || !google.gears)
+				return callback({success : false});
 
-			desktop = google.gears.factory.create('beta.desktop');
+			try {
+				desktop = google.gears.factory.create('beta.desktop');
+			} catch (ex) {
+				// Might fail on the latest Gecko build for some odd reason
+				return callback({success : false});
+			}
 
 			function addSelectedFiles(selected_files) {
 				var file, i, files = [], id;
@@ -80,23 +83,25 @@
 			uploader.bind("PostInit", function() {
 				var dropElm = document.getElementById(uploader.settings.drop_element);
 
-				// Block browser default drag over
-				plupload.addEvent(dropElm, 'dragover', function(e) {
-					e.preventDefault();
-				});
+				if (dropElm) {
+					// Block browser default drag over
+					plupload.addEvent(dropElm, 'dragover', function(e) {
+						e.preventDefault();
+					});
 
-				// Attach drop handler and grab files from Gears
-				plupload.addEvent(dropElm, 'drop', function(e) {
-					var dragData = desktop.getDragData(e, 'application/x-gears-files');
+					// Attach drop handler and grab files from Gears
+					plupload.addEvent(dropElm, 'drop', function(e) {
+						var dragData = desktop.getDragData(e, 'application/x-gears-files');
 
-					if (dragData)
-						addSelectedFiles(dragData.files);
+						if (dragData)
+							addSelectedFiles(dragData.files);
 
-					e.preventDefault();
-				});
+						e.preventDefault();
+					});
 
-				// Prevent IE leak
-				dropElm = 0;
+					// Prevent IE leak
+					dropElm = 0;
+				}
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
@@ -188,7 +193,14 @@
 				desktop.openFiles(addSelectedFiles, {singleFile : !up.settings.multi_selection, filter : filters});
 			});
 
-			callback({success : true});
+			uploader.features = {
+				dragdrop : TRUE,
+				jpgresize : TRUE,
+				pngresize : TRUE,
+				chunks : TRUE
+			};
+
+			callback({success : TRUE});
 		}
 	});
 })(plupload);

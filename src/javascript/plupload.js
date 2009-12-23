@@ -440,6 +440,16 @@
 			state : plupload.STOPPED,
 
 			/**
+			 * Map of features that are available for the uploader runtime. Features will be filled
+			 * before the init event is called, these features can then be used to alter the UI for the end user.
+			 * Some of the current features that might be in this map is: dragdrop, chunks, jpgresize, pngresize.
+			 *
+			 * @property features
+			 * @type Object
+			 */
+			features : {},
+
+			/**
 			 * Array of File instances.
 			 *
 			 * @property files
@@ -542,7 +552,7 @@
 
 					if (runtime) {
 						runtime.init(self, function(res) {
-							if (res.success) {
+							if (res && res.success) {
 								self.trigger('Init', runtime.name);
 								self.trigger('PostInit');
 								self.refresh();
@@ -666,18 +676,19 @@
 			 * @param {Object..} Multiple arguments to pass along to the listener functions.
 			 */
 			trigger : function(name) {
-				var list = events[name.toLowerCase()], i;
+				var list = events[name.toLowerCase()], i, args = [];
 
 				// console.log(name, arguments);
 
 				if (list) {
-					// Replace name with sender
-					arguments[0] = this;
+					// Replace name with sender in args
+					args = Array.prototype.slice.call(arguments);
+					args[0] = this;
 
 					// Dispatch event to all listeners
 					for (i = 0; i < list.length; i++) {
 						// Fire event, break chain if false is returned
-						if (list[i].func.apply(list[i].scope, arguments) === false)
+						if (list[i].func.apply(list[i].scope, args) === false)
 							return false;
 					}
 				}

@@ -9,6 +9,8 @@
  */
 
 (function(plupload) {
+	var TRUE = true;
+
 	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
 		var canvas, context, img, data;
 
@@ -67,7 +69,26 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
 		 */
 		init : function(uploader, callback) {
-			var browseButton, browsePos, html5files = {};
+			var html5files = {}, dataAccessSupport;
+
+			function addSelectedFiles(native_files) {
+				var file, i, files = [], id;
+
+				// Add the selected files to the file queue
+				for (i = 0; i < native_files.length; i++) {
+					file = native_files[i];
+
+					// Store away gears blob internally
+					id = plupload.guid();
+					html5files[id] = file;
+
+					// Expose id, name and size
+					files.push(new plupload.File(id, file.fileName, file.fileSize));
+				}
+
+				// Fire FilesSelected event
+				uploader.trigger("FilesSelected", files);
+			};
 
 			function isSupported() {
 				var xhr;
@@ -124,26 +145,35 @@
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
 
 				document.getElementById(uploader.id + '_html5').onchange = function() {
-					var file, i, files = [], id;
-
-					// Add the selected files to the file queue
-					for (i = 0; i < this.files.length; i++) {
-						file = this.files[i];
-
-						// Store away gears blob internally
-						id = plupload.guid();
-						html5files[id] = file;
-
-						// Expose id, name and size
-						files.push(new plupload.File(id, file.fileName, file.fileSize));
-					}
-
-					// Fire FilesSelected event
-					uploader.trigger("FilesSelected", files);
+					// Add the selected files from file input
+					addSelectedFiles(this.files);
 
 					// Clearing the value enables the user to select the same file again if they want to
 					this.value = '';
 				};
+			});
+
+			// Add drop handler
+			uploader.bind("PostInit", function() {
+				var dropElm = document.getElementById(uploader.settings.drop_element);
+
+				if (dropElm) {
+					// Block browser default drag over
+					plupload.addEvent(dropElm, 'dragover', function(e) {
+						e.preventDefault();
+					});
+
+					// Attach drop handler and grab files from Gears
+					plupload.addEvent(dropElm, 'drop', function(e) {
+						var dataTransfer = e.dataTransfer;
+
+						// Add dropped files
+						if (dataTransfer && dataTransfer.files)
+							addSelectedFiles(dataTransfer.files);
+
+						e.preventDefault();
+					});
+				}
 			});
 
 			uploader.bind("Refresh", function(up) {
@@ -213,7 +243,18 @@
 					xhr.send(nativeFile);
 			});
 
-			callback({success : true});
+			// Do we have direct data access Gecko has it but WebKit doesn't yet
+			dataAccessSupport = !!(File && File.prototype.getAsDataURL);
+
+			uploader.features = {
+				// Detect drag/drop file support by sniffing, will try to find a better way
+				dragdrop : window.mozInnerScreenX !== undefined,
+				jpgresize : dataAccessSupport,
+				pngresize : dataAccessSupport,
+				chunks : TRUE
+			};
+
+			callback({success : TRUE});
 		}
 	});
 })(plupload);
