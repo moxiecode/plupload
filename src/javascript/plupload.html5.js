@@ -54,19 +54,19 @@
 	};
 
 	/**
-	 * HMTL5 implementation.
+	 * HMTL5 implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
 	 *
 	 * @static
-	 * @class plupload.Html5Runtime
+	 * @class plupload.runtimes.Html5
 	 * @extends plupload.Runtime
 	 */
-	plupload.Html5Runtime = plupload.addRuntime("html5", {
+	plupload.runtimes.Html5 = plupload.addRuntime("html5", {
 		/**
-		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
+		 * Initializes the upload runtime.
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
 			var html5files = {}, dataAccessSupport;
@@ -86,8 +86,8 @@
 					files.push(new plupload.File(id, file.fileName, file.fileSize));
 				}
 
-				// Fire FilesSelected event
-				uploader.trigger("FilesSelected", files);
+				// Fire FilesAdded event
+				uploader.trigger("FilesAdded", files);
 			};
 
 			function isSupported() {
@@ -250,8 +250,7 @@
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				dragdrop : window.mozInnerScreenX !== undefined,
 				jpgresize : dataAccessSupport,
-				pngresize : dataAccessSupport,
-				chunks : TRUE
+				pngresize : dataAccessSupport
 			};
 
 			callback({success : TRUE});

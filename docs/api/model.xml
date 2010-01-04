@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <model>
 <namespace fullname="plupload" name="plupload">
-<class extends="plupload.Runtime" fullname="plupload.SimulatorRuntime" name="SimulatorRuntime" static="true" summary="Simulator implementation.">
-<description>Simulator implementation. This will fake uploads, errors and simulate different upload speeds.
+<namespace fullname="plupload.runtimes" name="runtimes">
+<class extends="plupload.Runtime" fullname="plupload.runtimes.BrowserPlus" name="BrowserPlus" static="true" summary="Yahoo BrowserPlus implementation.">
+<description>Yahoo BrowserPlus implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
 </description>
 <members>
-<method name="isSupported" static="true" summary="Checks if the browserplus runtime is available.">
-<description>Checks if the browserplus runtime is available.
-</description>
-<return type="boolean">
-<description>true/false if the runtime exists.</description>
-</return>
-</method>
-<method name="init" static="true" summary="Initializes the upload runtime.">
-<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+<method name="init" static="true" summary="Initializes the browserplus runtime.">
+<description>Initializes the browserplus runtime.
 </description>
 <param name="uploader" type="plupload.Uploader">
 <description>Uploader instance that needs to be initialized.</description>
+</param>
+<param name="callback" type="function">
+<description>Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</description>
 </param>
 </method>
 </members>
@@ -24,22 +21,18 @@
 <class-ref class="plupload.Runtime"/>
 </super-classes>
 </class>
-<class extends="plupload.Runtime" fullname="plupload.FlashRuntime" name="FlashRuntime" static="true" summary="FlashRuntime implementation.">
-<description>FlashRuntime implementation.
+<class extends="plupload.Runtime" fullname="plupload.runtimes.Flash" name="Flash" static="true" summary="FlashRuntime implementation.">
+<description>FlashRuntime implementation. This runtime supports these features: jpgresize, pngresize, chunks.
 </description>
 <members>
-<method name="isSupported" static="true" summary="Checks if the Flash is installed or not.">
-<description>Checks if the Flash is installed or not.
-</description>
-<return type="boolean">
-<description>true/false if the runtime exists.</description>
-</return>
-</method>
 <method name="init" static="true" summary="Initializes the upload runtime.">
 <description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
 </description>
 <param name="uploader" type="plupload.Uploader">
 <description>Uploader instance that needs to be initialized.</description>
+</param>
+<param name="callback" type="function">
+<description>Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</description>
 </param>
 </method>
 </members>
@@ -47,22 +40,18 @@
 <class-ref class="plupload.Runtime"/>
 </super-classes>
 </class>
-<class extends="plupload.Runtime" fullname="plupload.GearsRuntime" name="GearsRuntime" static="true" summary="Gears implementation.">
-<description>Gears implementation.
+<class extends="plupload.Runtime" fullname="plupload.runtimes.Gears" name="Gears" static="true" summary="Gears implementation.">
+<description>Gears implementation. This runtime supports these features: dragdrop, jpgresize, pngresize, chunks.
 </description>
 <members>
-<method name="isSupported" static="true" summary="Checks if the Google Gears is installed or not.">
-<description>Checks if the Google Gears is installed or not.
-</description>
-<return type="boolean">
-<description>true/false if the runtime exists.</description>
-</return>
-</method>
 <method name="init" static="true" summary="Initializes the upload runtime.">
-<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+<description>Initializes the upload runtime.
 </description>
 <param name="uploader" type="plupload.Uploader">
 <description>Uploader instance that needs to be initialized.</description>
+</param>
+<param name="callback" type="function">
+<description>Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</description>
 </param>
 </method>
 </members>
@@ -70,22 +59,18 @@
 <class-ref class="plupload.Runtime"/>
 </super-classes>
 </class>
-<class extends="plupload.Runtime" fullname="plupload.Html5Runtime" name="Html5Runtime" static="true" summary="HMTL5 implementation.">
-<description>HMTL5 implementation.
+<class extends="plupload.Runtime" fullname="plupload.runtimes.Html5" name="Html5" static="true" summary="HMTL5 implementation.">
+<description>HMTL5 implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
 </description>
 <members>
-<method name="isSupported" static="true" summary="Checks if the browser has HTML 5 upload support or not.">
-<description>Checks if the browser has HTML 5 upload support or not.
-</description>
-<return type="boolean">
-<description>true/false if the runtime exists.</description>
-</return>
-</method>
 <method name="init" static="true" summary="Initializes the upload runtime.">
-<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
+<description>Initializes the upload runtime.
 </description>
 <param name="uploader" type="plupload.Uploader">
 <description>Uploader instance that needs to be initialized.</description>
+</param>
+<param name="callback" type="function">
+<description>Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</description>
 </param>
 </method>
 </members>
@@ -93,12 +78,70 @@
 <class-ref class="plupload.Runtime"/>
 </super-classes>
 </class>
+<class extends="plupload.Runtime" fullname="plupload.runtimes.Silverlight" name="Silverlight" static="true" summary="Silverlight implementation.">
+<description>Silverlight implementation. This runtime supports these features: jpgresize, pngresize, chunks.
+</description>
+<members>
+<method name="init" static="true" summary="Initializes the upload runtime.">
+<description>Initializes the upload runtime. This runtime supports these features: jpgresize, pngresize, chunks.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance that needs to be initialized.</description>
+</param>
+<param name="callback" type="function">
+<description>Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</description>
+</param>
+</method>
+</members>
+<super-classes>
+<class-ref class="plupload.Runtime"/>
+</super-classes>
+</class>
+</namespace>
 <class fullname="plupload.Uploader" name="Uploader" summary="Uploader class, an instance of this class will be created for each upload field.">
 <description>Uploader class, an instance of this class will be created for each upload field.
 </description>
+<example>
+<example>var uploader = new plupload.Uploader({
+    runtimes : 'gears,html5,flash',
+    browse_button : 'button_id'
+});
+
+uploader.bind('Init', function(up) {
+    alert('Supports drag/drop: ' + (!!up.features.dragdrop));
+});
+
+uploader.bind('FilesAdded', function(up, files) {
+    alert('Selected files: ' + files.length);
+});
+
+uploader.bind('QueueChanged', function(up) {
+    alert('Queued files: ' + uploader.files.length);
+});
+
+uploader.init();</example>
+</example>
 <members>
-<property name="files" summary="Array of File instances." type="Array">
-<description>Array of File instances.
+<method constructor="true" name="Uploader" summary="Constructs a new uploader instance.">
+<description>Constructs a new uploader instance.
+</description>
+<param name="settings" type="Object">
+<description>Initialization settings, to be used by the uploader instance and runtimes.</description>
+</param>
+</method>
+<property name="state" summary="Current state of the total uploading progress." type="Number">
+<description>Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
+These states are controlled by the stop/start methods. The default value is STOPPED.
+</description>
+</property>
+<property name="features" summary="Map of features that are available for the uploader runtime." type="Object">
+<description>Map of features that are available for the uploader runtime. Features will be filled
+before the init event is called, these features can then be used to alter the UI for the end user.
+Some of the current features that might be in this map is: dragdrop, chunks, jpgresize, pngresize.
+</description>
+</property>
+<property name="files" summary="Current upload queue, an array of File instances." type="Array">
+<description>Current upload queue, an array of File instances.
 </description>
 <see class="plupload.File"/>
 </property>
@@ -107,7 +150,7 @@
 </description>
 </property>
 <property name="total" summary="Total progess information." type="plupload.QueueProgress">
-<description>Total progess information.
+<description>Total progess information. How many files has been uploaded, total percent etc.
 </description>
 </property>
 <property name="id" summary="Unique id for the Uploader instance." type="String">
@@ -118,12 +161,10 @@
 <description>Initializes the Uploader instance and adds internal event listeners.
 </description>
 </method>
-<method name="browse" summary="Browse for files to upload.">
-<description>Browse for files to upload.
+<method name="refresh" summary="Refreshes the upload instance by dispatching out a refresh event to all runtimes.">
+<description>Refreshes the upload instance by dispatching out a refresh event to all runtimes.
+This would for example reposition flash/silverlight shims on the page.
 </description>
-<param name="browse_settings" type="Object">
-<description>name/value collection of settings.</description>
-</param>
 </method>
 <method name="start" summary="Starts uploading the queued files.">
 <description>Starts uploading the queued files.
@@ -150,9 +191,18 @@
 <description>File to remove from queue.</description>
 </param>
 </method>
-<method name="removeAll" summary="Clears the upload queue.">
-<description>Clears the upload queue. All pending, finished or failed files will be removed from queue.
+<method name="splice" summary="Removes part of the queue and returns the files removed.">
+<description>Removes part of the queue and returns the files removed. This will also trigger the FilesRemoved and QueueChanged events.
 </description>
+<param name="start" type="Number">
+<description>(Optional) Start index to remove from.</description>
+</param>
+<param name="length" type="Number">
+<description>(Optional) Lengh of items to remove.</description>
+</param>
+<return type="Array">
+<description>Array of files that was removed.</description>
+</return>
 </method>
 <method name="trigger" summary="Dispatches the specified event name and it's arguments to all listeners.">
 <description>Dispatches the specified event name and it's arguments to all listeners.
@@ -188,6 +238,34 @@
 <description>Function to remove from listener.</description>
 </param>
 </method>
+<event name="Init" summary="Fires when the current RunTime has been initialized.">
+<description>Fires when the current RunTime has been initialized.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+</event>
+<event name="PostInit" summary="Fires after the init event incase you need to perform actions there.">
+<description>Fires after the init event incase you need to perform actions there.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+</event>
+<event name="Refresh" summary="Fires when the silverlight/flash or other shim needs to move.">
+<description>Fires when the silverlight/flash or other shim needs to move.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+</event>
+<event name="StateChanged" summary="Fires when the overall state is being changed for the upload queue.">
+<description>Fires when the overall state is being changed for the upload queue.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+</event>
 <event name="UploadFile" summary="Fires when a file is to be uploaded by the runtime.">
 <description>Fires when a file is to be uploaded by the runtime.
 </description>
@@ -196,6 +274,43 @@
 </param>
 <param name="file" type="plupload.File">
 <description>File to be uploaded.</description>
+</param>
+</event>
+<event name="QueueChanged" summary="Fires when the file queue is changed.">
+<description>Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+</event>
+<event name="UploadProgress" summary="Fires while a file is being uploaded.">
+<description>Fires while a file is being uploaded. Use this event to update the current file upload progress.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+<param name="file" type="plupload.File">
+<description>File that is currently being uploaded.</description>
+</param>
+</event>
+<event name="FilesRemoved" summary="Fires while a file was removed from queue.">
+<description>Fires while a file was removed from queue.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+<param name="file" type="plupload.File">
+<description>File that is currently being uploaded.</description>
+</param>
+</event>
+<event name="FilesAdded" summary="Fires while when the user selects files to upload.">
+<description>Fires while when the user selects files to upload.
+</description>
+<param name="uploader" type="plupload.Uploader">
+<description>Uploader instance sending the event.</description>
+</param>
+<param name="files" type="Array">
+<description>Array of file objects that was selected.</description>
 </param>
 </event>
 </members>
@@ -210,6 +325,19 @@
 <description>File size.</description>
 </param>
 <members>
+<method constructor="true" name="File" summary="Constructs a new file instance.">
+<description>Constructs a new file instance.
+</description>
+<param name="id" type="String">
+<description>Unique file id.</description>
+</param>
+<param name="name" type="String">
+<description>File name.</description>
+</param>
+<param name="size" type="Number">
+<description>File size in bytes.</description>
+</param>
+</method>
 <property name="id" summary="File id this is a globally unique id for the specific file." type="String">
 <description>File id this is a globally unique id for the specific file.
 </description>
@@ -233,6 +361,7 @@
 <property name="status" summary="Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE." type="Number">
 <description>Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
 </description>
+<see class="plupload"/>
 </property>
 </members>
 </class>
@@ -240,18 +369,14 @@
 <description>Runtime class gets implemented by each upload runtime.
 </description>
 <members>
-<method name="isSupported" static="true" summary="Checks if the runtime is supported by the browser or not.">
-<description>Checks if the runtime is supported by the browser or not.
-</description>
-<return type="boolean">
-<description>true/false if the runtime exists.</description>
-</return>
-</method>
 <method name="init" static="true" summary="Initializes the upload runtime.">
 <description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
 </description>
 <param name="uploader" type="plupload.Uploader">
 <description>Uploader instance that needs to be initialized.</description>
+</param>
+<param name="callback" type="function">
+<description>Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</description>
 </param>
 </method>
 </members>
@@ -260,6 +385,10 @@
 <description>Runtime class gets implemented by each upload runtime.
 </description>
 <members>
+<method constructor="true" name="QueueProgress" summary="Constructs a queue progress.">
+<description>Constructs a queue progress.
+</description>
+</method>
 <property name="size" summary="Total queue file size." type="Number">
 <description>Total queue file size.
 </description>
@@ -290,36 +419,13 @@
 </method>
 </members>
 </class>
-<class extends="plupload.Runtime" fullname="plupload.SilverlightRuntime" name="SilverlightRuntime" static="true" summary="Silverlight implementation.">
-<description>Silverlight implementation.
-</description>
-<members>
-<method name="isSupported" static="true" summary="Checks if Silverlight is installed or not.">
-<description>Checks if Silverlight is installed or not.
-</description>
-<return type="boolean">
-<description>true/false if the runtime exists.</description>
-</return>
-</method>
-<method name="init" static="true" summary="Initializes the upload runtime.">
-<description>Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation.
-</description>
-<param name="uploader" type="plupload.Uploader">
-<description>Uploader instance that needs to be initialized.</description>
-</param>
-</method>
-</members>
-<super-classes>
-<class-ref class="plupload.Runtime"/>
-</super-classes>
-</class>
 </namespace>
 <class fullname="plupload" name="plupload" static="true" summary="Plupload class with some global constants and functions.">
 <description>Plupload class with some global constants and functions.
 </description>
 <example>
 <example>// Encode entities
-console.log(plupload.xmlEncode("My string &lt;&gt;&amp;."));
+console.log(plupload.xmlEncode("My string &amp;lt;&amp;gt;"));
 
 // Generate unique id
 console.log(plupload.guid());</example>
@@ -347,6 +453,10 @@ console.log(plupload.guid());</example>
 </property>
 <property final="true" name="DONE" static="true" summary="File has been uploaded successfully" type="Object">
 <description>File has been uploaded successfully
+</description>
+</property>
+<property final="true" name="mimeTypes" static="true" summary="Mime type lookup table." type="Object">
+<description>Mime type lookup table.
 </description>
 </property>
 <method name="extend" static="true" summary="Extends the specified object with another object.">
@@ -402,12 +512,10 @@ It's more probable for the earth to be hit with an ansteriod.
 <description>Formatted size string.</description>
 </return>
 </method>
-<method name="getPos" static="true" summary="Returns the absolute x, y position of a node.">
-<description>Returns the absolute x, y position of a node. The position will be returned in a object with x, y fields.
+<method name="getPos" static="true" summary="Returns the absolute x, y position of an Element.">
+<description>Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
 </description>
-<param name="node">
-<type fullname="Element"/>
-<type fullname="String"/>
+<param name="node" type="Element">
 <description>HTML element or element id to get x, y position from.</description>
 </param>
 <param name="root" type="Element">

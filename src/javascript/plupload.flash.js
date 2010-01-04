@@ -50,19 +50,19 @@
 	};
 
 	/**
-	 * FlashRuntime implementation.
+	 * FlashRuntime implementation. This runtime supports these features: jpgresize, pngresize, chunks.
 	 *
 	 * @static
-	 * @class plupload.FlashRuntime
+	 * @class plupload.runtimes.Flash
 	 * @extends plupload.Runtime
 	 */
-	plupload.FlashRuntime = plupload.addRuntime("flash", {
+	plupload.runtimes.Flash = plupload.addRuntime("flash", {
 		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
 			var browseButton, flashContainer, flashVars, initialized, waitCount = 0;
@@ -201,20 +201,23 @@
 						files.push(new plupload.File(id, file.name, file.size));
 					}
 
-					// trigger FilesSelected event
-					uploader.trigger("FilesSelected", files);
+					// trigger FilesAdded event
+					uploader.trigger("FilesAdded", files);
 				});
 
 				uploader.bind("QueueChanged", function(up) {
-					uploader.trigger("Flash:PositionAtBrowseButton");
+					uploader.refresh();
 				});
 
-				uploader.bind("FileRemoved", function(up, file) {
-					getFlashObj().removeFile(lookup[file.id]);
+				uploader.bind("FilesRemoved", function(up, files) {
+					var i;
+
+					for (i = 0; i < files.length; i++)
+						getFlashObj().removeFile(lookup[files[i].id]);
 				});
 
 				uploader.bind("StateChanged", function(up) {
-					uploader.trigger("Flash:PositionAtBrowseButton");
+					uploader.refresh();
 				});
 
 				uploader.bind("Refresh", function(up) {

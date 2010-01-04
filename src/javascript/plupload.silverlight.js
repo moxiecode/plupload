@@ -89,19 +89,19 @@
 	};
 
 	/**
-	 * Silverlight implementation.
+	 * Silverlight implementation. This runtime supports these features: jpgresize, pngresize, chunks.
 	 *
 	 * @static
-	 * @class plupload.SilverlightRuntime
+	 * @class plupload.runtimes.Silverlight
 	 * @extends plupload.Runtime
 	 */
-	plupload.SilverlightRuntime = plupload.addRuntime("silverlight", {
+	plupload.runtimes.Silverlight = plupload.addRuntime("silverlight", {
 		/**
-		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
+		 * Initializes the upload runtime. This runtime supports these features: jpgresize, pngresize, chunks.
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
 			var silverlightContainer, filter = '', filters = uploader.settings.filters, i;
@@ -165,7 +165,7 @@
 				});
 
 				uploader.bind("Silverlight:SelectSuccessful", function() {
-					uploader.trigger("FilesSelected", selectedFiles);
+					uploader.trigger("FilesAdded", selectedFiles);
 				});
 
 				uploader.bind("Silverlight:UploadFileProgress", function(up, sl_id, loaded, total) {
@@ -230,8 +230,11 @@
 					up.trigger('FileUploaded', file);
 				});
 
-				uploader.bind("FileRemoved", function(up, file) {
-					getSilverlightObj().RemoveFile(lookup[file.id]);
+				uploader.bind("FilesRemoved", function(up, files) {
+					var i;
+
+					for (i = 0; i < files.length; i++)
+						getSilverlightObj().RemoveFile(lookup[files[i].id]);
 				});
 
 				uploader.bind("UploadFile", function(up, file) {

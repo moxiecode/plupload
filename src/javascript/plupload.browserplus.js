@@ -12,19 +12,19 @@
 	var TRUE = true, FALSE = false;
 
 	/**
-	 * Yahoo BrowserPlus implementation.
+	 * Yahoo BrowserPlus implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
 	 *
 	 * @static
-	 * @class plupload.Html5Runtime
+	 * @class plupload.runtimes.BrowserPlus
 	 * @extends plupload.Runtime
 	 */
-	plupload.BrowserPlusRuntime = plupload.addRuntime("browserplus", {
+	plupload.runtimes.BrowserPlus = plupload.addRuntime("browserplus", {
 		/**
 		 * Initializes the browserplus runtime.
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
 			var browserPlus = window.BrowserPlus, browserPlusFiles = {}, imageWidth, imageHeight, settings = uploader.settings;
@@ -46,7 +46,7 @@
 
 				// Any files selected fire event
 				if (i)
-					uploader.trigger("FilesSelected", selectedFiles);
+					uploader.trigger("FilesAdded", selectedFiles);
 			};
 
 			// Check for browserplus object
@@ -146,28 +146,30 @@
 						} else
 							addDropHandler(dropElmId);
 
+						plupload.addEvent(document.getElementById(settings.browse_button), 'click', function(e) {
+							var mimeTypes = [], i, a, filters = settings.filters, ext;
+
+							e.preventDefault();
+
+							// Convert extensions to mimetypes
+							for (i = 0; i < filters.length; i++) {
+								ext = filters[i].extensions.split(',');
+
+								for (a = 0; a < ext.length; a++)
+									mimeTypes.push(plupload.mimeTypes[ext[a]]);
+							}
+
+							browserPlus.FileBrowse.OpenBrowseDialog({
+								mimeTypes : mimeTypes
+							}, function(res) {
+								if (res.success)
+									addSelectedFiles(res.value);
+							});
+						});
+
 						// Prevent IE leaks
 						dropElm = dropTarget = 0;
 					}
-				});
-
-				uploader.bind("SelectFiles", function(up) {
-					var mimeTypes = [], i, a, filters = up.settings.filters, ext;
-
-					// Convert extensions to mimetypes
-					for (i = 0; i < filters.length; i++) {
-						ext = filters[i].extensions.split(',');
-
-						for (a = 0; a < ext.length; a++)
-							mimeTypes.push(plupload.mimeTypes[ext[a]]);
-					}
-
-					browserPlus.FileBrowse.OpenBrowseDialog({
-						mimeTypes : mimeTypes
-					}, function(res) {
-						if (res.success)
-							addSelectedFiles(res.value);
-					});
 				});
 
 				uploader.bind("UploadFile", function(up, file) {

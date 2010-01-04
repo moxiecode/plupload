@@ -32,7 +32,7 @@
 </div>
 <h4>Example</h4>
 <pre class="brush: js;">// Encode entities
-console.log(plupload.xmlEncode("My string <>&."));
+console.log(plupload.xmlEncode("My string &lt;&gt;"));
 
 // Generate unique id
 console.log(plupload.guid());</pre>
@@ -67,13 +67,22 @@ console.log(plupload.guid());</pre>
 <tr>
 <td class="first">
 <div>
+<a class="memberName" href="class_plupload.html#mimeTypes">mimeTypes</a> : Object</div>
+<div class="summary">
+<span class="static">[static] </span>Mime type lookup table.</div>
+</td>
+<td class="last">plupload</td>
+</tr>
+<tr class="even">
+<td class="first">
+<div>
 <a class="memberName" href="class_plupload.html#QUEUED">QUEUED</a> : Object</div>
 <div class="summary">
 <span class="static">[static] </span>File is queued for upload</div>
 </td>
 <td class="last">plupload</td>
 </tr>
-<tr class="even">
+<tr>
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.html#STARTED">STARTED</a> : Object</div>
@@ -82,7 +91,7 @@ console.log(plupload.guid());</pre>
 </td>
 <td class="last">plupload</td>
 </tr>
-<tr>
+<tr class="even">
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.html#STOPPED">STOPPED</a> : Object</div>
@@ -91,7 +100,7 @@ console.log(plupload.guid());</pre>
 </td>
 <td class="last">plupload</td>
 </tr>
-<tr class="even">
+<tr>
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.html#UPLOADING">UPLOADING</a> : Object</div>
@@ -150,9 +159,9 @@ console.log(plupload.guid());</pre>
 <tr>
 <td class="first">
 <div>
-<a class="memberName" href="class_plupload.html#getPos">getPos</a>(node:Element/String, root:Element):object</div>
+<a class="memberName" href="class_plupload.html#getPos">getPos</a>(node:Element, root:Element):object</div>
 <div class="summary">
-<span class="static">[static] </span>Returns the absolute x, y position of a node.</div>
+<span class="static">[static] </span>Returns the absolute x, y position of an Element.</div>
 </td>
 <td class="last">plupload</td>
 </tr>
@@ -210,6 +219,13 @@ console.log(plupload.guid());</pre>
 </h3>
 <code class="syntax">public static FAILED : Object</code>
 <div class="memberDescription">File has failed to be uploaded
+</div>
+</div>
+<div class="memberDetails" id="mimeTypes">
+<h3>mimeTypes<span class="memberType">property</span>
+</h3>
+<code class="syntax">public static mimeTypes : Object</code>
+<div class="memberDescription">Mime type lookup table.
 </div>
 </div>
 <div class="memberDetails" id="QUEUED">
@@ -321,13 +337,13 @@ console.log(plupload.guid());</pre>
 <h3>getPos<span class="memberType">method</span>
 </h3>
 <code class="syntax">public static 
-						function getPos(node:Element/String, root:Element):object</code>
-<div class="memberDescription">Returns the absolute x, y position of a node. The position will be returned in a object with x, y fields.
+						function getPos(node:Element, root:Element):object</code>
+<div class="memberDescription">Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
 </div>
 <h4>Parameters</h4>
 <table class="params">
 <tr>
-<td class="first">node:Element/String</td>
+<td class="first">node:Element</td>
 <td class="last">HTML element or element id to get x, y position from.</td>
 </tr>
 <tr>

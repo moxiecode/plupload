@@ -37,7 +37,7 @@ $().ready(function() {
 		image_quality : 90,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Other files", extensions : "exe"}
+			{title : "Zip files", extensions : "zip"}
 		],
 
 		// Flash settings
@@ -57,8 +57,8 @@ $().ready(function() {
 		image_quality : 90,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Other files", extensions : "exe"}
-		]
+			{title : "Zip files", extensions : "zip"}
+		],
 	});
 
 	// Setup silverlight version
@@ -74,7 +74,7 @@ $().ready(function() {
 		image_quality : 90,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Other files", extensions : "exe"}
+			{title : "Zip files", extensions : "zip"}
 		],
 
 		// Silverlight settings
@@ -94,7 +94,7 @@ $().ready(function() {
 		image_quality : 90,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Other files", extensions : "exe"}
+			{title : "Zip files", extensions : "zip"}
 		]
 	});
 
@@ -111,9 +111,25 @@ $().ready(function() {
 		image_quality : 90,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Other files", extensions : "exe"}
+			{title : "Zip files", extensions : "zip"}
 		]
 	});
+
+var uploader = new plupload.Uploader({
+     runtimes : 'gears,html5,flash',
+     browse_button : 'button_id'
+ });
+	  uploader.bind('Init', function(up) {
+	      alert('Supports drag/drop: ' + (!!up.features.dragdrop));
+	  });
+uploader.bind('FilesAdded', function(up, files) {
+     alert('Selected files: ' + files.length);
+});
+	  uploader.bind('QueueChanged', function(up) {
+	      alert('Queued files: ' + uploader.files.length);
+	  });
+	 
+uploader.init();
 });
 </script>
 <!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
@@ -122,7 +138,7 @@ $().ready(function() {
 
 <form method="post" action="dump.php">
 	<h1>Queue widget example</h1>
-
+<input id="button_id" />
 	<p>Shows the jQuery Plupload Queue widget and under different runtimes.</p>
 
 	<div style="float: left; margin-right: 20px">

@@ -1,68 +1,66 @@
 // Namespaces
 plupload = {}
+plupload.runtimes = {}
 
 // Classes
-plupload.SimulatorRuntime = function() {
-	/// <summary>Simulator implementation.</summary>
+plupload.runtimes.BrowserPlus = function() {
+	/// <summary>Yahoo BrowserPlus implementation.</summary>
 }
 
-plupload.SimulatorRuntime.isSupported = function() {
-	/// <summary>Checks if the browserplus runtime is available.</summary>
-	/// <returns type="boolean">true/false if the runtime exists.</returns>
-}
-
-plupload.SimulatorRuntime.init = function(uploader) {
-	/// <summary>Initializes the upload runtime.</summary>
+plupload.runtimes.BrowserPlus.init = function(uploader, callback) {
+	/// <summary>Initializes the browserplus runtime.</summary>
 	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+	/// <param name="callback" type="function">Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</param>
 }
 
-plupload.FlashRuntime = function() {
+plupload.runtimes.Flash = function() {
 	/// <summary>FlashRuntime implementation.</summary>
 }
 
-plupload.FlashRuntime.isSupported = function() {
-	/// <summary>Checks if the Flash is installed or not.</summary>
-	/// <returns type="boolean">true/false if the runtime exists.</returns>
-}
-
-plupload.FlashRuntime.init = function(uploader) {
+plupload.runtimes.Flash.init = function(uploader, callback) {
 	/// <summary>Initializes the upload runtime.</summary>
 	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+	/// <param name="callback" type="function">Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</param>
 }
 
-plupload.GearsRuntime = function() {
+plupload.runtimes.Gears = function() {
 	/// <summary>Gears implementation.</summary>
 }
 
-plupload.GearsRuntime.isSupported = function() {
-	/// <summary>Checks if the Google Gears is installed or not.</summary>
-	/// <returns type="boolean">true/false if the runtime exists.</returns>
-}
-
-plupload.GearsRuntime.init = function(uploader) {
+plupload.runtimes.Gears.init = function(uploader, callback) {
 	/// <summary>Initializes the upload runtime.</summary>
 	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+	/// <param name="callback" type="function">Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</param>
 }
 
-plupload.Html5Runtime = function() {
+plupload.runtimes.Html5 = function() {
 	/// <summary>HMTL5 implementation.</summary>
 }
 
-plupload.Html5Runtime.isSupported = function() {
-	/// <summary>Checks if the browser has HTML 5 upload support or not.</summary>
-	/// <returns type="boolean">true/false if the runtime exists.</returns>
-}
-
-plupload.Html5Runtime.init = function(uploader) {
+plupload.runtimes.Html5.init = function(uploader, callback) {
 	/// <summary>Initializes the upload runtime.</summary>
 	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+	/// <param name="callback" type="function">Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</param>
 }
 
-plupload.Uploader = function() {
+plupload.runtimes.Silverlight = function() {
+	/// <summary>Silverlight implementation.</summary>
+}
+
+plupload.runtimes.Silverlight.init = function(uploader, callback) {
+	/// <summary>Initializes the upload runtime.</summary>
+	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+	/// <param name="callback" type="function">Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</param>
+}
+
+plupload.Uploader = function(settings) {
 	/// <summary>Uploader class, an instance of this class will be created for each upload field.</summary>
-	/// <field name="files" type="Array">Array of File instances.</field>
+	/// <param name="settings" type="Object">Initialization settings, to be used by the uploader instance and runtimes.</param>
+	/// <field name="state" type="Number">Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED. These states are controlled by the stop/start methods. The default value is STOPPED.</field>
+	/// <field name="features" type="Object">Map of features that are available for the uploader runtime. Features will be filled before the init event is called, these features can then be used to alter the UI for the end user. Some of the current features that might be in this map is: dragdrop, chunks, jpgresize, pngresize.</field>
+	/// <field name="files" type="Array">Current upload queue, an array of File instances.</field>
 	/// <field name="settings" type="Object">Object with name/value settings.</field>
-	/// <field name="total" type="plupload.QueueProgress">Total progess information.</field>
+	/// <field name="total" type="plupload.QueueProgress">Total progess information. How many files has been uploaded, total percent etc.</field>
 	/// <field name="id" type="String">Unique id for the Uploader instance.</field>
 }
 
@@ -70,9 +68,8 @@ plupload.Uploader.prototype.init = function() {
 	/// <summary>Initializes the Uploader instance and adds internal event listeners.</summary>
 }
 
-plupload.Uploader.prototype.browse = function(browse_settings) {
-	/// <summary>Browse for files to upload.</summary>
-	/// <param name="browse_settings" type="Object">name/value collection of settings.</param>
+plupload.Uploader.prototype.refresh = function() {
+	/// <summary>Refreshes the upload instance by dispatching out a refresh event to all runtimes.</summary>
 }
 
 plupload.Uploader.prototype.start = function() {
@@ -94,8 +91,11 @@ plupload.Uploader.prototype.removeFile = function(file) {
 	/// <param name="file" type="plupload.File">File to remove from queue.</param>
 }
 
-plupload.Uploader.prototype.removeAll = function() {
-	/// <summary>Clears the upload queue.</summary>
+plupload.Uploader.prototype.splice = function(start, length) {
+	/// <summary>Removes part of the queue and returns the files removed.</summary>
+	/// <param name="start" type="Number" integer="true">(Optional) Start index to remove from.</param>
+	/// <param name="length" type="Number" integer="true">(Optional) Lengh of items to remove.</param>
+	/// <returns type="Array">Array of files that was removed.</returns>
 }
 
 plupload.Uploader.prototype.trigger = function(name, Multiple) {
@@ -117,8 +117,11 @@ plupload.Uploader.prototype.unbind = function(name, func) {
 	/// <param name="func" type="function">Function to remove from listener.</param>
 }
 
-plupload.File = function() {
+plupload.File = function(id, name, size) {
 	/// <summary>File instance.</summary>
+	/// <param name="id" type="String">Unique file id.</param>
+	/// <param name="name" type="String">File name.</param>
+	/// <param name="size" type="Number" integer="true">File size in bytes.</param>
 	/// <field name="id" type="String">File id this is a globally unique id for the specific file.</field>
 	/// <field name="name" type="String">File name for example "myfile.gif".</field>
 	/// <field name="size" type="Number">File size in bytes.</field>
@@ -131,14 +134,10 @@ plupload.Runtime = function() {
 	/// <summary>Runtime class gets implemented by each upload runtime.</summary>
 }
 
-plupload.Runtime.isSupported = function() {
-	/// <summary>Checks if the runtime is supported by the browser or not.</summary>
-	/// <returns type="boolean">true/false if the runtime exists.</returns>
-}
-
-plupload.Runtime.init = function(uploader) {
+plupload.Runtime.init = function(uploader, callback) {
 	/// <summary>Initializes the upload runtime.</summary>
 	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
+	/// <param name="callback" type="function">Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.</param>
 }
 
 plupload.QueueProgress = function() {
@@ -155,20 +154,6 @@ plupload.QueueProgress.prototype.reset = function() {
 	/// <summary>Resets the progress to it's initial values.</summary>
 }
 
-plupload.SilverlightRuntime = function() {
-	/// <summary>Silverlight implementation.</summary>
-}
-
-plupload.SilverlightRuntime.isSupported = function() {
-	/// <summary>Checks if Silverlight is installed or not.</summary>
-	/// <returns type="boolean">true/false if the runtime exists.</returns>
-}
-
-plupload.SilverlightRuntime.init = function(uploader) {
-	/// <summary>Initializes the upload runtime.</summary>
-	/// <param name="uploader" type="plupload.Uploader">Uploader instance that needs to be initialized.</param>
-}
-
 // Namespaces
 plupload.STOPPED = new Object();
 plupload.STARTED = new Object();
@@ -176,6 +161,7 @@ plupload.QUEUED = new Object();
 plupload.UPLOADING = new Object();
 plupload.FAILED = new Object();
 plupload.DONE = new Object();
+plupload.mimeTypes = new Object();
 plupload.extend = function(target, obj) {
 	/// <summary>Extends the specified object with another object.</summary>
 	/// <param name="target" type="Object">Object to extend.</param>
@@ -207,8 +193,8 @@ plupload.formatSize = function(size) {
 }
 
 plupload.getPos = function(node, root) {
-	/// <summary>Returns the absolute x, y position of a node.</summary>
-	/// <param name="node" type="">HTML element or element id to get x, y position from.</param>
+	/// <summary>Returns the absolute x, y position of an Element.</summary>
+	/// <param name="node" type="Element" domElement="true">HTML element or element id to get x, y position from.</param>
 	/// <param name="root" type="Element" domElement="true">Optional root element to stop calculations at.</param>
 	/// <returns type="object">Absolute position of the specified element object with x, y fields.</returns>
 }

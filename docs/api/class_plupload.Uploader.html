@@ -30,6 +30,25 @@
 </table>
 <div class="classDescription">Uploader class, an instance of this class will be created for each upload field.
 </div>
+<h4>Example</h4>
+<pre class="brush: js;">var uploader = new plupload.Uploader({
+    runtimes : 'gears,html5,flash',
+    browse_button : 'button_id'
+});
+
+uploader.bind('Init', function(up) {
+    alert('Supports drag/drop: ' + (!!up.features.dragdrop));
+});
+
+uploader.bind('FilesAdded', function(up, files) {
+    alert('Selected files: ' + files.length);
+});
+
+uploader.bind('QueueChanged', function(up) {
+    alert('Queued files: ' + uploader.files.length);
+});
+
+uploader.init();</pre>
 <div class="summaryLists">
 <h2>Public Properties</h2>
 <table class="Properties summary">
@@ -43,12 +62,20 @@
 <tr>
 <td class="first">
 <div>
-<a class="memberName" href="class_plupload.Uploader.html#files">files</a> : Array</div>
-<div class="summary">Array of File instances.</div>
+<a class="memberName" href="class_plupload.Uploader.html#features">features</a> : Object</div>
+<div class="summary">Map of features that are available for the uploader runtime.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
 <tr class="even">
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#files">files</a> : Array</div>
+<div class="summary">Current upload queue, an array of File instances.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr>
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.Uploader.html#id">id</a> : String</div>
@@ -56,11 +83,19 @@
 </td>
 <td class="last">Uploader</td>
 </tr>
-<tr>
+<tr class="even">
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.Uploader.html#settings">settings</a> : Object</div>
 <div class="summary">Object with name/value settings.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr>
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#state">state</a> : Number</div>
+<div class="summary">Current state of the total uploading progress.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
@@ -87,16 +122,16 @@
 <tr>
 <td class="first">
 <div>
-<a class="memberName" href="class_plupload.Uploader.html#bind">bind</a>(name:String, func:function, scope:Object):void</div>
-<div class="summary">Adds an event listener by name.</div>
+<a class="memberName" href="class_plupload.Uploader.html#Uploader">Uploader</a>(settings:Object)</div>
+<div class="summary">Constructs a new uploader instance.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
 <tr class="even">
 <td class="first">
 <div>
-<a class="memberName" href="class_plupload.Uploader.html#browse">browse</a>(browse_settings:Object):void</div>
-<div class="summary">Browse for files to upload.</div>
+<a class="memberName" href="class_plupload.Uploader.html#bind">bind</a>(name:String, func:function, scope:Object):void</div>
+<div class="summary">Adds an event listener by name.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
@@ -120,8 +155,8 @@
 <tr>
 <td class="first">
 <div>
-<a class="memberName" href="class_plupload.Uploader.html#removeAll">removeAll</a>():void</div>
-<div class="summary">Clears the upload queue.</div>
+<a class="memberName" href="class_plupload.Uploader.html#refresh">refresh</a>():void</div>
+<div class="summary">Refreshes the upload instance by dispatching out a refresh event to all runtimes.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
@@ -136,12 +171,20 @@
 <tr>
 <td class="first">
 <div>
+<a class="memberName" href="class_plupload.Uploader.html#splice">splice</a>(start:Number, length:Number):Array</div>
+<div class="summary">Removes part of the queue and returns the files removed.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr class="even">
+<td class="first">
+<div>
 <a class="memberName" href="class_plupload.Uploader.html#start">start</a>():void</div>
 <div class="summary">Starts uploading the queued files.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
-<tr class="even">
+<tr>
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.Uploader.html#stop">stop</a>():void</div>
@@ -149,7 +192,7 @@
 </td>
 <td class="last">Uploader</td>
 </tr>
-<tr>
+<tr class="even">
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.Uploader.html#trigger">trigger</a>(name:String, Multiple:Object..):void</div>
@@ -157,7 +200,7 @@
 </td>
 <td class="last">Uploader</td>
 </tr>
-<tr class="even">
+<tr>
 <td class="first">
 <div>
 <a class="memberName" href="class_plupload.Uploader.html#unbind">unbind</a>(name:String, func:function):void</div>
@@ -179,8 +222,72 @@
 <tr>
 <td class="first">
 <div>
+<a class="memberName" href="class_plupload.Uploader.html#FilesAdded">FilesAdded</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, files:Array)</div>
+<div class="summary">Fires while when the user selects files to upload.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr class="even">
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#FilesRemoved">FilesRemoved</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, file:<a href="class_plupload.File.html">File</a>)</div>
+<div class="summary">Fires while a file was removed from queue.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr>
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#Init">Init</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</div>
+<div class="summary">Fires when the current RunTime has been initialized.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr class="even">
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#PostInit">PostInit</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</div>
+<div class="summary">Fires after the init event incase you need to perform actions there.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr>
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#QueueChanged">QueueChanged</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</div>
+<div class="summary">Fires when the file queue is changed.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr class="even">
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#Refresh">Refresh</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</div>
+<div class="summary">Fires when the silverlight/flash or other shim needs to move.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr>
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#StateChanged">StateChanged</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</div>
+<div class="summary">Fires when the overall state is being changed for the upload queue.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr class="even">
+<td class="first">
+<div>
 <a class="memberName" href="class_plupload.Uploader.html#UploadFile">UploadFile</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, file:<a href="class_plupload.File.html">File</a>)</div>
 <div class="summary">Fires when a file is to be uploaded by the runtime.</div>
+</td>
+<td class="last">Uploader</td>
+</tr>
+<tr>
+<td class="first">
+<div>
+<a class="memberName" href="class_plupload.Uploader.html#UploadProgress">UploadProgress</a>(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, file:<a href="class_plupload.File.html">File</a>)</div>
+<div class="summary">Fires while a file is being uploaded.</div>
 </td>
 <td class="last">Uploader</td>
 </tr>
@@ -190,11 +297,20 @@
 <div class="detailsList">
 <div class="details">
 <h2>Property details</h2>
+<div class="memberDetails" id="features">
+<h3>features<span class="memberType">property</span>
+</h3>
+<code class="syntax">public features : Object</code>
+<div class="memberDescription">Map of features that are available for the uploader runtime. Features will be filled
+before the init event is called, these features can then be used to alter the UI for the end user.
+Some of the current features that might be in this map is: dragdrop, chunks, jpgresize, pngresize.
+</div>
+</div>
 <div class="memberDetails" id="files">
 <h3>files<span class="memberType">property</span>
 </h3>
 <code class="syntax">public files : Array</code>
-<div class="memberDescription">Array of File instances.
+<div class="memberDescription">Current upload queue, an array of File instances.
 </div>
 <h4>See Also</h4>
 <ul class="see">
@@ -217,17 +333,40 @@
 <div class="memberDescription">Object with name/value settings.
 </div>
 </div>
+<div class="memberDetails" id="state">
+<h3>state<span class="memberType">property</span>
+</h3>
+<code class="syntax">public state : Number</code>
+<div class="memberDescription">Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
+These states are controlled by the stop/start methods. The default value is STOPPED.
+</div>
+</div>
 <div class="memberDetails last" id="total">
 <h3>total<span class="memberType">property</span>
 </h3>
 <code class="syntax">public total : <a href="class_plupload.QueueProgress.html">QueueProgress</a>
 </code>
-<div class="memberDescription">Total progess information.
+<div class="memberDescription">Total progess information. How many files has been uploaded, total percent etc.
 </div>
 </div>
 </div>
 <div class="details">
 <h2>Method details</h2>
+<div class="memberDetails" id="Uploader">
+<h3>Uploader<span class="memberType">constructor</span>
+</h3>
+<code class="syntax">public 
+						function Uploader(settings:Object)</code>
+<div class="memberDescription">Constructs a new uploader instance.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">settings:Object</td>
+<td class="last">Initialization settings, to be used by the uploader instance and runtimes.</td>
+</tr>
+</table>
+</div>
 <div class="memberDetails" id="bind">
 <h3>bind<span class="memberType">method</span>
 </h3>
@@ -248,21 +387,6 @@
 <tr>
 <td class="first">scope:Object</td>
 <td class="last">Optional scope to execute the specified function in.</td>
-</tr>
-</table>
-</div>
-<div class="memberDetails" id="browse">
-<h3>browse<span class="memberType">method</span>
-</h3>
-<code class="syntax">public 
-						function browse(browse_settings:Object):void</code>
-<div class="memberDescription">Browse for files to upload.
-</div>
-<h4>Parameters</h4>
-<table class="params">
-<tr>
-<td class="first">browse_settings:Object</td>
-<td class="last">name/value collection of settings.</td>
 </tr>
 </table>
 </div>
@@ -293,12 +417,13 @@
 <div class="memberDescription">Initializes the Uploader instance and adds internal event listeners.
 </div>
 </div>
-<div class="memberDetails" id="removeAll">
-<h3>removeAll<span class="memberType">method</span>
+<div class="memberDetails" id="refresh">
+<h3>refresh<span class="memberType">method</span>
 </h3>
 <code class="syntax">public 
-						function removeAll():void</code>
-<div class="memberDescription">Clears the upload queue. All pending, finished or failed files will be removed from queue.
+						function refresh():void</code>
+<div class="memberDescription">Refreshes the upload instance by dispatching out a refresh event to all runtimes.
+This would for example reposition flash/silverlight shims on the page.
 </div>
 </div>
 <div class="memberDetails" id="removeFile">
@@ -316,6 +441,27 @@
 <td class="last">File to remove from queue.</td>
 </tr>
 </table>
+</div>
+<div class="memberDetails" id="splice">
+<h3>splice<span class="memberType">method</span>
+</h3>
+<code class="syntax">public 
+						function splice(start:Number, length:Number):Array</code>
+<div class="memberDescription">Removes part of the queue and returns the files removed. This will also trigger the FilesRemoved and QueueChanged events.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">start:Number</td>
+<td class="last">(Optional) Start index to remove from.</td>
+</tr>
+<tr>
+<td class="first">length:Number</td>
+<td class="last">(Optional) Lengh of items to remove.</td>
+</tr>
+</table>
+<h4>Returns</h4>
+<div class="returns">Array - Array of files that was removed.</div>
 </div>
 <div class="memberDetails" id="start">
 <h3>start<span class="memberType">method</span>
@@ -375,7 +521,128 @@
 </div>
 <div class="details">
 <h2>Event details</h2>
-<div class="memberDetails last" id="UploadFile">
+<div class="memberDetails" id="FilesAdded">
+<h3>FilesAdded<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event FilesAdded(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, files:Array)</code>
+<div class="memberDescription">Fires while when the user selects files to upload.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+<tr>
+<td class="first">files:Array</td>
+<td class="last">Array of file objects that was selected.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="FilesRemoved">
+<h3>FilesRemoved<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event FilesRemoved(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, file:<a href="class_plupload.File.html">File</a>)</code>
+<div class="memberDescription">Fires while a file was removed from queue.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+<tr>
+<td class="first">file:<a href="class_plupload.File.html">File</a>
+</td>
+<td class="last">File that is currently being uploaded.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="Init">
+<h3>Init<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event Init(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</code>
+<div class="memberDescription">Fires when the current RunTime has been initialized.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="PostInit">
+<h3>PostInit<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event PostInit(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</code>
+<div class="memberDescription">Fires after the init event incase you need to perform actions there.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="QueueChanged">
+<h3>QueueChanged<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event QueueChanged(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</code>
+<div class="memberDescription">Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="Refresh">
+<h3>Refresh<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event Refresh(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</code>
+<div class="memberDescription">Fires when the silverlight/flash or other shim needs to move.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="StateChanged">
+<h3>StateChanged<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event StateChanged(uploader:<a href="class_plupload.Uploader.html">Uploader</a>)</code>
+<div class="memberDescription">Fires when the overall state is being changed for the upload queue.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails" id="UploadFile">
 <h3>UploadFile<span class="memberType">event</span>
 </h3>
 <code class="syntax">public 
@@ -393,6 +660,27 @@
 <td class="first">file:<a href="class_plupload.File.html">File</a>
 </td>
 <td class="last">File to be uploaded.</td>
+</tr>
+</table>
+</div>
+<div class="memberDetails last" id="UploadProgress">
+<h3>UploadProgress<span class="memberType">event</span>
+</h3>
+<code class="syntax">public 
+						event UploadProgress(uploader:<a href="class_plupload.Uploader.html">Uploader</a>, file:<a href="class_plupload.File.html">File</a>)</code>
+<div class="memberDescription">Fires while a file is being uploaded. Use this event to update the current file upload progress.
+</div>
+<h4>Parameters</h4>
+<table class="params">
+<tr>
+<td class="first">uploader:<a href="class_plupload.Uploader.html">Uploader</a>
+</td>
+<td class="last">Uploader instance sending the event.</td>
+</tr>
+<tr>
+<td class="first">file:<a href="class_plupload.File.html">File</a>
+</td>
+<td class="last">File that is currently being uploaded.</td>
 </tr>
 </table>
 </div>

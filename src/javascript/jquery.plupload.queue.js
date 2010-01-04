@@ -18,7 +18,7 @@
 	function renderUI(id, target) {
 		target.html(
 			'<div class="plupload_wrapper plupload_scroll">' +
-				'<div class="plupload_container">' +
+				'<div id="' + id + '_container" class="plupload_container">' +
 					'<div class="plupload">' +
 						'<div class="plupload_header">' +
 							'<div class="plupload_header_content">' +
@@ -36,7 +36,7 @@
 								'<div class="plupload_clearer">&nbsp;</div>' +
 							'</div>' +
 
-							'<ul id="' + id + '_container" class="plupload_filelist"></ul>' +
+							'<ul id="' + id + '_filelist" class="plupload_filelist"></ul>' +
 
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
@@ -176,21 +176,20 @@
 					});
 				}
 
-				uploader.bind('Init', function(up) {
+				uploader.bind('Init', function(up, res) {
 					renderUI(id, target);
 
-					$('a.plupload_add', target).click(function(e) {
-						uploader.browse();
-						e.preventDefault();
-					}).css('display', 'block').attr('id', id + '_browse');
+					$('a.plupload_add', target).css('display', 'block').attr('id', id + '_browse');
 
 					up.settings.browse_button = id + '_browse';
 
 					// Enable drag/drop
 					if (up.features.dragdrop && up.settings.dragdrop) {
-						up.settings.drop_element = id + '_container';
-						$('#' + id + '_container').append('<li class="plupload_droptext">Drag files here.</li>');
+						up.settings.drop_element = id + '_filelist';
+						$('#' + id + '_filelist').append('<li class="plupload_droptext">Drag files here.</li>');
 					}
+
+					$('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);
 
 					$('a.plupload_start', target).click(function(e) {
 						if (!$(this).hasClass('plupload_disabled'))

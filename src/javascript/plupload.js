@@ -9,7 +9,7 @@
  */
 
 (function() {
-	var count = 0, runtimes = [], i18n = {}, mimes = {};
+	var count = 0, runtimes = [], i18n = {}, mimes = {}, undefined;
 
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -64,7 +64,7 @@
 	 *
 	 * @example
 	 * // Encode entities
-	 * console.log(plupload.xmlEncode("My string <>&."));
+	 * console.log(plupload.xmlEncode("My string &lt;&gt;"));
 	 *
 	 * // Generate unique id
 	 * console.log(plupload.guid());
@@ -237,10 +237,10 @@
 		},
 
 		/**
-		 * Returns the absolute x, y position of a node. The position will be returned in a object with x, y fields.
+		 * Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
 		 *
 		 * @method getPos
-		 * @param {Element/String} node HTML element or element id to get x, y position from.
+		 * @param {Element} node HTML element or element id to get x, y position from.
 		 * @param {Element} root Optional root element to stop calculations at.
 		 * @return {object} Absolute position of the specified element object with x, y fields.
 		 */
@@ -376,7 +376,35 @@
 	/**
 	 * Uploader class, an instance of this class will be created for each upload field.
 	 *
+	 * @example
+	 * var uploader = new plupload.Uploader({
+	 *     runtimes : 'gears,html5,flash',
+	 *     browse_button : 'button_id'
+	 * });
+	 *
+	 * uploader.bind('Init', function(up) {
+	 *     alert('Supports drag/drop: ' + (!!up.features.dragdrop));
+	 * });
+	 *
+	 * uploader.bind('FilesAdded', function(up, files) {
+	 *     alert('Selected files: ' + files.length);
+	 * });
+	 *
+	 * uploader.bind('QueueChanged', function(up) {
+	 *     alert('Queued files: ' + uploader.files.length);
+	 * });
+	 *
+	 * uploader.init();
+	 *
 	 * @class plupload.Uploader
+	 */
+
+	/**
+	 * Constructs a new uploader instance.
+	 *
+	 * @constructor
+	 * @method Uploader
+	 * @param {Object} settings Initialization settings, to be used by the uploader instance and runtimes.
 	 */
 	plupload.Uploader = function(settings) {
 		var events = {}, total, files = [], fileIndex;
@@ -389,7 +417,10 @@
 			chunk_size : '1mb',
 			max_file_size : '1gb',
 			multi_selection : true,
-			image_quality : 90
+			image_quality : 90,
+			filters : [
+				{title : "Image files", extensions : "jpg,gif,png"}
+			]
 		}, settings);
 
 		// Private methods
@@ -432,7 +463,8 @@
 		// Add public methods
 		plupload.extend(this, {
 			/**
-			 * Current state of the total uploading progress.
+			 * Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
+			 * These states are controlled by the stop/start methods. The default value is STOPPED.
 			 *
 			 * @property state
 			 * @type Number
@@ -450,7 +482,7 @@
 			features : {},
 
 			/**
-			 * Array of File instances.
+			 * Current upload queue, an array of File instances.
 			 *
 			 * @property files
 			 * @type Array
@@ -467,7 +499,7 @@
 			settings : settings,
 
 			/**
-			 * Total progess information.
+			 * Total progess information. How many files has been uploaded, total percent etc.
 			 *
 			 * @property total
 			 * @type plupload.QueueProgress
@@ -501,7 +533,7 @@
 				settings.max_file_size = plupload.parseSize(settings.max_file_size);
 
 				// Add files to queue
-				self.bind('FilesSelected', function(up, selected_files) {
+				self.bind('FilesAdded', function(up, selected_files) {
 					var i, file;
 
 					for (i = 0; i < selected_files.length; i++) {
@@ -553,7 +585,7 @@
 					if (runtime) {
 						runtime.init(self, function(res) {
 							if (res && res.success) {
-								self.trigger('Init', runtime.name);
+								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
 								self.refresh();
 							} else
@@ -566,23 +598,12 @@
 			},
 
 			/**
-			 * Browse for files to upload.
-			 *
-			 * @method browse
-			 * @param {Object} browse_settings name/value collection of settings.
-			 */
-			browse : function(browse_settings) {
-				this.trigger("SelectFiles", plupload.extend({}, settings, browse_settings));
-			},
-
-			/**
 			 * Refreshes the upload instance by dispatching out a refresh event to all runtimes.
-			 * This would for example reposition flash shims on the page.
+			 * This would for example reposition flash/silverlight shims on the page.
 			 *
 			 * @method refresh
-			 * @param {Object} browse_settings name/value collection of settings.
 			 */
-			refresh : function(browse_settings) {
+			refresh : function() {
 				this.trigger("Refresh");
 			},
 
@@ -641,30 +662,29 @@
 				var i;
 
 				for (i = files.length - 1; i >= 0; i--) {
-					if (files[i].id === file.id) {
-						files.splice(i, 1);
-						this.trigger("FileRemoved", file);
-					}
+					if (files[i].id === file.id)
+						return this.splice(i, 1)[0];
 				}
-
-				this.trigger("QueueChanged");
 			},
 
 			/**
-			 * Clears the upload queue. All pending, finished or failed files will be removed from queue.
+			 * Removes part of the queue and returns the files removed. This will also trigger the FilesRemoved and QueueChanged events.
 			 *
-			 * @method removeAll
+			 * @method splice
+			 * @param {Number} start (Optional) Start index to remove from.
+			 * @param {Number} length (Optional) Lengh of items to remove.
+			 * @return {Array} Array of files that was removed.
 			 */
-			removeAll : function() {
-				var i, file;
+			splice : function(start, length) {
+				var removed;
+	
+				// Splice and trigger events
+				removed = files.splice(start, length);
 
-				for (i = files.length - 1; i >= 0; i--) {
-					file = files[i];
-					files.splice(i, 1);
-					this.trigger("FileRemoved", file);
-				}
-
+				this.trigger("FilesRemoved", removed);
 				this.trigger("QueueChanged");
+
+				return removed;
 			},
 
 			/**
@@ -732,11 +752,70 @@
 			}
 
 			/**
+			 * Fires when the current RunTime has been initialized.
+			 *
+			 * @event Init
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 */
+
+			/**
+			 * Fires after the init event incase you need to perform actions there.
+			 *
+			 * @event PostInit
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 */
+
+			/**
+			 * Fires when the silverlight/flash or other shim needs to move.
+			 *
+			 * @event Refresh
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 */
+	
+			/**
+			 * Fires when the overall state is being changed for the upload queue.
+			 *
+			 * @event StateChanged
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 */
+
+			/**
 			 * Fires when a file is to be uploaded by the runtime.
 			 *
 			 * @event UploadFile
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 * @param {plupload.File} file File to be uploaded.
+			 */
+
+			/**
+			 * Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+			 *
+			 * @event QueueChanged
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 */
+	
+			/**
+			 * Fires while a file is being uploaded. Use this event to update the current file upload progress.
+			 *
+			 * @event UploadProgress
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {plupload.File} file File that is currently being uploaded.
+			 */
+
+			/**
+			 * Fires while a file was removed from queue.
+			 *
+			 * @event FilesRemoved
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {plupload.File} file File that is currently being uploaded.
+			 */
+
+			/**
+			 * Fires while when the user selects files to upload.
+			 *
+			 * @event FilesAdded
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {Array} files Array of file objects that was selected.
 			 */
 		});
 	};
@@ -747,6 +826,16 @@
 	 * @class plupload.File
 	 * @param {String} name Name of the file.
 	 * @param {Number} size File size.
+	 */
+
+	/**
+	 * Constructs a new file instance.
+	 *
+	 * @constructor
+	 * @method File
+	 * @param {String} id Unique file id.
+	 * @param {String} name File name.
+	 * @param {Number} size File size in bytes.
 	 */
 	plupload.File = function(id, name, size) {
 		var self = this; // Setup alias for self to reduce code size when it's compressed
@@ -813,7 +902,7 @@
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize.
+		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		this.init = function(uploader, callback) {
 		};
@@ -823,6 +912,13 @@
 	 * Runtime class gets implemented by each upload runtime.
 	 *
 	 * @class plupload.QueueProgress
+	 */
+
+	/**
+	 * Constructs a queue progress.
+	 *
+	 * @constructor
+	 * @method QueueProgress
 	 */
 	 plupload.QueueProgress = function() {
 		var self = this; // Setup alias for self to reduce code size when it's compressed
@@ -883,7 +979,10 @@
 		self.reset = function() {
 			self.size = self.loaded = self.uploaded = self.failed = self.queued = self.percent = 0;
 		};
-	 };
+	};
+
+	// Create runtimes namespace
+	plupload.runtimes = {};
 
 	// Expose plupload namespace
 	window.plupload = plupload;

@@ -33,19 +33,19 @@
 	};
 
 	/**
-	 * Gears implementation.
+	 * Gears implementation. This runtime supports these features: dragdrop, jpgresize, pngresize, chunks.
 	 *
 	 * @static
-	 * @class plupload.GearsRuntime
+	 * @class plupload.runtimes.Gears
 	 * @extends plupload.Runtime
 	 */
-	plupload.GearsRuntime = plupload.addRuntime("gears", {
+	plupload.runtimes.Gears = plupload.addRuntime("gears", {
 		/**
-		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
+		 * Initializes the upload runtime.
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize.
+		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
 			var desktop;
@@ -75,13 +75,13 @@
 					files.push(new plupload.File(id, file.name, file.blob.length));
 				}
 
-				// Fire FilesSelected event
-				uploader.trigger("FilesSelected", files);
+				// Fire FilesAdded event
+				uploader.trigger("FilesAdded", files);
 			};
 
 			// Add drop handler
 			uploader.bind("PostInit", function() {
-				var dropElm = document.getElementById(uploader.settings.drop_element);
+				var settings = uploader.settings, dropElm = document.getElementById(settings.drop_element);
 
 				if (dropElm) {
 					// Block browser default drag over
@@ -102,6 +102,22 @@
 					// Prevent IE leak
 					dropElm = 0;
 				}
+
+				// Add browse button
+				plupload.addEvent(document.getElementById(settings.browse_button), 'click', function(e) {
+					var filters = [], i, a, ext;
+
+					e.preventDefault();
+
+					for (i = 0; i < settings.filters.length; i++) {
+						ext = settings.filters[i].extensions.split(',');
+
+						for (a = 0; a < ext.length; a++)
+							filters.push('.' + ext[a]);
+					}
+
+					desktop.openFiles(addSelectedFiles, {singleFile : !settings.multi_selection, filter : filters});
+				});
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
@@ -178,19 +194,6 @@
 					if (chunk < chunks)
 						req.send(blobs[file.id].slice(chunk * chunkSize, curChunkSize));
 				};
-			});
-
-			uploader.bind("SelectFiles", function(up) {
-				var filters = [], i, a, ext;
-
-				for (i = 0; i < up.settings.filters.length; i++) {
-					ext = up.settings.filters[i].extensions.split(',');
-
-					for (a = 0; a < ext.length; a++)
-						filters.push('.' + ext[a]);
-				}
-
-				desktop.openFiles(addSelectedFiles, {singleFile : !up.settings.multi_selection, filter : filters});
 			});
 
 			uploader.features = {
