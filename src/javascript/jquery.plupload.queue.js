@@ -72,7 +72,10 @@
 			this.each(function() {
 				var uploader, target, id;
 
-				uploader = new plupload.Uploader(settings);
+				uploader = new plupload.Uploader($.extend({
+					dragdrop : true
+				}, settings));
+
 				target = $(this);
 				id = target.attr('id');
 
@@ -182,10 +185,12 @@
 					}).css('display', 'block').attr('id', id + '_browse');
 
 					up.settings.browse_button = id + '_browse';
-					up.settings.drop_element = id + '_container';
 
-					if (up.features.dragdrop)
+					// Enable drag/drop
+					if (up.features.dragdrop && up.settings.dragdrop) {
+						up.settings.drop_element = id + '_container';
 						$('#' + id + '_container').append('<li class="plupload_droptext">Drag files here.</li>');
+					}
 
 					$('a.plupload_start', target).click(function(e) {
 						if (!$(this).hasClass('plupload_disabled'))

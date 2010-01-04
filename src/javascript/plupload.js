@@ -676,7 +676,7 @@
 			 * @param {Object..} Multiple arguments to pass along to the listener functions.
 			 */
 			trigger : function(name) {
-				var list = events[name.toLowerCase()], i, args = [];
+				var list = events[name.toLowerCase()], i, args;
 
 				// console.log(name, arguments);
 
