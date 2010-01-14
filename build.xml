@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Plupload" default="build" basedir=".">
 	<!-- Path properties -->
-	<property description="Export directory" name="export_dir" value="export" />
+	<property description="Temp directory" name="tmp_dir" value="tmp" />
 
 	<!-- Setup classpath for js-build-tools ant tasks -->
 	<path id="tasks.classpath">
@@ -60,22 +60,22 @@
 
 	<target name="release">
 		<!-- Export -->
-		<delete dir="${export_dir}/plupload" quiet="true" />
+		<delete dir="${tmp_dir}/plupload" quiet="true" />
 
 		<svn javahl="${javahl}">
-			<export srcUrl="http://plupload.googlecode.com/svn/trunk/" destPath="${export_dir}/plupload" />
+			<export srcUrl="http://plupload.googlecode.com/svn/trunk/" destPath="${tmp_dir}/plupload" />
 		</svn>
 
 		<!-- Parse minor version, major version and release date from changelog -->
-		<loadfile property="changelog" srcFile="${export_dir}/plupload/changelog.txt" />
+		<loadfile property="changelog" srcFile="${tmp_dir}/plupload/changelog.txt" />
 		<propertyregex property="version" input="${changelog}" regexp="^Version ([0-9xabrc.]+)" select="\1" />
 		<propertyregex property="release_date" input="${changelog}" regexp="^Version [^\(]+\(([^\)]+)\)" select="\1" />
 		<propertyregex property="file_version" input="${version}" regexp="\." replace="_" />
 
 		<!-- Compress production package -->
-		<delete file="${export_dir}/plupload_${file_version}.zip" quiet="true" />
-		<zip destfile="${export_dir}/plupload_${file_version}.zip">
-			<fileset dir="${export_dir}/plupload">
+		<delete file="${tmp_dir}/plupload_${file_version}.zip" quiet="true" />
+		<zip destfile="${tmp_dir}/plupload_${file_version}.zip">
+			<fileset dir="${tmp_dir}/plupload">
 				<include name="*/**" />
 				<exclude name="tools/**" />
 				<exclude name="build.xml" />
@@ -84,9 +84,9 @@
 		</zip>
 
 		<!-- Compress dev package -->
-		<delete file="${export_dir}/plupload_${file_version}_dev.zip" quiet="true" />
-		<zip destfile="${export_dir}/plupload_${file_version}_dev.zip">
-			<fileset dir="${export_dir}/plupload">
+		<delete file="${tmp_dir}/plupload_${file_version}_dev.zip" quiet="true" />
+		<zip destfile="${tmp_dir}/plupload_${file_version}_dev.zip">
+			<fileset dir="${tmp_dir}/plupload">
 				<include name="*/**" />
 			</fileset>
 		</zip>
