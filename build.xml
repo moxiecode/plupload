@@ -57,7 +57,7 @@
 		<delete file="js/plupload.full.tmp.js" quiet="true" />
 	</target>
 
-	<target name="release">
+	<target name="release" depends="build">
 		<!-- Copy the current repos and start processing it -->
 		<delete dir="${tmp_dir}" quiet="true" />
 		<copy todir="${tmp_dir}/plupload">
