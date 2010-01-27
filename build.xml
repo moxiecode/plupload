@@ -15,7 +15,6 @@
 	<taskdef name="preprocess" classname="com.moxiecode.ant.tasks.PreProcessTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef name="yuicompress" classname="com.moxiecode.ant.tasks.YuiCompressTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef name="moxiedoc" classname="com.moxiecode.ant.tasks.MoxieDocTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
-	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" /> 
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 
 	<!-- Generate JS documentation -->
@@ -59,12 +58,15 @@
 	</target>
 
 	<target name="release">
-		<!-- Export -->
-		<delete dir="${tmp_dir}/plupload" quiet="true" />
-
-		<svn javahl="${javahl}">
-			<export srcUrl="http://plupload.googlecode.com/svn/trunk/" destPath="${tmp_dir}/plupload" />
-		</svn>
+		<!-- Copy the current repos and start processing it -->
+		<delete dir="${tmp_dir}" quiet="true" />
+		<copy todir="${tmp_dir}/plupload">
+			<fileset dir=".">
+				<include name="**"/>
+				<exclude name="**/.git/**"/>
+				<exclude name="**/.*"/>
+			</fileset>
+		</copy>
 
 		<!-- Parse minor version, major version and release date from changelog -->
 		<loadfile property="changelog" srcFile="${tmp_dir}/plupload/changelog.txt" />
@@ -75,20 +77,20 @@
 		<!-- Compress production package -->
 		<delete file="${tmp_dir}/plupload_${file_version}.zip" quiet="true" />
 		<zip destfile="${tmp_dir}/plupload_${file_version}.zip">
-			<fileset dir="${tmp_dir}/plupload">
+			<zipfileset dir="${tmp_dir}/plupload" prefix="plupload">
 				<include name="*/**" />
 				<exclude name="tools/**" />
 				<exclude name="build.xml" />
 				<exclude name="build.bat" />
-			</fileset>
+			</zipfileset>
 		</zip>
 
 		<!-- Compress dev package -->
 		<delete file="${tmp_dir}/plupload_${file_version}_dev.zip" quiet="true" />
 		<zip destfile="${tmp_dir}/plupload_${file_version}_dev.zip">
-			<fileset dir="${tmp_dir}/plupload">
+			<zipfileset dir="${tmp_dir}/plupload" prefix="plupload">
 				<include name="*/**" />
-			</fileset>
+			</zipfileset>
 		</zip>
 	</target>
 </project>
