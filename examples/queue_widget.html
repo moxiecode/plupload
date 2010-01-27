@@ -30,6 +30,9 @@ $().ready(function() {
 			{title : "Zip files", extensions : "zip"}
 		],
 
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90},
+
 		// Flash settings
 		flash_swf_url : '../js/plupload.flash.swf'
 	});
@@ -45,7 +48,10 @@ $().ready(function() {
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
-		]
+		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90}
 	});
 
 	// Setup silverlight version
@@ -60,6 +66,9 @@ $().ready(function() {
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
 		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90},
 
 		// Silverlight settings
 		silverlight_xap_url : '../js/plupload.silverlight.xap'
@@ -76,7 +85,10 @@ $().ready(function() {
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
-		]
+		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90}
 	});
 
 	// Setup browserplus version
@@ -90,7 +102,10 @@ $().ready(function() {
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
-		]
+		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90}
 	});
 });
 </script>

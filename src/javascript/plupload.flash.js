@@ -144,7 +144,8 @@
 						settings.chunk_size,
 						resize.width,
 						resize.height,
-						resize.quality || 90
+						resize.quality || 90,
+						/\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png'
 					);
 				});
 

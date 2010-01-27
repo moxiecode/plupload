@@ -96,8 +96,9 @@ package com.plupload {
 		 * @param chunk_size Chunk size to use.
 		 * @param width Image width to scale down to.
 		 * @param height Image height to scale down to.
+		 * @param format Image format to save it as.
 		 */
-		public function upload(url:String, chunk_size:int, width:int, height:int, quality:int):void {
+		public function upload(url:String, chunk_size:int, width:int, height:int, quality:int, format:String):void {
 			var file:File = this;
 
 			// Setup internal vars
@@ -132,7 +133,7 @@ package com.plupload {
 						outputBitmapData.draw(loadedBitmapData, matrix);
 
 						// Encode bitmap as JPEG
-						if (/\.(jpeg|jpg)$/gi.test(this._fileName))
+						if (format == "jpg")
 							file._imageData = new JPEGEncoder(quality).encode(outputBitmapData);
 						else
 							file._imageData = new PNGEncoder().encode(outputBitmapData);
