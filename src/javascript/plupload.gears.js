@@ -121,17 +121,14 @@
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
-				var chunk = 0, chunks, chunkSize, loaded = 0, imageWidth, imageHeight;
-
-				imageWidth = up.settings.image_width;
-				imageHeight = up.settings.image_height;
+				var chunk = 0, chunks, chunkSize, loaded = 0, resize = up.settings.resize;
 
 				chunkSize = up.settings.chunk_size;
 				chunks = Math.ceil(file.size / chunkSize);
 
-				// Scale the image
-				if (/\.(png|jpg|jpeg)$/i.test(file.name) && (imageWidth || imageHeight))
-					blobs[file.id] = scaleImage(blobs[file.id], imageWidth, imageHeight, up.settings.image_quality, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
+				// If file is png or jpeg and resize is configured then resize it
+				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name))
+					blobs[file.id] = scaleImage(blobs[file.id], resize.width, resize.height, resize.quality || 90, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
 
 				file.size = blobs[file.id].length;
 

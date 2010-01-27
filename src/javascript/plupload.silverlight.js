@@ -238,11 +238,11 @@
 				});
 
 				uploader.bind("UploadFile", function(up, file) {
-					var url = up.settings.url;
+					var url = up.settings.url, resize = up.settings.resize || {};
 
 					url += (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
 
-					getSilverlightObj().UploadFile(lookup[file.id], url, up.settings.chunk_size, up.settings.image_width, up.settings.image_height, up.settings.image_quality);
+					getSilverlightObj().UploadFile(lookup[file.id], url, up.settings.chunk_size, resize.width, resize.height, resize.quality || 90);
 				});
 
 				callback({success : true});

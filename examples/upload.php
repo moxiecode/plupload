@@ -77,34 +77,4 @@
 
 	// Return JSON-RPC response
 	die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
-?>					for ($i=0; isset($_FILES['file' . $i]['tmp_name']); $i++) {
-						$filename = utf8_encode($input["name" . $i]);
-
-						// Do nothing in demo mode
-						if (checkBool($config['general.demo'])) {
-							$result->add("DEMO_ERROR", $man->encryptPath($file->getAbsolutePath()), "{#error.demo}");
-							continue;
-						}
-
-						// No access, tool disabled
-						if (in_array("upload", explode(',', $config['general.disabled_tools'])) || !$file->canWrite() || !checkBool($config["filesystem.writable"])) {
-							$result->add("ACCESS_ERROR", $man->encryptPath($file->getAbsolutePath()), "{#error.no_access}");
-							continue;
-						}
-
-						// Get ext to glue back on
-						$ext = "";
-						if (strpos(basename($_FILES['file' . $i]['name']), ".") > 0) {
-							$ar = explode('.', basename($_FILES['file' . $i]['name']));
-							$ext = array_pop($ar);
-						}
-
-						$file =& $man->getFile($path, $filename . "." . $ext, "", MC_IS_FILE);
-						if ($man->verifyFile($file, "upload") < 0) {
-							$result->add("ACCESS_ERROR", $man->encryptPath($file->getAbsolutePath()), $man->getInvalidFileMsg());
-							continue;
-						}
-
-						$config = $file->getConfig();
-
-						if (is_uploaded_file($_FILES['file' . $i]['tmp_name'])) {
+?>

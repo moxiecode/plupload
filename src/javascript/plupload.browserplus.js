@@ -27,10 +27,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var browserPlus = window.BrowserPlus, browserPlusFiles = {}, imageWidth, imageHeight, settings = uploader.settings;
-
-			imageWidth = settings.image_width;
-			imageHeight = settings.image_height;
+			var browserPlus = window.BrowserPlus, browserPlusFiles = {}, settings = uploader.settings, resize = settings.resize;
 
 			function addSelectedFiles(native_files) {
 				var files, i, selectedFiles = [], file, id;
@@ -58,7 +55,7 @@
 						{service: "FileBrowse", version: "1"}
 					];
 
-					if (imageWidth || imageHeight)
+					if (resize)
 						services.push({service : 'ImageAlter', version : "4"});
 
 					if (res.success) {
@@ -194,14 +191,15 @@
 						});
 					};
 
-					if (/\.(png|jpg|jpeg)$/i.test(file.name) && (imageWidth || imageHeight)) {
+					// Resize image if it's a supported format and resize is enabled
+					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
 						BrowserPlus.ImageAlter.transform({
 							file : nativeFile,
-							quality : up.settings.image_quality,
+							quality : resize.quality || 90,
 							actions : [{
 								scale : {
-									maxwidth : imageWidth,
-									maxheight : imageHeight
+									maxwidth : resize.width,
+									maxheight : resize.height
 								}
 							}]
 						}, function(res) {

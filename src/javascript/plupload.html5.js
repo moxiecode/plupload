@@ -191,7 +191,7 @@
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
-				var xhr = new XMLHttpRequest(), upload, url = up.settings.url, imageWidth, imageHeight, nativeFile;
+				var xhr = new XMLHttpRequest(), upload, url = up.settings.url, resize = up.settings.resize, nativeFile;
 
 				// File upload finished
 				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED)
@@ -223,12 +223,9 @@
 				nativeFile = html5files[file.id]; 
 
 				if (xhr.sendAsBinary) {
-					imageWidth = up.settings.image_width;
-					imageHeight = up.settings.image_height;
-
-					// Should we scale it
-					if (/\.(png|jpg|jpeg)$/i.test(file.name) && (imageWidth || imageHeight)) {
-						scaleImage(nativeFile.getAsDataURL(), imageWidth, imageHeight, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
+					// Resize image if it's a supported format and resize is enabled
+					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
+						scaleImage(nativeFile.getAsDataURL(), resize.width, resize.height, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
 							// If it was scaled send the scaled image if it failed then
 							// send the raw image and let the server do the scaling
 							if (res.success) {

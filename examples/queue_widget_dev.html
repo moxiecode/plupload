@@ -32,9 +32,7 @@ $().ready(function() {
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		image_width : 320,
-		image_height : 240,
-		image_quality : 90,
+		resize : {width : 320, height : 240, quality : 90},
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
@@ -52,13 +50,11 @@ $().ready(function() {
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		image_width : 320,
-		image_height : 240,
-		image_quality : 90,
+		resize : {width : 320, height : 240, quality : 90},
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
-		],
+		]
 	});
 
 	// Setup silverlight version
@@ -69,9 +65,7 @@ $().ready(function() {
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		image_width : 320,
-		image_height : 240,
-		image_quality : 90,
+		resize : {width : 320, height : 240, quality : 90},
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
@@ -89,9 +83,7 @@ $().ready(function() {
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		image_width : 320,
-		image_height : 240,
-		image_quality : 90,
+		resize : {width : 320, height : 240, quality : 90},
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
@@ -106,30 +98,35 @@ $().ready(function() {
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		image_width : 320,
-		image_height : 240,
-		image_quality : 90,
+		resize : {width : 320, height : 240, quality : 90},
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
 		]
 	});
 
-var uploader = new plupload.Uploader({
-     runtimes : 'gears,html5,flash',
-     browse_button : 'button_id'
- });
-	  uploader.bind('Init', function(up) {
-	      alert('Supports drag/drop: ' + (!!up.features.dragdrop));
-	  });
-uploader.bind('FilesAdded', function(up, files) {
-     alert('Selected files: ' + files.length);
-});
-	  uploader.bind('QueueChanged', function(up) {
-	      alert('Queued files: ' + uploader.files.length);
-	  });
-	 
-uploader.init();
+	// Custom example
+	var uploader = new plupload.Uploader({
+		 runtimes : 'gears,html5,flash,silverlight,browserplus',
+		 browse_button : 'pickfiles',
+		 url : 'upload.php'
+	 });
+
+	uploader.bind('FilesAdded', function(up, files) {
+		$.each(files, function(i, file) {
+			$('#filelist').append("<div id=" + file.id + ">File: " + file.name + " (" + plupload.formatSize(file.size) + ") <span></span></div>");
+		});
+	});
+
+	uploader.bind('UploadProgress', function(up, file) {
+		$('#' + file.id + " span").html(file.percent + "%");
+	});
+
+	$('#uploadfiles').click(function() {
+		uploader.start();
+	});
+
+	uploader.init();
 });
 </script>
 <!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
@@ -138,7 +135,7 @@ uploader.init();
 
 <form method="post" action="dump.php">
 	<h1>Queue widget example</h1>
-<input id="button_id" />
+
 	<p>Shows the jQuery Plupload Queue widget and under different runtimes.</p>
 
 	<div style="float: left; margin-right: 20px">
@@ -160,6 +157,13 @@ uploader.init();
 	<div style="float: left; margin-right: 20px">
 		<h3>BrowserPlus runtime</h3>
 		<div id="browserplus_uploader" style="width: 450px; height: 330px;">You browser doesn't have BrowserPlus installed.</div>
+
+		<div>
+			<h3>Custom example</h3>
+			<div id="filelist"></div>
+			<input id="pickfiles" type="button" value="Pick files" />
+			<input id="uploadfiles" type="button" value="Upload" />
+		</div>
 	</div>
 
 	<br style="clear: both" />

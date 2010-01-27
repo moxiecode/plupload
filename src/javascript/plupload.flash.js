@@ -123,7 +123,7 @@
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {
-				var lookup = {}, i, filters = uploader.settings.filters;
+				var lookup = {}, i, filters = uploader.settings.filters, resize = uploader.settings.resize || {};
 
 				initialized = true;
 
@@ -142,9 +142,9 @@
 						lookup[file.id],
 						url,
 						settings.chunk_size,
-						settings.image_width,
-						settings.image_height,
-						settings.image_quality
+						resize.width,
+						resize.height,
+						resize.quality || 90
 					);
 				});
 

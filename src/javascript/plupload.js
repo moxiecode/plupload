@@ -417,7 +417,6 @@
 			chunk_size : '1mb',
 			max_file_size : '1gb',
 			multi_selection : true,
-			image_quality : 90,
 			filters : [
 				{title : "Image files", extensions : "jpg,gif,png"}
 			]
