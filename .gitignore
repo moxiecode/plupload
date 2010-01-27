@@ -1,10 +1,14 @@
 bin
 obj
 tmp
+docs
 .settings
 *~
 *.diff
 *.patch
 *.bak
 *.log
+*.min.js
+*.xap
+*.swf
 .DS_Store
