@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Plupload" default="build" basedir=".">
-	<!-- Path properties -->
+	<!-- Properties -->
 	<property description="Temp directory" name="tmp_dir" value="tmp" />
 
 	<!-- Setup classpath for js-build-tools ant tasks -->

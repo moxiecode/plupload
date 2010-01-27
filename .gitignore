@@ -11,4 +11,6 @@ docs
 *.min.js
 *.xap
 *.swf
+*.suo
+*.user
 .DS_Store
