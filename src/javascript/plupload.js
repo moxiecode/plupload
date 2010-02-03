@@ -892,7 +892,6 @@
 	/**
 	 * Runtime class gets implemented by each upload runtime.
 	 *
-	 * @static
 	 * @class plupload.Runtime
 	 */
 	plupload.Runtime = function() {
