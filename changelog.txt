@@ -1,3 +1,2 @@
-Version 1.0 (2009-xx-xx)
+Version 1.0 (2010-02-03)
 	First official release of Plupload.
-
