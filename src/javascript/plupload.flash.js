@@ -174,17 +174,18 @@
 					if (chunkArgs.cancelled) {
 						getFlashObj().cancelUpload();
 						file.status = plupload.FAILED;
-						up.trigger('FileUploaded', file);
 						return;
 					}
 				});
 
-				uploader.bind("Flash:UploadComplete", function(up, flash_file) {
-					var file = up.getFile(lookup[flash_file.id]);
+				uploader.bind("Flash:UploadComplete", function(up, result) {
+					var file = up.getFile(lookup[result.id]);
 
 					file.status = plupload.DONE;
 
-					up.trigger('FileUploaded', file);
+					up.trigger('FileUploaded', file, {
+						response : result.text
+					});
 				});
 
 				uploader.bind("Flash:SelectFiles", function(up, selected_files) {

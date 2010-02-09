@@ -172,7 +172,6 @@
 								// Stop upload
 								if (chunkArgs.cancelled) {
 									file.status = plupload.FAILED;
-									up.trigger('FileUploaded', file);
 									return;
 								}
 
@@ -180,7 +179,10 @@
 
 								if (++chunk >= chunks) {
 									file.status = plupload.DONE;
-									up.trigger('FileUploaded', file);
+									up.trigger('FileUploaded', file, {
+										response : xhr.responseText,
+										status : xhr.status
+									});
 								} else
 									uploadNextChunk();
 							} else

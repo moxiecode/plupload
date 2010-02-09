@@ -186,7 +186,10 @@
 						}, function(res) {
 							if (res.success) {
 								file.status = plupload.DONE;
-								up.trigger('FileUploaded', file);
+								up.trigger('FileUploaded', file, {
+									response : res.value.body,
+									status : res.value.statusCode
+								});
 							}
 						});
 					};

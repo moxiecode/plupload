@@ -198,11 +198,6 @@
 					return;
 
 				if (upload = xhr.upload) {
-					upload.onload = function() {
-						file.status = plupload.DONE;
-						up.trigger('FileUploaded', file);
-					};
-
 					upload.onprogress = function(e) {
 						file.loaded = e.loaded;
 						up.trigger('UploadProgress', file);
@@ -214,7 +209,10 @@
 						file.status = plupload.DONE;
 						file.loaded = file.size;
 						up.trigger('UploadProgress', file);
-						up.trigger('FileUploaded', file);
+						up.trigger('FileUploaded', file, {
+							response : xhr.responseText,
+							status : xhr.status
+						});
 					}
 				};
 

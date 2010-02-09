@@ -816,6 +816,15 @@
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 * @param {Array} files Array of file objects that was selected.
 			 */
+
+			/**
+			 * Fires when a file is successfully uploaded.
+			 *
+			 * @event FileUploaded
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {plupload.File} file File that was uploaded.
+			 * @param {Object} response Object with response properties.
+			 */
 		});
 	};
 

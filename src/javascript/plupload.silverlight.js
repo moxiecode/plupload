@@ -217,17 +217,18 @@
 					if (chunkArgs.cancelled) {
 						getSilverlightObj().CancelUpload();
 						file.status = plupload.FAILED;
-						up.trigger('FileUploaded', file);
 						return;
 					}
 				});
 
-				uploader.bind("Silverlight:UploadSuccessful", function(up, sl_id) {
+				uploader.bind("Silverlight:UploadSuccessful", function(up, sl_id, response) {
 					var file = up.getFile(lookup[sl_id]);
 
 					file.status = plupload.DONE;
 
-					up.trigger('FileUploaded', file);
+					up.trigger('FileUploaded', file, {
+						response : response
+					});
 				});
 
 				uploader.bind("FilesRemoved", function(up, files) {
