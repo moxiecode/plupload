@@ -186,7 +186,7 @@
 					// Enable drag/drop
 					if (up.features.dragdrop && up.settings.dragdrop) {
 						up.settings.drop_element = id + '_filelist';
-						$('#' + id + '_filelist').append('<li class="plupload_droptext">Drag files here.</li>');
+						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
 					}
 
 					$('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);

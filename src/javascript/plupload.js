@@ -335,7 +335,7 @@
 		 * @return {Object} Extended language pack object.
 		 */
 		addI18n : function(pack) {
-			return plipload.extend(i18n, pack);
+			return plupload.extend(i18n, pack);
 		},
 
 		/**
