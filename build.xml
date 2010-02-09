@@ -55,6 +55,7 @@
 		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.min.js" />
 
 		<delete file="js/plupload.full.tmp.js" quiet="true" />
+		<copy file="src/javascript/gears_init.js" todir="js" />
 	</target>
 
 	<target name="release" depends="build">
