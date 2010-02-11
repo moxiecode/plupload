@@ -203,7 +203,8 @@
 		 * Generates an unique ID. This is 99.99% unique since it takes the current time and 5 random numbers.
 		 * The only way a user would be able to get the same ID is if the two persons at the same exact milisecond manages
 		 * to get 5 the same random numbers between 0-65535 it also uses a counter so each call will be guaranteed to be page unique.
-		 * It's more probable for the earth to be hit with an ansteriod.
+		 * It's more probable for the earth to be hit with an ansteriod. You can also if you want to be 100% sure set the plupload.guidPrefix property
+		 * to an user unique key.
 		 *
 		 * @method guid
 		 * @return {String} Virtually unique id.
@@ -212,9 +213,9 @@
 			var guid = new Date().getTime().toString(32), i;
 
 			for (i = 0; i < 5; i++)
-				guid += Math.floor(Math.random() * 65535 + count).toString(32);
+				guid += Math.floor(Math.random() * 65535).toString(32);
 
-			return guid;
+			return (plupload.guidPrefix || '') + guid + (count++).toString(32);
 		},
 
 		/**
