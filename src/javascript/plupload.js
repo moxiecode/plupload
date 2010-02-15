@@ -9,16 +9,18 @@
  */
 
 (function() {
-	var count = 0, runtimes = [], i18n = {}, mimes = {}, undefined;
+	var count = 0, runtimes = [], i18n = {}, mimes = {}, UNDEFINED, TRUE = true, FALSE = false,
+		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
+		xmlEncodeRegExp = /[<>&\"\']/g;
 
 	// IE W3C like event funcs
 	function preventDefault() {
-		this.returnValue = false;
-	};
+		this.returnValue = FALSE;
+	}
 
 	function stopPropagation() {
-		this.cancelBubble = true;
-	};
+		this.cancelBubble = TRUE;
+	}
 
 	// Parses the default mime types string into a mimes lookup map
 	(function(mime_data) {
@@ -27,8 +29,9 @@
 		for (i = 0; i < items.length; i += 2) {
 			ext = items[i + 1].split(/ /);
 
-			for (y = 0; y < ext.length; y++)
+			for (y = 0; y < ext.length; y++) {
 				mimes[ext[y]] = items[i];
+			}
 		}
 	})(
 		"application/msword,doc dot," +
@@ -144,8 +147,11 @@
 			for (i = 1; i < arguments.length; i++) {
 				obj = arguments[i];
 
-				for (key in obj)
-					target[key] = obj[key];
+				for (key in obj) {
+					if (obj.hasOwnProperty(key)) {
+						target[key] = obj[key];
+					}
+				}
 			}
 
 			return target;
@@ -172,8 +178,9 @@
 				/[\331-\334]/g, 'U', /[\371-\374]/g, 'u'
 			];
 
-			for (i = 0; i < lookup.length; i += 2)
+			for (i = 0; i < lookup.length; i += 2) {
 				name = name.replace(lookup[i], lookup[i + 1]);
+			}
 
 			// Replace whitespace
 			name = name.replace(/\s+/g, '_');
@@ -212,8 +219,9 @@
 		guid : function() {
 			var guid = new Date().getTime().toString(32), i;
 
-			for (i = 0; i < 5; i++)
+			for (i = 0; i < 5; i++) {
 				guid += Math.floor(Math.random() * 65535).toString(32);
+			}
 
 			return (plupload.guidPrefix || '') + guid + (count++).toString(32);
 		},
@@ -227,12 +235,14 @@
 		 */
 		formatSize : function(size) {
 			// MB
-			if (size > 1048576)
+			if (size > 1048576) {
 				return Math.round(size / 1048576, 1) + " MB";
+			}
 
 			// KB
-			if (size > 1024)
+			if (size > 1024) {
 				return Math.round(size / 1024, 1) + " KB";
+			}
 
 			return size + " b";
 		},
@@ -281,16 +291,19 @@
 			if (typeof(size) == 'string') {
 				size = /^([0-9]+)([mgk]+)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
 				mul = size[2];
-				size = parseInt(size[1]);
+				size = +size[1];
 
-				if (mul == 'g')
+				if (mul == 'g') {
 					size *= 1073741824;
+				}
 
-				if (mul == 'm')
+				if (mul == 'm') {
 					size *= 1048576;
+				}
 
-				if (mul == 'k')
+				if (mul == 'k') {
 					size *= 1024;
+				}
 			}
 
 			return size;
@@ -304,13 +317,9 @@
 		 * @return {String} Encoded string.
 		 */
 		xmlEncode : function(str) {
-			var lookup = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'}, regExp = /[<>&\"\']/g;
-
-			return (this.xmlEncode = function(str) {
-				return str ? ('' + str).replace(regExp, function(chr) {
-					return lookup[chr] ? '&' + lookup[chr] + ';' : chr;
-				}) : str;
-			})(str);
+			return str ? ('' + str).replace(xmlEncodeRegExp, function(chr) {
+				return xmlEncodeChars[chr] ? '&' + xmlEncodeChars[chr] + ';' : chr;
+			}) : str;
 		},
 
 		/**
@@ -323,8 +332,9 @@
 		toArray : function(obj) {
 			var i, arr = [];
 
-			for (i = 0; i < obj.length; i++)
+			for (i = 0; i < obj.length; i++) {
 				arr[i] = obj[i];
+			}
 
 			return arr;
 		},
@@ -361,16 +371,18 @@
 				obj.attachEvent('on' + name, function() {
 					var evt = window.event;
 
-					if (!evt.target)
+					if (!evt.target) {
 						evt.target = evt.srcElement;
+					}
 
 					evt.preventDefault = preventDefault;
 					evt.stopPropagation = stopPropagation;
 
 					callback(evt);
 				});
-			} else if (obj.addEventListener)
-				obj.addEventListener(name, callback, false);
+			} else if (obj.addEventListener) {
+				obj.addEventListener(name, callback, FALSE);
+			}
 		}
 	};
 
@@ -417,7 +429,7 @@
 		settings = plupload.extend({
 			chunk_size : '1mb',
 			max_file_size : '1gb',
-			multi_selection : true,
+			multi_selection : TRUE,
 			filters : [
 				{title : "Image files", extensions : "jpg,gif,png"}
 			]
@@ -430,13 +442,15 @@
 			if (this.state == plupload.STARTED && fileIndex < files.length) {
 				file = files[fileIndex++];
 
-				if (file.status == plupload.QUEUED)
+				if (file.status == plupload.QUEUED) {
 					this.trigger("UploadFile", file);
-				else
+				} else {
 					uploadNext.call(this);
-			} else
+				}
+			} else {
 				this.stop();
-		};
+			}
+		}
 
 		function calc() {
 			var i;
@@ -449,16 +463,17 @@
 				total.size += files[i].size;
 				total.loaded += files[i].loaded;
 
-				if (files[i].status == plupload.DONE)
+				if (files[i].status == plupload.DONE) {
 					total.uploaded++;
-				else if (files[i].status == plupload.FAILED)
+				} else if (files[i].status == plupload.FAILED) {
 					total.failed++;
-				else
+				} else {
 					total.queued++;
+				}
 			}
 
 			total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
-		};
+		}
 
 		// Add public methods
 		plupload.extend(this, {
@@ -525,8 +540,9 @@
 				settings.page_url = settings.page_url || document.location.pathname.replace(/\/[^\/]+$/g, '/');
 
 				// If url is relative force it absolute to the current page
-				if (!/^(\w+:\/\/|\/)/.test(settings.url))
+				if (!/^(\w+:\/\/|\/)/.test(settings.url)) {
 					settings.url = settings.page_url + settings.url;
+				}
 
 				// Convert settings
 				settings.chunk_size = plupload.parseSize(settings.chunk_size);
@@ -541,10 +557,11 @@
 						file.loaded = 0;
 						file.percent = 0;
 
-						if (selected_files[i].size > settings.max_file_size)
+						if (selected_files[i].size > settings.max_file_size) {
 							file.status = plupload.FAILED;
-						else
+						} else {
 							file.status = plupload.QUEUED;
+						}
 
 						files.push(file);
 					}
@@ -554,8 +571,9 @@
 				});
 
 				self.bind('UploadProgress', function(up, file) {
-					if (file.status == plupload.QUEUED)
+					if (file.status == plupload.QUEUED) {
 						file.status = plupload.UPLOADING;
+					}
 
 					file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 0;
 					calc();
@@ -573,10 +591,13 @@
 				if (settings.runtimes) {
 					runtimeList = [];
 					items = settings.runtimes.split(/,/);
-					for (i = 0; i < items.length; i++)
+
+					for (i = 0; i < items.length; i++) {
 						runtimeList.push(runtimes[items[i]]);
-				} else
+					}
+				} else {
 					runtimeList = runtimes;
+				}
 
 				// Call init on each runtime in sequence
 				function callNextInit() {
@@ -588,11 +609,12 @@
 								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
 								self.refresh();
-							} else
+							} else {
 								callNextInit();
+							}
 						});
 					}
-				};
+				}
 
 				callNextInit();
 			},
@@ -640,7 +662,7 @@
 			 *
 			 * @method getFile
 			 * @param {String} id File id to look for.
-			 * @return {plupload.File} File object or undefined if it wasn't found;
+			 * @return {plupload.File} File object or UNDEFINED if it wasn't found;
 			 */
 			getFile : function(id) {
 				var i;
@@ -662,8 +684,9 @@
 				var i;
 
 				for (i = files.length - 1; i >= 0; i--) {
-					if (files[i].id === file.id)
+					if (files[i].id === file.id) {
 						return this.splice(i, 1)[0];
+					}
 				}
 			},
 
@@ -707,13 +730,14 @@
 
 					// Dispatch event to all listeners
 					for (i = 0; i < list.length; i++) {
-						// Fire event, break chain if false is returned
-						if (list[i].func.apply(list[i].scope, args) === false)
-							return false;
+						// Fire event, break chain if FALSE is returned
+						if (list[i].func.apply(list[i].scope, args) === FALSE) {
+							return FALSE;
+						}
 					}
 				}
 
-				return true;
+				return TRUE;
 			},
 
 			/**
@@ -745,8 +769,9 @@
 
 				if (list) {
 					for (i = list.length - 1; i >= 0; i--) {
-						if (list[i].func === func)
+						if (list[i].func === func) {
 							list.splice(i, 1);
+						}
 					}
 				}
 			}
@@ -910,7 +935,7 @@
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
+		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to TRUE.
 		 */
 		this.init = function(uploader, callback) {
 		};

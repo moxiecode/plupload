@@ -21,7 +21,7 @@
 				'</div>' +
 			'</div>'
 		);
-	};
+	}
 
 	$.fn.pluploadSingle = function(settings) {
 		if (settings) {
@@ -72,20 +72,23 @@
 					});
 
 					uploader.bind("UploadProgress", function(up, file) {
-						if (file.status == plupload.DONE)
+						if (file.status == plupload.DONE) {
 							$('.plupload_status', target).html('File uploaded.');
-						else
+						} else {
 							$('.plupload_status', target).html('Uploading: ' + file.percent + '%');
+						}
 					});
 
 					uploader.bind('FileUploaded', function(up, file) {
 						if (file.status == plupload.DONE) {
-							if (file.target_name)
+							if (file.target_name) {
 								target.append('<input type="hidden" name="' + id + '_tmpname" value="' + plupload.xmlEncode(file.target_name) + '" />');
+							}
 
 							target.append('<input type="hidden" name="' + id + '_name" value="' + plupload.xmlEncode(file.name) + '" />');
-						} else
+						} else {
 							$('.plupload_file_name,.plupload_browse', target).attr('disabled', '');
+						}
 					});
 				});
 

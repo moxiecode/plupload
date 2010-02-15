@@ -12,65 +12,61 @@
 	var uploadInstances = {};
 
 	function isInstalled(version) {
-		var isVersionSupported = false;
-		var container = null;
+		var isVersionSupported = false, container = null, control = null, actualVer,
+			actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
 
 		try {
-			var control = null;
-
 			try {
 				control = new ActiveXObject('AgControl.AgControl');
 
-				if (version == null)
+				if (control.IsVersionSupported(version)) {
 					isVersionSupported = true;
-				else if (control.IsVersionSupported(version))
-					isVersionSupported = true;
+				}
 
 				control = null;
 			} catch (e) {
 				var plugin = navigator.plugins["Silverlight Plug-In"];
 
 				if (plugin) {
-					if (version === null) {
+					actualVer = plugin.description;
+
+					if (actualVer === "1.0.30226.2") {
+						actualVer = "2.0.30226.2";
+					}
+
+					actualVerArray = actualVer.split(".");
+
+					while (actualVerArray.length > 3) {
+						actualVerArray.pop();
+					}
+
+					while ( actualVerArray.length < 4) {
+						actualVerArray.push(0);
+					}
+
+					reqVerArray = version.split(".");
+
+					while (reqVerArray.length > 4) {
+						reqVerArray.pop();
+					}
+
+					do {
+						requiredVersionPart = parseInt(reqVerArray[index], 10);
+						actualVersionPart = parseInt(actualVerArray[index], 10);
+						index++;
+					} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
+
+					if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
 						isVersionSupported = true;
-					} else {
-						var actualVer = plugin.description;
-
-						if (actualVer === "1.0.30226.2")
-							actualVer = "2.0.30226.2";
-
-						var actualVerArray = actualVer.split(".");
-
-						while (actualVerArray.length > 3)
-							actualVerArray.pop();
-
-						while ( actualVerArray.length < 4)
-							actualVerArray.push(0);
-
-						var reqVerArray = version.split(".");
-
-						while (reqVerArray.length > 4)
-							reqVerArray.pop();
-
-						var requiredVersionPart, actualVersionPart, index = 0;
-
-						do {
-							requiredVersionPart = parseInt(reqVerArray[index]);
-							actualVersionPart = parseInt(actualVerArray[index]);
-							index++;
-						} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
-
-						if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart))
-							isVersionSupported = true;
 					}
 				}
 			}
-		} catch (e) {
+		} catch (e2) {
 			isVersionSupported = false;
 		}
 
 		return isVersionSupported;
-	};
+	}
 
 	plupload.silverlight = {
 		trigger : function(id, name) {
@@ -130,8 +126,9 @@
 			silverlightContainer.className = 'plupload_silverlight';
 			document.body.appendChild(silverlightContainer);
 
-			for (i = 0; i < filters.length; i++) 
+			for (i = 0; i < filters.length; i++) {
 				filter += (filter != '' ? '|' : '') + filters[i].title + " | *." + filters[i].extensions.replace(/,/g, ';*.');
+			}
 
 			// Insert the Silverlight object inide the Silverlight container
 			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%">' +
@@ -143,7 +140,7 @@
 
 			function getSilverlightObj() {
 				return document.getElementById(uploader.id + '_silverlight').content.Upload;
-			};
+			}
 
 			uploader.bind("Silverlight:Init", function() {
 				var selectedFiles, lookup = {};
@@ -234,8 +231,9 @@
 				uploader.bind("FilesRemoved", function(up, files) {
 					var i;
 
-					for (i = 0; i < files.length; i++)
+					for (i = 0; i < files.length; i++) {
 						getSilverlightObj().RemoveFile(lookup[files[i].id]);
+					}
 				});
 
 				uploader.bind("UploadFile", function(up, file) {

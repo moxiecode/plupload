@@ -51,7 +51,7 @@
 		};
 
 		img.src = image_data_url;
-	};
+	}
 
 	/**
 	 * HMTL5 implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
@@ -88,7 +88,7 @@
 
 				// Fire FilesAdded event
 				uploader.trigger("FilesAdded", files);
-			};
+			}
 
 			function isSupported() {
 				var xhr;
@@ -100,7 +100,7 @@
 				}
 
 				return false;
-			};
+			}
 
 			// No HTML5 upload support
 			if (!isSupported()) {
@@ -122,8 +122,9 @@
 					for (y = 0; y < ext.length; y++) {
 						type = plupload.mimeTypes[ext[y]];
 
-						if (type)
+						if (type) {
 							mimes.push(type);
+						}
 					}
 				}
 
@@ -168,8 +169,9 @@
 						var dataTransfer = e.dataTransfer;
 
 						// Add dropped files
-						if (dataTransfer && dataTransfer.files)
+						if (dataTransfer && dataTransfer.files) {
 							addSelectedFiles(dataTransfer.files);
+						}
 
 						e.preventDefault();
 					});
@@ -191,13 +193,14 @@
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
-				var xhr = new XMLHttpRequest(), upload, url = up.settings.url, resize = up.settings.resize, nativeFile;
+				var xhr = new XMLHttpRequest(), upload = xhr.upload, url = up.settings.url, resize = up.settings.resize, nativeFile;
 
 				// File upload finished
-				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED)
+				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 					return;
+				}
 
-				if (upload = xhr.upload) {
+				if (upload) {
 					upload.onprogress = function(e) {
 						file.loaded = e.loaded;
 						up.trigger('UploadProgress', file);
@@ -229,13 +232,16 @@
 							if (res.success) {
 								file.size = res.data.length;
 								xhr.sendAsBinary(res.data);
-							} else
+							} else {
 								xhr.sendAsBinary(nativeFile.getAsBinary());
+							}
 						});
-					} else
+					} else {
 						xhr.sendAsBinary(nativeFile.getAsBinary());
-				} else
+					}
+				} else {
 					xhr.send(nativeFile);
+				}
 			});
 
 			// Do we have direct data access Gecko has it but WebKit doesn't yet

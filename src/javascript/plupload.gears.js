@@ -30,7 +30,7 @@
 		canvas.resize(width, height);
 
 		return canvas.encode(mime, {quality : quality / 100});
-	};
+	}
 
 	/**
 	 * Gears implementation. This runtime supports these features: dragdrop, jpgresize, pngresize, chunks.
@@ -51,12 +51,13 @@
 			var desktop;
 
 			// Check for gears support
-			if (!window.google || !google.gears)
+			if (!window.google || !google.gears) {
 				return callback({success : false});
+			}
 
 			try {
 				desktop = google.gears.factory.create('beta.desktop');
-			} catch (ex) {
+			} catch (e) {
 				// Might fail on the latest Gecko build for some odd reason
 				return callback({success : false});
 			}
@@ -77,7 +78,7 @@
 
 				// Fire FilesAdded event
 				uploader.trigger("FilesAdded", files);
-			};
+			}
 
 			// Add drop handler
 			uploader.bind("PostInit", function() {
@@ -93,8 +94,9 @@
 					plupload.addEvent(dropElm, 'drop', function(e) {
 						var dragData = desktop.getDragData(e, 'application/x-gears-files');
 
-						if (dragData)
+						if (dragData) {
 							addSelectedFiles(dragData.files);
+						}
 
 						e.preventDefault();
 					});
@@ -112,8 +114,9 @@
 					for (i = 0; i < settings.filters.length; i++) {
 						ext = settings.filters[i].extensions.split(',');
 
-						for (a = 0; a < ext.length; a++)
+						for (a = 0; a < ext.length; a++) {
 							filters.push('.' + ext[a]);
+						}
 					}
 
 					desktop.openFiles(addSelectedFiles, {singleFile : !settings.multi_selection, filter : filters});
@@ -127,20 +130,19 @@
 				chunks = Math.ceil(file.size / chunkSize);
 
 				// If file is png or jpeg and resize is configured then resize it
-				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name))
+				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
 					blobs[file.id] = scaleImage(blobs[file.id], resize.width, resize.height, resize.quality || 90, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
+				}
 
 				file.size = blobs[file.id].length;
-
-				// Start uploading chunks
-				uploadNextChunk();
 
 				function uploadNextChunk() {
 					var url = up.settings.url, req, curChunkSize;
 
 					// File upload finished
-					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED)
+					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 						return;
+					}
 
 					curChunkSize = Math.min(chunkSize, file.size - (chunk  * chunkSize));
 
@@ -183,16 +185,22 @@
 										response : xhr.responseText,
 										status : xhr.status
 									});
-								} else
+								} else {
 									uploadNextChunk();
-							} else
+								}
+							} else {
 								up.trigger('UploadChunkError', {file : file, chunk : chunk, chunks : chunks, error : 'Status: ' + req.status});
+							}
 						}
 					};
 
-					if (chunk < chunks)
+					if (chunk < chunks) {
 						req.send(blobs[file.id].slice(chunk * chunkSize, curChunkSize));
-				};
+					}
+				}
+
+				// Start uploading chunks
+				uploadNextChunk();
 			});
 
 			uploader.features = {

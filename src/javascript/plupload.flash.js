@@ -17,10 +17,10 @@
 		try {
 			version = navigator.plugins['Shockwave Flash'];
 			version = version.description;
-		} catch (ex) {
+		} catch (e1) {
 			try {
 				version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
-			} catch (ex) {
+			} catch (e2) {
 				version = '0.0';
 			}
 		}
@@ -28,7 +28,7 @@
 		version = version.match(/\d+/g);
 
 		return parseFloat(version[0] + '.' + version[1]);
-	};
+	}
 
 	plupload.flash = {
 		/**
@@ -43,8 +43,9 @@
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
 
-				if (uploader)
+				if (uploader) {
 					uploader.trigger('Flash:' + name, obj);
+				}
 			}, 0);
 		}
 	};
@@ -103,7 +104,7 @@
 
 			function getFlashObj() {
 				return document.getElementById(uploader.id + '_flash');
-			};
+			}
 
 			function waitLoad() {
 				// Wait for 5 sec
@@ -112,9 +113,10 @@
 					return;
 				}
 
-				if (!initialized)
+				if (!initialized) {
 					setTimeout(waitLoad, 1);
-			};
+				}
+			}
 
 			waitLoad();
 
@@ -128,8 +130,9 @@
 				initialized = true;
 
 				// Convert extensions to flash format
-				for (i = 0; i < filters.length; i++)
+				for (i = 0; i < filters.length; i++) {
 					filters[i].extensions = "*." + filters[i].extensions.replace(/,/g, ";*.");
+				}
 
 				getFlashObj().setFileFilters(filters, uploader.settings.multi_selection);
 
@@ -214,8 +217,9 @@
 				uploader.bind("FilesRemoved", function(up, files) {
 					var i;
 
-					for (i = 0; i < files.length; i++)
+					for (i = 0; i < files.length; i++) {
 						getFlashObj().removeFile(lookup[files[i].id]);
+					}
 				});
 
 				uploader.bind("StateChanged", function(up) {

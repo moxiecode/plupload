@@ -7,15 +7,20 @@
 	<path id="tasks.classpath">
 		<pathelement location="."/>
 
-		<fileset dir="tools\ant">
+		<fileset dir="tools/ant">
 			<include name="**/*.jar"/>
+
+			<!-- Exclude jslint since it also has the Rhino API -->
+			<exclude name="**/jslint4java.jar"/>
 		</fileset>
 	</path>
+
 	<!-- Task definitions - register new js-build-tools ant tasks -->
 	<taskdef name="preprocess" classname="com.moxiecode.ant.tasks.PreProcessTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef name="yuicompress" classname="com.moxiecode.ant.tasks.YuiCompressTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef name="moxiedoc" classname="com.moxiecode.ant.tasks.MoxieDocTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
+	<taskdef name="jslint" classname="com.googlecode.jslint4java.ant.JSLintTask" classpath="tools/ant/jslint4java.jar" />
 
 	<!-- Generate JS documentation -->
 	<target name="moxiedoc" depends="" description="Generates HTML documentation out of js source">
@@ -30,6 +35,14 @@
 				<include name="javascript/**/*.js" /> 
 			</fileset>
 		</moxiedoc>
+	</target>
+
+	<target name="jslint">
+		<jslint>
+			<formatter type="plain" />
+			<formatter type="xml" destfile="jslint.xml" />
+			<fileset dir="src/javascript" includes="*.js" excludes="gears_init.js" />
+		</jslint>
 	</target>
 
 	<target name="build">

@@ -2,6 +2,7 @@ bin
 obj
 tmp
 docs
+jslint.xml
 .settings
 *~
 *.diff
