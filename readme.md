@@ -29,6 +29,18 @@ Will generate API Documentation for the project using the Moxiedoc tool. The doc
 
 Will produce release packages. The release packages will be placed in the tmp directory.
 
+How to build Flash runtime
+---------------------------
+The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/products/flex/flexdownloads/](http://www.adobe.com/products/flex/flexdownloads/)
+
+How to build Silverlight runtime
+---------------------------------
+The Silverlight runtime uses a .xap file that can be built using the Silverlight SDK or Visual Studio. [http://silverlight.net/getstarted/](http://silverlight.net/getstarted/)
+
+Running the development version
+--------------------------------
+The unminified development version of the javascript files can be executed by opening the examples/queue_widget_dev.html file running on a Web Server.
+
 Contributing to the Plupload project
 -------------------------------------
 You can read more about how to contribute to this project at [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
