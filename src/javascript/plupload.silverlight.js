@@ -117,7 +117,7 @@
 			plupload.extend(silverlightContainer.style, {
 				position : 'absolute',
 				top : '0',
-				background : uploader.settings.silverlight_bgcolor || 'transparent',
+				background : uploader.settings.shim_bgcolor || 'transparent',
 				width : '100px',
 				height : '100px',
 				opacity : 0.01

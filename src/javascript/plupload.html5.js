@@ -130,7 +130,7 @@
 
 				plupload.extend(inputContainer.style, {
 					position : 'absolute',
-					background : uploader.settings.html5_bgcolor || 'transparent',
+					background : uploader.settings.shim_bgcolor || 'transparent',
 					width : '100px',
 					height : '100px',
 					overflow : 'hidden',

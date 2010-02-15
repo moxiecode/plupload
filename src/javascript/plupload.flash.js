@@ -85,7 +85,7 @@
 			plupload.extend(flashContainer.style, {
 				position : 'absolute',
 				top : '0px',
-				background : uploader.settings.flash_bgcolor || 'transparent',
+				background : uploader.settings.shim_bgcolor || 'transparent',
 				width : '100%',
 				height : '100%'
 			});
