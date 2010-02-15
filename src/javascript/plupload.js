@@ -9,9 +9,10 @@
  */
 
 (function() {
-	var count = 0, runtimes = [], i18n = {}, mimes = {}, UNDEFINED, TRUE = true, FALSE = false,
+	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
-		xmlEncodeRegExp = /[<>&\"\']/g;
+		xmlEncodeRegExp = /[<>&\"\']/g,
+		UNDEFINED, TRUE = true, FALSE = false; // Constants added for minifiaction and performance purposes
 
 	// IE W3C like event funcs
 	function preventDefault() {
