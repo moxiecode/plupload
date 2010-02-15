@@ -52,7 +52,7 @@
 	} else
 		die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
 
-	if (isset($_REQUEST["multipart"])) {
+	if (strpos($_SERVER["HTTP_CONTENT_TYPE"], "multipart") !== false) {
 		if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name']))
 			rename($_FILES['file']['tmp_name'], $targetDir . DIRECTORY_SEPARATOR . $fileName);
 		else
