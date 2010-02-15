@@ -53,9 +53,24 @@
 		die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
 
 	if (strpos($_SERVER["HTTP_CONTENT_TYPE"], "multipart") !== false) {
-		if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name']))
-			rename($_FILES['file']['tmp_name'], $targetDir . DIRECTORY_SEPARATOR . $fileName);
-		else
+		if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
+			// Open temp file
+			$out = fopen($targetDir . DIRECTORY_SEPARATOR . $fileName, $chunk == 0 ? "wb" : "ab");
+			if ($out) {
+				// Read binary input stream and append it to temp file
+				$in = fopen($_FILES['file']['tmp_name'], "rb");
+
+				if ($in) {
+					while ($buff = fread($in, 4096))
+						fwrite($out, $buff);
+				} else
+					die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
+
+				fclose($out);
+				unlink($_FILES['file']['tmp_name']);
+			} else
+				die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
+		} else
 			die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."}, "id" : "id"}');
 	} else {
 		// Open temp file
