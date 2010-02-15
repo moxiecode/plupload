@@ -9,7 +9,7 @@
  */
 
 (function(plupload) {
-	var blobs = {}, TRUE = true;
+	var blobs = {};
 
 	function scaleImage(image_blob, width, height, quality, mime) {
 		var percentage, canvas, context;
@@ -204,13 +204,13 @@
 			});
 
 			uploader.features = {
-				dragdrop : TRUE,
-				jpgresize : TRUE,
-				pngresize : TRUE,
-				chunks : TRUE
+				dragdrop : true,
+				jpgresize : true,
+				pngresize : true,
+				chunks : true
 			};
 
-			callback({success : TRUE});
+			callback({success : true});
 		}
 	});
 })(plupload);

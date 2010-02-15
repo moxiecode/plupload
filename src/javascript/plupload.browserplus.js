@@ -9,8 +9,6 @@
  */
 
 (function(plupload) {
-	var TRUE = true, FALSE = false;
-
 	/**
 	 * Yahoo BrowserPlus implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
 	 *
@@ -227,13 +225,13 @@
 				});
 
 				uploader.features = {
-					dragdrop : TRUE,
-					jpgresize : TRUE,
-					pngresize : TRUE,
-					chunks : FALSE
+					dragdrop : true,
+					jpgresize : true,
+					pngresize : true,
+					chunks : false
 				};
 
-				callback({success : TRUE});
+				callback({success : true});
 			}
 		}
 	});

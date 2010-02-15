@@ -10,8 +10,6 @@
  */
 
 (function(plupload) {
-	var TRUE = true;
-
 	/**
 	 * HTML4 implementation. This runtime has no special features it uses an form that posts files into an hidden iframe.
 	 *
@@ -283,7 +281,7 @@
 			// No features
 			uploader.features = {};
 
-			callback({success : TRUE});
+			callback({success : true});
 		}
 	});
 })(plupload);

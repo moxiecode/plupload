@@ -11,16 +11,15 @@
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
-		xmlEncodeRegExp = /[<>&\"\']/g,
-		UNDEFINED, TRUE = true, FALSE = false; // Constants added for minifiaction and performance purposes
+		xmlEncodeRegExp = /[<>&\"\']/g;
 
 	// IE W3C like event funcs
 	function preventDefault() {
-		this.returnValue = FALSE;
+		this.returnValue = false;
 	}
 
 	function stopPropagation() {
-		this.cancelBubble = TRUE;
+		this.cancelBubble = true;
 	}
 
 	// Parses the default mime types string into a mimes lookup map
@@ -382,7 +381,7 @@
 					callback(evt);
 				});
 			} else if (obj.addEventListener) {
-				obj.addEventListener(name, callback, FALSE);
+				obj.addEventListener(name, callback, false);
 			}
 		}
 	};
@@ -430,7 +429,7 @@
 		settings = plupload.extend({
 			chunk_size : '1mb',
 			max_file_size : '1gb',
-			multi_selection : TRUE,
+			multi_selection : true,
 			filters : [
 				{title : "Image files", extensions : "jpg,gif,png"}
 			]
@@ -663,7 +662,7 @@
 			 *
 			 * @method getFile
 			 * @param {String} id File id to look for.
-			 * @return {plupload.File} File object or UNDEFINED if it wasn't found;
+			 * @return {plupload.File} File object or undefined if it wasn't found;
 			 */
 			getFile : function(id) {
 				var i;
@@ -731,14 +730,14 @@
 
 					// Dispatch event to all listeners
 					for (i = 0; i < list.length; i++) {
-						// Fire event, break chain if FALSE is returned
-						if (list[i].func.apply(list[i].scope, args) === FALSE) {
-							return FALSE;
+						// Fire event, break chain if false is returned
+						if (list[i].func.apply(list[i].scope, args) === false) {
+							return false;
 						}
 					}
 				}
 
-				return TRUE;
+				return true;
 			},
 
 			/**
@@ -936,7 +935,7 @@
 		 *
 		 * @method init
 		 * @param {plupload.Uploader} uploader Uploader instance that needs to be initialized.
-		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to TRUE.
+		 * @param {function} callback Callback function to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		this.init = function(uploader, callback) {
 		};
