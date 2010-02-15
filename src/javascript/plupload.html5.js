@@ -212,7 +212,7 @@
 
 					// Send blob or multipart blob depending on config
 					xhr.sendAsBinary(blob);
-				};
+				}
 
 				// File upload finished
 				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {

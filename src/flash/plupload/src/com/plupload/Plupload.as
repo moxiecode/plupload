@@ -257,18 +257,14 @@ package com.plupload {
 		 *
 		 * @param id File id to upload.
 		 * @param url Url to upload the file to.
-		 * @param chunk_size Size of the each chunk.
-		 * @param width Image width to scale down to. Zero or negative number will disable the scaling.
-		 * @param height Image height to scale down to. Zero or negative number will disable the scaling.
-		 * @param quality Image quiality to use when scaling the image.
-		 * @param format Image format to save it as.
+		 * @param settings Settings object.
 		 */
-		private function uploadFile(id:String, url:String, chunk_size:int, width:int, height:int, quality:int, format:String):void {
+		private function uploadFile(id:String, url:String, settings:Object):void {
 			var file:File = this.files[id] as File;
 
 			if (file) {
 				this.currentFile = file;
-				file.upload(url, chunk_size, width, height, quality, format);
+				file.upload(url, settings);
 			}
 		}
 

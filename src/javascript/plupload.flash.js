@@ -141,15 +141,14 @@
 
 					url += (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
 
-					getFlashObj().uploadFile(
-						lookup[file.id],
-						url,
-						settings.chunk_size,
-						resize.width,
-						resize.height,
-						resize.quality || 90,
-						/\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png'
-					);
+					getFlashObj().uploadFile(lookup[file.id], url, {
+						chunk_size : settings.chunk_size,
+						width : resize.width,
+						height : resize.height,
+						quality : resize.quality || 90,
+						multipart : settings.multipart,
+						format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png'
+					});
 				});
 
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {

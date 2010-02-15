@@ -43,7 +43,6 @@ package com.plupload {
 		// Private fields
 		private var _fileRef:FileReference, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String;
-		private var _chunk:int, _chunks:int, _chunkSize:int;
 		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
 
 		/**
@@ -93,26 +92,27 @@ package com.plupload {
 		 * large it will be chunked into multiple requests.
 		 *
 		 * @param url Url to upload the file to.
-		 * @param chunk_size Chunk size to use.
-		 * @param width Image width to scale down to.
-		 * @param height Image height to scale down to.
-		 * @param format Image format to save it as.
+		 * @param settings Settings object.
 		 */
-		public function upload(url:String, chunk_size:int, width:int, height:int, quality:int, format:String):void {
-			var file:File = this;
+		public function upload(url:String, settings:Object):void {
+			var file:File = this, width:int, height:int, quality:int, multipart:Boolean;
+			var chunk:int, chunks:int, chunkSize:int;
 
 			// Setup internal vars
 			this._uploadUrl = url;
-			this._chunkSize = chunk_size;
-			this._chunk = 0;
-			this._chunks = Math.ceil(this._fileRef.size / chunk_size);
 			this._cancelled = false;
 
-			// Force at least 4 chunks to fake progress
-			if (this._chunks < 4) {
-				this._chunkSize = Math.ceil(this._fileRef.size / 4);
-				this._chunks = 4;
+			// Handle image resizing settings
+			if (settings["width"] || settings["height"]) {
+				width = settings["width"];
+				height = settings["height"];
+				quality = settings["quality"];
 			}
+
+			multipart = new Boolean(settings["quality"]);
+			chunkSize = settings["chunk_size"];
+			chunk = 0;
+			chunks = Math.ceil(this._fileRef.size / chunkSize);
 
 			// When file is loaded start uploading
 			this._fileRef.addEventListener(Event.COMPLETE, function(e:Event):void {
@@ -133,7 +133,7 @@ package com.plupload {
 						outputBitmapData.draw(loadedBitmapData, matrix);
 
 						// Encode bitmap as JPEG
-						if (format == "jpg")
+						if (settings["format"] == "jpg")
 							file._imageData = new JPEGEncoder(quality).encode(outputBitmapData);
 						else
 							file._imageData = new PNGEncoder().encode(outputBitmapData);
@@ -142,13 +142,26 @@ package com.plupload {
 						file._imageData.position = 0;
 						file._size = file._imageData.length;
 
+						// Force at least 4 chunks to fake progress
+						if (chunks < 4) {
+							chunkSize = Math.ceil(file._size / 4);
+							chunks = 4;
+						}
+
 						// Start uploading the scaled down image
-						uploadNextChunk();
+						uploadNextChunk(multipart, chunk, chunks, chunkSize);
 					});
 
 					loader.loadBytes(file._fileRef.data);
-				} else
-					uploadNextChunk();
+				} else {
+					// Force at least 4 chunks to fake progress
+					if (chunks < 4) {
+						chunkSize = Math.ceil(file._size / 4);
+						chunks = 4;
+					}
+
+					uploadNextChunk(multipart, chunk, chunks, chunkSize);
+				}
 			});
 
 			// File load IO error
@@ -203,7 +216,7 @@ package com.plupload {
 		/**
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
 		 */
-		private function uploadNextChunk():void {
+		private function uploadNextChunk(multipart:Boolean, chunk:int, chunks:int, chunk_size:int):void {
 			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
 			var urlStream:URLStream, url:String, file:File = this;
 
@@ -216,7 +229,7 @@ package com.plupload {
 			else
 				fileData = this._fileRef.data;
 
-			fileData.readBytes(chunkData, 0, fileData.position + this._chunkSize > fileData.length ? fileData.length - fileData.position : this._chunkSize);
+			fileData.readBytes(chunkData, 0, fileData.position + chunk_size > fileData.length ? fileData.length - fileData.position : chunk_size);
 
 			// Setup URL stream
 			urlStream = new URLStream();
@@ -237,8 +250,8 @@ package com.plupload {
 					false,
 					false,
 					response,
-					_chunk,
-					_chunks
+					chunk,
+					chunks
 				);
 
 				dispatchEvent(uploadChunkEvt);
@@ -248,8 +261,8 @@ package com.plupload {
 				dispatchEvent(pe);
 
 				// Upload next chunk
-				if (++_chunk < _chunks)
-					uploadNextChunk();
+				if (++chunk < chunks)
+					uploadNextChunk(multipart, chunk, chunks, chunk_size);
 				else {
 					// Fake UPLOAD_COMPLETE_DATA event
 					var uploadEvt:DataEvent = new DataEvent(
@@ -285,13 +298,36 @@ package com.plupload {
 			else
 				url += '&';
 
-			url += "chunk=" + this._chunk + "&chunks=" + this._chunks;
+			url += "chunk=" + chunk + "&chunks=" + chunks;
 
 			// Setup request
 			req = new URLRequest(url);
 			req.method = URLRequestMethod.POST;
-			req.data = chunkData;
-			req.requestHeaders.push(new URLRequestHeader("Content-Type", "application/octet-stream"));
+
+			// Build multipart request
+			if (multipart) {
+				var boundary:String = '----pluploadboundary' + new Date().getTime(),
+					dashdash:String = '--', crlf:String = '\r\n', multipartBlob: ByteArray = new ByteArray();
+
+				req.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
+
+				// Add header
+				multipartBlob.writeUTFBytes(
+					dashdash + boundary + crlf +
+					'Content-Disposition: form-data; name="file"; filename="' + this._fileName + '"' + crlf +
+					'Content-Type: application/octet-stream' + crlf + crlf
+				);
+
+				// Add file data
+				multipartBlob.writeBytes(chunkData, 0, chunkData.length);
+
+				// Add footer
+				multipartBlob.writeUTFBytes(crlf + dashdash + boundary + dashdash + crlf);
+				req.data = multipartBlob;
+			} else {
+				req.requestHeaders.push(new URLRequestHeader("Content-Type", "application/octet-stream"));
+				req.data = chunkData;
+			}
 
 			// Make request
 			urlStream.load(req);

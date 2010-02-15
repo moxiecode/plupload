@@ -2,5 +2,6 @@ Version 1.0.x (2010-02-xx)
 	Added FileUploaded event that fires when a file is uploaded.
 	Added html4 runtime, contributed by Ryan Demmer.
 	Fixed issues with i18n support and added a Swedish and Danish language pack.
+	Fixed bug where the Flash runtime could do empty requests if the image was scaled down.
 Version 1.0 (2010-02-03)
 	First official release of Plupload.
