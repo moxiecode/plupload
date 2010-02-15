@@ -193,11 +193,33 @@
 			uploader.bind("UploadFile", function(up, file) {
 				var xhr = new XMLHttpRequest(), upload = xhr.upload, url = up.settings.url, resize = up.settings.resize, nativeFile;
 
+				// Sends the binary blob to server and multipart encodes it if needed this code will
+				// only be executed on Gecko since it's currently the only browser that supports direct file access
+				function sendBinaryBlob(blob) {
+					var boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n';
+
+					// Build multipart request
+					if (up.settings.multipart) {
+						xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+
+						// Build RFC2388 blob
+						blob = dashdash + boundary + crlf +
+							'Content-Disposition: form-data; name="file"; filename="' + file.name + '"' + crlf +
+							'Content-Type: application/octet-stream' + crlf + crlf +
+							blob + crlf +
+							dashdash + boundary + dashdash + crlf;
+					}
+
+					// Send blob or multipart blob depending on config
+					xhr.sendAsBinary(blob);
+				};
+
 				// File upload finished
 				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 					return;
 				}
 
+				// Do we have upload progress support
 				if (upload) {
 					upload.onprogress = function(e) {
 						file.loaded = e.loaded;
@@ -229,13 +251,13 @@
 							// send the raw image and let the server do the scaling
 							if (res.success) {
 								file.size = res.data.length;
-								xhr.sendAsBinary(res.data);
+								sendBinaryBlob(res.data);
 							} else {
-								xhr.sendAsBinary(nativeFile.getAsBinary());
+								sendBinaryBlob(nativeFile.getAsBinary());
 							}
 						});
 					} else {
-						xhr.sendAsBinary(nativeFile.getAsBinary());
+						sendBinaryBlob(nativeFile.getAsBinary());
 					}
 				} else {
 					xhr.send(nativeFile);

@@ -185,7 +185,7 @@
 						file.size = native_file.size;
 
 						browserPlus.Uploader.upload({
-							url : url + (url.indexOf('?') == -1 ? '?' : '&') + '&multipart=true&name=' + escape(file.target_name || file.name),
+							url : url + (url.indexOf('?') == -1 ? '?' : '&') + '&name=' + escape(file.target_name || file.name),
 							files : {file : native_file},
 							cookies : document.cookies,
 							progressCallback : function(res) {

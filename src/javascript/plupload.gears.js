@@ -137,7 +137,35 @@
 				file.size = blobs[file.id].length;
 
 				function uploadNextChunk() {
-					var url = up.settings.url, req, curChunkSize;
+					var url = up.settings.url, req, curChunkSize, multipart = up.settings.multipart;
+
+					// Sends the binary blob multipart encoded or raw depending on config
+					function sendBinaryBlob(blob) {
+						var builder, boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n';
+
+						// Build multipart request
+						if (multipart) {
+							req.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+							builder = google.gears.factory.create('beta.blobbuilder');
+
+							// Add header
+							builder.append(
+								dashdash + boundary + crlf +
+								'Content-Disposition: form-data; name="file"; filename="' + file.name + '"' + crlf +
+								'Content-Type: application/octet-stream' + crlf + crlf
+							);
+
+							// Add file data
+							builder.append(blob);
+
+							// Add footer
+							builder.append(crlf + dashdash + boundary + dashdash + crlf);
+							blob = builder.getAsBlob();
+						}
+
+						// Send blob or multipart blob depending on config
+						req.send(blob);
+					}
 
 					// File upload finished
 					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
@@ -149,8 +177,11 @@
 					req = google.gears.factory.create('beta.httprequest');
 					req.open('POST', url + (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name) + '&chunk=' + chunk + '&chunks=' + chunks);
 
-					req.setRequestHeader('Content-Disposition', 'attachment; filename="' + file.name + '"');
-					req.setRequestHeader('Content-Type', 'application/octet-stream');
+					// Add disposition and type if multipart is disabled
+					if (!multipart) {
+						req.setRequestHeader('Content-Disposition', 'attachment; filename="' + file.name + '"');
+						req.setRequestHeader('Content-Type', 'application/octet-stream');
+					}
 
 					req.upload.onprogress = function(progress) {
 						file.loaded = loaded + progress.loaded;
@@ -195,7 +226,7 @@
 					};
 
 					if (chunk < chunks) {
-						req.send(blobs[file.id].slice(chunk * chunkSize, curChunkSize));
+						sendBinaryBlob(blobs[file.id].slice(chunk * chunkSize, curChunkSize));
 					}
 				}
 
