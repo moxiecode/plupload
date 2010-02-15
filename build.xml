@@ -54,6 +54,7 @@
 			<fileset dir="src/javascript" includes="plupload.flash.js" />
 			<fileset dir="src/javascript" includes="plupload.browserplus.js" />
 			<fileset dir="src/javascript" includes="plupload.html5.js" />
+			<fileset dir="src/javascript" includes="plupload.html4.js" />
 		</concat>
 
 		<!-- Compress Plupload full and base using the YUI Compressor -->
@@ -66,6 +67,7 @@
 		<yuicompress infile="src/javascript/plupload.flash.js" outfile="js/plupload.flash.min.js" />
 		<yuicompress infile="src/javascript/plupload.browserplus.js" outfile="js/plupload.browserplus.min.js" />
 		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.min.js" />
+		<yuicompress infile="src/javascript/plupload.html4.js" outfile="js/plupload.html4.min.js" />
 
 		<delete file="js/plupload.full.tmp.js" quiet="true" />
 		<copy file="src/javascript/gears_init.js" todir="js" />

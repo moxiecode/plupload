@@ -107,6 +107,18 @@ $(function() {
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90}
 	});
+
+	// Setup html4 version
+	$("#html4_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'html4',
+		url : 'upload.php',
+		unique_names : true,
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		]
+	});
 });
 </script>
 <!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
@@ -137,6 +149,9 @@ $(function() {
 	<div style="float: left; margin-right: 20px">
 		<h3>BrowserPlus runtime</h3>
 		<div id="browserplus_uploader" style="width: 450px; height: 330px;">You browser doesn't have BrowserPlus installed.</div>
+
+		<h3>HTML 4 runtime</h3>
+		<div id="html4_uploader" style="width: 450px; height: 330px;">You browser doesn't have HTML 4 support.</div>
 	</div>
 
 	<br style="clear: both" />

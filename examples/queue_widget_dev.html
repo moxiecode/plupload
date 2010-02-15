@@ -19,6 +19,7 @@ body {background: #9A7C5F;}
 <script type="text/javascript" src="../src/javascript/plupload.silverlight.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.flash.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.browserplus.js"></script>
+<script type="text/javascript" src="../src/javascript/plupload.html4.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
 <script type="text/javascript" src="../src/javascript/jquery.plupload.queue.js"></script>
 <script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>
@@ -105,6 +106,21 @@ $(function() {
 		]
 	});
 
+	// Setup browserplus version
+	$("#html4_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'html4',
+		url : 'upload.php',
+		max_file_size : '10mb',
+		chunk_size : '1mb',
+		unique_names : true,
+		resize : {width : 320, height : 240, quality : 90},
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		]
+	});
+
 	// Custom example
 	var uploader = new plupload.Uploader({
 		 runtimes : 'gears,html5,flash,silverlight,browserplus',
@@ -157,6 +173,9 @@ $(function() {
 	<div style="float: left; margin-right: 20px">
 		<h3>BrowserPlus runtime</h3>
 		<div id="browserplus_uploader" style="width: 450px; height: 330px;">You browser doesn't have BrowserPlus installed.</div>
+
+		<h3>HTML4 runtime</h3>
+		<div id="html4_uploader" style="width: 450px; height: 330px;">You browser doesn't have a HTML 4 browser.</div>
 
 		<div>
 			<h3>Custom example</h3>
