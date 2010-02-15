@@ -9,8 +9,6 @@
  */
 
 (function(plupload) {
-	var TRUE = true;
-
 	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
 		var canvas, context, img, data;
 
@@ -254,7 +252,7 @@
 				pngresize : dataAccessSupport
 			};
 
-			callback({success : TRUE});
+			callback({success : true});
 		}
 	});
 })(plupload);
