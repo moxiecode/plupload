@@ -590,10 +590,12 @@
 				// Setup runtimeList
 				if (settings.runtimes) {
 					runtimeList = [];
-					items = settings.runtimes.split(/,/);
+					items = settings.runtimes.split(/\s?,\s?/);
 
 					for (i = 0; i < items.length; i++) {
-						runtimeList.push(runtimes[items[i]]);
+						if (runtimes[items[i]]) {
+							runtimeList.push(runtimes[items[i]]);
+						}
 					}
 				} else {
 					runtimeList = runtimes;
