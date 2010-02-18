@@ -51,7 +51,8 @@
 					var services = [
 						{service: "Uploader", version: "3"},
 						{service: "DragAndDrop", version: "1"},
-						{service: "FileBrowse", version: "1"}
+						{service: "FileBrowse", version: "1"},
+						{service: "FileAccess", version: "2"}
 					];
 
 					if (resize) {
@@ -179,29 +180,71 @@
 				});
 
 				uploader.bind("UploadFile", function(up, file) {
-					var url = up.settings.url, nativeFile = browserPlusFiles[file.id];
+					var url = up.settings.url, nativeFile = browserPlusFiles[file.id], 
+					    chunkSize = up.settings.chunk_size, loadProgress, chunkStack = [];
 
-					function uploadFile(native_file) {
-						file.size = native_file.size;
+					function uploadFile(chunk, chunks) {
+					    var chunkParams = "";
+					    
+                        // only send chunk parameters if file is chunked
+                        if (chunks > 1) { chunkParams = "&chunk=" + chunk + "&chunks=" + chunks; }
+					    chunk_file = chunkStack.shift();
 
 						browserPlus.Uploader.upload({
-							url : url + (url.indexOf('?') == -1 ? '?' : '&') + '&name=' + escape(file.target_name || file.name),
-							files : {file : native_file},
+							url : url + (url.indexOf('?') == -1 ? '?' : '&') + '&name=' + escape(file.target_name || file.name) + chunkParams,
+							files : {file : chunk_file},
 							cookies : document.cookies,
 							progressCallback : function(res) {
-								file.loaded = res.fileSent;
+                                var i, loaded = 0;
+
+                                // since more than 1 chunk can be sent at a time, keep track of how many bytes
+                                // of each chunk was sent
+                                loadProgress[chunk] = parseInt(res.filePercent * chunk_file.size / 100, 10);
+                                for (i = 0; i < loadProgress.length; i++) {
+                                    loaded += loadProgress[i];
+                                }
+
+								file.loaded = loaded;
 								up.trigger('UploadProgress', file);
 							}
 						}, function(res) {
 							if (res.success) {
-								file.status = plupload.DONE;
-								up.trigger('FileUploaded', file, {
-									response : res.value.body,
-									status : res.value.statusCode
-								});
+							    if (chunkStack.length > 0) {
+							        // more chunks to be uploaded
+							        uploadFile(++chunk, chunks);
+							    } else {
+								    file.status = plupload.DONE;
+
+								    up.trigger('FileUploaded', file, {
+									    response : res.value.body,
+									    status : res.value.statusCode
+								    });
+							    }
 							}
 						});
 					}
+
+                    function chunkAndUploadFile(native_file) {
+                        file.size = native_file.size;
+                        if (uploader.features.chunks) {
+                            browserPlus.FileAccess.chunk({file: native_file, chunkSize: chunkSize}, function(cr){
+                                if (cr.success) {
+                                    var chunks = cr.value, len = chunks.length;
+                                    loadProgress = Array(len)
+                                    for (var i = 0; i < len; i++) {
+                                        loadProgress[i] = 0;
+                                        chunkStack.push(chunks[i]);
+                                    }
+
+                                    uploadFile(0, len);
+                                }
+                            });
+                        } else {
+                            chunkStack.push(native_file);
+                            uploadFile(0, 1);
+                        }
+                    }
+                    
 
 					// Resize image if it's a supported format and resize is enabled
 					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
@@ -216,11 +259,11 @@
 							}]
 						}, function(res) {
 							if (res.success) {
-								uploadFile(res.value.file);
+								chunkAndUploadFile(res.value.file);
 							}
 						});
 					} else {
-						uploadFile(nativeFile);
+						chunkAndUploadFile(nativeFile);
 					}
 				});
 
@@ -228,7 +271,7 @@
 					dragdrop : true,
 					jpgresize : true,
 					pngresize : true,
-					chunks : false
+					chunks : true
 				};
 
 				callback({success : true});
