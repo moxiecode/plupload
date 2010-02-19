@@ -96,7 +96,7 @@ package com.plupload {
 		 */
 		public function upload(url:String, settings:Object):void {
 			var file:File = this, width:int, height:int, quality:int, multipart:Boolean;
-			var chunk:int, chunks:int, chunkSize:int;
+			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
 
 			// Setup internal vars
 			this._uploadUrl = url;
@@ -111,6 +111,7 @@ package com.plupload {
 
 			multipart = new Boolean(settings["quality"]);
 			chunkSize = settings["chunk_size"];
+			postvars = settings["multipart_params"];
 			chunk = 0;
 			chunks = Math.ceil(this._fileRef.size / chunkSize);
 
@@ -149,7 +150,7 @@ package com.plupload {
 						}
 
 						// Start uploading the scaled down image
-						uploadNextChunk(multipart, chunk, chunks, chunkSize);
+						uploadNextChunk(multipart, chunk, chunks, chunkSize, postvars);
 					});
 
 					loader.loadBytes(file._fileRef.data);
@@ -160,7 +161,7 @@ package com.plupload {
 						chunks = 4;
 					}
 
-					uploadNextChunk(multipart, chunk, chunks, chunkSize);
+					uploadNextChunk(multipart, chunk, chunks, chunkSize, postvars);
 				}
 			});
 
@@ -216,7 +217,7 @@ package com.plupload {
 		/**
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
 		 */
-		private function uploadNextChunk(multipart:Boolean, chunk:int, chunks:int, chunk_size:int):void {
+		private function uploadNextChunk(multipart:Boolean, chunk:int, chunks:int, chunk_size:int, postvars:Object):void {
 			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
 			var urlStream:URLStream, url:String, file:File = this;
 
@@ -262,7 +263,7 @@ package com.plupload {
 
 				// Upload next chunk
 				if (++chunk < chunks)
-					uploadNextChunk(multipart, chunk, chunks, chunk_size);
+					uploadNextChunk(multipart, chunk, chunks, chunk_size, postvars);
 				else {
 					// Fake UPLOAD_COMPLETE_DATA event
 					var uploadEvt:DataEvent = new DataEvent(
@@ -311,7 +312,16 @@ package com.plupload {
 
 				req.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
 
-				// Add header
+				// Append mutlipart parameters
+				for (var name:String in postvars) {
+					multipartBlob.writeUTFBytes(
+						dashdash + boundary + crlf +
+						'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf + 
+						postvars[name] + crlf
+					);
+				}
+
+				// Add file header
 				multipartBlob.writeUTFBytes(
 					dashdash + boundary + crlf +
 					'Content-Disposition: form-data; name="file"; filename="' + this._fileName + '"' + crlf +
@@ -321,7 +331,7 @@ package com.plupload {
 				// Add file data
 				multipartBlob.writeBytes(chunkData, 0, chunkData.length);
 
-				// Add footer
+				// Add file footer
 				multipartBlob.writeUTFBytes(crlf + dashdash + boundary + dashdash + crlf);
 				req.data = multipartBlob;
 			} else {
