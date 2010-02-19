@@ -178,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileReference.cs" />
+    <Compile Include="Utils\JsonReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

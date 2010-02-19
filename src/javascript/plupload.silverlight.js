@@ -11,6 +11,67 @@
 (function(plupload) {
 	var uploadInstances = {};
 
+	function jsonSerialize(obj) {
+		var value, type = typeof obj, undef, isArray, i, key;
+
+		// Encode strings
+		if (type === 'string') {
+			value = '\bb\tt\nn\ff\rr\""\'\'\\\\';
+
+			return '"' + obj.replace(/([\u0080-\uFFFF\x00-\x1f\"])/g, function(a, b) {
+				var idx = value.indexOf(b);
+
+				if (idx + 1) {
+					return '\\' + v.charAt(idx + 1);
+				}
+
+				a = b.charCodeAt().toString(16);
+
+				return '\\u' + '0000'.substring(a.length) + a;
+			}) + '"';
+		}
+
+		// Loop objects/arrays
+		if (type == 'object') {
+			isArray = obj.length !== undef;
+			value = '';
+
+			if (isArray) {
+				for (i = 0; i < obj.length; i++) {
+					if (value) {
+						value += ',';
+					}
+
+					value += jsonSerialize(obj[i]);
+				}
+
+				value = '[' + value + ']';
+			} else {
+				for (key in obj) {
+					if (obj.hasOwnProperty(key)) {
+						if (value) {
+							value += ',';
+						}
+
+						value += jsonSerialize(key) + ':' + jsonSerialize(obj[key]);
+					}
+				}
+
+				value = '{' + value + '}';
+			}
+
+			return value;
+		}
+
+		// Treat undefined as null
+		if (obj === undef) {
+			return 'null';
+		}
+
+		// Convert all other types to string
+		return '' + obj;
+	}
+
 	function isInstalled(version) {
 		var isVersionSupported = false, container = null, control = null, actualVer,
 			actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
@@ -238,15 +299,19 @@
 				});
 
 				uploader.bind("UploadFile", function(up, file) {
-					var resize = up.settings.resize || {};
+					var settings = up.settings, resize = settings.resize || {};
 
 					getSilverlightObj().UploadFile(
 						lookup[file.id],
 						plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}),
-						up.settings.chunk_size,
-						resize.width,
-						resize.height,
-						resize.quality || 90
+						jsonSerialize({
+							chunk_size : settings.chunk_size,
+							image_width : resize.width,
+							image_height : resize.height,
+							image_quality : resize.quality || 90,
+							multipart : !!settings.multipart,
+							multipart_params : settings.multipart_params || {}
+						})
 					);
 				});
 

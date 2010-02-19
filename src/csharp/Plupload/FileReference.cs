@@ -16,6 +16,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Browser;
 using System.Windows.Media.Imaging;
+using System.Collections.Generic;
 using FluxJpeg.Core.Encoder;
 using FluxJpeg.Core;
 using Plupload.PngEncoder;
@@ -35,9 +36,10 @@ namespace Moxiecode.Plupload {
 		private FileInfo info;
 		private SynchronizationContext syncContext;
 		private int chunk, chunks, chunkSize;
-		private bool cancelled;
+		private bool cancelled, multipart;
         private long size;
         private Stream fileStream;
+		private Dictionary<object, object> multipartParams;
 		#endregion
 
 		/// <summary>Upload compleate delegate.</summary>
@@ -100,20 +102,31 @@ namespace Moxiecode.Plupload {
         /// <param name="image_width">Image width to scale to.</param>
         /// <param name="image_height">Image height to scale to.</param>
         /// <param name="image_quality">Image quality to store as.</param>
-		public void Upload(string upload_url, int chunk_size, int image_width, int image_height, int image_quality) {
-			this.chunk = 0;
-			this.chunkSize = chunk_size;
-			this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunk_size);
+		public void Upload(string upload_url, string json_settings) {
+			int chunkSize = 0, imageWidth = 0, imageHeight = 0, imageQuality = 90;
+			
+			Dictionary<object, object> settings = Moxiecode.Plupload.Utils.JsonReader.ParseJson(json_settings);
+			
+			chunkSize = Convert.ToInt32(settings["chunk_size"]);
+			imageWidth = Convert.ToInt32(settings["image_width"]);
+			imageHeight = Convert.ToInt32(settings["image_height"]);
+			imageQuality = Convert.ToInt32(settings["image_quality"]);
+			this.multipart = Convert.ToBoolean(settings["multipart"]);
+			this.multipartParams = (Dictionary<object, object>) settings["multipart_params"];
+
+            this.chunk = 0;
+			this.chunkSize = chunkSize;
+			this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunkSize);
 			this.cancelled = false;
 			this.uploadUrl = upload_url;
 
             try {
                 // Is jpeg and image size is defined
-				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase) && (image_width != 0 || image_height != 0)) {
+				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase) && (imageWidth != 0 || imageHeight != 0)) {
 					if (Regex.IsMatch(this.name, @"\.png$"))
-						this.fileStream = this.ResizeImage(this.info.OpenRead(), image_width, image_height, image_quality, ImageType.Png);
+						this.fileStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Png);
 					else
-						this.fileStream = this.ResizeImage(this.info.OpenRead(), image_width, image_height, image_quality, ImageType.Jpeg);
+						this.fileStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Jpeg);
 
 					this.fileStream.Seek(0, SeekOrigin.Begin);
 					this.size = this.fileStream.Length;
@@ -178,15 +191,40 @@ namespace Moxiecode.Plupload {
 
 		private void RequestStreamCallback(IAsyncResult ar) {
 			HttpWebRequest request = (HttpWebRequest) ar.AsyncState;
-
-			request.ContentType = "application/octet-stream";
-
+			string boundary = "----pluploadboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
 			Stream requestStream = null;
-			byte[] buffer = new byte[4096];
+			byte[] buffer = new byte[4096], strBuff;
 			int bytes, loaded = 0, end;
 			int percent, lastPercent = 0;
 
 			try {
+				requestStream = request.EndGetRequestStream(ar);
+
+				if (this.multipart) {
+					request.ContentType = "multipart/form-data; boundary=" + boundary;
+
+					// Append mutlipart parameters
+					foreach (KeyValuePair<object, object> pair in this.multipartParams) {
+						strBuff = this.StrToByteArray(dashdash + boundary + crlf +
+							"Content-Disposition: form-data; name=\"" + pair.Key + '"' + crlf + crlf +
+							pair.Value + crlf
+						);
+
+						requestStream.Write(strBuff, 0, strBuff.Length);
+					}
+
+					// Append multipart file header
+					strBuff = this.StrToByteArray(
+						dashdash + boundary + crlf +
+						"Content-Disposition: form-data; name=\"file\"; filename=\"" + this.name + '"' + crlf +
+						"Content-Type: application/octet-stream" + crlf + crlf
+					);
+
+					requestStream.Write(strBuff, 0, strBuff.Length);
+				} else {
+					request.ContentType = "application/octet-stream";
+				}
+
 				// Move to start
 				this.fileStream.Seek(this.chunk * this.chunkSize, SeekOrigin.Begin);
 				loaded = this.chunk * this.chunkSize;
@@ -195,8 +233,6 @@ namespace Moxiecode.Plupload {
 				end = (this.chunk + 1) * this.chunkSize;
 				if (end > this.Size)
 					end = (int) this.Size;
-
-				requestStream = request.EndGetRequestStream(ar);
 
                 while (loaded < end && (bytes = this.fileStream.Read(buffer, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
 					loaded += bytes;
@@ -213,6 +249,12 @@ namespace Moxiecode.Plupload {
 
 					requestStream.Write(buffer, 0, bytes);
 					requestStream.Flush();
+				}
+
+				// Append multipart file footer
+				if (this.multipart) {
+					strBuff = this.StrToByteArray(crlf + dashdash + boundary + dashdash + crlf);
+					requestStream.Write(strBuff, 0, strBuff.Length);
 				}
 			} catch (Exception ex) {
 				syncContext.Send(delegate {
@@ -394,6 +436,12 @@ namespace Moxiecode.Plupload {
 
 			return image_stream;
         }
+
+		private byte[] StrToByteArray(string str) {
+			System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+
+			return encoding.GetBytes(str);
+		}
 
 		#endregion
 	}

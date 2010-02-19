@@ -138,12 +138,12 @@ namespace Moxiecode.Plupload {
 		/// <param name="id">File id to upload.</param>
 		/// <param name="upload_url">Url to upload to.</param>
 		/// <param name="chunk_size">Chunk size to use.</param>
-		public void UploadFile(string id, string upload_url, int chunk_size, int image_width, int image_height, int image_quality) {
+		public void UploadFile(string id, string upload_url, string json_settings) {
 			if (this.files.ContainsKey(id)) {
 				FileReference file = this.files[id];
 
 				this.currentFile = file;
-				file.Upload(upload_url, chunk_size, image_width, image_height, image_quality);
+				file.Upload(upload_url, json_settings);
 			}
 		}
 
