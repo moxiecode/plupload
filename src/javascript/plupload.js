@@ -325,6 +325,19 @@
 		},
 
 		/**
+		 * Returns the size of the specified node in pixels.
+		 *
+		 * @param {Node} node Node to get the size of.
+		 * @return {Object} Object with a w and h property.
+		 */
+		getSize : function(node) {
+			return {
+				w : node.clientWidth || node.offsetWidth,
+				h : node.clientWidth || node.offsetWidth
+			};
+		},
+
+		/**
 		 * Parses the specified size string into a byte value. For example 10kb becomes 10240.
 		 *
 		 * @method parseSize

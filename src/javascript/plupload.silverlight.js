@@ -175,16 +175,17 @@
 				});
 
 				uploader.bind("Refresh", function(up) {
-					var browseButton, browsePos;
+					var browseButton, browsePos, browseSize;
 
 					browseButton = document.getElementById(up.settings.browse_button);
 					browsePos = plupload.getPos(browseButton);
+					browseSize = plupload.getSize(browseButton);
 
 					plupload.extend(document.getElementById(up.id + '_silverlight_container').style, {
 						top : browsePos.y + 'px',
 						left : browsePos.x + 'px',
-						width : browseButton.clientWidth + 'px',
-						height : browseButton.clientHeight + 'px'
+						width : browseSize.w + 'px',
+						height : browseSize.h + 'px'
 					});
 				});
 
