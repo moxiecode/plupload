@@ -155,7 +155,7 @@
 									'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf
 								);
 
-								builder.append(value + crlf + dashdash + boundary + crlf);
+								builder.append(value + crlf);
 							});
 
 							// Add file header

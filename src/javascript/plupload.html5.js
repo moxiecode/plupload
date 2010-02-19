@@ -208,7 +208,7 @@
 							multipartBlob += dashdash + boundary + crlf +
 								'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf;
 
-							multipartBlob += value + crlf + dashdash + boundary + crlf;
+							multipartBlob += value + crlf;
 						});
 
 						// Build RFC2388 blob
