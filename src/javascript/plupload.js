@@ -142,17 +142,13 @@
 		 * @return {Object} Same as target, the extended object.
 		 */
 		extend : function(target) {
-			var key, obj, i;
-
-			for (i = 1; i < arguments.length; i++) {
-				obj = arguments[i];
-
-				for (key in obj) {
-					if (obj.hasOwnProperty(key)) {
-						target[key] = obj[key];
-					}
+			plupload.each(arguments, function(arg, i) {
+				if (i > 0) {
+					plupload.each(arg, function(value, key) {
+						target[key] = value;
+					});
 				}
-			}
+			});
 
 			return target;
 		},
@@ -224,6 +220,56 @@
 			}
 
 			return (plupload.guidPrefix || '') + guid + (count++).toString(32);
+		},
+
+		/**
+		 * Builds a full url out of a base URL and an object with items to append as query string items.
+		 *
+		 * @param {String} url Base URL to append query string items to.
+		 * @param {Object} items Name/value object to serialize as a querystring.
+		 * @return {String} String with url + serialized query string items.
+		 */
+		buildUrl : function(url, items) {
+			var query = '';
+
+			plupload.each(items, function(value, name) {
+				query += (query ? '&' : '') + escape(name) + '=' + escape(value);
+			});
+
+			if (query) {
+				url += (url.indexOf('?') > 0 ? '&' : '?') + query;
+			}
+
+			return url;
+		},
+
+		/**
+		 * Executes the callback function for each item in array/object. If you return false in the
+		 * callback it will break the loop.
+		 *
+		 * @param {Object} obj Object to iterate.
+		 * @param {function} callback Callback function to execute for each item.
+		 */
+		each : function(obj, callback) {
+			var length = obj.length, undef, key, i;
+
+			if (length === undef) {
+				// Loop object items
+				for (key in obj) {
+					if (obj.hasOwnProperty(key)) {
+						if (callback(obj[key], key) === false) {
+							return;
+						}
+					}
+				}
+			} else {
+				// Loop array items
+				for (i = 0; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
+			}
 		},
 
 		/**
