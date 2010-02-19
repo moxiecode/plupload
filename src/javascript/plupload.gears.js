@@ -137,18 +137,28 @@
 				file.size = blobs[file.id].length;
 
 				function uploadNextChunk() {
-					var url = up.settings.url, req, curChunkSize, multipart = up.settings.multipart;
+					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0;
 
 					// Sends the binary blob multipart encoded or raw depending on config
 					function sendBinaryBlob(blob) {
-						var builder, boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n';
+						var builder, boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n', multipartBlob;
 
 						// Build multipart request
 						if (multipart) {
 							req.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 							builder = google.gears.factory.create('beta.blobbuilder');
 
-							// Add header
+							// Append mutlipart parameters
+							plupload.each(up.settings.multipart_params, function(value, name) {
+								builder.append(
+									dashdash + boundary + crlf +
+									'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf
+								);
+
+								builder.append(value + crlf + dashdash + boundary + crlf);
+							});
+
+							// Add file header
 							builder.append(
 								dashdash + boundary + crlf +
 								'Content-Disposition: form-data; name="file"; filename="' + file.name + '"' + crlf +
@@ -160,7 +170,9 @@
 
 							// Add footer
 							builder.append(crlf + dashdash + boundary + dashdash + crlf);
-							blob = builder.getAsBlob();
+							multipartBlob = builder.getAsBlob();
+							multipartLength = multipartBlob.length - blob.length;
+							blob = multipartBlob;
 						}
 
 						// Send blob or multipart blob depending on config
@@ -175,7 +187,7 @@
 					curChunkSize = Math.min(chunkSize, file.size - (chunk  * chunkSize));
 
 					req = google.gears.factory.create('beta.httprequest');
-					req.open('POST', url + (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name) + '&chunk=' + chunk + '&chunks=' + chunks);
+					req.open('POST', plupload.buildUrl(up.settings.url, {name : file.target_name || file.name, chunk : chunk, chunks : chunks}));
 
 					// Add disposition and type if multipart is disabled
 					if (!multipart) {
@@ -184,7 +196,7 @@
 					}
 
 					req.upload.onprogress = function(progress) {
-						file.loaded = loaded + progress.loaded;
+						file.loaded = loaded + progress.loaded - multipartLength;
 						up.trigger('UploadProgress', file);
 					};
 

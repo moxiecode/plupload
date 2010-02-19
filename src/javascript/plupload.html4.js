@@ -74,6 +74,19 @@
 					form = (typeof up.settings.form == 'string') ? document.getElementById(up.settings.form) : up.settings.form;
 				}
 
+				// Append mutlipart parameters
+				plupload.each(up.settings.multipart_params, function(value, name) {
+					var input = document.createElement('input');
+
+					plupload.extend(input, {
+						type : 'hidden',
+						name : name,
+						value : value
+					});
+
+					form.appendChild(input);
+				});
+
 				iframe = document.createElement('iframe');
 				iframe.setAttribute('src', url + ':""'); // javascript:"" for HTTPS issue on IE6, uses a variable to make an ignore for jslint
 				iframe.setAttribute('name', up.id + '_iframe');
@@ -231,8 +244,6 @@
 
 			// Upload file
 			uploader.bind("UploadFile", function(up, file) {
-				var url = up.settings.url;
-
 				// File upload finished
 				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 					return;
@@ -247,12 +258,9 @@
 				// Set input element name attribute which allows it to be submitted
 				file.input.setAttribute('name', 'file');
 
-				// Add name
-				url = url + (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
-
 				// Store action
 				form.tmpAction = form.action;
-				form.action = url;
+				form.action = plupload.buildUrl(up.settings.url, {name : file.target_name || file.name});
 
 				// Store Target
 				form.tmpTarget = form.target;

@@ -237,11 +237,16 @@
 				});
 
 				uploader.bind("UploadFile", function(up, file) {
-					var url = up.settings.url, resize = up.settings.resize || {};
+					var resize = up.settings.resize || {};
 
-					url += (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
-
-					getSilverlightObj().UploadFile(lookup[file.id], url, up.settings.chunk_size, resize.width, resize.height, resize.quality || 90);
+					getSilverlightObj().UploadFile(
+						lookup[file.id],
+						plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}),
+						up.settings.chunk_size,
+						resize.width,
+						resize.height,
+						resize.quality || 90
+					);
 				});
 
 				callback({success : true});

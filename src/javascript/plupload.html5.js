@@ -191,23 +191,34 @@
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
-				var xhr = new XMLHttpRequest(), upload = xhr.upload, url = up.settings.url, resize = up.settings.resize, nativeFile;
+				var xhr = new XMLHttpRequest(), upload = xhr.upload, resize = up.settings.resize, nativeFile, multipartSize = 0;
 
 				// Sends the binary blob to server and multipart encodes it if needed this code will
 				// only be executed on Gecko since it's currently the only browser that supports direct file access
 				function sendBinaryBlob(blob) {
-					var boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n';
+					var boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n', multipartBlob = '';
 
 					// Build multipart request
 					if (up.settings.multipart) {
 						xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
+						// Append mutlipart parameters
+						plupload.each(up.settings.multipart_params, function(value, name) {
+							multipartBlob += dashdash + boundary + crlf +
+								'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf;
+
+							multipartBlob += value + crlf + dashdash + boundary + crlf;
+						});
+
 						// Build RFC2388 blob
-						blob = dashdash + boundary + crlf +
+						multipartBlob += dashdash + boundary + crlf +
 							'Content-Disposition: form-data; name="file"; filename="' + file.name + '"' + crlf +
 							'Content-Type: application/octet-stream' + crlf + crlf +
 							blob + crlf +
 							dashdash + boundary + dashdash + crlf;
+
+						multipartSize = multipartBlob.length - blob.length;
+						blob = multipartBlob;
 					}
 
 					// Send blob or multipart blob depending on config
@@ -222,7 +233,7 @@
 				// Do we have upload progress support
 				if (upload) {
 					upload.onprogress = function(e) {
-						file.loaded = e.loaded;
+						file.loaded = e.loaded - multipartSize;
 						up.trigger('UploadProgress', file);
 					};
 				}
@@ -239,7 +250,7 @@
 					}
 				};
 
-				xhr.open("post", url + (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name), true);
+				xhr.open("post", plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}), true);
 				xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 				nativeFile = html5files[file.id]; 
 

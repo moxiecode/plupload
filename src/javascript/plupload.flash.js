@@ -137,16 +137,15 @@
 				getFlashObj().setFileFilters(filters, uploader.settings.multi_selection);
 
 				uploader.bind("UploadFile", function(up, file) {
-					var settings = up.settings, url = settings.url;
+					var settings = up.settings;
 
-					url += (url.indexOf('?') == -1 ? '?' : '&') + 'name=' + escape(file.target_name || file.name);
-
-					getFlashObj().uploadFile(lookup[file.id], url, {
+					getFlashObj().uploadFile(lookup[file.id], plupload.buildUrl(settings.url, {name : file.target_name || file.name}), {
 						chunk_size : settings.chunk_size,
 						width : resize.width,
 						height : resize.height,
 						quality : resize.quality || 90,
 						multipart : settings.multipart,
+						multipart_params : settings.multipart_params,
 						format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png'
 					});
 				});
