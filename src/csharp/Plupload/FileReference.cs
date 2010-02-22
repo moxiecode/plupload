@@ -39,7 +39,7 @@ namespace Moxiecode.Plupload {
 		private bool cancelled, multipart;
         private long size;
         private Stream fileStream;
-		private Dictionary<object, object> multipartParams;
+		private Dictionary<string, object> multipartParams;
 		#endregion
 
 		/// <summary>Upload compleate delegate.</summary>
@@ -104,15 +104,15 @@ namespace Moxiecode.Plupload {
         /// <param name="image_quality">Image quality to store as.</param>
 		public void Upload(string upload_url, string json_settings) {
 			int chunkSize = 0, imageWidth = 0, imageHeight = 0, imageQuality = 90;
-			
-			Dictionary<object, object> settings = Moxiecode.Plupload.Utils.JsonReader.ParseJson(json_settings);
+
+			Dictionary<string, object> settings = (Dictionary<string, object>) Moxiecode.Plupload.Utils.JsonReader.ParseJson(json_settings);
 			
 			chunkSize = Convert.ToInt32(settings["chunk_size"]);
 			imageWidth = Convert.ToInt32(settings["image_width"]);
 			imageHeight = Convert.ToInt32(settings["image_height"]);
 			imageQuality = Convert.ToInt32(settings["image_quality"]);
 			this.multipart = Convert.ToBoolean(settings["multipart"]);
-			this.multipartParams = (Dictionary<object, object>) settings["multipart_params"];
+			this.multipartParams = (Dictionary<string, object>)settings["multipart_params"];
 
             this.chunk = 0;
 			this.chunkSize = chunkSize;
@@ -130,8 +130,9 @@ namespace Moxiecode.Plupload {
 
 					this.fileStream.Seek(0, SeekOrigin.Begin);
 					this.size = this.fileStream.Length;
-				}  else
+				} else {
 					this.fileStream = this.info.OpenRead();
+				}
             } catch (Exception ex) {
                 syncContext.Send(delegate {
                     this.OnIOError(new ErrorEventArgs(ex.Message, 0, this.chunks));
@@ -204,7 +205,7 @@ namespace Moxiecode.Plupload {
 					request.ContentType = "multipart/form-data; boundary=" + boundary;
 
 					// Append mutlipart parameters
-					foreach (KeyValuePair<object, object> pair in this.multipartParams) {
+					foreach (KeyValuePair<string, object> pair in this.multipartParams) {
 						strBuff = this.StrToByteArray(dashdash + boundary + crlf +
 							"Content-Disposition: form-data; name=\"" + pair.Key + '"' + crlf + crlf +
 							pair.Value + crlf
@@ -360,7 +361,7 @@ namespace Moxiecode.Plupload {
 				BitmapImage bitmapImage = new BitmapImage();
 				bitmapImage.SetSource(image_stream);
 				writableBitmap = new WriteableBitmap(bitmapImage);
-				image_stream.Close();
+
 				double scale = Math.Min((double) width / writableBitmap.PixelWidth, (double) height / writableBitmap.PixelHeight);
 
 				// No resize needed
