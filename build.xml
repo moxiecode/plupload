@@ -81,6 +81,10 @@
 				<include name="**"/>
 				<exclude name="**/.git/**"/>
 				<exclude name="**/.*"/>
+				<exclude name="**/bin/**"/>
+				<exclude name="**/obj/**"/>
+				<exclude name="**/tmp/**"/>
+				<exclude name="**/jslint.xml"/>
 			</fileset>
 		</copy>
 
