@@ -38,7 +38,7 @@
 	</target>
 
 	<target name="jslint">
-		<jslint>
+		<jslint options="browser,undef,forin">
 			<formatter type="plain" />
 			<formatter type="xml" destfile="jslint.xml" />
 			<fileset dir="src/javascript" includes="*.js" excludes="gears_init.js" />

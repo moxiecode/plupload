@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, BrowserPlus:false, window:false */
+
 (function(plupload) {
 	/**
 	 * Yahoo BrowserPlus implementation. This runtime supports these features: dragdrop, jpgresize, pngresize.
@@ -43,38 +46,6 @@
 				if (i) {
 					uploader.trigger("FilesAdded", selectedFiles);
 				}
-			}
-
-			// Check for browserplus object
-			if (browserPlus) {
-				browserPlus.init(function(res) {
-					var services = [
-						{service: "Uploader", version: "3"},
-						{service: "DragAndDrop", version: "1"},
-						{service: "FileBrowse", version: "1"},
-						{service: "FileAccess", version: "2"}
-					];
-
-					if (resize) {
-						services.push({service : 'ImageAlter', version : "4"});
-					}
-
-					if (res.success) {
-						browserPlus.require({
-							services : services
-						}, function() {
-							if (res.success) {
-								setup();
-							} else {
-								callback();
-							}
-						});
-					} else {
-						callback();
-					}
-				});
-			} else {
-				callback();
 			}
 
 			// Setup event listeners if browserplus was initialized
@@ -176,7 +147,7 @@
 					});
 
 					// Prevent IE leaks
-					dropElm = dropTarget = 0;
+					dropElm = dropTargetElm = null;
 				});
 
 				uploader.bind("UploadFile", function(up, file) {
@@ -184,6 +155,8 @@
 					    chunkSize = up.settings.chunk_size, loadProgress, chunkStack = [];
 
 					function uploadFile(chunk, chunks) {
+						var chunkFile;
+
 						urlParams.name = file.target_name || file.name;
 
 						// only send chunk parameters if file is chunked
@@ -192,11 +165,11 @@
 							urlParams.chunks = chunks;
 						}
 
-					    chunk_file = chunkStack.shift();
+					    chunkFile = chunkStack.shift();
 
 						browserPlus.Uploader.upload({
 							url : plupload.buildUrl(up.settings.url, urlParams),
-							files : {file : chunk_file},
+							files : {file : chunkFile},
 							cookies : document.cookies,
 							postvars : up.settings.multipart_params,
 							progressCallback : function(res) {
@@ -204,7 +177,7 @@
 
 								// since more than 1 chunk can be sent at a time, keep track of how many bytes
 								// of each chunk was sent
-								loadProgress[chunk] = parseInt(res.filePercent * chunk_file.size / 100, 10);
+								loadProgress[chunk] = parseInt(res.filePercent * chunkFile.size / 100, 10);
 								for (i = 0; i < loadProgress.length; i++) {
 									loaded += loadProgress[i];
 								}
@@ -281,6 +254,38 @@
 				};
 
 				callback({success : true});
+			}
+
+			// Check for browserplus object
+			if (browserPlus) {
+				browserPlus.init(function(res) {
+					var services = [
+						{service: "Uploader", version: "3"},
+						{service: "DragAndDrop", version: "1"},
+						{service: "FileBrowse", version: "1"},
+						{service: "FileAccess", version: "2"}
+					];
+
+					if (resize) {
+						services.push({service : 'ImageAlter', version : "4"});
+					}
+
+					if (res.success) {
+						browserPlus.require({
+							services : services
+						}, function() {
+							if (res.success) {
+								setup();
+							} else {
+								callback();
+							}
+						});
+					} else {
+						callback();
+					}
+				});
+			} else {
+				callback();
 			}
 		}
 	});

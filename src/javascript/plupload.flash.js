@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, ActiveXObject:false, escape:false */
+
 (function(plupload) {
 	var uploadInstances = {};
 

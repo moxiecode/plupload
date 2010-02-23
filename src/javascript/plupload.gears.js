@@ -8,11 +8,14 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, google:false, window:false */
+
 (function(plupload) {
 	var blobs = {};
 
 	function scaleImage(image_blob, width, height, quality, mime) {
-		var percentage, canvas, context;
+		var percentage, canvas, context, scale;
 
 		// Setup canvas and scale
 		canvas = google.gears.factory.create('beta.canvas');

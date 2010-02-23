@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, jQuery:false */
+
 (function($) {
 	var uploaders = {};
 
@@ -108,6 +111,17 @@
 					$('#' + file.id).attr('class', actionClass).find('a').css('display', 'block');
 				}
 
+				function updateTotalProgress() {
+					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
+					$('div.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
+					$('span.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
+
+					// All files are uploaded
+					if (uploader.total.uploaded == uploader.files.length) {
+						uploader.stop();
+					}
+				}
+
 				function updateList() {
 					var fileList = $('ul.plupload_filelist', target).html(''), inputCount = 0, inputHTML;
 
@@ -162,17 +176,6 @@
 					fileList[0].scrollTop = fileList[0].scrollHeight;
 
 					updateTotalProgress();
-				}
-
-				function updateTotalProgress() {
-					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
-					$('div.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
-					$('span.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
-
-					// All files are uploaded
-					if (uploader.total.uploaded == uploader.files.length) {
-						uploader.stop();
-					}
 				}
 
 				// Set unique target filenames

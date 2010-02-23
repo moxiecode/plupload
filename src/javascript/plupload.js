@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global window:false, escape:false */
+
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
@@ -251,22 +254,26 @@
 		 * @param {function} callback Callback function to execute for each item.
 		 */
 		each : function(obj, callback) {
-			var length = obj.length, undef, key, i;
+			var length, undef, key, i;
 
-			if (length === undef) {
-				// Loop object items
-				for (key in obj) {
-					if (obj.hasOwnProperty(key)) {
-						if (callback(obj[key], key) === false) {
-							return;
+			if (obj) {
+				length = obj.length;
+
+				if (length === undef) {
+					// Loop object items
+					for (key in obj) {
+						if (obj.hasOwnProperty(key)) {
+							if (callback(obj[key], key) === false) {
+								return;
+							}
 						}
 					}
-				}
-			} else {
-				// Loop array items
-				for (i = 0; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
+				} else {
+					// Loop array items
+					for (i = 0; i < length; i++) {
+						if (callback(obj[i], i) === false) {
+							return;
+						}
 					}
 				}
 			}

@@ -9,6 +9,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, window:false */
+
 (function(plupload) {
 	/**
 	 * HTML4 implementation. This runtime has no special features it uses an form that posts files into an hidden iframe.

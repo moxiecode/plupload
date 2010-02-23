@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, jQuery:false */
+
 (function($) {
 	var uploaders = {};
 

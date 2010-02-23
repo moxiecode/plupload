@@ -8,6 +8,9 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, ActiveXObject:false, window:false */
+
 (function(plupload) {
 	var uploadInstances = {};
 
@@ -22,7 +25,7 @@
 				var idx = value.indexOf(b);
 
 				if (idx + 1) {
-					return '\\' + v.charAt(idx + 1);
+					return '\\' + value.charAt(idx + 1);
 				}
 
 				a = b.charCodeAt().toString(16);

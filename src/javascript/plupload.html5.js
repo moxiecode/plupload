@@ -8,9 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
+// JSLint defined globals
+/*global plupload:false, File:false, window:false, atob:false */
+
 (function(plupload) {
 	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
-		var canvas, context, img, data;
+		var canvas, context, img, data, scale;
 
 		// Setup canvas and context
 		canvas = document.createElement("canvas");
