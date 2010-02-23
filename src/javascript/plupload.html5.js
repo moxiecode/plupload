@@ -110,7 +110,7 @@
 			}
 
 			uploader.bind("Init", function(up) {
-				var inputContainer, mimes = [], i, y, filters = up.settings.filters, ext, type;
+				var inputContainer, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body;
 
 				// Create input container and insert it at an absolute position within the browse button
 				inputContainer = document.createElement('div');
@@ -135,11 +135,17 @@
 					width : '100px',
 					height : '100px',
 					overflow : 'hidden',
-					opacity : 0
+					opacity : uploader.settings.shim_bgcolor ? '' : 0 // Force transparent if bgcolor is undefined
 				});
 
-				inputContainer.className = 'plupload_html5';
-				document.body.appendChild(inputContainer);
+				inputContainer.className = 'plupload html5';
+
+				if (uploader.settings.container) {
+					container = document.getElementById(uploader.settings.container);
+					container.style.position = 'relative';
+				}
+
+				container.appendChild(inputContainer);
 
 				// Insert the input inide the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
@@ -183,7 +189,7 @@
 				var browseButton, browsePos, browseSize;
 
 				browseButton = document.getElementById(uploader.settings.browse_button);
-				browsePos = plupload.getPos(browseButton);
+				browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
 				browseSize = plupload.getSize(browseButton);
 
 				plupload.extend(document.getElementById(uploader.id + '_html5_container').style, {

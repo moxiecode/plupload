@@ -55,7 +55,12 @@
 			uploader.bind("Init", function(up) {
 				var forms, inputContainer, input, mimes = [], i, y,
 					filters = up.settings.filters, ext, type, IE = /MSIE/.test(navigator.userAgent),
-					url = "javascript", bgcolor;
+					url = "javascript", bgcolor, container = document.body;
+
+				if (uploader.settings.container) {
+					container = document.getElementById(uploader.settings.container);
+					container.style.position = 'relative';
+				}
 
 				// If no form set, create or use existing form
 				if (!up.settings.form) {
@@ -185,7 +190,7 @@
 				inputContainer.className = 'plupload_iframe';
 
 				// Append to form
-				form.appendChild(inputContainer);
+				container.appendChild(inputContainer);
 
 				// Create an input element
 				function createInput() {
@@ -235,7 +240,7 @@
 				var browseButton, browsePos, browseSize;
 
 				browseButton = document.getElementById(uploader.settings.browse_button);
-				browsePos = plupload.getPos(browseButton);
+				browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
 				browseSize = plupload.getSize(browseButton);
 
 				plupload.extend(document.getElementById(uploader.id + '_iframe_container').style, {

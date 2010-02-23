@@ -19,7 +19,16 @@
 	}
 
 	function renderUI(id, target) {
-		target.html(
+		// Remove all existing non plupload items
+		target.contents().each(function(i, node) {
+			node = $(node);
+
+			if (!node.is('.plupload')) {
+				node.remove();
+			}
+		});
+
+		target.prepend(
 			'<div class="plupload_wrapper plupload_scroll">' +
 				'<div id="' + id + '_container" class="plupload_container">' +
 					'<div class="plupload">' +
@@ -75,10 +84,6 @@
 			this.each(function() {
 				var uploader, target, id;
 
-				uploader = new plupload.Uploader($.extend({
-					dragdrop : true
-				}, settings));
-
 				target = $(this);
 				id = target.attr('id');
 
@@ -86,6 +91,11 @@
 					id = plupload.guid();
 					target.attr('id', id);
 				}
+
+				uploader = new plupload.Uploader($.extend({
+					dragdrop : true,
+					container : id
+				}, settings));
 
 				uploaders[id] = uploader;
 

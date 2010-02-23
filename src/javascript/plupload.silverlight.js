@@ -164,7 +164,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var silverlightContainer, filter = '', filters = uploader.settings.filters, i;
+			var silverlightContainer, filter = '', filters = uploader.settings.filters, i, container = document.body;
 
 			// Check if Silverlight is installed
 			if (!isInstalled('2.0.31005.0')) {
@@ -184,11 +184,17 @@
 				background : uploader.settings.shim_bgcolor || 'transparent',
 				width : '100px',
 				height : '100px',
-				opacity : 0.01
+				opacity : uploader.settings.shim_bgcolor ? '' : 0.01 // Force transparent if bgcolor is undefined
 			});
 
-			silverlightContainer.className = 'plupload_silverlight';
-			document.body.appendChild(silverlightContainer);
+			silverlightContainer.className = 'plupload silverlight';
+
+			if (uploader.settings.container) {
+				container = document.getElementById(uploader.settings.container);
+				container.style.position = 'relative';
+			}
+
+			container.appendChild(silverlightContainer);
 
 			for (i = 0; i < filters.length; i++) {
 				filter += (filter != '' ? '|' : '') + filters[i].title + " | *." + filters[i].extensions.replace(/,/g, ';*.');
@@ -242,7 +248,7 @@
 					var browseButton, browsePos, browseSize;
 
 					browseButton = document.getElementById(up.settings.browse_button);
-					browsePos = plupload.getPos(browseButton);
+					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
 					browseSize = plupload.getSize(browseButton);
 
 					plupload.extend(document.getElementById(up.id + '_silverlight_container').style, {

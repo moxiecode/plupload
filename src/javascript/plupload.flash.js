@@ -69,7 +69,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var browseButton, flashContainer, flashVars, initialized, waitCount = 0;
+			var browseButton, flashContainer, flashVars, initialized, waitCount = 0, container = document.body;
 
 			if (getFlashVersion() < 10) {
 				callback({success : false});
@@ -93,8 +93,14 @@
 				height : '100%'
 			});
 
-			flashContainer.className = 'plupload_flash';
-			document.body.appendChild(flashContainer);
+			flashContainer.className = 'plupload flash';
+
+			if (uploader.settings.container) {
+				container = document.getElementById(uploader.settings.container);
+				container.style.position = 'relative';
+			}
+
+			container.appendChild(flashContainer);
 
 			flashVars = 'id=' + escape(uploader.id);
 
@@ -231,7 +237,7 @@
 					var browseButton, browsePos, browseSize;
 
 					browseButton = document.getElementById(up.settings.browse_button);
-					browsePos = plupload.getPos(browseButton);
+					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
 					browseSize = plupload.getSize(browseButton);
 
 					plupload.extend(document.getElementById(up.id + '_flash_container').style, {
