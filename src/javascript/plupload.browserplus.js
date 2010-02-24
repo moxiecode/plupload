@@ -273,8 +273,8 @@
 					if (res.success) {
 						browserPlus.require({
 							services : services
-						}, function() {
-							if (res.success) {
+						}, function(sres) {
+							if (sres.success) {
 								setup();
 							} else {
 								callback();
