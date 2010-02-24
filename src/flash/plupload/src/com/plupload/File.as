@@ -109,7 +109,7 @@ package com.plupload {
 				quality = settings["quality"];
 			}
 
-			multipart = new Boolean(settings["quality"]);
+			multipart = new Boolean(settings["multipart"]);
 			chunkSize = settings["chunk_size"];
 			postvars = settings["multipart_params"];
 			chunk = 0;
