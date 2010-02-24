@@ -23,6 +23,7 @@
 
 .plupload_button:hover {
 	color: #000;
+	text-decoration: none;
 }
 
 .plupload_disabled, a.plupload_disabled:hover {
