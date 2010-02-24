@@ -3,6 +3,7 @@ Version 1.x (2010-xx-xx)
 Version 1.1 (2010-02-24)
 	Added new multipart and multipart_params support.
 	Added new container option, enables you to specify where flash/silverlight objects would be added.
+	Added chunking support to BrowserPlus runtime, contributed by Steve Spencer.
 	Added FileUploaded event that fires when a file is uploaded.
 	Added more easily understandable buttons to queue widget.
 	Added html4 runtime, contributed by Ryan Demmer.
