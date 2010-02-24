@@ -27,6 +27,7 @@
 		<delete quiet="true">
 			<fileset dir="docs\api" includes="**/*"/>
 		</delete>
+		<mkdir dir="docs" />
 
 		<moxiedoc outdir="docs\api" templatedir="tools\templates" msintellisense="docs\api\plupload.vsdoc.js" title="Plupload API">
 			<fileset dir="src">
