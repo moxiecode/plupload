@@ -622,14 +622,12 @@
 						file = selected_files[i];
 						file.loaded = 0;
 						file.percent = 0;
+						file.status = plupload.QUEUED;
 
-						if (selected_files[i].size > settings.max_file_size) {
-							file.status = plupload.FAILED;
-						} else {
-							file.status = plupload.QUEUED;
+						// Ignore files that are to large
+						if (selected_files[i].size <= settings.max_file_size) {
+							files.push(file);
 						}
-
-						files.push(file);
 					}
 
 					self.trigger("QueueChanged");
