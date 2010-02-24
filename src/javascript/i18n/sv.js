@@ -5,8 +5,7 @@ plupload.addI18n({
 	'Filename' : 'Filnamn',
 	'Status' : 'Status',
 	'Size' : 'Storlek',
-	'Add files to queue' : 'Lägg till filer till kön',
-	'Add files.' : 'Lägg till filer',
+	'Add files' : 'Lägg till filer',
 	'Stop current upload' : 'Stoppa uppladdningen',
 	'Start uploading queue' : 'Starta uppladdningen',
 	'Drag files here.' : 'Dra filer hit'

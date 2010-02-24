@@ -52,16 +52,13 @@
 
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
-									'<a href="#" title="' + _('Add files to queue') + '" class="plupload_add">' + 
-										'<span class="plupload_add_icon"></span>' + 
-										'<span class="plupload_add_text">' + _('Add files.') + '</span><br class="plupload_clear" />' +
-									'</a>' +
+									'<div class="plupload_buttons">' +
+										'<a href="#" class="plupload_button plupload_add">' + _('Add files') + '</a>' +
+										'<a href="#" class="plupload_button plupload_start">' + _('Start upload') + '</a>' +
+									'</div>' +
 									'<span class="plupload_upload_status"></span>' +
 								'</div>' +
-								'<div class="plupload_file_action">' +
-									'<a href="#" class="plupload_stop" title="' + _('Stop current upload') + '"></a>' +
-									'<a href="#" class="plupload_start" title="' + _('Start uploading queue') + '"></a><br class="plupload_clear" />' + 
-								'</div>' +
+								'<div class="plupload_file_action"></div>' +
 								'<div class="plupload_file_status"><span class="plupload_total_status">0%</span></div>' +
 								'<div class="plupload_file_size"><span class="plupload_total_file_size">0 b</span></div>' +
 								'<div class="plupload_progress">' +
@@ -199,7 +196,7 @@
 				uploader.bind('Init', function(up, res) {
 					renderUI(id, target);
 
-					$('a.plupload_add', target).css('display', 'block').attr('id', id + '_browse');
+					$('a.plupload_add', target).attr('id', id + '_browse');
 
 					up.settings.browse_button = id + '_browse';
 
@@ -225,19 +222,19 @@
 						e.preventDefault();
 					});
 
-					$('a.plupload_start', target).css('display', 'block').addClass('plupload_disabled');
+					$('a.plupload_start', target).addClass('plupload_disabled');
 				});
 
 				uploader.init();
 
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
-						$('a.plupload_delete,a.plupload_start,a.plupload_add', target).hide();
+						$('a.plupload_delete,div.plupload_buttons', target).hide();
 						$('span.plupload_upload_status,div.plupload_progress,a.plupload_stop', target).css('display', 'block');
 						$('span.plupload_upload_status', target).text('Uploaded 0/' + uploader.files.length + ' files');
 					} else {
-						$('a.plupload_stop,div.plupload_progress,span.plupload_upload_status', target).hide();
-						$('a.plupload_delete,a.plupload_add,a.plupload_start', target).css('display', 'block');
+						$('a.plupload_stop,div.plupload_progress', target).hide();
+						$('a.plupload_delete', target).css('display', 'block');
 					}
 				});
 
