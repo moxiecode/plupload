@@ -166,8 +166,8 @@
 		init : function(uploader, callback) {
 			var silverlightContainer, filter = '', filters = uploader.settings.filters, i, container = document.body;
 
-			// Check if Silverlight is installed
-			if (!isInstalled('2.0.31005.0')) {
+			// Check if Silverlight is installed, Silverlight windowless parameter doesn't work correctly on Opera so we disable it for now
+			if (!isInstalled('2.0.31005.0') || (window.opera && window.opera.buildNumber)) {
 				callback({success : false});
 				return;
 			}
@@ -201,12 +201,12 @@
 			}
 
 			// Insert the Silverlight object inide the Silverlight container
-			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" width="100%" height="100%">' +
+			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" style="outline:none;" width="100%" height="100%">' +
 				'<param name="source" value="' + uploader.settings.silverlight_xap_url + '"/>' +
 				'<param name="background" value="Transparent"/>' +
 				'<param name="windowless" value="true"/>' +
 				'<param name="initParams" value="id=' + uploader.id + ',filter=' + filter + '"/>' +
-				'<param name="onerror" value="onSilverlightError" /></object>';
+				'</object>';
 
 			function getSilverlightObj() {
 				return document.getElementById(uploader.id + '_silverlight').content.Upload;
@@ -258,16 +258,6 @@
 						height : browseSize.h + 'px'
 					});
 				});
-
-				/*
-				uploader.bind("Silverlight:ImageResizeProgress", function(up, sl_id, percent) {
-					var file = up.getFile(lookup[sl_id]);
-
-					file.imageResizePercent = percent;
-
-					up.trigger('ImageResizeProgress', file);
-				});
-				*/
 
 				uploader.bind("Silverlight:UploadChunkSuccessful", function(up, sl_id, chunk, chunks, text) {
 					var chunkArgs, file = up.getFile(lookup[sl_id]);
