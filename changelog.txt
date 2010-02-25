@@ -1,6 +1,9 @@
-Version 1.1.1 (2010-xx-xx)
-	Fixed bug where multipart mode was enabled all the time in the Flash runtime.
+Version 1.1.1 (2010-02-25)
 	Added new setup setting to queue widget. Makes it easier to bind custom events to uploader instance.
+	Fixed so it's possible to disable chunking compleatly. It's now disabled by default.
+	Fixed bug where multipart mode was enabled all the time in the Flash runtime.
+	Fixed bug where chunked uploading in Silverlight would fail.
+	Fixed bug where the delete button was visible while uploading.
 Version 1.1 (2010-02-24)
 	Added new multipart and multipart_params support.
 	Added new container option, enables you to specify where flash/silverlight objects would be added.
