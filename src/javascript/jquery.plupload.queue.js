@@ -190,13 +190,9 @@
 					updateTotalProgress();
 				}
 
-				// Set unique target filenames
-				if (uploader.settings.unique_names) {
-					uploader.bind("UploadFile", function(up, file) {
-						file.target_name = (uploader.settings.salt || '') + file.id + '.tmp';
-						$('#' + file.id).addClass('plupload_current_file');
-					});
-				}
+				uploader.bind("UploadFile", function(up, file) {
+					$('#' + file.id).addClass('plupload_current_file');
+				});
 
 				uploader.bind('Init', function(up, res) {
 					renderUI(id, target);

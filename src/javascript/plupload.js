@@ -665,6 +665,13 @@
 					self.refresh();
 				});
 
+				// Generate unique target filenames
+				if (settings.unique_names) {
+					self.bind("UploadFile", function(up, file) {
+						file.target_name = file.id + '.tmp';
+					});
+				}
+
 				self.bind('UploadProgress', function(up, file) {
 					if (file.status == plupload.QUEUED) {
 						file.status = plupload.UPLOADING;
