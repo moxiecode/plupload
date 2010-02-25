@@ -159,8 +159,8 @@
 
 						urlParams.name = file.target_name || file.name;
 
-						// only send chunk parameters if file is chunked
-						if (chunks > 1) {
+						// Only send chunk parameters if chunk size is defined
+						if (chunkSize) {
 							urlParams.chunk = chunk;
 							urlParams.chunks = chunks;
 						}
@@ -204,7 +204,7 @@
 
 					function chunkAndUploadFile(native_file) {
 						file.size = native_file.size;
-						if (uploader.features.chunks) {
+						if (chunkSize) {
 							browserPlus.FileAccess.chunk({file : native_file, chunkSize : chunkSize}, function(cr) {
 								if (cr.success) {
 									var chunks = cr.value, len = chunks.length;
@@ -220,6 +220,7 @@
 								}
 							});
 						} else {
+							loadProgress = Array(1);
 							chunkStack.push(native_file);
 							uploadFile(0, 1);
 						}

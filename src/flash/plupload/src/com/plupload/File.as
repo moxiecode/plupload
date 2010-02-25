@@ -95,7 +95,7 @@ package com.plupload {
 		 * @param settings Settings object.
 		 */
 		public function upload(url:String, settings:Object):void {
-			var file:File = this, width:int, height:int, quality:int, multipart:Boolean;
+			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean;
 			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
 
 			// Setup internal vars
@@ -111,9 +111,16 @@ package com.plupload {
 
 			multipart = new Boolean(settings["multipart"]);
 			chunkSize = settings["chunk_size"];
+			chunking = chunkSize > 0;
 			postvars = settings["multipart_params"];
 			chunk = 0;
 			chunks = Math.ceil(this._fileRef.size / chunkSize);
+
+			// If chunking is disabled then upload file in one huge chunk
+			if (!chunking) {
+				chunkSize = this.size;
+				chunks = 1;
+			}
 
 			// When file is loaded start uploading
 			this._fileRef.addEventListener(Event.COMPLETE, function(e:Event):void {
@@ -150,7 +157,7 @@ package com.plupload {
 						}
 
 						// Start uploading the scaled down image
-						uploadNextChunk(multipart, chunk, chunks, chunkSize, postvars);
+						uploadNextChunk(multipart, chunking, chunk, chunks, chunkSize, postvars);
 					});
 
 					loader.loadBytes(file._fileRef.data);
@@ -161,7 +168,7 @@ package com.plupload {
 						chunks = 4;
 					}
 
-					uploadNextChunk(multipart, chunk, chunks, chunkSize, postvars);
+					uploadNextChunk(multipart, chunking, chunk, chunks, chunkSize, postvars);
 				}
 			});
 
@@ -217,7 +224,7 @@ package com.plupload {
 		/**
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
 		 */
-		private function uploadNextChunk(multipart:Boolean, chunk:int, chunks:int, chunk_size:int, postvars:Object):void {
+		private function uploadNextChunk(multipart:Boolean, chunking:Boolean, chunk:int, chunks:int, chunk_size:int, postvars:Object):void {
 			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
 			var urlStream:URLStream, url:String, file:File = this;
 
@@ -294,12 +301,15 @@ package com.plupload {
 			// Setup URL
 			url = this._uploadUrl;
 
-			if (url.indexOf('?') == -1)
-				url += '?';
-			else
-				url += '&';
+			// Chunk size is defined then add query string params for it
+			if (chunking) {
+				if (url.indexOf('?') == -1)
+					url += '?';
+				else
+					url += '&';
 
-			url += "chunk=" + chunk + "&chunks=" + chunks;
+				url += "chunk=" + chunk + "&chunks=" + chunks;
+			}
 
 			// Setup request
 			req = new URLRequest(url);

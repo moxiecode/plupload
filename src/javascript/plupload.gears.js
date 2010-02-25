@@ -127,10 +127,17 @@
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
-				var chunk = 0, chunks, chunkSize, loaded = 0, resize = up.settings.resize;
+				var chunk = 0, chunks, chunkSize, loaded = 0, resize = up.settings.resize, chunking;
 
 				chunkSize = up.settings.chunk_size;
+				chunking = chunkSize > 0;
 				chunks = Math.ceil(file.size / chunkSize);
+
+				// If chunking is disabled then upload the whole file in one huge chunk
+				if (!chunking) {
+					chunkSize = file.size;
+					chunks = 1;
+				}
 
 				// If file is png or jpeg and resize is configured then resize it
 				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
@@ -140,7 +147,7 @@
 				file.size = blobs[file.id].length;
 
 				function uploadNextChunk() {
-					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0;
+					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, regArgs = {name : file.target_name || file.name};
 
 					// Sends the binary blob multipart encoded or raw depending on config
 					function sendBinaryBlob(blob) {
@@ -187,10 +194,17 @@
 						return;
 					}
 
+					// Only add chunking args if needed
+					if (chunking) {
+						reqArgs.chunk = chunk;
+						reqArgs.chunks = chunks;
+					}
+
+					// Setup current chunk size
 					curChunkSize = Math.min(chunkSize, file.size - (chunk  * chunkSize));
 
 					req = google.gears.factory.create('beta.httprequest');
-					req.open('POST', plupload.buildUrl(up.settings.url, {name : file.target_name || file.name, chunk : chunk, chunks : chunks}));
+					req.open('POST', plupload.buildUrl(up.settings.url, reqArgs));
 
 					// Add disposition and type if multipart is disabled
 					if (!multipart) {
