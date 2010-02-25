@@ -1,5 +1,6 @@
-Version 1.x (2010-xx-xx)
+Version 1.1.1 (2010-xx-xx)
 	Fixed bug where multipart mode was enabled all the time in the Flash runtime.
+	Added new setup setting to queue widget. Makes it easier to bind custom events to uploader instance.
 Version 1.1 (2010-02-24)
 	Added new multipart and multipart_params support.
 	Added new container option, enables you to specify where flash/silverlight objects would be added.

@@ -94,6 +94,11 @@
 					container : id
 				}, settings));
 
+				// Call setup function
+				if (settings.setup) {
+					settings.setup(uploader);
+				}
+
 				uploaders[id] = uploader;
 
 				function handleStatus(file) {
