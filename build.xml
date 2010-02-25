@@ -102,6 +102,7 @@
 				<exclude name="tools/**" />
 				<exclude name="build.xml" />
 				<exclude name="build.bat" />
+				<exclude name="tests" />
 			</zipfileset>
 		</zip>
 
