@@ -229,7 +229,7 @@
 
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
-						$('a.plupload_delete,div.plupload_buttons', target).hide();
+						$('li.plupload_delete a,div.plupload_buttons', target).hide();
 						$('span.plupload_upload_status,div.plupload_progress,a.plupload_stop', target).css('display', 'block');
 						$('span.plupload_upload_status', target).text('Uploaded 0/' + uploader.files.length + ' files');
 					} else {
