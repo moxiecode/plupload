@@ -36,8 +36,8 @@ namespace Moxiecode.Plupload {
 		private FileInfo info;
 		private SynchronizationContext syncContext;
 		private int chunk, chunks, chunkSize;
-		private bool cancelled, multipart;
-        private long size;
+		private bool cancelled, multipart, chunking;
+		private long size;
         private Stream fileStream;
 		private Dictionary<string, object> multipartParams;
 		#endregion
@@ -115,8 +115,16 @@ namespace Moxiecode.Plupload {
 			this.multipartParams = (Dictionary<string, object>)settings["multipart_params"];
 
             this.chunk = 0;
-			this.chunkSize = chunkSize;
-			this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunkSize);
+			this.chunking = chunkSize > 0;
+
+			if (this.chunking) {
+				this.chunkSize = chunkSize;
+				this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunkSize);
+			} else {
+				this.chunkSize = (int) this.Size;
+				this.chunks = 1;
+			}
+
 			this.cancelled = false;
 			this.uploadUrl = upload_url;
 
@@ -180,9 +188,11 @@ namespace Moxiecode.Plupload {
 
 			this.syncContext = SynchronizationContext.Current;
 
-			url += url.IndexOf('?') == -1 ? '?' : '&';
-			url += "&chunk=" + this.chunk;
-			url += "&chunks=" + this.chunks;
+			if (this.chunking) {
+				url += url.IndexOf('?') == -1 ? '?' : '&';
+				url += "chunk=" + this.chunk;
+				url += "&chunks=" + this.chunks;
+			}
 
 			HttpWebRequest req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
 			req.Method = "POST";
@@ -238,9 +248,9 @@ namespace Moxiecode.Plupload {
                 while (loaded < end && (bytes = this.fileStream.Read(buffer, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
 					loaded += bytes;
 					percent = (int) Math.Round((double) loaded / (double) this.Size * 100.0);
-
+					
 					if (percent > lastPercent) {
-						syncContext.Send(delegate {
+						syncContext.Post(delegate {
 						    if (percent > lastPercent && !this.cancelled) {
 						        this.OnProgress(new ProgressEventArgs(loaded, this.Size));
 							    lastPercent = percent;
@@ -271,13 +281,16 @@ namespace Moxiecode.Plupload {
 					}, this);
 				}
 
-				try {
-                    if (this.fileStream != null)
-                        this.fileStream.Close();
-				} catch (Exception ex) {
-					syncContext.Send(delegate {
-						this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
-					}, this);
+				// Are we done with the file then close the file stream
+				if (loaded == this.size) {
+					try {
+						if (this.fileStream != null)
+							this.fileStream.Close();
+					} catch (Exception ex) {
+						syncContext.Send(delegate {
+							this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
+						}, this);
+					}
 				}
 			}
 
