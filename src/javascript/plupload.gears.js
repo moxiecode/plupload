@@ -147,7 +147,7 @@
 				file.size = blobs[file.id].length;
 
 				function uploadNextChunk() {
-					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, regArgs = {name : file.target_name || file.name};
+					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, reqArgs = {name : file.target_name || file.name};
 
 					// Sends the binary blob multipart encoded or raw depending on config
 					function sendBinaryBlob(blob) {

@@ -329,7 +329,7 @@
 					x : x,
 					y : y
 				};
-			};
+			}
 
 			// Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
 			if (node.getBoundingClientRect && (navigator.userAgent.indexOf('MSIE') > 0 && doc.documentMode !== 8)) {
