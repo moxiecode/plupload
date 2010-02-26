@@ -517,7 +517,7 @@
 	 * @param {Object} settings Initialization settings, to be used by the uploader instance and runtimes.
 	 */
 	plupload.Uploader = function(settings) {
-		var events = {}, total, files = [], fileIndex;
+		var events = {}, total, files = [], fileIndex, startTime;
 
 		// Inital total state
 		total = new plupload.QueueProgress();
@@ -570,6 +570,7 @@
 			}
 
 			total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
+			total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
 		}
 
 		// Add public methods
@@ -679,6 +680,13 @@
 
 					file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 0;
 					calc();
+				});
+
+				self.bind('StateChanged', function(up) {
+					if (up.state == plupload.STARTED) {
+						// Get start time to calculate bps
+						startTime = (+new Date());
+					}
 				});
 
 				self.bind('QueueChanged', calc);
@@ -1110,12 +1118,20 @@
 		self.percent = 0;
 
 		/**
+		 * Bytes uploaded per second.
+		 *
+		 * @property bytesPerSec
+		 * @type Number
+		 */
+		self.bytesPerSec = 0;
+
+		/**
 		 * Resets the progress to it's initial values.
 		 *
 		 * @method reset
 		 */
 		self.reset = function() {
-			self.size = self.loaded = self.uploaded = self.failed = self.queued = self.percent = 0;
+			self.size = self.loaded = self.uploaded = self.failed = self.queued = self.percent = self.bytesPerSec = 0;
 		};
 	};
 

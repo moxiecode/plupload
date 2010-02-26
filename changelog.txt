@@ -1,3 +1,5 @@
+Version 1.x (2010-xx-x)
+	Added bytes per second support to total queue progress.
 Version 1.1.1 (2010-02-25)
 	Added new setup setting to queue widget. Makes it easier to bind custom events to uploader instance.
 	Fixed so it's possible to disable chunking compleatly. It's now disabled by default.
