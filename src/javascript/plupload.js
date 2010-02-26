@@ -222,7 +222,7 @@
 				guid += Math.floor(Math.random() * 65535).toString(32);
 			}
 
-			return (plupload.guidPrefix || '') + guid + (count++).toString(32);
+			return (plupload.guidPrefix || 'p') + guid + (count++).toString(32);
 		},
 
 		/**
