@@ -89,6 +89,7 @@
 				position : 'absolute',
 				top : '0px',
 				background : uploader.settings.shim_bgcolor || 'transparent',
+				zIndex : 99999,
 				width : '100%',
 				height : '100%'
 			});
@@ -213,8 +214,10 @@
 						files.push(new plupload.File(id, file.name, file.size));
 					}
 
-					// trigger FilesAdded event
-					uploader.trigger("FilesAdded", files);
+					// Trigger FilesAdded event if we added any
+					if (files.length) {
+						uploader.trigger("FilesAdded", files);
+					}
 				});
 
 				uploader.bind("QueueChanged", function(up) {

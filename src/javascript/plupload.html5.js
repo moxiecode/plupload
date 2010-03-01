@@ -87,8 +87,10 @@
 					files.push(new plupload.File(id, file.fileName, file.fileSize));
 				}
 
-				// Fire FilesAdded event
-				uploader.trigger("FilesAdded", files);
+				// Trigger FilesAdded event if we added any
+				if (files.length) {
+					uploader.trigger("FilesAdded", files);
+				}
 			}
 
 			function isSupported() {
@@ -135,6 +137,7 @@
 					width : '100px',
 					height : '100px',
 					overflow : 'hidden',
+					zIndex : 99999,
 					opacity : uploader.settings.shim_bgcolor ? '' : 0 // Force transparent if bgcolor is undefined
 				});
 

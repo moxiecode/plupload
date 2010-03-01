@@ -49,7 +49,9 @@
 				files.push(file);
 
 				// Fire FilesAdded event
-				uploader.trigger("FilesAdded", files);
+				if (files.length) {
+					uploader.trigger("FilesAdded", files);
+				}
 			}
 
 			uploader.bind("Init", function(up) {

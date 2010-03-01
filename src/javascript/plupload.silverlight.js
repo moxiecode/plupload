@@ -184,6 +184,7 @@
 				background : uploader.settings.shim_bgcolor || 'transparent',
 				width : '100px',
 				height : '100px',
+				zIndex : 99999,
 				opacity : uploader.settings.shim_bgcolor ? '' : 0.01 // Force transparent if bgcolor is undefined
 			});
 
@@ -232,7 +233,10 @@
 				});
 
 				uploader.bind("Silverlight:SelectSuccessful", function() {
-					uploader.trigger("FilesAdded", selectedFiles);
+					// Trigger FilesAdded event if we added any
+					if (selectedFiles.length) {
+						uploader.trigger("FilesAdded", selectedFiles);
+					}
 				});
 
 				uploader.bind("Silverlight:UploadFileProgress", function(up, sl_id, loaded, total) {

@@ -648,7 +648,7 @@
 
 				// Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
-					var i, file;
+					var i, file, count = 0;
 
 					for (i = 0; i < selected_files.length; i++) {
 						file = selected_files[i];
@@ -659,11 +659,15 @@
 						// Ignore files that are to large
 						if (selected_files[i].size <= settings.max_file_size) {
 							files.push(file);
+							count++;
 						}
 					}
 
-					self.trigger("QueueChanged");
-					self.refresh();
+					// Only trigger QueueChanged event if any files where added
+					if (count) {
+						self.trigger("QueueChanged");
+						self.refresh();
+					}
 				});
 
 				// Generate unique target filenames
