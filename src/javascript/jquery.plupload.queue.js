@@ -94,9 +94,9 @@
 					container : id
 				}, settings));
 
-				// Call setup function
-				if (settings.setup) {
-					settings.setup(uploader);
+				// Call preinit function
+				if (settings.preinit) {
+					settings.preinit(uploader);
 				}
 
 				uploaders[id] = uploader;
@@ -227,6 +227,19 @@
 				});
 
 				uploader.init();
+
+				// Call setup function
+				if (settings.setup) {
+					settings.setup(uploader);
+				}
+
+				uploader.bind("Error", function(up, err) {
+					var file = err.file;
+
+					if (file) {
+						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', err.message);
+					}
+				});
 
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
