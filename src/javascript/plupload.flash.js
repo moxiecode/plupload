@@ -181,11 +181,9 @@
 
 					up.trigger('ChunkUploaded', chunkArgs);
 
-					// Stop upload
+					// Stop upload if file is maked as failed
 					if (chunkArgs.cancelled) {
 						getFlashObj().cancelUpload();
-						file.status = plupload.FAILED;
-						return;
 					}
 				});
 
@@ -218,6 +216,33 @@
 					if (files.length) {
 						uploader.trigger("FilesAdded", files);
 					}
+				});
+
+				uploader.bind("Flash:SecurityError", function(up, err) {
+					uploader.trigger('Error', {
+						code : plupload.SECURITY_ERROR,
+						message : 'Security error.',
+						details : err.message,
+						file : uploader.getFile(lookup[err.id])
+					});
+				});
+
+				uploader.bind("Flash:GenericError", function(up, err) {
+					uploader.trigger('Error', {
+						code : plupload.GENERIC_ERROR,
+						message : 'Generic error.',
+						details : err.message,
+						file : uploader.getFile(lookup[err.id])
+					});
+				});
+
+				uploader.bind("Flash:IOError", function(up, err) {
+					uploader.trigger('Error', {
+						code : plupload.IO_ERROR,
+						message : 'IO error.',
+						details : err.message,
+						file : uploader.getFile(lookup[err.id])
+					});
 				});
 
 				uploader.bind("QueueChanged", function(up) {

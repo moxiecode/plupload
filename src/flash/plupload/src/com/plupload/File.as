@@ -270,7 +270,7 @@ package com.plupload {
 
 				// Upload next chunk
 				if (++chunk < chunks)
-					uploadNextChunk(multipart, chunk, chunks, chunk_size, postvars);
+					uploadNextChunk(multipart, chunking, chunk, chunks, chunk_size, postvars);
 				else {
 					// Fake UPLOAD_COMPLETE_DATA event
 					var uploadEvt:DataEvent = new DataEvent(

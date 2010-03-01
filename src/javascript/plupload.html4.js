@@ -105,8 +105,20 @@
 
 				// Add IFrame onload event
 				plupload.addEvent(iframe, 'load', function(e){
-					var n = e.target, file = uploader.currentfile;
-					var el = n.contentWindow.document || n.contentDocument || window.frames[n.id].document;
+					var n = e.target, file = uploader.currentfile, el;
+
+					try {
+						el = n.contentWindow.document || n.contentDocument || window.frames[n.id].document;
+					} catch (ex) {
+						// Probably a permission denied error
+						up.trigger('Error', {
+							code : plupload.SECURITY_ERROR,
+							message : 'Security error.',
+							file : file
+						});
+
+						return;
+					}
 
 					// Return on first load
 					if (el.location.href == 'about:blank' || !file) {

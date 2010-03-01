@@ -157,6 +157,11 @@
 					function uploadFile(chunk, chunks) {
 						var chunkFile;
 
+						// Stop upload if file is maked as failed
+						if (file.status == plupload.FAILED) {
+							return;
+						}
+
 						urlParams.name = file.target_name || file.name;
 
 						// Only send chunk parameters if chunk size is defined
@@ -186,7 +191,11 @@
 								up.trigger('UploadProgress', file);
 							}
 						}, function(res) {
+							var httpStatus;
+
 							if (res.success) {
+								httpStatus = res.value.statusCode;
+
 							    if (chunkStack.length > 0) {
 									// more chunks to be uploaded
 									uploadFile(++chunk, chunks);
@@ -195,9 +204,26 @@
 
 									up.trigger('FileUploaded', file, {
 										response : res.value.body,
-										status : res.value.statusCode
+										status : httpStatus
 									});
+
+									// Response isn't 200 ok
+									if (httpStatus != 200) {
+										up.trigger('Error', {
+											code : plupload.HTTP_ERROR,
+											message : 'HTTP Error.',
+											file : file,
+											status : httpStatus
+										});
+									}
 							    }
+							} else {
+								up.trigger('Error', {
+									code : plupload.GENERIC_ERROR,
+									message : 'Generic Error.',
+									file : file,
+									details : res.error
+								});
 							}
 						});
 					}

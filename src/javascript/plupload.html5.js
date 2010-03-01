@@ -252,14 +252,26 @@
 				}
 
 				xhr.onreadystatechange = function() {
+					var httpStatus = xhr.status;
+
 					if (xhr.readyState == 4) {
 						file.status = plupload.DONE;
 						file.loaded = file.size;
 						up.trigger('UploadProgress', file);
 						up.trigger('FileUploaded', file, {
 							response : xhr.responseText,
-							status : xhr.status
+							status : httpStatus
 						});
+
+						// Response isn't 200 ok
+						if (httpStatus != 200) {
+							up.trigger('Error', {
+								code : plupload.HTTP_ERROR,
+								message : 'HTTP Error.',
+								file : file,
+								status : httpStatus
+							});
+						}
 					}
 				};
 

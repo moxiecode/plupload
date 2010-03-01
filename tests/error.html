@@ -31,6 +31,7 @@ $(function() {
 		runtimes : 'flash',
 		url : 'error.php',
 		unique_names : true,
+		chunk_size : '1mb',
 		filters : [
 			{title : "Zip files", extensions : "zip"}
 		],
@@ -46,6 +47,7 @@ $(function() {
 		runtimes : 'gears',
 		url : 'error.php',
 		unique_names : true,
+		chunk_size : '1mb',
 		filters : [
 			{title : "Zip files", extensions : "zip"}
 		],
@@ -58,6 +60,7 @@ $(function() {
 		runtimes : 'silverlight',
 		url : 'error.php',
 		unique_names : true,
+		chunk_size : '1mb',
 		filters : [
 			{title : "Zip files", extensions : "zip"}
 		],
@@ -73,6 +76,7 @@ $(function() {
 		runtimes : 'html5',
 		url : 'error.php',
 		unique_names : true,
+		chunk_size : '1mb',
 		filters : [
 			{title : "Zip files", extensions : "zip"}
 		],
@@ -84,9 +88,8 @@ $(function() {
 		// General settings
 		runtimes : 'browserplus',
 		url : 'error.php',
-		multipart : true,
-		multipart_params : {test1 : 'a', test2 : 'b'},
 		unique_names : true,
+		chunk_size : '1mb',
 		filters : [
 			{title : "Zip files", extensions : "zip"}
 		],
@@ -98,9 +101,8 @@ $(function() {
 		// General settings
 		runtimes : 'html4',
 		url : 'error.php',
-		multipart : true,
-		multipart_params : {test1 : 'a', test2 : 'b'},
 		unique_names : true,
+		chunk_size : '1mb',
 		filters : [
 			{title : "Zip files", extensions : "zip"}
 		],
@@ -110,41 +112,57 @@ $(function() {
 	function setup(uploader) {
 		uploader.bind('StateChanged', function() {
 			if (uploader.state == plupload.STARTED) {
-				uploader.settings.url = 'error.php?code=' + $('#errorcode').val();
+				// If status is 103 then try uploading to an invalid domain
+				if ($('#errorcode').val() == "103") {
+					uploader.settings.url = 'http://www.moxiecode.com/error.php?code=' + $('#errorcode').val();
+				} else {
+					uploader.settings.url = 'error.php?code=' + $('#errorcode').val();
+				}
 			}
 		});
 
 		uploader.bind('Error', function(up, err) {
-			console.log(err);
+			console.log('Error', err);
 		});
 
-		uploader.bind('FileUploaded', function(up, file) {
+		uploader.bind('FileUploaded', function(up, file, response) {
 			var code = parseInt($('#errorcode').val(), 10), err = {code : code};
+
+			console.log('FileUploaded', file, response);
 
 			switch (code) {
 				case plupload.GENERIC_ERROR:
-					err.message = 'Generic error occured.';
+					err.message = 'Generic error.';
 					err.file = file;
 					break;
 
 				case plupload.HTTP_ERROR:
-					err.message = 'HTTP error occured.';
-					err.status = 500;
-					err.file = file;
-					break;
+					// Don't trigger this let the server do it
+					return;
 
 				case plupload.IO_ERROR:
-					err.message = 'IO error occured.';
+					err.message = 'IO error.';
 					err.file = file;
 					break;
 
 				case plupload.SECURITY_ERROR:
-					err.message = 'Security error occured.';
+					err.message = 'Security error.';
 					err.file = file;
 					break;
 
+				case 101:
+					if (file == up.files[1]) {
+						err.code = plupload.GENERIC_ERROR;
+						err.message = 'Generic error.';
+						err.file = file;
+					} else
+						return;
+
+					break;
+
 				default:
-					err.message = 'User specific error';
+					err.message = 'User specific error.';
+					err.details = 'Some custom data.';
 					err.file = file;
 			}
 
@@ -166,7 +184,9 @@ $(function() {
 			<option value="-200">HTTP_ERROR</option>
 			<option value="-300">IO_ERROR</option>
 			<option value="-400">SECURITY_ERROR</option>
-			<option value="100">CUSTOM_ERROR</option>
+			<option value="100">Custom error</option>
+			<option value="101">Fail on second file</option>
+			<option value="103">Invalid domain</option>
 		</select>
 	</div>
 

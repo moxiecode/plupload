@@ -239,6 +239,15 @@
 					}
 				});
 
+				uploader.bind("Silverlight:UploadChunkError", function(up, file_id, chunk, chunks, message) {
+					uploader.trigger("Error", {
+						code : plupload.IO_ERROR,
+						message : 'IO Error.',
+						details : message,
+						file : up.getFile(lookup[file_id])
+					});
+				});
+
 				uploader.bind("Silverlight:UploadFileProgress", function(up, sl_id, loaded, total) {
 					var file = up.getFile(lookup[sl_id]);
 
@@ -275,11 +284,9 @@
 
 					up.trigger('ChunkUploaded', chunkArgs);
 
-					// Stop upload
-					if (chunkArgs.cancelled) {
+					// Stop upload if file is maked as failed
+					if (file.status == plupload.FAILED) {
 						getSilverlightObj().CancelUpload();
-						file.status = plupload.FAILED;
-						return;
 					}
 				});
 

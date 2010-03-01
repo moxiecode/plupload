@@ -127,6 +127,40 @@
 		 */
 		DONE : 5,
 
+		// Error constants used by the Error event
+
+		/**
+		 * Generic error for example if an exception is thrown inside Silverlight.
+		 *
+		 * @property IO_ERROR
+		 * @final
+		 */
+		GENERIC_ERROR : -100,
+
+		/**
+		 * HTTP transport error. For example if the server produces a HTTP status other than 200.
+		 *
+		 * @property HTTP_ERROR
+		 * @final
+		 */
+		HTTP_ERROR : -200,
+
+		/**
+		 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
+		 *
+		 * @property IO_ERROR
+		 * @final
+		 */
+		IO_ERROR : -300,
+
+		/**
+		 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
+		 *
+		 * @property IO_ERROR
+		 * @final
+		 */
+		SECURITY_ERROR : -400,
+
 		/**
 		 * Mime type lookup table.
 		 *
@@ -694,6 +728,13 @@
 				});
 
 				self.bind('QueueChanged', calc);
+
+				self.bind("Error", function(up, err) {
+					// Set failed status if an error occured on a file
+					if (err.file) {
+						err.file.status = plupload.FAILED;
+					}
+				});
 
 				self.bind("FileUploaded", function(up, file) {
 					file.status = plupload.DONE;

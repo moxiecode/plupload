@@ -10,7 +10,9 @@
 	header("Pragma: no-cache");
 
 	switch ($_GET['code']) {
-		case "102":
-			die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
+		// Fake server error
+		case "-200":
+			header('HTTP/1.1 500 Internal Server Error');
+			die();
 	}
 ?>

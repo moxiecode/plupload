@@ -234,10 +234,16 @@
 				}
 
 				uploader.bind("Error", function(up, err) {
-					var file = err.file;
+					var file = err.file, message;
 
 					if (file) {
-						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', err.message);
+						message = err.message;
+						
+						if (err.details) {
+							message += " (" + err.details + ")";
+						}
+
+						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
 				});
 
