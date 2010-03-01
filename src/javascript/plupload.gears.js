@@ -223,13 +223,13 @@
 						if (req.readyState == 4) {
 							if (req.status == 200) {
 								chunkArgs = {
-									file : file,
 									chunk : chunk,
 									chunks : chunks,
-									response : req.responseText
+									response : req.responseText,
+									status : req.status
 								};
 
-								up.trigger('ChunkUploaded', chunkArgs);
+								up.trigger('ChunkUploaded', file, chunkArgs);
 
 								// Stop upload
 								if (chunkArgs.cancelled) {
@@ -249,7 +249,14 @@
 									uploadNextChunk();
 								}
 							} else {
-								up.trigger('UploadChunkError', {file : file, chunk : chunk, chunks : chunks, error : 'Status: ' + req.status});
+								up.trigger('Error', {
+									code : plupload.HTTP_ERROR,
+									message : 'HTTP Error.',
+									file : file,
+									chunk : chunk,
+									chunks : chunks,
+									status : req.status
+								});
 							}
 						}
 					};

@@ -191,13 +191,22 @@
 								up.trigger('UploadProgress', file);
 							}
 						}, function(res) {
-							var httpStatus;
+							var httpStatus, chunkArgs;
 
 							if (res.success) {
 								httpStatus = res.value.statusCode;
 
+								if (chunkSize) {
+									up.trigger('ChunkUploaded', file, {
+										chunk : chunk,
+										chunks : chunks,
+										response : res.value.body,
+										status : httpStatus
+									});
+								}
+
 							    if (chunkStack.length > 0) {
-									// more chunks to be uploaded
+									// More chunks to be uploaded
 									uploadFile(++chunk, chunks);
 							    } else {
 									file.status = plupload.DONE;

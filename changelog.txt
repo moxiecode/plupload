@@ -1,4 +1,5 @@
 Version 1.x (2010-xx-x)
+	Added official ChunkUploaded event, it similar to FileUploaded but executed for each chunk.
 	Added bytes per second support to total queue progress.
 	Added better error handling to core API using the new Error event.
 	Added better error handling to jQuery queue widget.

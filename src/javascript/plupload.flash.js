@@ -173,16 +173,15 @@
 					var chunkArgs, file = up.getFile(lookup[info.id]);
 
 					chunkArgs = {
-						file : file,
 						chunk : info.chunk,
 						chunks : info.chunks,
 						response : info.text
 					};
 
-					up.trigger('ChunkUploaded', chunkArgs);
+					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is maked as failed
-					if (chunkArgs.cancelled) {
+					if (file.status == plupload.FAILED) {
 						getFlashObj().cancelUpload();
 					}
 				});

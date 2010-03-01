@@ -1008,6 +1008,15 @@
 			 * @param {plupload.File} file File that was uploaded.
 			 * @param {Object} response Object with response properties.
 			 */
+
+			/**
+			 * Fires when file chunk is uploaded.
+			 *
+			 * @event ChunkUploaded
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {plupload.File} file File that the chunk was uploaded for.
+			 * @param {Object} response Object with response properties.
+			 */
 		});
 	};
 

@@ -125,10 +125,14 @@ $(function() {
 			console.log('Error', err);
 		});
 
-		uploader.bind('FileUploaded', function(up, file, response) {
+		function handleResponse(up, file, response) {
 			var code = parseInt($('#errorcode').val(), 10), err = {code : code};
 
-			console.log('FileUploaded', file, response);
+			if (response.chunks) {
+				console.log('ChunkUploaded', file, response);
+			} else {
+				console.log('FileUploaded', file, response);
+			}
 
 			switch (code) {
 				case plupload.GENERIC_ERROR:
@@ -160,6 +164,9 @@ $(function() {
 
 					break;
 
+				case 0:
+					return;
+
 				default:
 					err.message = 'User specific error.';
 					err.details = 'Some custom data.';
@@ -167,7 +174,10 @@ $(function() {
 			}
 
 			uploader.trigger('Error', err);
-		});
+		};
+
+		uploader.bind('ChunkUploaded', handleResponse);
+		uploader.bind('FileUploaded', handleResponse);
 	};
 });
 </script>
@@ -180,6 +190,7 @@ $(function() {
 	<div>
 		Error to fake:
 		<select id="errorcode">
+			<option value="0">No error</option>
 			<option value="-100">GENERIC_ERROR</option>
 			<option value="-200">HTTP_ERROR</option>
 			<option value="-300">IO_ERROR</option>

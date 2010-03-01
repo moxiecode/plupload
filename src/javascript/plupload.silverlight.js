@@ -276,13 +276,12 @@
 					var chunkArgs, file = up.getFile(lookup[sl_id]);
 
 					chunkArgs = {
-						file : file,
 						chunk : chunk,
 						chunks : chunks,
 						response : text
 					};
 
-					up.trigger('ChunkUploaded', chunkArgs);
+					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is maked as failed
 					if (file.status == plupload.FAILED) {
