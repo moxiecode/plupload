@@ -346,7 +346,7 @@ namespace Moxiecode.Plupload {
 					syncContext.Send(delegate {
 						this.OnUploadComplete(new UploadEventArgs(content, chunk, chunks));
 					}, this);
-				} else
+				} else if (this.cancelled)
 					this.UploadNextChunk();
 			} catch (Exception ex) {
 				syncContext.Send(delegate {
