@@ -162,6 +162,14 @@
 		SECURITY_ERROR : -400,
 
 		/**
+		 * Initialization error. Will be triggered if no runtime was initialized.
+		 *
+		 * @property INIT_ERROR
+		 * @final
+		 */
+		INIT_ERROR : -500,
+
+		/**
 		 * Mime type lookup table.
 		 *
 		 * @property mimeTypes
@@ -733,6 +741,7 @@
 					// Set failed status if an error occured on a file
 					if (err.file) {
 						err.file.status = plupload.FAILED;
+						calc();
 					}
 				});
 
@@ -769,6 +778,12 @@
 							} else {
 								callNextInit();
 							}
+						});
+					} else {
+						// Trigger an init error if we run out of runtimes
+						self.trigger('Error', {
+							code : plupload.INIT_ERROR,
+							message : 'Init error.'
 						});
 					}
 				}
