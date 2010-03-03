@@ -2,6 +2,6 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	x:Class="Moxiecode.Plupload.Page"
-	Width="640" Height="480" Background="Transparent" Cursor="Hand">
+	Width="1024" Height="1024" Background="Transparent" Cursor="Hand">
     <Canvas Background="Transparent"></Canvas>
 </UserControl>

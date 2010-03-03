@@ -180,11 +180,12 @@
 
 			plupload.extend(silverlightContainer.style, {
 				position : 'absolute',
-				top : '0',
+				top : '0px',
 				background : uploader.settings.shim_bgcolor || 'transparent',
+				zIndex : 99999,
 				width : '100px',
 				height : '100px',
-				zIndex : 99999,
+				overflow : 'hidden',
 				opacity : uploader.settings.shim_bgcolor ? '' : 0.01 // Force transparent if bgcolor is undefined
 			});
 
@@ -202,7 +203,7 @@
 			}
 
 			// Insert the Silverlight object inide the Silverlight container
-			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" style="outline:none;" width="100%" height="100%">' +
+			silverlightContainer.innerHTML = '<object id="' + uploader.id + '_silverlight" data="data:application/x-silverlight," type="application/x-silverlight-2" style="outline:none;" width="1024" height="1024">' +
 				'<param name="source" value="' + uploader.settings.silverlight_xap_url + '"/>' +
 				'<param name="background" value="Transparent"/>' +
 				'<param name="windowless" value="true"/>' +
