@@ -252,10 +252,12 @@
 				uploader.bind("Silverlight:UploadFileProgress", function(up, sl_id, loaded, total) {
 					var file = up.getFile(lookup[sl_id]);
 
-					file.size = total;
-					file.loaded = loaded;
+					if (file.status != plupload.FAILED) {
+						file.size = total;
+						file.loaded = loaded;
 
-					up.trigger('UploadProgress', file);
+						up.trigger('UploadProgress', file);
+					}
 				});
 
 				uploader.bind("Refresh", function(up) {

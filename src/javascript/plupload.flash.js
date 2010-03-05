@@ -163,10 +163,12 @@
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
 					var file = up.getFile(lookup[flash_file.id]);
 
-					file.loaded = flash_file.loaded;
-					file.size = flash_file.size;
+					if (file.status != plupload.FAILED) {
+						file.loaded = flash_file.loaded;
+						file.size = flash_file.size;
 
-					up.trigger('UploadProgress', file);
+						up.trigger('UploadProgress', file);
+					}
 				});
 
 				uploader.bind("Flash:UploadChunkComplete", function(up, info) {
