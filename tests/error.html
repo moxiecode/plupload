@@ -165,7 +165,7 @@ $(function() {
 					break;
 
 				case 102:
-					if (response.chunk == 1) {
+					if (file == up.files[1] && response.chunk == 1) {
 						err.message = 'Fake chunk error.';
 						err.file = file;
 					} else
@@ -206,7 +206,7 @@ $(function() {
 			<option value="-400">SECURITY_ERROR</option>
 			<option value="100">Custom error</option>
 			<option value="101">Fail on second file</option>
-			<option value="102">Fail on second chunk</option>
+			<option value="102">Fail on second chunk in second file</option>
 			<option value="103">Invalid domain</option>
 		</select>
 	</div>

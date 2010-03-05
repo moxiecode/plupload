@@ -742,6 +742,12 @@
 					if (err.file) {
 						err.file.status = plupload.FAILED;
 						calc();
+
+						// Upload next file but detach it from the error event
+						// since other custom listeners might want to stop the queue
+						window.setTimeout(function() {
+							uploadNext.call(self);
+						});
 					}
 				});
 
