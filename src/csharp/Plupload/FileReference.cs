@@ -36,10 +36,10 @@ namespace Moxiecode.Plupload {
 		private FileInfo info;
 		private SynchronizationContext syncContext;
 		private int chunk, chunks, chunkSize;
-		private bool cancelled, multipart, chunking;
+		private bool multipart, chunking;
 		private long size;
-        private Stream fileStream;
 		private Dictionary<string, object> multipartParams;
+		private Stream imageStream;
 		#endregion
 
 		/// <summary>Upload compleate delegate.</summary>
@@ -125,21 +125,18 @@ namespace Moxiecode.Plupload {
 				this.chunks = 1;
 			}
 
-			this.cancelled = false;
 			this.uploadUrl = upload_url;
 
             try {
                 // Is jpeg and image size is defined
 				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase) && (imageWidth != 0 || imageHeight != 0)) {
 					if (Regex.IsMatch(this.name, @"\.png$"))
-						this.fileStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Png);
+						this.imageStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Png);
 					else
-						this.fileStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Jpeg);
+						this.imageStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Jpeg);
 
-					this.fileStream.Seek(0, SeekOrigin.Begin);
-					this.size = this.fileStream.Length;
-				} else {
-					this.fileStream = this.info.OpenRead();
+					this.imageStream.Seek(0, SeekOrigin.Begin);
+					this.size = this.imageStream.Length;
 				}
             } catch (Exception ex) {
                 syncContext.Send(delegate {
@@ -148,6 +145,27 @@ namespace Moxiecode.Plupload {
             }
 
             this.UploadNextChunk();
+		}
+
+		private int ReadByteRange(byte[] buffer, int position, int offset, int count) {
+			Stream fileStream;
+			int bytes = -1;
+
+			// Read from image memory stream if it's defined
+			if (this.imageStream != null) {
+				this.imageStream.Seek(position, SeekOrigin.Begin);
+				return this.imageStream.Read(buffer, offset, count);
+			}
+
+			// Open the file and read the specified part of it
+			fileStream = this.info.OpenRead();
+			using (fileStream) {
+				fileStream.Seek(position, SeekOrigin.Begin);
+				bytes = fileStream.Read(buffer, offset, count);
+				fileStream.Close();
+			}
+
+			return bytes;
 		}
 
 		/// <summary>
@@ -207,7 +225,7 @@ namespace Moxiecode.Plupload {
 			HttpWebRequest request = (HttpWebRequest) ar.AsyncState;
 			string boundary = "----pluploadboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
 			Stream requestStream = null;
-			byte[] buffer = new byte[4096], strBuff;
+			byte[] buffer = new byte[16384], strBuff;
 			int bytes, loaded = 0, end;
 			int percent, lastPercent = 0;
 
@@ -240,7 +258,7 @@ namespace Moxiecode.Plupload {
 				}
 
 				// Move to start
-				this.fileStream.Seek(this.chunk * this.chunkSize, SeekOrigin.Begin);
+
 				loaded = this.chunk * this.chunkSize;
 
 				// Find end
@@ -248,13 +266,13 @@ namespace Moxiecode.Plupload {
 				if (end > this.Size)
 					end = (int) this.Size;
 
-                while (loaded < end && (bytes = this.fileStream.Read(buffer, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
+				while (loaded < end && (bytes = ReadByteRange(buffer, this.chunk * this.chunkSize, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
 					loaded += bytes;
 					percent = (int) Math.Round((double) loaded / (double) this.Size * 100.0);
-					
+
 					if (percent > lastPercent) {
 						syncContext.Post(delegate {
-						    if (percent > lastPercent && !this.cancelled) {
+						    if (percent > lastPercent) {
 						        this.OnProgress(new ProgressEventArgs(loaded, this.Size));
 							    lastPercent = percent;
 					        }
@@ -276,24 +294,15 @@ namespace Moxiecode.Plupload {
 				}, this);
 			} finally {
 				try {
-					if (requestStream != null)
-	            		requestStream.Close();
+					if (requestStream != null) {
+						requestStream.Close();
+						requestStream.Dispose();
+						requestStream = null;
+					}
 				} catch (Exception ex) {
 					syncContext.Send(delegate {
 						this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
 					}, this);
-				}
-
-				// Are we done with the file then close the file stream
-				if (loaded == this.size) {
-					try {
-						if (this.fileStream != null)
-							this.fileStream.Close();
-					} catch (Exception ex) {
-						syncContext.Send(delegate {
-							this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
-						}, this);
-					}
 				}
 			}
 
@@ -342,15 +351,6 @@ namespace Moxiecode.Plupload {
 				syncContext.Send(delegate {
 					this.OnUploadChunkComplete(new UploadEventArgs(content, chunk, chunks));
 				}, this);
-
-				/*
-				if (chunk >= chunks) {
-					syncContext.Send(delegate {
-						this.OnUploadComplete(new UploadEventArgs(content, chunk, chunks));
-					}, this);
-				} else if (this.cancelled)
-					this.UploadNextChunk();
-				*/
 
 				this.chunk++;
 			} catch (Exception ex) {

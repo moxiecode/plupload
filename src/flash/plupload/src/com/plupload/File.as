@@ -11,10 +11,7 @@
 package com.plupload {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.DisplayObject;
-	import flash.display.Stage;
 	import flash.events.EventDispatcher;
-	import flash.geom.Rectangle;
 	import flash.geom.Matrix;
 	import flash.net.FileReference;
 	import flash.events.Event;
@@ -32,7 +29,6 @@ package com.plupload {
 	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
 	import flash.external.ExternalInterface;
-	import flash.utils.setTimeout;
 	import mx.graphics.codec.JPEGEncoder;
 	import mx.graphics.codec.PNGEncoder;
 
@@ -246,8 +242,7 @@ package com.plupload {
 			// All chunks uploaded?
 			if (this._chunk >= this._chunks) {
 				// Clean up memory
-				fileData.clear();
-				urlStream.close();
+				this._fileRef.data.clear()
 				this._fileRef = null;
 				this._imageData = null;
 
@@ -290,16 +285,7 @@ package com.plupload {
 				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, fileData.position, file._size);
 				dispatchEvent(pe);
 
-				// Fake UPLOAD_COMPLETE_DATA event
-/*				var uploadEvt:DataEvent = new DataEvent(
-					DataEvent.UPLOAD_COMPLETE_DATA,
-					false,
-					false,
-					response
-				);
-
-				dispatchEvent(uploadEvt);*/
-
+				// Clean up memory
 				urlStream.close();
 				chunkData.clear();
 
