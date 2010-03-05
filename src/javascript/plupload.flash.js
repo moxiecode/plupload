@@ -181,19 +181,18 @@
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is maked as failed
-					if (file.status == plupload.FAILED) {
-						getFlashObj().cancelUpload();
+					if (file.status != plupload.FAILED) {
+						getFlashObj().uploadNextChunk();
 					}
-				});
 
-				uploader.bind("Flash:UploadComplete", function(up, result) {
-					var file = up.getFile(lookup[result.id]);
+					// Last chunk then dispatch FileUploaded event
+					if (info.chunk == info.chunks - 1) {
+						file.status = plupload.DONE;
 
-					file.status = plupload.DONE;
-
-					up.trigger('FileUploaded', file, {
-						response : result.text
-					});
+						up.trigger('FileUploaded', file, {
+							response : result.text
+						});
+					}
 				});
 
 				uploader.bind("Flash:SelectFiles", function(up, selected_files) {

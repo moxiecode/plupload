@@ -111,9 +111,9 @@ package com.plupload {
 			// Add external callbacks
 			ExternalInterface.addCallback('uploadFile', this.uploadFile);
 			ExternalInterface.addCallback('removeFile', this.removeFile);
-			ExternalInterface.addCallback('cancelUpload', this.cancelUpload);
 			ExternalInterface.addCallback('clearQueue', this.clearFiles);
 			ExternalInterface.addCallback('setFileFilters', this.setFileFilters);
+			ExternalInterface.addCallback('uploadNextChunk', this.uploadNextChunk);
 
 			this.fireEvent("Init");
 		}
@@ -269,11 +269,16 @@ package com.plupload {
 		}
 
 		/**
-		 * Cancels uploading of all files.
+		 * Uploads the next chunk of the current file will return false when all chunks are uploaded.
+		 * 
+		 * @return true/false if there is chunks left to upload.
 		 */
-		private function cancelUpload():void {
-			if (this.currentFile != null)
-				this.currentFile.cancelUpload();
+		private function uploadNextChunk():Boolean {
+			if (this.currentFile) {
+				return this.currentFile.uploadNextChunk();
+			}
+
+			return false;
 		}
 
 		/**

@@ -167,11 +167,14 @@ namespace Moxiecode.Plupload {
 
 		[ScriptableMember]
 		/// <summary>
-		///  Cancels the current upload.
+		///  Uploads the next chunk of the current file. Returns true/false if there is more chunks.
 		/// </summary>
-		public void CancelUpload() {
+		/// <return>true/false if there is more chunks</return>
+		public bool UploadNextChunk() {
 			if (this.currentFile != null)
-				this.currentFile.CancelUpload();
+				return this.currentFile.UploadNextChunk();
+
+			return false;
 		}
 
 		/// <summary>

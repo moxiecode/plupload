@@ -44,6 +44,7 @@ package com.plupload {
 		private var _fileRef:FileReference, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String;
 		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
+		private var _multipart:Boolean, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
 
 		/**
 		 * Id property of file.
@@ -157,7 +158,14 @@ package com.plupload {
 						}
 
 						// Start uploading the scaled down image
-						uploadNextChunk(multipart, chunking, chunk, chunks, chunkSize, postvars);
+						file._multipart = multipart;
+						file._chunking = chunking;
+						file._chunk = chunk;
+						file._chunks = chunks;
+						file._chunkSize = chunkSize;
+						file._postvars = postvars;
+
+						file.uploadNextChunk();
 					});
 
 					loader.loadBytes(file._fileRef.data);
@@ -168,7 +176,14 @@ package com.plupload {
 						chunks = 4;
 					}
 
-					uploadNextChunk(multipart, chunking, chunk, chunks, chunkSize, postvars);
+					file._multipart = multipart;
+					file._chunking = chunking;
+					file._chunk = chunk;
+					file._chunks = chunks;
+					file._chunkSize = chunkSize;
+					file._postvars = postvars;
+
+					file.uploadNextChunk();
 				}
 			});
 
@@ -224,13 +239,13 @@ package com.plupload {
 		/**
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
 		 */
-		private function uploadNextChunk(multipart:Boolean, chunking:Boolean, chunk:int, chunks:int, chunk_size:int, postvars:Object):void {
+		public function uploadNextChunk():Boolean {
 			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
 			var urlStream:URLStream, url:String, file:File = this;
 
-			// Upload is cancelled, then stop everything
-			if (file._cancelled)
-				return;
+			// All chunks uploaded?
+			if (this._chunk >= this._chunks)
+				return false;
 
 			// Slice out a chunk
 			chunkData = new ByteArray();
@@ -241,7 +256,7 @@ package com.plupload {
 			else
 				fileData = this._fileRef.data;
 
-			fileData.readBytes(chunkData, 0, fileData.position + chunk_size > fileData.length ? fileData.length - fileData.position : chunk_size);
+			fileData.readBytes(chunkData, 0, fileData.position + this._chunkSize > fileData.length ? fileData.length - fileData.position : this._chunkSize);
 
 			// Setup URL stream
 			urlStream = new URLStream();
@@ -258,8 +273,8 @@ package com.plupload {
 					false,
 					false,
 					response,
-					chunk,
-					chunks
+					file._chunk,
+					file._chunks
 				);
 
 				dispatchEvent(uploadChunkEvt);
@@ -268,33 +283,30 @@ package com.plupload {
 				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, fileData.position, file._size);
 				dispatchEvent(pe);
 
-				// Upload next chunk
-				if (++chunk < chunks)
-					uploadNextChunk(multipart, chunking, chunk, chunks, chunk_size, postvars);
-				else {
-					// Fake UPLOAD_COMPLETE_DATA event
-					var uploadEvt:DataEvent = new DataEvent(
-						DataEvent.UPLOAD_COMPLETE_DATA,
-						false,
-						false,
-						response
-					);
+				// Fake UPLOAD_COMPLETE_DATA event
+/*				var uploadEvt:DataEvent = new DataEvent(
+					DataEvent.UPLOAD_COMPLETE_DATA,
+					false,
+					false,
+					response
+				);
 
-					dispatchEvent(uploadEvt);
-				}
+				dispatchEvent(uploadEvt);*/
 
 				urlStream.close();
+
+				file._chunk++;
 			});
 
 			// Delegate upload IO errors
 			urlStream.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
-				this.chunk = this.chunks; // Cancel upload of all remaining chunks
+				file._chunk = file._chunks; // Cancel upload of all remaining chunks
 				dispatchEvent(e);
 			});
 
 			// Delegate secuirty errors
 			urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
-				this.chunk = this.chunks; // Cancel upload of all remaining chunks
+				file._chunk = file._chunks; // Cancel upload of all remaining chunks
 				dispatchEvent(e);
 			});
 
@@ -302,13 +314,13 @@ package com.plupload {
 			url = this._uploadUrl;
 
 			// Chunk size is defined then add query string params for it
-			if (chunking) {
+			if (this._chunking) {
 				if (url.indexOf('?') == -1)
 					url += '?';
 				else
 					url += '&';
 
-				url += "chunk=" + chunk + "&chunks=" + chunks;
+				url += "chunk=" + this._chunk + "&chunks=" + this._chunks;
 			}
 
 			// Setup request
@@ -316,18 +328,18 @@ package com.plupload {
 			req.method = URLRequestMethod.POST;
 
 			// Build multipart request
-			if (multipart) {
+			if (this._multipart) {
 				var boundary:String = '----pluploadboundary' + new Date().getTime(),
 					dashdash:String = '--', crlf:String = '\r\n', multipartBlob: ByteArray = new ByteArray();
 
 				req.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
 
 				// Append mutlipart parameters
-				for (var name:String in postvars) {
+				for (var name:String in this._postvars) {
 					multipartBlob.writeUTFBytes(
 						dashdash + boundary + crlf +
 						'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf + 
-						postvars[name] + crlf
+						this._postvars[name] + crlf
 					);
 				}
 
@@ -351,6 +363,8 @@ package com.plupload {
 
 			// Make request
 			urlStream.load(req);
+			
+			return true;
 		}
 
 		/**

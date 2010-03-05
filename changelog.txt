@@ -3,6 +3,7 @@ Version 1.x (2010-xx-x)
 	Added bytes per second support to total queue progress.
 	Added better error handling to core API using the new Error event.
 	Added better error handling to jQuery queue widget.
+	Fixed so chunking uploads is dispatch from JS not from inside Flash/Silverlight.
 Version 1.1.1 (2010-02-25)
 	Added new setup setting to queue widget. Makes it easier to bind custom events to uploader instance.
 	Fixed so it's possible to disable chunking compleatly. It's now disabled by default.

@@ -285,8 +285,17 @@
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is maked as failed
-					if (file.status == plupload.FAILED) {
-						getSilverlightObj().CancelUpload();
+					if (file.status != plupload.FAILED) {
+						getSilverlightObj().UploadNextChunk();
+					}
+
+					// Last chunk then dispatch FileUploaded event
+					if (chunk == chunks - 1) {
+						file.status = plupload.DONE;
+
+						up.trigger('FileUploaded', file, {
+							response : text
+						});
 					}
 				});
 

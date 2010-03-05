@@ -151,10 +151,30 @@ namespace Moxiecode.Plupload {
 		}
 
 		/// <summary>
-		///  Cancels the current upload.
+		///  Uploads the next chunk if there are more in queue.
 		/// </summary>
-		public void CancelUpload() {
-			this.cancelled = true;
+		/// <returns>True/false if there are more chunks to be uploaded.</returns>
+		public bool UploadNextChunk() {
+			string url = this.uploadUrl;
+
+			// Is there more chunks
+			if (this.chunk >= this.chunks)
+				return false;
+
+			this.syncContext = SynchronizationContext.Current;
+
+			if (this.chunking) {
+				url += url.IndexOf('?') == -1 ? '?' : '&';
+				url += "chunk=" + this.chunk;
+				url += "&chunks=" + this.chunks;
+			}
+
+			HttpWebRequest req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
+			req.Method = "POST";
+
+			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
+
+			return true;
 		}
 
 		#region protected methods
@@ -182,23 +202,6 @@ namespace Moxiecode.Plupload {
 		#endregion
 
 		#region private methods
-
-		private void UploadNextChunk() {
-			string url = this.uploadUrl;
-
-			this.syncContext = SynchronizationContext.Current;
-
-			if (this.chunking) {
-				url += url.IndexOf('?') == -1 ? '?' : '&';
-				url += "chunk=" + this.chunk;
-				url += "&chunks=" + this.chunks;
-			}
-
-			HttpWebRequest req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
-			req.Method = "POST";
-
-			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
-		}
 
 		private void RequestStreamCallback(IAsyncResult ar) {
 			HttpWebRequest request = (HttpWebRequest) ar.AsyncState;
@@ -340,14 +343,16 @@ namespace Moxiecode.Plupload {
 					this.OnUploadChunkComplete(new UploadEventArgs(content, chunk, chunks));
 				}, this);
 
-				chunk++;
-
+				/*
 				if (chunk >= chunks) {
 					syncContext.Send(delegate {
 						this.OnUploadComplete(new UploadEventArgs(content, chunk, chunks));
 					}, this);
 				} else if (this.cancelled)
 					this.UploadNextChunk();
+				*/
+
+				this.chunk++;
 			} catch (Exception ex) {
 				syncContext.Send(delegate {
 					this.OnIOError(new ErrorEventArgs(ex.Message, chunk, chunks));
