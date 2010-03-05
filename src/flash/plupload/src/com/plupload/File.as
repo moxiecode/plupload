@@ -244,8 +244,15 @@ package com.plupload {
 			var urlStream:URLStream, url:String, file:File = this;
 
 			// All chunks uploaded?
-			if (this._chunk >= this._chunks)
+			if (this._chunk >= this._chunks) {
+				// Clean up memory
+				fileData.clear();
+				urlStream.close();
+				this._fileRef = null;
+				this._imageData = null;
+
 				return false;
+			}
 
 			// Slice out a chunk
 			chunkData = new ByteArray();
@@ -294,6 +301,7 @@ package com.plupload {
 				dispatchEvent(uploadEvt);*/
 
 				urlStream.close();
+				chunkData.clear();
 
 				file._chunk++;
 			});
@@ -365,13 +373,6 @@ package com.plupload {
 			urlStream.load(req);
 			
 			return true;
-		}
-
-		/**
-		 * Cancels the upload of the current file.
-		 */
-		public function cancelUpload():void {
-			this._cancelled = true;
 		}
 	}
 }
