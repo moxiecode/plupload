@@ -258,7 +258,6 @@ namespace Moxiecode.Plupload {
 				}
 
 				// Move to start
-
 				loaded = this.chunk * this.chunkSize;
 
 				// Find end
@@ -266,7 +265,7 @@ namespace Moxiecode.Plupload {
 				if (end > this.Size)
 					end = (int) this.Size;
 
-				while (loaded < end && (bytes = ReadByteRange(buffer, this.chunk * this.chunkSize, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
+				while (loaded < end && (bytes = ReadByteRange(buffer, loaded, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
 					loaded += bytes;
 					percent = (int) Math.Round((double) loaded / (double) this.Size * 100.0);
 
@@ -348,11 +347,11 @@ namespace Moxiecode.Plupload {
 				} else
 					throw new Exception("Error server returned status: " + ((int) response.StatusCode) + " " + response.StatusDescription);
 
-				syncContext.Send(delegate {
-					this.OnUploadChunkComplete(new UploadEventArgs(content, chunk, chunks));
-				}, this);
-
 				this.chunk++;
+
+				syncContext.Send(delegate {
+					this.OnUploadChunkComplete(new UploadEventArgs(content, this.chunk - 1, this.chunks));
+				}, this);
 			} catch (Exception ex) {
 				syncContext.Send(delegate {
 					this.OnIOError(new ErrorEventArgs(ex.Message, chunk, chunks));
