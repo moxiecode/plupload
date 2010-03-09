@@ -48,6 +48,12 @@
 	/*-moz-border-radius: 5px;*/
 }
 
+.plupload_container input {
+	border: 1px solid #DDD;
+	font: normal 11px Verdana,sans-serif;
+	width: 98%;
+}
+
 .plupload_header {background: #2A2C2E url('../img/backgrounds.gif') repeat-x;}
 .plupload_header_content {
 	background: url('../img/backgrounds.gif') no-repeat 0 -317px;

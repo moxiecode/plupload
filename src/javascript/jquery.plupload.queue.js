@@ -155,7 +155,7 @@
 
 						fileList.append(
 							'<li id="' + file.id + '">' +
-								'<div class="plupload_file_name">' + file.name + '</div>' +
+								'<div class="plupload_file_name"><span>' + file.name + '</span></div>' +
 								'<div class="plupload_file_action"><a href="#"></a></div>' +
 								'<div class="plupload_file_status">' + file.percent + '%</div>' +
 								'<div class="plupload_file_size">' + plupload.formatSize(file.size) + '</div>' +
@@ -196,6 +196,39 @@
 
 				uploader.bind('Init', function(up, res) {
 					renderUI(id, target);
+
+					// Enable rename support
+					if (!settings.unique_names && settings.rename) {
+						$('#' + id + '_filelist div.plupload_file_name span', target).live('click', function(e) {
+							var targetSpan = $(e.target), file, parts, name, ext = "";
+
+							// Get file name and split out name and extension
+							file = up.getFile(targetSpan.parents('li')[0].id);
+							name = file.name;
+							parts = /^(.+)(\.[^.]+)$/.exec(name);
+							if (parts) {
+								name = parts[1];
+								ext = parts[2];
+							}
+
+							// Display input element
+							targetSpan.hide().after('<input type="text" />');
+							targetSpan.next().val(name).focus().blur(function() {
+								targetSpan.show().next().remove();
+							}).keydown(function(e) {
+								var targetInput = $(this);
+
+								if (e.keyCode == 13) {
+									e.preventDefault();
+
+									// Rename file and glue extension back on
+									file.name = targetInput.val() + ext;
+									targetSpan.text(file.name);
+									targetInput.blur();
+								}
+							});
+						});
+					}
 
 					$('a.plupload_add', target).attr('id', id + '_browse');
 

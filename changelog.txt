@@ -1,4 +1,5 @@
-Version 1.x (2010-xx-x)
+Version 1.2 (2010-03-09)
+	Added new rename file support for jQuery queue widget, click on a file name to rename it if it's enabled.
 	Added official ChunkUploaded event, it similar to FileUploaded but executed for each chunk.
 	Added bytes per second support to total queue progress.
 	Added better error handling to core API using the new Error event.
