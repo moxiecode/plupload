@@ -128,24 +128,32 @@ package com.plupload {
 					loader = new flash.display.Loader();
 					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void {
 						var loadedBitmapData:BitmapData = Bitmap(e.target.content).bitmapData;
-						var matrix:Matrix = new Matrix();
+						var matrix:Matrix = new Matrix(), scale:Number;
 
-						// Setup scale matrix
-						matrix.scale(width / loadedBitmapData.width, height / loadedBitmapData.height);
+						scale = Math.min(width / loadedBitmapData.width, height / loadedBitmapData.height);
 
-						// Draw loaded bitmap into scaled down bitmap
-						var outputBitmapData:BitmapData = new BitmapData(width, height);
-						outputBitmapData.draw(loadedBitmapData, matrix);
+						// Do we need to scale
+						if (scale < 1) {
+							width = Math.round(loadedBitmapData.width * scale);
+							height = Math.round(loadedBitmapData.height * scale);
 
-						// Encode bitmap as JPEG
-						if (settings["format"] == "jpg")
-							file._imageData = new JPEGEncoder(quality).encode(outputBitmapData);
-						else
-							file._imageData = new PNGEncoder().encode(outputBitmapData);
+							// Setup scale matrix
+							matrix.scale(width / loadedBitmapData.width, height / loadedBitmapData.height);
 
-						// Update file size and buffer position
-						file._imageData.position = 0;
-						file._size = file._imageData.length;
+							// Draw loaded bitmap into scaled down bitmap
+							var outputBitmapData:BitmapData = new BitmapData(width, height);
+							outputBitmapData.draw(loadedBitmapData, matrix);
+
+							// Encode bitmap as JPEG
+							if (settings["format"] == "jpg")
+								file._imageData = new JPEGEncoder(quality).encode(outputBitmapData);
+							else
+								file._imageData = new PNGEncoder().encode(outputBitmapData);
+
+							// Update file size and buffer position
+							file._imageData.position = 0;
+							file._size = file._imageData.length;
+						}
 
 						// Force at least 4 chunks to fake progress
 						if (chunks < 4) {
