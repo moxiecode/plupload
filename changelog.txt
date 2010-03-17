@@ -1,3 +1,6 @@
+Version 1.2.1 (2010-xx-xx)
+	Fixed bug with incorrect aspect ratio in Flash image scaling.
+	Fixed bug timing issue with chunked uploads in the Flash runtime. Patch contributed by Grady Werner.
 Version 1.2 (2010-03-09)
 	Added new rename file support for jQuery queue widget, click on a file name to rename it if it's enabled.
 	Added official ChunkUploaded event, it similar to FileUploaded but executed for each chunk.

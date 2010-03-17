@@ -287,6 +287,7 @@ package com.plupload {
 					file._chunks
 				);
 
+				file._chunk++;
 				dispatchEvent(uploadChunkEvt);
 
 				// Fake progress event since Flash doesn't have a progress event for streaming data up to the server
@@ -296,8 +297,6 @@ package com.plupload {
 				// Clean up memory
 				urlStream.close();
 				chunkData.clear();
-
-				file._chunk++;
 			});
 
 			// Delegate upload IO errors
