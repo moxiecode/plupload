@@ -40,7 +40,7 @@ package com.plupload {
 		private var _fileRef:FileReference, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String;
 		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
-		private var _multipart:Boolean, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
+		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
 
 		/**
 		 * Id property of file.
@@ -107,6 +107,7 @@ package com.plupload {
 			}
 
 			multipart = new Boolean(settings["multipart"]);
+			fileDataName = new String(settings["file_data_name"]);
 			chunkSize = settings["chunk_size"];
 			chunking = chunkSize > 0;
 			postvars = settings["multipart_params"];
@@ -166,6 +167,7 @@ package com.plupload {
 
 						// Start uploading the scaled down image
 						file._multipart = multipart;
+						file._fileDataName = fileDataName;
 						file._chunking = chunking;
 						file._chunk = chunk;
 						file._chunks = chunks;
@@ -187,6 +189,7 @@ package com.plupload {
 					}
 
 					file._multipart = multipart;
+					file._fileDataName = fileDataName;
 					file._chunking = chunking;
 					file._chunk = chunk;
 					file._chunks = chunks;
@@ -315,7 +318,7 @@ package com.plupload {
 				// Add file header
 				multipartBlob.writeUTFBytes(
 					dashdash + boundary + crlf +
-					'Content-Disposition: form-data; name="file"; filename="' + this._fileName + '"' + crlf +
+					'Content-Disposition: form-data; name="' + this._fileDataName + '"; filename="' + this._fileName + '"' + crlf +
 					'Content-Type: application/octet-stream' + crlf + crlf
 				);
 

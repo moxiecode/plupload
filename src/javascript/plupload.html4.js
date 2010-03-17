@@ -279,7 +279,7 @@
 				}
 
 				// Set input element name attribute which allows it to be submitted
-				file.input.setAttribute('name', 'file');
+				file.input.setAttribute('name', up.settings.file_data_name);
 
 				// Store action
 				form.tmpAction = form.action;

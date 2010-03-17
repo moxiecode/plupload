@@ -573,6 +573,7 @@
 			chunk_size : 0,
 			max_file_size : '1gb',
 			multi_selection : true,
+			file_data_name : 'file',
 			filters : [
 				{title : "Image files", extensions : "jpg,gif,png"}
 			]

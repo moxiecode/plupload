@@ -172,7 +172,7 @@
 							// Add file header
 							builder.append(
 								dashdash + boundary + crlf +
-								'Content-Disposition: form-data; name="file"; filename="' + file.name + '"' + crlf +
+								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + file.name + '"' + crlf +
 								'Content-Type: application/octet-stream' + crlf + crlf
 							);
 

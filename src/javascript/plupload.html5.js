@@ -225,7 +225,7 @@
 
 						// Build RFC2388 blob
 						multipartBlob += dashdash + boundary + crlf +
-							'Content-Disposition: form-data; name="file"; filename="' + file.name + '"' + crlf +
+							'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + file.name + '"' + crlf +
 							'Content-Type: application/octet-stream' + crlf + crlf +
 							blob + crlf +
 							dashdash + boundary + dashdash + crlf;
