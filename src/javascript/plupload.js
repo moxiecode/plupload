@@ -14,7 +14,7 @@
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
-		xmlEncodeRegExp = /[<>&\"\']/g;
+		xmlEncodeRegExp = /[<>&\"\']/g, undef;
 
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -296,7 +296,7 @@
 		 * @param {function} callback Callback function to execute for each item.
 		 */
 		each : function(obj, callback) {
-			var length, undef, key, i;
+			var length, key, i;
 
 			if (obj) {
 				length = obj.length;
@@ -329,7 +329,7 @@
 		 * @return {String} Formatted size string.
 		 */
 		formatSize : function(size) {
-			if (!size) {
+			if (size === undef) {
 				return plupload.translate('N/A');
 			}
 
@@ -596,27 +596,38 @@
 		}
 
 		function calc() {
-			var i;
+			var i, file;
 
 			// Reset stats
 			total.reset();
 
 			// Check status, size, loaded etc on all files
 			for (i = 0; i < files.length; i++) {
-				total.size += files[i].size;
-				total.loaded += files[i].loaded;
+				file = files[i];
 
-				if (files[i].status == plupload.DONE) {
+				if (file.size !== undef) {
+					total.size += file.size;
+					total.loaded += file.loaded;
+				} else {
+					total.size = undef;
+				}
+
+				if (file.status == plupload.DONE) {
 					total.uploaded++;
-				} else if (files[i].status == plupload.FAILED) {
+				} else if (file.status == plupload.FAILED) {
 					total.failed++;
 				} else {
 					total.queued++;
 				}
 			}
 
-			total.percent = Math.ceil((total.size > 0 ? total.loaded / total.size : total.uploaded / files.length) * 100);
-			total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
+			// If we couldn't calculate a total file size then use the number of files to calc percent
+			if (total.size === undef) {
+				total.percent = files.length > 0 ? Math.ceil(total.uploaded / files.length * 100) : 0;
+			} else {
+				total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
+				total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
+			}
 		}
 
 		// Add public methods
@@ -703,7 +714,7 @@
 						file.status = plupload.QUEUED;
 
 						// Ignore files that are to large
-						if (selected_files[i].size <= settings.max_file_size) {
+						if (file.size === undef || file.size <= settings.max_file_size) {
 							files.push(file);
 							count++;
 						}
