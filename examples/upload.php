@@ -52,7 +52,14 @@
 	} else
 		die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
 
-	if (strpos($_SERVER["HTTP_CONTENT_TYPE"], "multipart") !== false) {
+	// Look for the content type header
+	if (isset($_SERVER["HTTP_CONTENT_TYPE"]))
+		$contentType = $_SERVER["HTTP_CONTENT_TYPE"];
+
+	if (isset($_SERVER["CONTENT_TYPE"]))
+		$contentType = $_SERVER["CONTENT_TYPE"];
+
+	if (strpos($contentType, "multipart") !== false) {
 		if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
 			// Open temp file
 			$out = fopen($targetDir . DIRECTORY_SEPARATOR . $fileName, $chunk == 0 ? "wb" : "ab");
