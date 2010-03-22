@@ -188,6 +188,11 @@
 					fileList[0].scrollTop = fileList[0].scrollHeight;
 
 					updateTotalProgress();
+
+					// Re-add drag message if there is no files
+					if (!uploader.files.length && uploader.features.dragdrop && uploader.settings.dragdrop) {
+						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
+					}
 				}
 
 				uploader.bind("UploadFile", function(up, file) {

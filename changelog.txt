@@ -4,6 +4,7 @@ Version 1.2.1 (2010-03-22)
 	Fixed bug where a beta version of Chrome wouldn't handle drag/drop correctly because of missing drag effect.
 	Fixed so the HTML 4 runtime displays N/A for file sizes and the progress is based on uploaded files instead of bytes.
 	Fixed so chunking can be disabled properly in Flash but that will affect the progress bar.
+	Fixed so queue widget displays the drag/drop message if file queue is emptied.
 	Fixed small files are uploaded as one single chunk and not forced into 4 chunks in the Flash runtime.
 Version 1.2 (2010-03-09)
 	Added new rename file support for jQuery queue widget, click on a file name to rename it if it's enabled.
