@@ -1,6 +1,7 @@
 Version 1.2.1 (2010-03-22)
 	Fixed bug with incorrect aspect ratio in Flash image scaling.
 	Fixed bug where chunked uploads could get scrambled in the Flash runtime. Patch contributed by Grady Werner.
+	Fixed bug where a beta version of Chrome wouldn't handle drag/drop correctly because of missing drag effect.
 	Fixed so the HTML 4 runtime displays N/A for file sizes and the progress is based on uploaded files instead of bytes.
 	Fixed so chunking can be disabled properly in Flash but that will affect the progress bar.
 	Fixed small files are uploaded as one single chunk and not forced into 4 chunks in the Flash runtime.

@@ -90,6 +90,7 @@
 				if (dropElm) {
 					// Block browser default drag over
 					plupload.addEvent(dropElm, 'dragover', function(e) {
+						desktop.setDropEffect(e, 'copy');
 						e.preventDefault();
 					});
 
