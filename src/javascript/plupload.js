@@ -329,8 +329,9 @@
 		 * @return {String} Formatted size string.
 		 */
 		formatSize : function(size) {
-			if (!size)
+			if (!size) {
 				return plupload.translate('N/A');
+			}
 
 			// MB
 			if (size > 1048576) {
