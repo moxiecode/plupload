@@ -41,7 +41,7 @@
 				id = plupload.guid();
 
 				// Expose id, name and size
-				file = new plupload.File(id, name, 1025);
+				file = new plupload.File(id, name, 0);
 
 				iframefiles[id] = file;
 

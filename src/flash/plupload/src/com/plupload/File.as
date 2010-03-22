@@ -155,8 +155,11 @@ package com.plupload {
 							file._size = file._imageData.length;
 						}
 
-						// Force at least 4 chunks to fake progress
-						if (chunks < 4) {
+						// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
+						// doesn't have a upload progress event and we can't use FileReference.upload since it
+						// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
+						// side image resizing will not be possible.
+						if (chunking && chunks < 4 && file._size > 1024 * 32) {
 							chunkSize = Math.ceil(file._size / 4);
 							chunks = 4;
 						}
@@ -174,8 +177,11 @@ package com.plupload {
 
 					loader.loadBytes(file._fileRef.data);
 				} else {
-					// Force at least 4 chunks to fake progress
-					if (chunks < 4) {
+					// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
+					// doesn't have a upload progress event and we can't use FileReference.upload since it
+					// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
+					// side image resizing will not be possible.
+					if (chunking && chunks < 4 && file._size > 1024 * 32) {
 						chunkSize = Math.ceil(file._size / 4);
 						chunks = 4;
 					}
@@ -198,44 +204,6 @@ package com.plupload {
 
 			// Start loading local file
 			this._fileRef.load();
-
-			// Only one chunk, then do a normal upload
-			// * * This was removed since Flash is to buggy when it comes to upload requests
-			/*if (this._chunks == 1) {
-				var req:URLRequest, data:URLVariables, k:String;
-
-				// Setup request
-				req = new URLRequest(this._uploadUrl);
-				req.method = URLRequestMethod.POST;
-
-				// Setup post arguments if there are any
-				if (post_args != null) {
-					data = new URLVariables();
-
-					for (k in post_args)
-						data[k] = post_args[k];
-
-					req.data = data;
-				}
-
-				// Delegate progress event
-				this._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {
-					dispatchEvent(e);
-				});
-
-				// Delegate file upload complete event
-				this._fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
-					dispatchEvent(e);
-				});
-
-				// Delegate upload IO error
-				this._fileRef.addEventListener(IOErrorEvent.IO_ERROR, function(e:Event):void {
-					dispatchEvent(e);
-				});
-
-				// Start singe upload
-				this._fileRef.upload(req, upload_field);
-			}*/
 		}
 
 		// Private methods

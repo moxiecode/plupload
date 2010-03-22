@@ -329,6 +329,9 @@
 		 * @return {String} Formatted size string.
 		 */
 		formatSize : function(size) {
+			if (!size)
+				return plupload.translate('N/A');
+
 			// MB
 			if (size > 1048576) {
 				return Math.round(size / 1048576, 1) + " MB";
@@ -611,7 +614,7 @@
 				}
 			}
 
-			total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
+			total.percent = Math.ceil((total.size > 0 ? total.loaded / total.size : total.uploaded / files.length) * 100);
 			total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
 		}
 
@@ -724,7 +727,7 @@
 						file.status = plupload.UPLOADING;
 					}
 
-					file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 0;
+					file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 100;
 					calc();
 				});
 
