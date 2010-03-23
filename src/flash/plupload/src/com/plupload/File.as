@@ -92,7 +92,7 @@ package com.plupload {
 		 * @param settings Settings object.
 		 */
 		public function upload(url:String, settings:Object):void {
-			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean;
+			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean, fileDataName:String;
 			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
 
 			// Setup internal vars
