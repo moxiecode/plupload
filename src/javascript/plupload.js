@@ -278,7 +278,7 @@
 			var query = '';
 
 			plupload.each(items, function(value, name) {
-				query += (query ? '&' : '') + escape(name) + '=' + escape(value);
+				query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
 			});
 
 			if (query) {
