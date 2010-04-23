@@ -3,6 +3,7 @@ Version 1.2.2 (2010-xx-xx)
 	Added new FILE_SIZE_ERROR type that will be triggered if the user selected a file that is to large or zero bytes.
 	Added new FILE_EXTENSION_ERROR type that will be triggered if you add a file with an invalid file extension.
 	Fixed so the plupload.buildUrl function uses the UTF compatible encodeURIComponent method instead of escape.
+	Fixed so that all file types can be selected if you don't specify a filter setting.
 	Fixed some issues with the HTML4 runtime if there wasn't any existing forms on the page.
 	Fixed some conflict issues with HTML4 runtime and forms with the input names of action or target.
 	Fixed bug where some Gecko versions would produce exceptions when checking the HTTP status of a XHR.

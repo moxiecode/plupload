@@ -590,9 +590,7 @@
 			max_file_size : '1gb',
 			multi_selection : true,
 			file_data_name : 'file',
-			filters : [
-				{title : "Image files", extensions : "jpg,gif,png"}
-			]
+			filters : []
 		}, settings);
 
 		// Private methods
@@ -722,13 +720,13 @@
 
 				// Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
-					var i, file, count = 0, extensionsMap;
+					var i, file, count = 0, extensionsMap, filters = settings.filters;
 
 					// Convert extensions to map
-					if (settings.filters) {
+					if (filters && filters.length) {
 						extensionsMap = {};
 
-						plupload.each(settings.filters, function(filter) {
+						plupload.each(filters, function(filter) {
 							plupload.each(filter.extensions.split(/,/), function(ext) {
 								extensionsMap[ext] = true;
 							});
