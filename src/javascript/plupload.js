@@ -854,7 +854,7 @@
 										}
 									}
 								}
-console.log(self.features, runtime.name);
+
 								// Successful initialization
 								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
