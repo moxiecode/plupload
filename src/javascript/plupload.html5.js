@@ -270,8 +270,8 @@
 							status : httpStatus
 						});
 
-						// Response isn't 200 ok
-						if (httpStatus != 200) {
+						// Is error status
+						if (httpStatus >= 400) {
 							up.trigger('Error', {
 								code : plupload.HTTP_ERROR,
 								message : 'HTTP Error.',
