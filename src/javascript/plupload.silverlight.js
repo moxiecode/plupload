@@ -336,6 +336,13 @@
 					);
 				});
 
+				uploader.features = {
+					jpgresize: true,
+					pngresize: true,
+					dragdrop: true,
+					chunks: true
+				};
+
 				callback({success : true});
 			});
 		}

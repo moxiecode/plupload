@@ -277,6 +277,12 @@
 					});
 				});
 
+				uploader.features = {
+					jpgresize: true,
+					pngresize: true,
+					chunks: true
+				};
+
 				callback({success : true});
 			});
 		}

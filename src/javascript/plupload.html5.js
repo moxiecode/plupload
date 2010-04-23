@@ -174,7 +174,7 @@
 						e.preventDefault();
 					});
 
-					// Attach drop handler and grab files from Gears
+					// Attach drop handler and grab files
 					plupload.addEvent(dropElm, 'drop', function(e) {
 						var dataTransfer = e.dataTransfer;
 
