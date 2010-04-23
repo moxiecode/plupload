@@ -2,6 +2,7 @@ Version 1.2.2 (2010-xx-xx)
 	Added new file_data_name option that enables you to set the multipart file data param. Patch contributed by Alex Ganov.
 	Added new FILE_SIZE_ERROR type that will be triggered if the user selected a file that is to large or zero bytes.
 	Added new FILE_EXTENSION_ERROR type that will be triggered if you add a file with an invalid file extension.
+	Added new required_features setting, enables you to specify a list of required features that the runtime must have.
 	Fixed so the plupload.buildUrl function uses the UTF compatible encodeURIComponent method instead of escape.
 	Fixed so that all file types can be selected if you don't specify a filter setting.
 	Fixed so more valid HTTP status codes are accepted as valid responses.

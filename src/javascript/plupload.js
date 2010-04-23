@@ -838,7 +838,24 @@
 
 					if (runtime) {
 						runtime.init(self, function(res) {
+							var requiredFeatures, i;
+
 							if (res && res.success) {
+								// Check if runtime supports required features
+								requiredFeatures = self.settings.required_features;
+								if (requiredFeatures) {
+									requiredFeatures = requiredFeatures.split(',');
+
+									for (i = 0; i < requiredFeatures.length; i++) {
+										// Specified feature doesn't exist
+										if (!self.features[requiredFeatures[i]]) {
+											callNextInit();
+											return;
+										}
+									}
+								}
+console.log(self.features, runtime.name);
+								// Successful initialization
 								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
 								self.refresh();

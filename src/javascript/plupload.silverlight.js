@@ -339,8 +339,8 @@
 				uploader.features = {
 					jpgresize: true,
 					pngresize: true,
-					dragdrop: true,
-					chunks: true
+					chunks: true,
+					progress: true
 				};
 
 				callback({success : true});

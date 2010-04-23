@@ -70,7 +70,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var html5files = {}, dataAccessSupport;
+			var html5files = {}, dataAccessSupport, hasProgress;
 
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id;
@@ -93,11 +93,13 @@
 				}
 			}
 
-			function isSupported() {
+			function checkSupport() {
 				var xhr;
 
 				if (window.XMLHttpRequest) {
 					xhr = new XMLHttpRequest();
+
+					hasProgress = !!xhr.upload;
 
 					return !!(xhr.sendAsBinary || xhr.upload);
 				}
@@ -106,7 +108,7 @@
 			}
 
 			// No HTML5 upload support
-			if (!isSupported()) {
+			if (!checkSupport()) {
 				callback({success : false});
 				return;
 			}
@@ -312,9 +314,10 @@
 
 			uploader.features = {
 				// Detect drag/drop file support by sniffing, will try to find a better way
-				dragdrop : window.mozInnerScreenX !== undefined,
-				jpgresize : dataAccessSupport,
-				pngresize : dataAccessSupport
+				dragdrop: window.mozInnerScreenX !== undefined,
+				jpgresize: dataAccessSupport,
+				pngresize: dataAccessSupport,
+				progress: hasProgress
 			};
 
 			callback({success : true});

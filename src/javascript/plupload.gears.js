@@ -272,10 +272,11 @@
 			});
 
 			uploader.features = {
-				dragdrop : true,
-				jpgresize : true,
-				pngresize : true,
-				chunks : true
+				dragdrop: true,
+				jpgresize: true,
+				pngresize: true,
+				chunks: true,
+				progress: true
 			};
 
 			callback({success : true});

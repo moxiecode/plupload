@@ -276,7 +276,7 @@
 
 					if (file) {
 						message = err.message;
-						
+
 						if (err.details) {
 							message += " (" + err.details + ")";
 						}
