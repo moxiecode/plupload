@@ -135,16 +135,10 @@
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {
-				var lookup = {}, i, filters = uploader.settings.filters, resize = uploader.settings.resize || {};
+				var lookup = {}, i, resize = uploader.settings.resize || {};
 
 				initialized = true;
-
-				// Convert extensions to flash format
-				for (i = 0; i < filters.length; i++) {
-					filters[i].extensions = "*." + filters[i].extensions.replace(/,/g, ";*.");
-				}
-
-				getFlashObj().setFileFilters(filters, uploader.settings.multi_selection);
+				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
@@ -264,6 +258,9 @@
 
 				uploader.bind("Refresh", function(up) {
 					var browseButton, browsePos, browseSize;
+
+					// Set file filters incase it has been changed dynamically
+					getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
 					browseButton = document.getElementById(up.settings.browse_button);
 					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));

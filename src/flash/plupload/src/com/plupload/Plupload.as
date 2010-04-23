@@ -227,7 +227,7 @@ package com.plupload {
 				for (i = 0; i < this.fileFilters.length; i++) {
 					filters.push(new FileFilter(
 						this.fileFilters[i].title,
-						this.fileFilters[i].extensions,
+						'*.' + this.fileFilters[i].extensions.replace(/,/g, ";*."),
 						this.fileFilters[i].mac_types
 					));
 				}
