@@ -178,6 +178,14 @@
 		FILE_SIZE_ERROR : -600,
 
 		/**
+		 * File extension error. If the user selects a file that isn't valid according to the filters setting.
+		 *
+		 * @property FILE_EXTENSION_ERROR
+		 * @final
+		 */
+		FILE_EXTENSION_ERROR : -700,
+
+		/**
 		 * Mime type lookup table.
 		 *
 		 * @property mimeTypes
@@ -714,7 +722,18 @@
 
 				// Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
-					var i, file, count = 0;
+					var i, file, count = 0, extensionsMap;
+
+					// Convert extensions to map
+					if (settings.filters) {
+						extensionsMap = {};
+
+						plupload.each(settings.filters, function(filter) {
+							plupload.each(filter.extensions.split(/,/), function(ext) {
+								extensionsMap[ext] = true;
+							});
+						});
+					}
 
 					for (i = 0; i < selected_files.length; i++) {
 						file = selected_files[i];
@@ -722,17 +741,31 @@
 						file.percent = 0;
 						file.status = plupload.QUEUED;
 
-						// Ignore files that are to large
-						if (file.size === undef || file.size <= settings.max_file_size) {
-							files.push(file);
-							count++;
-						} else {
+						// Invalid file extension
+						if (extensionsMap && !extensionsMap[file.name.split('.').slice(-1)]) {
+							up.trigger('Error', {
+								code : plupload.FILE_EXTENSION_ERROR,
+								message : 'File extension error.',
+								file : file
+							});
+
+							continue;
+						}
+
+						// Invalid file size
+						if (file.size !== undef && file.size > settings.max_file_size) {
 							up.trigger('Error', {
 								code : plupload.FILE_SIZE_ERROR,
 								message : 'File size error.',
 								file : file
 							});
+
+							continue;
 						}
+
+						// Add valid file to list
+						files.push(file);
+						count++;
 					}
 
 					// Only trigger QueueChanged event if any files where added
