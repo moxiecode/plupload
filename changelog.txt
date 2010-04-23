@@ -1,7 +1,10 @@
 Version 1.2.2 (2010-xx-xx)
 	Added new file_data_name option that enables you to set the multipart file data param. Patch contributed by Alex Ganov.
+	Added new FILE_SIZE_ERROR type that will be triggered if the user selected a file that is to large or zero bytes.
 	Fixed so the plupload.buildUrl function uses the UTF compatible encodeURIComponent method instead of escape.
 	Fixed some issues with the HTML4 runtime if there wasn't any existing forms on the page.
+	Fixed some conflict issues with HTML4 runtime and forms with the input names of action or target.
+	Fixed bug where some Gecko versions would produce exceptions when checking the HTTP status of a XHR.
 Version 1.2.1 (2010-03-22)
 	Fixed bug with incorrect aspect ratio in Flash image scaling.
 	Fixed bug where chunked uploads could get scrambled in the Flash runtime. Patch contributed by Grady Werner.

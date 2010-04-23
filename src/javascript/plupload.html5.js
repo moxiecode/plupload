@@ -252,9 +252,16 @@
 				}
 
 				xhr.onreadystatechange = function() {
-					var httpStatus = xhr.status;
+					var httpStatus;
 
 					if (xhr.readyState == 4) {
+						// Getting the HTTP status might fail on some Gecko versions
+						try {
+							httpStatus = xhr.status;
+						} catch (ex) {
+							httpStatus = 0;
+						}
+
 						file.status = plupload.DONE;
 						file.loaded = file.size;
 						up.trigger('UploadProgress', file);

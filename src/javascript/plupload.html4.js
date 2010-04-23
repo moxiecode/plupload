@@ -153,11 +153,11 @@
 
 						// Reset action and target
 						if (form.tmpAction) {
-							form.action = form.tmpAction;
+							form.setAttribute("action", form.tmpAction);
 						}
 
 						if (form.tmpTarget) {
-							form.target = form.tmpTarget;
+							form.setAttribute("target", form.tmpTarget);
 						}
 					}
 				});
@@ -289,12 +289,12 @@
 				file.input.setAttribute('name', up.settings.file_data_name);
 
 				// Store action
-				form.tmpAction = form.action;
-				form.action = plupload.buildUrl(up.settings.url, {name : file.target_name || file.name});
+				form.tmpAction = form.getAttribute("action");
+				form.setAttribute("action", plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}));
 
 				// Store Target
-				form.tmpTarget = form.target;
-				form.target = iframe.name;
+				form.tmpTarget = form.getAttribute("target");
+				form.setAttribute("target", iframe.name);
 
 				// set current file
 				this.currentfile = file;

@@ -170,6 +170,14 @@
 		INIT_ERROR : -500,
 
 		/**
+		 * File size error. If the user selects a file that is to large it will be blocked and an error of this type will be triggered.
+		 *
+		 * @property FILE_SIZE_ERROR
+		 * @final
+		 */
+		FILE_SIZE_ERROR : -600,
+
+		/**
 		 * Mime type lookup table.
 		 *
 		 * @property mimeTypes
@@ -718,6 +726,12 @@
 						if (file.size === undef || file.size <= settings.max_file_size) {
 							files.push(file);
 							count++;
+						} else {
+							up.trigger('Error', {
+								code : plupload.FILE_SIZE_ERROR,
+								message : 'File size error.',
+								file : file
+							});
 						}
 					}
 
