@@ -132,7 +132,7 @@
 		/**
 		 * Generic error for example if an exception is thrown inside Silverlight.
 		 *
-		 * @property IO_ERROR
+		 * @property GENERIC_ERROR
 		 * @final
 		 */
 		GENERIC_ERROR : -100,
@@ -156,7 +156,7 @@
 		/**
 		 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
 		 *
-		 * @property IO_ERROR
+		 * @property SECURITY_ERROR
 		 * @final
 		 */
 		SECURITY_ERROR : -400,
