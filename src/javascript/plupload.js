@@ -1116,6 +1116,14 @@
 			 * @param {plupload.File} file File that the chunk was uploaded for.
 			 * @param {Object} response Object with response properties.
 			 */
+
+			/**
+			 * Fires when a error occurs.
+			 *
+			 * @event Error
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {Object} error Contains code, message and sometimes file and other details.
+			 */
 		});
 	};
 
