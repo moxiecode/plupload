@@ -5,6 +5,7 @@ tmp
 docs
 jslint.xml
 .settings
+.project
 *~
 *.diff
 *.patch
