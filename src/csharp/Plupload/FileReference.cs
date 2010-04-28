@@ -193,8 +193,10 @@ namespace Moxiecode.Plupload {
 			req.Method = "POST";
 
 			// Add custom headers
-			foreach (string key in this.headers.Keys)
-				req.Headers[key] = (string) this.headers[key];
+			if (this.headers != null) {
+				foreach (string key in this.headers.Keys)
+					req.Headers[key] = (string)this.headers[key];
+			}
 
 			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
 
