@@ -151,7 +151,8 @@
 						multipart : settings.multipart,
 						multipart_params : settings.multipart_params,
 						file_data_name : settings.file_data_name,
-						format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png'
+						format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png',
+						headers : settings.headers
 					});
 				});
 

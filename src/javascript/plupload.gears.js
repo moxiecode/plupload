@@ -213,6 +213,11 @@
 						req.setRequestHeader('Content-Type', 'application/octet-stream');
 					}
 
+					// Set custom headers
+					plupload.each(up.settings.headers, function(value, name) {
+						req.setRequestHeader(name, value);
+					});
+
 					req.upload.onprogress = function(progress) {
 						file.loaded = loaded + progress.loaded - multipartLength;
 						up.trigger('UploadProgress', file);

@@ -286,6 +286,12 @@
 
 				xhr.open("post", plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}), true);
 				xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+				// Set custom headers
+				plupload.each(up.settings.headers, function(value, name) {
+					xhr.setRequestHeader(name, value);
+				});
+
 				nativeFile = html5files[file.id]; 
 
 				if (xhr.sendAsBinary) {

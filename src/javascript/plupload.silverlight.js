@@ -331,7 +331,8 @@
 							image_height : resize.height,
 							image_quality : resize.quality || 90,
 							multipart : !!settings.multipart,
-							multipart_params : settings.multipart_params || {}
+							multipart_params : settings.multipart_params || {},
+							headers : settings.headers
 						})
 					);
 				});

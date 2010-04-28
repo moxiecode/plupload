@@ -41,6 +41,7 @@ package com.plupload {
 		private var _uploadUrl:String, _uploadPath:String;
 		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
+		private var _headers:Object;
 
 		/**
 		 * Id property of file.
@@ -98,6 +99,7 @@ package com.plupload {
 			// Setup internal vars
 			this._uploadUrl = url;
 			this._cancelled = false;
+			this._headers = settings.headers;
 
 			// Handle image resizing settings
 			if (settings["width"] || settings["height"]) {
@@ -298,6 +300,13 @@ package com.plupload {
 			// Setup request
 			req = new URLRequest(url);
 			req.method = URLRequestMethod.POST;
+
+			// Add custom headers
+			if (this._headers) {
+				for (var headerName:String in this._headers) {
+					req.requestHeaders.push(new URLRequestHeader(headerName, this._headers[headerName]));
+				}
+			}
 
 			// Build multipart request
 			if (this._multipart) {

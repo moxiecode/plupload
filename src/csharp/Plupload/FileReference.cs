@@ -39,6 +39,7 @@ namespace Moxiecode.Plupload {
 		private bool multipart, chunking;
 		private long size;
 		private Dictionary<string, object> multipartParams;
+		private Dictionary<string, object> headers;
 		private Stream imageStream;
 		#endregion
 
@@ -113,6 +114,7 @@ namespace Moxiecode.Plupload {
 			imageQuality = Convert.ToInt32(settings["image_quality"]);
 			this.multipart = Convert.ToBoolean(settings["multipart"]);
 			this.multipartParams = (Dictionary<string, object>)settings["multipart_params"];
+			this.headers = (Dictionary<string, object>)settings["headers"];
 
             this.chunk = 0;
 			this.chunking = chunkSize > 0;
@@ -189,6 +191,10 @@ namespace Moxiecode.Plupload {
 
 			HttpWebRequest req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
 			req.Method = "POST";
+
+			// Add custom headers
+			foreach (string key in this.headers.Keys)
+				req.Headers[key] = (string) this.headers[key];
 
 			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
 
