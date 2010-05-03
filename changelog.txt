@@ -1,5 +1,6 @@
 Version 1.2.x (2010-xx-xx)
 	Added new headers option, enables you to set custom headers for the upload requests.
+	Fixed bug where the file extension checking was case sensitive.
 Version 1.2.2 (2010-04-26)
 	Added new file_data_name option that enables you to set the multipart file data param. Patch contributed by Alex Ganov.
 	Added new FILE_SIZE_ERROR type that will be triggered if the user selected a file that is to large or zero bytes.

@@ -728,7 +728,7 @@
 
 						plupload.each(filters, function(filter) {
 							plupload.each(filter.extensions.split(/,/), function(ext) {
-								extensionsMap[ext] = true;
+								extensionsMap[ext.toLowerCase()] = true;
 							});
 						});
 					}
@@ -740,7 +740,7 @@
 						file.status = plupload.QUEUED;
 
 						// Invalid file extension
-						if (extensionsMap && !extensionsMap[file.name.split('.').slice(-1)]) {
+						if (extensionsMap && !extensionsMap[file.name.toLowerCase().split('.').slice(-1)]) {
 							up.trigger('Error', {
 								code : plupload.FILE_EXTENSION_ERROR,
 								message : 'File extension error.',
