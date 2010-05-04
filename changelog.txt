@@ -1,4 +1,4 @@
-Version 1.2.x (2010-xx-xx)
+Version 1.2.2.1 (2010-05-04)
 	Added new headers option, enables you to set custom headers for the upload requests.
 	Fixed bug where the file extension checking was case sensitive.
 Version 1.2.2 (2010-04-26)
