@@ -316,8 +316,10 @@
 				}
 			});
 
-			// No features
-			uploader.features = {};
+			// Only multipart feature
+			uploader.features = {
+				multipart: true
+			};
 
 			callback({success : true});
 		}

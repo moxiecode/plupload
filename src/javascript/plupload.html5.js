@@ -70,7 +70,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var html5files = {}, dataAccessSupport, hasProgress;
+			var html5files = {}, dataAccessSupport, hasProgress, sliceSupport;
 
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id;
@@ -315,15 +315,19 @@
 				}
 			});
 
-			// Do we have direct data access Gecko has it but WebKit doesn't yet
+			// Check for support for various features
 			dataAccessSupport = !!(File && File.prototype.getAsDataURL);
+			sliceSupport = !!(File && File.prototype.slice);
 
 			uploader.features = {
 				// Detect drag/drop file support by sniffing, will try to find a better way
-				dragdrop: window.mozInnerScreenX !== undefined,
+				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
+				multipart: dataAccessSupport,
 				progress: hasProgress
+				// todo: Implement chunking support
+				// chunking: sliceSupport || dataAccessSupport
 			};
 
 			callback({success : true});

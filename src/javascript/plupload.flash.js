@@ -279,7 +279,8 @@
 					jpgresize: true,
 					pngresize: true,
 					chunks: true,
-					progress: true
+					progress: true,
+					multipart: true
 				};
 
 				callback({success : true});
