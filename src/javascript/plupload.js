@@ -834,7 +834,7 @@
 
 				// Call init on each runtime in sequence
 				function callNextInit() {
-					var runtime = runtimeList[runTimeIndex++], features;
+					var runtime = runtimeList[runTimeIndex++], features, requiredFeatures, i;
 
 					if (runtime) {
 						features = runtime.getFeatures();
@@ -855,8 +855,6 @@
 
 						// Try initializing the runtime
 						runtime.init(self, function(res) {
-							var requiredFeatures, i;
-
 							if (res && res.success) {
 								// Successful initialization
 								self.features = features;
