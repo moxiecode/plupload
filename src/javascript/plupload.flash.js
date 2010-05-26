@@ -62,6 +62,21 @@
 	 */
 	plupload.runtimes.Flash = plupload.addRuntime("flash", {
 		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		getFeatures : function() {
+			return {
+				jpgresize: true,
+				pngresize: true,
+				chunks: true,
+				progress: true,
+				multipart: true
+			};
+		},
+
+		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *
 		 * @method init
@@ -274,14 +289,6 @@
 						height : browseSize.h + 'px'
 					});
 				});
-
-				uploader.features = {
-					jpgresize: true,
-					pngresize: true,
-					chunks: true,
-					progress: true,
-					multipart: true
-				};
 
 				callback({success : true});
 			});

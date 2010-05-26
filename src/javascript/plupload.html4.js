@@ -22,6 +22,18 @@
 	 */
 	plupload.runtimes.Html4 = plupload.addRuntime("html4", {
 		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		getFeatures : function() {
+			// Only multipart feature
+			return {
+				multipart: true
+			};
+		},
+
+		/**
 		 * Initializes the upload runtime.
 		 *
 		 * @method init
@@ -315,11 +327,6 @@
 					}
 				}
 			});
-
-			// Only multipart feature
-			uploader.features = {
-				multipart: true
-			};
 
 			callback({success : true});
 		}

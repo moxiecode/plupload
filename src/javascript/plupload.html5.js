@@ -63,6 +63,41 @@
 	 */
 	plupload.runtimes.Html5 = plupload.addRuntime("html5", {
 		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		getFeatures : function() {
+			var xhr, hasXhrSupport, hasProgress, dataAccessSupport, sliceSupport;
+
+			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
+
+			if (window.XMLHttpRequest) {
+				xhr = new XMLHttpRequest();
+				hasProgress = !!xhr.upload;
+				hasXhrSupport = !!(xhr.sendAsBinary || xhr.upload);
+			}
+
+			// Check for support for various features
+			if (hasXhrSupport) {
+				dataAccessSupport = !!(File && File.prototype.getAsDataURL);
+				sliceSupport = !!(File && File.prototype.slice);
+			}
+
+			return {
+				// Detect drag/drop file support by sniffing, will try to find a better way
+				html5: hasXhrSupport, // This is a special one that we check inside the init call
+				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport,
+				jpgresize: dataAccessSupport,
+				pngresize: dataAccessSupport,
+				multipart: dataAccessSupport,
+				progress: hasProgress
+				// todo: Implement chunking support
+				// chunking: sliceSupport || dataAccessSupport
+			};
+		},
+
+		/**
 		 * Initializes the upload runtime.
 		 *
 		 * @method init
@@ -70,7 +105,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var html5files = {}, dataAccessSupport, hasProgress, sliceSupport;
+			var html5files = {};
 
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id;
@@ -93,22 +128,8 @@
 				}
 			}
 
-			function checkSupport() {
-				var xhr;
-
-				if (window.XMLHttpRequest) {
-					xhr = new XMLHttpRequest();
-
-					hasProgress = !!xhr.upload;
-
-					return !!(xhr.sendAsBinary || xhr.upload);
-				}
-
-				return false;
-			}
-
 			// No HTML5 upload support
-			if (!checkSupport()) {
+			if (!this.getFeatures().html5) {
 				callback({success : false});
 				return;
 			}
@@ -314,21 +335,6 @@
 					xhr.send(nativeFile);
 				}
 			});
-
-			// Check for support for various features
-			dataAccessSupport = !!(File && File.prototype.getAsDataURL);
-			sliceSupport = !!(File && File.prototype.slice);
-
-			uploader.features = {
-				// Detect drag/drop file support by sniffing, will try to find a better way
-				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport,
-				jpgresize: dataAccessSupport,
-				pngresize: dataAccessSupport,
-				multipart: dataAccessSupport,
-				progress: hasProgress
-				// todo: Implement chunking support
-				// chunking: sliceSupport || dataAccessSupport
-			};
 
 			callback({success : true});
 		}

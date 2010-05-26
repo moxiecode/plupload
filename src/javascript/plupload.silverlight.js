@@ -157,6 +157,21 @@
 	 */
 	plupload.runtimes.Silverlight = plupload.addRuntime("silverlight", {
 		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		getFeatures : function() {
+			return {
+				jpgresize: true,
+				pngresize: true,
+				chunks: true,
+				progress: true,
+				multipart: true
+			};
+		},
+
+		/**
 		 * Initializes the upload runtime. This runtime supports these features: jpgresize, pngresize, chunks.
 		 *
 		 * @method init
@@ -336,14 +351,6 @@
 						})
 					);
 				});
-
-				uploader.features = {
-					jpgresize: true,
-					pngresize: true,
-					chunks: true,
-					progress: true,
-					multipart: true
-				};
 
 				callback({success : true});
 			});

@@ -21,6 +21,22 @@
 	 */
 	plupload.runtimes.BrowserPlus = plupload.addRuntime("browserplus", {
 		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		getFeatures : function() {
+			return {
+				dragdrop : true,
+				jpgresize : true,
+				pngresize : true,
+				chunks : true,
+				progress: true,
+				multipart: true
+			};
+		},
+
+		/**
 		 * Initializes the browserplus runtime.
 		 *
 		 * @method init
@@ -281,15 +297,6 @@
 						chunkAndUploadFile(nativeFile);
 					}
 				});
-
-				uploader.features = {
-					dragdrop : true,
-					jpgresize : true,
-					pngresize : true,
-					chunks : true,
-					progress: true,
-					multipart: true
-				};
 
 				callback({success : true});
 			}

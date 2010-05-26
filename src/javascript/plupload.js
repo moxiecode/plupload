@@ -834,28 +834,32 @@
 
 				// Call init on each runtime in sequence
 				function callNextInit() {
-					var runtime = runtimeList[runTimeIndex++];
+					var runtime = runtimeList[runTimeIndex++], features;
 
 					if (runtime) {
+						features = runtime.getFeatures();
+
+						// Check if runtime supports required features
+						requiredFeatures = self.settings.required_features;
+						if (requiredFeatures) {
+							requiredFeatures = requiredFeatures.split(',');
+
+							for (i = 0; i < requiredFeatures.length; i++) {
+								// Specified feature doesn't exist
+								if (!features[requiredFeatures[i]]) {
+									callNextInit();
+									return;
+								}
+							}
+						}
+
+						// Try initializing the runtime
 						runtime.init(self, function(res) {
 							var requiredFeatures, i;
 
 							if (res && res.success) {
-								// Check if runtime supports required features
-								requiredFeatures = self.settings.required_features;
-								if (requiredFeatures) {
-									requiredFeatures = requiredFeatures.split(',');
-
-									for (i = 0; i < requiredFeatures.length; i++) {
-										// Specified feature doesn't exist
-										if (!self.features[requiredFeatures[i]]) {
-											callNextInit();
-											return;
-										}
-									}
-								}
-
 								// Successful initialization
+								self.features = features;
 								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
 								self.refresh();
@@ -1204,6 +1208,14 @@
 	 * @static
 	 */
 	plupload.Runtime = function() {
+		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		this.getFeatures = function() {
+		};
+
 		/**
 		 * Initializes the upload runtime. This method should add necessary items to the DOM and register events needed for operation. 
 		 *

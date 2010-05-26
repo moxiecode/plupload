@@ -44,6 +44,22 @@
 	 */
 	plupload.runtimes.Gears = plupload.addRuntime("gears", {
 		/**
+		 * Returns a list of supported features for the runtime.
+		 *
+		 * @return {Object} Name/value object with supported features.
+		 */
+		getFeatures : function() {
+			return {
+				dragdrop: true,
+				jpgresize: true,
+				pngresize: true,
+				chunks: true,
+				progress: true,
+				multipart: true
+			};
+		},
+
+		/**
 		 * Initializes the upload runtime.
 		 *
 		 * @method init
@@ -275,15 +291,6 @@
 				// Start uploading chunks
 				uploadNextChunk();
 			});
-
-			uploader.features = {
-				dragdrop: true,
-				jpgresize: true,
-				pngresize: true,
-				chunks: true,
-				progress: true,
-				multipart: true
-			};
 
 			callback({success : true});
 		}
