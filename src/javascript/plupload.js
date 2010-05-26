@@ -1090,7 +1090,7 @@
 			 *
 			 * @event FilesRemoved
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-			 * @param {plupload.File} file File that is currently being uploaded.
+			 * @param {Array} files Array of files that got removed.
 			 */
 
 			/**
@@ -1098,7 +1098,7 @@
 			 *
 			 * @event FilesAdded
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-			 * @param {Array} files Array of file objects that was selected.
+			 * @param {Array} files Array of file objects that was added to queue/selected by the user.
 			 */
 
 			/**
