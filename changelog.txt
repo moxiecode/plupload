@@ -1,4 +1,4 @@
-Version 1.2.x (2010-xx-xx)
+Version 1.2.3 (2010-05-27)
 	Added new drag/drop support for HTML5 running on Chrome beta.
 	Added new multipart state for the features object. It's now possible to detect multipart support.
 	Added new getFeatures function to all runtime. Basic concept by Javier Martinez Fernandez.
