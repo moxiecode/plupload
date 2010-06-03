@@ -813,6 +813,7 @@
 
 				self.bind("FileUploaded", function(up, file) {
 					file.status = plupload.DONE;
+					file.loaded = file.size;
 					up.trigger('UploadProgress', file);
 					uploadNext.call(self);
 				});

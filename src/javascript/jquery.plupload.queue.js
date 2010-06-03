@@ -266,11 +266,6 @@
 
 				uploader.init();
 
-				// Call setup function
-				if (settings.setup) {
-					settings.setup(uploader);
-				}
-
 				uploader.bind("Error", function(up, err) {
 					var file = err.file, message;
 
@@ -315,6 +310,11 @@
 					handleStatus(file);
 					updateTotalProgress();
 				});
+
+				// Call setup function
+				if (settings.setup) {
+					settings.setup(uploader);
+				}
 			});
 
 			return this;
