@@ -90,7 +90,7 @@
 				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
-				multipart: dataAccessSupport,
+				multipart: dataAccessSupport || !!window.FileReader,
 				progress: hasProgress,
 				chunking: sliceSupport || dataAccessSupport
 			};
@@ -347,6 +347,23 @@
 
 						// Build multipart request
 						if (up.settings.multipart && features.multipart) {
+							// WebKit with multipart support Chrome 6+
+							if (!xhr.sendAsBinary) {
+								var data = new FormData();
+
+								// Add multipart params
+								plupload.each(up.settings.multipart_params, function(value, name) {
+									data.append(name, value);
+								});
+
+								// Add file and send it
+								data.append(up.settings.file_data_name, chunkBlob);
+								xhr.send(data);
+
+								return;
+							}
+
+							// Gecko multipart request
 							xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
 							// Append mutlipart parameters
