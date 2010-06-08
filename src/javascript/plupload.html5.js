@@ -9,7 +9,7 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, File:false, window:false, atob:false */
+/*global plupload:false, File:false, window:false, atob:false, FormData:false */
 
 (function(plupload) {
 	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
