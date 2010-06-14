@@ -269,7 +269,6 @@
 
 						// Setup XHR object
 						xhr = new XMLHttpRequest();
-						xhr.open("post", plupload.buildUrl(up.settings.url, args), true);
 						upload = xhr.upload;
 
 						// Do we have upload progress support
@@ -279,6 +278,8 @@
 								up.trigger('UploadProgress', file);
 							};
 						}
+
+						xhr.open("post", plupload.buildUrl(up.settings.url, args), true);
 
 						xhr.onreadystatechange = function() {
 							var httpStatus, chunkArgs;

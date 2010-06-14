@@ -276,6 +276,14 @@
 							message += " (" + err.details + ")";
 						}
 
+						if (err.code == plupload.FILE_SIZE_ERROR) {
+							alert(_("Error: File to large: ") + file.name);
+						}
+
+						if (err.code == plupload.FILE_EXTENSION_ERROR) {
+							alert(_("Error: Invalid file extension: ") + file.name);
+						}
+
 						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
 				});
