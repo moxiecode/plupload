@@ -46,6 +46,15 @@
 		</jslint>
 	</target>
 
+	<target name="build-flash">
+		<exec executable="mxmlc">
+			<arg value="-compiler.source-path=./src/flash/plupload/src" />
+			<arg value="-target-player=10.1.0" />
+			<arg value="-output=./bin/plupload.flash.swf" />
+			<arg value="./src/flash/plupload/src/com/plupload/Plupload.as" />
+		</exec>
+	</target>
+
 	<target name="build">
 		<!-- Concat multuple JS files together -->
 		<concat destfile="js/plupload.full.tmp.js">
