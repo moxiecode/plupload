@@ -50,6 +50,7 @@
 		<exec executable="mxmlc">
 			<arg value="-compiler.source-path=./src/flash/plupload/src" />
 			<arg value="-target-player=10.1.0" />
+			<!-- <arg value="-compiler.debug" /> -->
 			<arg value="-output=./bin/plupload.flash.swf" />
 			<arg value="./src/flash/plupload/src/com/plupload/Plupload.as" />
 		</exec>

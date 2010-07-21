@@ -105,7 +105,7 @@ package com.plupload {
 		}
 
 		// Private methods
-		
+
 		public function canUseSimpleUpload(settings:Object):Boolean {
 			var multipart:Boolean = new Boolean(settings["multipart"]);
 			var resize:Boolean = (settings["width"] || settings["height"]);
@@ -113,46 +113,64 @@ package com.plupload {
 			//return !multipart && !resize;
 			return true;
 		}
-		
+
 		public function simpleUpload(url:String, settings:Object):void {
-			
-			var request:URLRequest, postData:URLVariables, fileDataName:String;
-			
-			this._postvars = settings["multipart_params"];
-			
+
+			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String;
+
+			file._postvars = settings["multipart_params"];
+			file._chunk = 0;
+			file._chunks = 1;
+
 			postData = new URLVariables();
-			
-			for (var key:String in this._postvars) {
-				postData[key] = this._postvars[key];
+
+			for (var key:String in file._postvars) {
+				postData[key] = file._postvars[key];
 			}
-			
+
 			request = new URLRequest();
 			request.method = URLRequestMethod.POST;
 			request.url = url;
 			request.data = postData;
-			
+
 			fileDataName = new String(settings["file_data_name"]);
-			
-			this._fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
+
+			file._fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
+				// Fake UPLOAD_COMPLETE_DATA event
+				var uploadChunkEvt:UploadChunkEvent = new UploadChunkEvent(
+					UploadChunkEvent.UPLOAD_CHUNK_COMPLETE_DATA,
+					false,
+					false,
+					e.data,
+					file._chunk,
+					file._chunks
+				);
+
+				file._chunk++;
+				dispatchEvent(uploadChunkEvt);
+
+				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, file._size, file._size);
+				dispatchEvent(pe);
+
 				dispatchEvent(e);
 			});
-			
+
 			// Delegate upload IO errors
-			this._fileRef.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+			file._fileRef.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
 				dispatchEvent(e);
 			});
 
 			// Delegate secuirty errors
-			this._fileRef.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
+			file._fileRef.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
 				dispatchEvent(e);
 			});
-			
+
 			// Delegate progress
-			this._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {
+			file._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {
 				dispatchEvent(e);
 			});
-			
-			this._fileRef.upload(request, fileDataName, false);
+
+			file._fileRef.upload(request, fileDataName, false);
 		}
 
 		public function advancedUpload(url:String, settings:Object):void {
@@ -217,7 +235,7 @@ package com.plupload {
 								filterAmount = 2
 							} else {
 								filterAmount = 1
-							} 
+							}
 
 							// Create blurfilter with variable filterAmount of blur
 							var blurFilter:BlurFilter = new BlurFilter(filterAmount, filterAmount, BitmapFilterQuality.HIGH);
@@ -322,7 +340,9 @@ package com.plupload {
 			// All chunks uploaded?
 			if (this._chunk >= this._chunks) {
 				// Clean up memory
-				this._fileRef.data.clear()
+				if(this._fileRef.data) {
+					this._fileRef.data.clear();
+				}
 				this._fileRef = null;
 				this._imageData = null;
 
@@ -418,7 +438,7 @@ package com.plupload {
 				for (var name:String in this._postvars) {
 					multipartBlob.writeUTFBytes(
 						dashdash + boundary + crlf +
-						'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf + 
+						'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
 						this._postvars[name] + crlf
 					);
 				}
@@ -443,7 +463,7 @@ package com.plupload {
 
 			// Make request
 			urlStream.load(req);
-			
+
 			return true;
 		}
 	}
