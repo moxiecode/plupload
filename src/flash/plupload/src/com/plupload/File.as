@@ -97,6 +97,65 @@ package com.plupload {
 		 * @param settings Settings object.
 		 */
 		public function upload(url:String, settings:Object):void {
+			if(this.canUseSimpleUpload(settings)) {
+				this.simpleUpload(url, settings);
+			} else {
+				this.advancedUpload(url, settings);
+			}
+		}
+
+		// Private methods
+		
+		public function canUseSimpleUpload(settings:Object):Boolean {
+			var multipart:Boolean = new Boolean(settings["multipart"]);
+			var resize:Boolean = (settings["width"] || settings["height"]);
+			var chunking:Boolean = (settings["chunk_size"] > 0);
+			//return !multipart && !resize;
+			return true;
+		}
+		
+		public function simpleUpload(url:String, settings:Object):void {
+			
+			var request:URLRequest, postData:URLVariables, fileDataName:String;
+			
+			this._postvars = settings["multipart_params"];
+			
+			postData = new URLVariables();
+			
+			for (var key:String in this._postvars) {
+				postData[key] = this._postvars[key];
+			}
+			
+			request = new URLRequest();
+			request.method = URLRequestMethod.POST;
+			request.url = url;
+			request.data = postData;
+			
+			fileDataName = new String(settings["file_data_name"]);
+			
+			this._fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
+				dispatchEvent(e);
+			});
+			
+			// Delegate upload IO errors
+			this._fileRef.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+				dispatchEvent(e);
+			});
+
+			// Delegate secuirty errors
+			this._fileRef.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
+				dispatchEvent(e);
+			});
+			
+			// Delegate progress
+			this._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {
+				dispatchEvent(e);
+			});
+			
+			this._fileRef.upload(request, fileDataName, false);
+		}
+
+		public function advancedUpload(url:String, settings:Object):void {
 			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean, fileDataName:String;
 			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
 
@@ -252,8 +311,6 @@ package com.plupload {
 			// Start loading local file
 			this._fileRef.load();
 		}
-
-		// Private methods
 
 		/**
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
