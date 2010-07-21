@@ -110,8 +110,7 @@ package com.plupload {
 			var multipart:Boolean = new Boolean(settings["multipart"]);
 			var resize:Boolean = (settings["width"] || settings["height"]);
 			var chunking:Boolean = (settings["chunk_size"] > 0);
-			//return !multipart && !resize;
-			return true;
+			return multipart && !resize && !chunking;
 		}
 
 		public function simpleUpload(url:String, settings:Object):void {
