@@ -1,4 +1,5 @@
 Version 1.2.x (2010-xx-xx)
+	Added new automatic usage of FileReference in Flash if it's possible. Contributed by Marcel Jackwerth.
 	Added new chunking support for Chrome 5 and Firefox 3.6 using the HTML 5 runtime.
 	Added new multipart upload support for Chrome 6 using the HTML 5 runtime.
 	Added new image scaling method for the Flash runtime contributed by rcoopman.

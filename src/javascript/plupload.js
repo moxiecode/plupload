@@ -600,6 +600,7 @@
 				file = files[fileIndex++];
 
 				if (file.status == plupload.QUEUED) {
+					this.trigger('BeforeUpload', file);
 					this.trigger("UploadFile", file);
 				} else {
 					uploadNext.call(this);
@@ -1066,6 +1067,15 @@
 			 * Fires when a file is to be uploaded by the runtime.
 			 *
 			 * @event UploadFile
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {plupload.File} file File to be uploaded.
+			 */
+
+			/**
+			 * Fires when just before a file is uploaded. This event enables you to override settings
+			 * on the uploader instance before the file is uploaded.
+			 *
+			 * @event BeforeUpload
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 * @param {plupload.File} file File to be uploaded.
 			 */
