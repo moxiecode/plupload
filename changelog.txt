@@ -1,10 +1,12 @@
 Version 1.2.x (2010-xx-xx)
+	Added new BeforeUpload event to make it easier to override settings before a file is uploaded.
 	Added new automatic usage of FileReference in Flash if it's possible. Contributed by Marcel Jackwerth.
 	Added new chunking support for Chrome 5 and Firefox 3.6 using the HTML 5 runtime.
 	Added new multipart upload support for Chrome 6 using the HTML 5 runtime.
 	Added new image scaling method for the Flash runtime contributed by rcoopman.
 	Added new alert error message if the user selected invalid files.
 	Fixed progress issue with the HTML5 runtime running on Gecko.
+	Fixed so longer extensions can be used such as .tar.gz.
 Version 1.2.3 (2010-05-27)
 	Added new drag/drop support for HTML5 running on Chrome beta.
 	Added new multipart state for the features object. It's now possible to detect multipart support.

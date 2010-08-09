@@ -9,7 +9,7 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, jQuery:false */
+/*global plupload:false, jQuery:false, alert:false */
 
 (function($) {
 	var uploaders = {};

@@ -720,17 +720,19 @@
 
 				// Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
-					var i, file, count = 0, extensionsMap, filters = settings.filters;
+					var i, file, count = 0, extensionsRegExp, filters = settings.filters;
 
-					// Convert extensions to map
+					// Convert extensions to regexp
 					if (filters && filters.length) {
-						extensionsMap = {};
-
+						extensionsRegExp = [];
+						
 						plupload.each(filters, function(filter) {
 							plupload.each(filter.extensions.split(/,/), function(ext) {
-								extensionsMap[ext.toLowerCase()] = true;
+								extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
 							});
 						});
+
+						extensionsRegExp = new RegExp(extensionsRegExp.join('|') + '$', 'i');
 					}
 
 					for (i = 0; i < selected_files.length; i++) {
@@ -740,7 +742,7 @@
 						file.status = plupload.QUEUED;
 
 						// Invalid file extension
-						if (extensionsMap && !extensionsMap[file.name.toLowerCase().split('.').slice(-1)]) {
+						if (extensionsRegExp && !extensionsRegExp.test(file.name)) {
 							up.trigger('Error', {
 								code : plupload.FILE_EXTENSION_ERROR,
 								message : 'File extension error.',
