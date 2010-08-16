@@ -2,7 +2,7 @@ Version 1.2.x (2010-xx-xx)
 	Added new BeforeUpload event to make it easier to override settings before a file is uploaded.
 	Added new automatic usage of FileReference in Flash if it's possible. Contributed by Marcel Jackwerth.
 	Added new chunking support for Chrome 5 and Firefox 3.6 using the HTML 5 runtime.
-	Added new multipart upload support for Chrome 6 using the HTML 5 runtime.
+	Added new multipart upload support for WebKit using the HTML 5 runtime and the FormData object.
 	Added new image scaling method for the Flash runtime contributed by rcoopman.
 	Added new alert error message if the user selected invalid files.
 	Added new automatic unique name generation to the example.php script. Contributed by Brandon Kelly.

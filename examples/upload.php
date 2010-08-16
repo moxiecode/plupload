@@ -35,13 +35,13 @@
 	$fileName = preg_replace('/[^\w\._]+/', '', $fileName);
 
 	// Make sure the fileName is unique
-	if (file_exists($path . DIRECTORY_SEPARATOR . $fileName)) {
+	if (file_exists($targetDir . DIRECTORY_SEPARATOR . $fileName)) {
 		$ext = strrpos($fileName, '.');
 		$fileName_a = substr($fileName, 0, $ext);
 		$fileName_b = substr($fileName, $ext);
 
 		$count = 1;
-		while (file_exists($path . DIRECTORY_SEPARATOR . $fileName_a . '_' . $count . $fileName_b))
+		while (file_exists($targetDir . DIRECTORY_SEPARATOR . $fileName_a . '_' . $count . $fileName_b))
 			$count++;
 
 		$fileName = $fileName_a . '_' . $count . $fileName_b;

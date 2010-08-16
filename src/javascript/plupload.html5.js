@@ -90,7 +90,7 @@
 				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
-				multipart: dataAccessSupport || !!window.FileReader,
+				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
 				progress: hasProgress,
 				chunking: sliceSupport || dataAccessSupport
 			};
