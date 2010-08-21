@@ -126,7 +126,7 @@
 				function updateTotalProgress() {
 					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
 					$('div.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
-					$('span.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
+					$('span.plupload_upload_status', target).text(_('Uploaded %s files').replace('%s', uploader.total.uploaded + '/' + uploader.files.length));
 
 					// All files are uploaded
 					if (uploader.total.uploaded == uploader.files.length) {
@@ -292,7 +292,7 @@
 					if (uploader.state === plupload.STARTED) {
 						$('li.plupload_delete a,div.plupload_buttons', target).hide();
 						$('span.plupload_upload_status,div.plupload_progress,a.plupload_stop', target).css('display', 'block');
-						$('span.plupload_upload_status', target).text('Uploaded 0/' + uploader.files.length + ' files');
+						$('span.plupload_upload_status', target).text(_('Uploaded %s files').replace('%s', '0/' + uploader.files.length));
 					} else {
 						$('a.plupload_stop,div.plupload_progress', target).hide();
 						$('a.plupload_delete', target).css('display', 'block');
