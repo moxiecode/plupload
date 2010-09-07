@@ -254,7 +254,7 @@
 							// Blob is string so we need to fake chunking, this is not
 							// ideal since the whole file is loaded into memory
 							if (typeof(blob) == 'string') {
-								chunkBlob = chunkBlob.substring(chunk * chunkSize, chunk * chunkSize + curChunkSize);
+								chunkBlob = blob.substring(chunk * chunkSize, chunk * chunkSize + curChunkSize);
 							} else {
 								// Slice the chunk
 								chunkBlob = blob.slice(chunk * chunkSize, curChunkSize);
@@ -348,7 +348,7 @@
 
 						// Build multipart request
 						if (up.settings.multipart && features.multipart) {
-							// WebKit with multipart support Chrome 6+
+							// Has FormData support like Chrome 6+, Safari 5+, Firefox 4
 							if (!xhr.sendAsBinary) {
 								var data = new FormData();
 

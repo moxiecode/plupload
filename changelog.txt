@@ -6,8 +6,10 @@ Version 1.2.x (2010-xx-xx)
 	Added new image scaling method for the Flash runtime contributed by rcoopman.
 	Added new alert error message if the user selected invalid files.
 	Added new automatic unique name generation to the example.php script. Contributed by Brandon Kelly.
+	Changed so the default upload method is multipart and the default chunk size is 0.
 	Fixed progress issue with the HTML5 runtime running on Gecko.
 	Fixed so longer extensions can be used such as .tar.gz.
+	Fixed so the file extension is retained when using the unique_names option.
 Version 1.2.3 (2010-05-27)
 	Added new drag/drop support for HTML5 running on Chrome beta.
 	Added new multipart state for the features object. It's now possible to detect multipart support.

@@ -97,7 +97,7 @@ package com.plupload {
 		 * @param settings Settings object.
 		 */
 		public function upload(url:String, settings:Object):void {
-			if(this.canUseSimpleUpload(settings)) {
+			if (this.canUseSimpleUpload(settings)) {
 				this.simpleUpload(url, settings);
 			} else {
 				this.advancedUpload(url, settings);
@@ -110,11 +110,11 @@ package com.plupload {
 			var multipart:Boolean = new Boolean(settings["multipart"]);
 			var resize:Boolean = (settings["width"] || settings["height"]);
 			var chunking:Boolean = (settings["chunk_size"] > 0);
-			return multipart && !resize && !chunking;
+
+			return (!(/\.(jpeg|jpg|png)$/i.test(this._fileName)) || !resize) && multipart && !chunking;
 		}
 
 		public function simpleUpload(url:String, settings:Object):void {
-
 			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String;
 
 			file._postvars = settings["multipart_params"];

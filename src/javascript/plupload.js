@@ -587,6 +587,7 @@
 		// Default settings
 		settings = plupload.extend({
 			chunk_size : 0,
+			multipart : true,
 			multi_selection : true,
 			file_data_name : 'file',
 			filters : []
@@ -778,7 +779,13 @@
 				// Generate unique target filenames
 				if (settings.unique_names) {
 					self.bind("UploadFile", function(up, file) {
-						file.target_name = file.id + '.tmp';
+						var matches = file.name.match(/\.([^.]+)$/), ext = "tmp";
+
+						if (matches) {
+							ext = matches[1];
+						}
+
+						file.target_name = file.id + '.' + ext;
 					});
 				}
 
