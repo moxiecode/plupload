@@ -274,7 +274,7 @@
 						// Do we have upload progress support
 						if (upload) {
 							upload.onprogress = function(e) {
-								file.loaded = loaded + e.loaded - multipartDeltaSize;
+								file.loaded = Math.min(file.size, loaded + e.loaded - multipartDeltaSize); // Loaded can be larger than file size due to multipart encoding
 								up.trigger('UploadProgress', file);
 							};
 						}
