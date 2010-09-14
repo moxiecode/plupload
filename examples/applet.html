@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <meta name="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
+    </script>
+    
+    <script type="text/javascript" src="../src/javascript/plupload.js"></script>
+    <script type="text/javascript" src="../src/javascript/plupload.java.js"></script>
+  </head>
+  <body>
+
+<script type="text/javascript">
+// Custom example logic
+
+var foo = {
+bar: function(){alert("bar");}
+}
+
+$(function() {
+
+	var uploader = new plupload.Uploader({
+		runtimes : 'java',
+		browse_button : 'pickfiles',
+		container : 'container',
+		max_file_size : '10mb',
+    chunk_size: '10mb',
+		url : 'localhost:5000',
+		applet_url : '../src/java/plupload/bin/'
+	});
+
+	uploader.bind('Init', function(up, params) {
+		$('#filelist').html("<div>Current runtime: " + params.runtime + "</div>");
+	});
+
+	$('#uploadfiles').click(function(e) {
+		uploader.start();
+		e.preventDefault();
+	});
+
+	uploader.init();
+
+	uploader.bind('FilesAdded', function(up, files) {
+		$.each(files, function(i, file) {
+			$('#filelist').append(
+				'<div id="' + file.id + '">' +
+				file.name + ' (' + plupload.formatSize(file.size) + ') <b></b>' +
+			'</div>');
+		});
+
+		up.refresh(); // Reposition Flash/Silverlight
+	});
+
+	uploader.bind('UploadProgress', function(up, file) {
+		$('#' + file.id + " b").html(file.percent + "%");
+	});
+
+	uploader.bind('Error', function(up, err) {
+		$('#filelist').append("<div>Error: " + err.code +
+			", Message: " + err.message +
+			(err.file ? ", File: " + err.file.name : "") +
+			"</div>"
+		);
+
+		up.refresh();
+	});
+
+	uploader.bind('FileUploaded', function(up, file) {
+		$('#' + file.id + " b").html("100%");
+	});
+});
+</script>
+
+<h3>Custom example</h3>
+<div id="container">
+	<div id="filelist">No runtime found.</div>
+	<br />
+	<a id="pickfiles" href="#">[Select files]</a>
+	<a id="uploadfiles" href="#">[Upload files]</a>
+</div>
+
+</html>
