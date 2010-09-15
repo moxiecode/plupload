@@ -4,31 +4,31 @@
 
   plupload.applet = {
 		trigger : function(id, name, obj) {
-      console.log(arguments);
+      console.log(id, name, obj);
 			// Detach the call so that error handling in the browser is presented correctly
 			setTimeout(function() {
-        console.log('applet:trigger', name);
 				var uploader = uploadInstances[id], i, args;
 				if (uploader) {
 					uploader.trigger('applet:' + name, obj);
 				}
 			}, 0);
-		}
+		},
+    foo: function(){
+      alert('via foo');
+    }
   };
 
   plupload.runtimes.Applet = plupload.addRuntime("java", {
     getFeatures : function() {
-      console.log('java get features');
 			return {
 				// jpgresize: true,
 				// pngresize: true,
 				chunks: true,
-				progress: true,
-				multipart: true
+				progress: true
+				// multipart: true
 			};
 		},		
     init : function(uploader, callback) {
-      console.log('init');
 			var browseButton, 
           appletContainer, 
           appletVars, 
@@ -49,8 +49,8 @@
 				top : '0px',
 				background : uploader.settings.shim_bgcolor || 'transparent',
 				zIndex : 99999,
-				width : '0px',
-				height : '0px'
+				width : '100%', // Chrome doesn't init the app when zero
+				height : '100%'
 			});
 
 			appletContainer.className = 'plupload applet';
@@ -62,19 +62,29 @@
 
 			container.appendChild(appletContainer);
 
-			appletVars = '<param name="id" value="' + escape(uploader.id) + '"></param>';
+      var archive = uploader.settings.java_applet_url;
+      archive += ',' + uploader.settings.java_applet_url + '../libs/httpclient-4.0.1.jar';
+      archive += ',' + uploader.settings.java_applet_url + '../libs/httpcore-4.0.1.jar';
+      archive += ',' + uploader.settings.java_applet_url + '../libs/commons-logging-1.1.1.jar';
 
-      var archive = uploader.settings.applet_url;
-      archive += ',' + uploader.settings.applet_url + '../libs/httpclient-4.0.1.jar';
-      archive += ',' + uploader.settings.applet_url + '../libs/httpcore-4.0.1.jar';
-      archive += ',' + uploader.settings.applet_url + '../libs/commons-logging-1.1.1.jar';
-
-			appletContainer.innerHTML = '<applet id="' + uploader.id + '_applet" \
-width="100%" height="100%" \
-style="outline:0" code="plupload.Plupload" \
-archive="' + archive + '" >' +
-appletVars + 
-'</applet>';
+      var applet;
+      if(navigator.appName === "Microsoft Internet Explorer"){
+        applet = '<object id="' + uploader.id + '_applet" \
+classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"\
+width="100%" height="100%">\
+<param name="code" value="plupload.Plupload">\
+<param name="archive" value="' + archive +'">\
+<param name="id" value="' + escape(uploader.id) +'">\
+</object>';
+      }
+      else{
+        applet = '<applet id="' + uploader.id + '_applet" \
+width="100%" height="100%" code="plupload.Plupload" \
+archive="' + archive + '" >\
+<param name="id" value="' + escape(uploader.id) + '"></param>\
+</applet>';
+      }
+      appletContainer.innerHTML = applet;
 
 			function getAppletObj() {
 				return document.getElementById(uploader.id + '_applet');
@@ -99,7 +109,7 @@ appletVars +
 
 			// Wait for Flash to send init event
 			uploader.bind("Applet:Init", function() {
-        console.log('applet:init');
+        console.log("Applet:Init");
 				var lookup = {}, i, resize = uploader.settings.resize || {};
 
 				initialized = true;
@@ -109,27 +119,21 @@ appletVars +
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
 
-          try{
 					getAppletObj().uploadFile(
             lookup[file.id], 
             plupload.buildUrl(settings.url, 
             {name : file.target_name || file.name}), {
-					    chunk_size : settings.chunk_size,
+					   chunk_size : settings.chunk_size,
             // TODO: Image resizing in applet
-						// width : resize.width,
-						// height : resize.height,
-						// quality : resize.quality || 90,
-						  multipart : settings.multipart,
-						  multipart_params : settings.multipart_params,
+						  // width : resize.width,
+						  // height : resize.height,
+						  // quality : resize.quality || 90,
+						  // multipart : settings.multipart,
+						  // multipart_params : settings.multipart_params,
 						  file_data_name : settings.file_data_name,
 						  // format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png',
 						  headers : settings.headers
-						  // urlstream_upload : settings.urlstream_upload
 					  });
-          } catch (x) {
-            console.error('exception',x);
-          }
-
 				});
 
 				uploader.bind("Applet:UploadProcess", function(up, applet_file) {
@@ -139,7 +143,6 @@ appletVars +
 						file.loaded = applet_file.loaded;
 						file.size = applet_file.size;
             
-            console.log('Applet:UploadProcess', 'loaded', file.loaded, 'size', file.size);
 						up.trigger('UploadProgress', file);
 					}
 				});
@@ -152,8 +155,6 @@ appletVars +
 						chunks : info.chunks,
 						response : info.text
 					};
-
-          console.log('args', chunkArgs);
 
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
@@ -247,6 +248,7 @@ appletVars +
 					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
 					browseSize = plupload.getSize(browseButton);
 
+          // reposition applet
 					plupload.extend(document.getElementById(up.id + '_applet_container').style, {
 						top : browsePos.y + 'px',
 						left : browsePos.x + 'px',
