@@ -21,6 +21,7 @@ body {background: #9A7C5F;}
 <script type="text/javascript" src="../src/javascript/plupload.browserplus.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.html4.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
+<script type="text/javascript" src="../src/javascript/plupload.java.js"></script>
 <script type="text/javascript" src="../src/javascript/jquery.plupload.queue.js"></script>
 <script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>
 <script>
@@ -38,7 +39,6 @@ $(function() {
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
 		],
-
 		// Flash settings
 		flash_swf_url : '../js/plupload.flash.swf'
 	});
@@ -121,6 +121,18 @@ $(function() {
 		]
 	});
 
+	// Setup Java version
+	$("#java_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'java',
+		url : 'upload.php',
+		// max_file_size : '1000mb',
+		chunk_size : '1mb',
+		unique_names : true,
+		//resize : {width : 320, height : 240, quality : 90},
+		applet_url : '../src/java/plupload/bin/'
+	});
+
 	// Custom example
 	var uploader = new plupload.Uploader({
 		 runtimes : 'gears,html5,flash,silverlight,browserplus',
@@ -184,6 +196,12 @@ $(function() {
 			<input id="uploadfiles" type="button" value="Upload" />
 		</div>
 	</div>
+
+	<div style="float: left; margin-right: 20px">
+		<h3>Java runtime</h3>
+		<div id="java_uploader" style="width: 450px; height: 330px;">You browser doesn't have Java installed.</div>
+	</div>
+
 
 	<br style="clear: both" />
 
