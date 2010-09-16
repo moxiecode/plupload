@@ -27,7 +27,7 @@ if(os.environ['SERVER_SOFTWARE'] == 'development'):
 user = os.environ['REMOTE_USER']
 root_path = os.path.abspath(os.path.dirname(__file__))
 upload_dir = None
-BUF_LEN = 16 * 1024    
+buf_len = 16 * 1024    
 
 class Routes(object):
     
@@ -59,23 +59,38 @@ def expose(url_reg_exp):
 
 routes = Routes()
 
+def write_meta_information_to_file(meta_file, md5sum, chunk, chunks):
+    """Write meta total md5sum and chunk number to file
+
+    Args:
+       meta_file: file to write to
+       md5sum: sum of uploaded chunk
+       chunk: chunk number
+       chunks: total chunk number
+    """
+    status = "uploading" if chunk < (chunks - 1) else "finished"
+    upload_meta_data = "status=%s&chunk=%s&chunks=%s&md5=%s" % (status, chunk,chunks,md5sum)
+    try:
+        meta_file.write(upload_meta_data)
+    finally:
+        meta_file.close()
+    
 def write_to_file(file, stream):
     """Write bytes to file
 
     Args:
        stream: 
        file: file to write bytes to
+       meta_file: file to write meta information to
 
     Returns:
        md5 hexdigest of the bytes written. 
     """
     md5 = hashlib.md5()
-    while 1:
-        buf = stream.read(BUF_LEN)
-        if not buf:
-            break
-        file.write(buf)
-        md5.update(buf)
+    buf = stream.read(buf_len)
+    file.write(buf)
+    md5.update(buf)
+    file.close()
     return md5.hexdigest()
 
 def upload_form(request):
@@ -85,11 +100,15 @@ def upload_form(request):
 @expose('^/$')
 def upload(request):
     if request.method != "POST":
-        return upload_form(request)
+        return probe(request)
         
     filename = request.args['name']
-    md5client = request.args['md5']
-    chunk = request.args['chunk']
+    md5chunk = request.args['md5chunk']
+    md5total = request.args['md5total']
+    chunk = int(request.args['chunk'])
+    global buf_len
+    buf_len = int(request.args['chunk_size'])
+    chunks = int(request.args['chunks'])
     
     dst = os.path.join(upload_dir,filename)
     if chunk == 0:
@@ -98,11 +117,29 @@ def upload(request):
         f = file(dst, 'ab')
 
     md5server = write_to_file(f, request.stream)
-    f.close()
-    if md5client != md5server:
+
+    f_meta = file(dst + '.meta', 'w') 
+    write_meta_information_to_file(f_meta, md5total, chunk, chunks)
+
+    if md5chunk != md5server:
+        print "Checksum error"
         raise BadRequest("Checksum error")
     return Response('uploaded')
 
+def probe(request):
+    filename = request.args['name']
+
+    dst = os.path.join(upload_dir, filename)
+    if(os.path.exists(dst)):
+        f_meta = file(dst + '.meta', 'r')
+        try:
+            data = f_meta.read()
+            return Response(data, content_type="application/x-www-form-urlencoded")
+        finally:
+            f_meta.close()
+    else:
+        return Response("status=unknown", content_type="application/x-www-form-urlencoded")
+    
 @Request.application
 def app(request):
     try:
