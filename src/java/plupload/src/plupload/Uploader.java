@@ -58,7 +58,11 @@ public class Uploader {
 
 	public static String hexdigest(MessageDigest md5) {
 		StringBuffer hex = new StringBuffer();
-		byte[] digest = md5.digest();
+		byte[] digest = null;
+		try{
+			digest = ((MessageDigest)md5.clone()).digest();		
+		}
+		catch(CloneNotSupportedException e){}
 		for (int i = 0; i < digest.length; i++) {
 			hex.append(Integer.toHexString((digest[i] >> 4) & 0x0f));
 			hex.append(Integer.toHexString(digest[i] & 0x0f));

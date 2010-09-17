@@ -60,11 +60,11 @@ def expose(url_reg_exp):
 routes = Routes()
 
 def write_meta_information_to_file(meta_file, md5sum, chunk, chunks):
-    """Write meta total md5sum and chunk number to file
+    """Writes meta info about the upload, i.d., md5sum, chunk number ...
 
     Args:
        meta_file: file to write to
-       md5sum: sum of uploaded chunk
+       md5sum: checksum of all uploaded chunks
        chunk: chunk number
        chunks: total chunk number
     """

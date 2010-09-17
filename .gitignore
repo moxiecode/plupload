@@ -17,3 +17,5 @@ jslint.xml
 *.suo
 *.user
 .DS_Store
+*.pyc
+*.ropeproject

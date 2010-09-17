@@ -4,8 +4,8 @@
 
   plupload.applet = {
 		trigger : function(id, name, obj) {
-      console.log(id, name, obj);
 			// Detach the call so that error handling in the browser is presented correctly
+      // Why is that?
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
 				if (uploader) {
@@ -121,15 +121,18 @@ archive="' + archive + '" >\
             
 						up.trigger('UploadProgress', file);
 					}
+          else{
+            alert("uploadProcess status failed");
+          }
 				});
 
-				uploader.bind("Applet:UploadChunkComplete", function(up, info) {
-					var chunkArgs, file = up.getFile(lookup[info.id]);
+				uploader.bind("Applet:UploadChunkComplete", function(up, java_file) {
+					var chunkArgs, file = up.getFile(lookup[java_file.id]);
 
 				  chunkArgs = {
-						chunk : info.chunk,
-						chunks : info.chunks,
-						response : info.text
+						chunk : java_file.chunk,
+						chunks : java_file.chunks// ,
+						// response : java_file.text
 					};
 
 					up.trigger('ChunkUploaded', file, chunkArgs);
@@ -140,13 +143,41 @@ archive="' + archive + '" >\
 				}
 
 					// Last chunk then dispatch FileUploaded event
-					if (info.chunk == info.chunks /*- 1 */) {
+					if (java_file.chunk == java_file.chunks /*- 1 */) {
 						file.status = plupload.DONE;
 
 						up.trigger('FileUploaded', file, {
-							response : info.text
+							response : "File uploaded"//java_file.text
 						});
 					}
+				});
+
+				uploader.bind("Applet:SkipUploadChunkComplete", function(up, java_file) {
+					var chunkArgs, file = up.getFile(lookup[java_file.id]);
+
+				  chunkArgs = {
+						chunk : java_file.chunk,
+						chunks : java_file.chunks//,
+						// response : info.text
+					};
+
+					up.trigger('ChunkUploaded', file, chunkArgs);
+
+					// Stop upload if file is marked as failed
+					if (file.status != plupload.FAILED) {
+            if(java_file.chunk <= java_file.server_chunk){
+						  getAppletObj().skipNextChunk();	
+            }
+            else{
+            	var is_valid = getAppletObj().checkIntegrity();
+              if(is_valid){
+                getAppletObj().uploadNextChunk();	
+              }
+              else{
+                alert("File is changed: Maybe reupload");
+              }
+            }
+				  }
 				});
 
 				uploader.bind("Applet:SelectFiles", function(up, selected_files) {

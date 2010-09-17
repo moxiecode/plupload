@@ -29,12 +29,14 @@ public class PluploadFile {
 	public long size;
 	public long chunks;
 	public int chunk;
+	public int server_chunk;
 	public File file;
 	public int chunk_size;
 	public byte[] buffer;
 	public InputStream stream;
 	public URI uri;
 	public int loaded;
+	public String md5hex_server_total;
 	public String md5hex_chunk;
 	public String md5hex_total;
 	MessageDigest md5_total;
@@ -65,45 +67,48 @@ public class PluploadFile {
 		Map<String, String> result = Uploader.probe(getProbeUri());
 
 		if (result.get("status").equals("uploading")) {
-			System.out.println("existing file on server");
-			int server_chunk = Integer.parseInt(result.get("chunk"));
-			String md5_total_server = result.get("md5");
-			while (chunk <= server_chunk) {
-				int bytes_read = stream.read(buffer);
-				if (-1 == bytes_read) {
-					break;
-				}
-				md5_total.update(buffer, 0, bytes_read);
-				loaded += bytes_read;
-				chunk++;
-			}
-			if (Uploader.hexdigest(md5_total) != md5_total_server) {
-				System.out.println("Was:" + Uploader.hexdigest(md5_total));
-				System.out.println("Expected:" + md5_total_server);
-				System.out.println("chunk: " + chunk);
-				throw new IOException("File changed should reupload everything!");
-			}
+			server_chunk = Integer.parseInt(result.get("chunk"));
+			md5hex_server_total = result.get("md5");
+			skipNextChunk();
 		} else if (result.get("status").equals("finished")) {
 			throw new IOException("File is already uploaded to server!");
+		} else{
+			uploadNextChunk();	
 		}
+	}
+	
+	public void skipNextChunk() throws IOException{
+		int bytes_read = stream.read(buffer);
+		// the finished check is done in JS
+		
+		md5_total.update(buffer, 0, bytes_read);
+		
+		loaded += bytes_read;
+		chunk++;
 
-		uploadNextChunk();
+		uploadProcessAction();
+		skipChunkCompleteAction();
+	}
+	
+	public boolean checkIntegrity(){
+		return Uploader.hexdigest(md5_total).equals(md5hex_server_total);
 	}
 
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
 
 		int bytes_read = stream.read(buffer);
-		if (bytes_read == -1) {
-			return;
-		}
+		// the finished check is done in JS
+		
 		MessageDigest md5_chunk = MessageDigest.getInstance("MD5");
+		md5_chunk.reset();
+		
 		md5_chunk.update(buffer, 0, bytes_read);
 		md5_total.update(buffer, 0, bytes_read);
 
 		md5hex_total = Uploader.hexdigest(md5_total);
 		md5hex_chunk = Uploader.hexdigest(md5_chunk);
-		
+
 		Uploader.sendChunk(buffer, bytes_read, chunk, chunks, name, getUploadUri());
 
 		loaded += bytes_read;
@@ -135,6 +140,12 @@ public class PluploadFile {
 		file_upload_listeners.add(listener);
 	}
 
+	private void skipChunkCompleteAction() {
+		for (FileUploadListener f : file_upload_listeners) {
+			f.skipChunkComplete(this);
+		}
+		
+	}
 	private void chunkCompleteAction() {
 		for (FileUploadListener f : file_upload_listeners) {
 			f.uploadChunkComplete(this);

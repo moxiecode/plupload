@@ -19,8 +19,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class Plupload extends JApplet implements MouseListener,
-		FileUploadListener {
+public class Plupload extends JApplet implements MouseListener {
 	
 	// window.console
 	static JSObject console;
@@ -30,6 +29,7 @@ public class Plupload extends JApplet implements MouseListener,
 	static final String SELECT_FILE = "SelectFiles"; // we only select one at a time
 	static final String UPLOAD_PROCESS = "UploadProcess";
 	static final String UPLOAD_CHUNK_COMPLETE = "UploadChunkComplete";
+	static final String SKIP_UPLOAD_CHUNK_COMPLETE = "SkipUploadChunkComplete";
 
 	// plupload.applet
 	JSObject plupload;
@@ -99,6 +99,11 @@ public class Plupload extends JApplet implements MouseListener,
 			public void uploadChunkComplete(PluploadFile file) {
 				fireEvent(UPLOAD_CHUNK_COMPLETE, file);
 			}
+
+			@Override
+			public void skipChunkComplete(PluploadFile file) {
+				fireEvent(SKIP_UPLOAD_CHUNK_COMPLETE, file);
+			}
 		});
 
 		fireEvent(SELECT_FILE, new Object[] { file });
@@ -129,6 +134,25 @@ public class Plupload extends JApplet implements MouseListener,
 		} catch (Exception e) {
 			sendError(e, Integer.toString(this.current_file.id));
 		}
+	}
+	
+	public void skipNextChunk() {
+		try {
+			if (this.current_file != null) {
+				this.current_file.skipNextChunk();
+			}
+		} catch (IOException e) {
+			sendIOError(e, Integer.toString(this.current_file.id));
+		} catch (Exception e) {
+			sendError(e, Integer.toString(this.current_file.id));
+		}
+	}
+	
+	public boolean checkIntegrity(){
+		if (this.current_file != null) {
+			return this.current_file.checkIntegrity();
+		}
+		return false;
 	}
 
 	public void removeFile(String id) {
@@ -190,15 +214,21 @@ public class Plupload extends JApplet implements MouseListener,
 		e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 	}
 
-	@Override
-	public void uploadChunkComplete(PluploadFile file) {
-		fireEvent(UPLOAD_CHUNK_COMPLETE, file);
-	}
-
-	@Override
-	public void uploadProcess(PluploadFile file) {
-		fireEvent(UPLOAD_PROCESS, file);
-	}
+//	@Override
+//	public void uploadChunkComplete(PluploadFile file) {
+//		fireEvent(UPLOAD_CHUNK_COMPLETE, file);
+//	}
+//
+//	@Override
+//	public void uploadProcess(PluploadFile file) {
+//		fireEvent(UPLOAD_PROCESS, file);
+//	}
+//	
+//	@Override
+//	public void skipChunkComplete(PluploadFile file) {
+//		fireEvent(SKIP_UPLOAD_CHUNK_COMPLETE, file);
+//		
+//	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
@@ -211,4 +241,6 @@ public class Plupload extends JApplet implements MouseListener,
 	@Override
 	public void mouseReleased(MouseEvent e) {
 	}
+
+	
 }
