@@ -10,12 +10,6 @@
   <body>
 
 <script type="text/javascript">
-// Custom example logic
-
-var foo = {
-bar: function(){alert("bar");}
-}
-
 $(function() {
 
 	var uploader = new plupload.Uploader({
@@ -25,7 +19,7 @@ $(function() {
 		max_file_size : '10mb',
     chunk_size: '10mb',
 		url : 'localhost:5000',
-		applet_url : '../src/java/plupload/bin/'
+		java_applet_url : '../src/java/plupload/bin/'
 	});
 
 	uploader.bind('Init', function(up, params) {
@@ -56,7 +50,7 @@ $(function() {
 
 	uploader.bind('Error', function(up, err) {
 		$('#filelist').append("<div>Error: " + err.code +
-			", Message: " + err.message +
+			", Message: " + err.details +
 			(err.file ? ", File: " + err.file.name : "") +
 			"</div>"
 		);
@@ -74,7 +68,7 @@ $(function() {
 <div id="container">
 	<div id="filelist">No runtime found.</div>
 	<br />
-	<a id="pickfiles" href="#">[Select files]</a>
+	<a id="pickfiles" href="#">[Select files ...]</a>
 	<a id="uploadfiles" href="#">[Upload files]</a>
 </div>
 
