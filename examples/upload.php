@@ -24,6 +24,8 @@
 
 	// 5 minutes execution time
 	@set_time_limit(5 * 60);
+
+	// Uncomment this one to fake upload time
 	// usleep(5000);
 
 	// Get parameters
@@ -34,8 +36,8 @@
 	// Clean the fileName for security reasons
 	$fileName = preg_replace('/[^\w\._]+/', '', $fileName);
 
-	// Make sure the fileName is unique
-	if (file_exists($targetDir . DIRECTORY_SEPARATOR . $fileName)) {
+	// Make sure the fileName is unique but only if chunking is disabled
+	if ($chunks < 2 && file_exists($targetDir . DIRECTORY_SEPARATOR . $fileName)) {
 		$ext = strrpos($fileName, '.');
 		$fileName_a = substr($fileName, 0, $ext);
 		$fileName_b = substr($fileName, $ext);
@@ -72,6 +74,7 @@
 	if (isset($_SERVER["CONTENT_TYPE"]))
 		$contentType = $_SERVER["CONTENT_TYPE"];
 
+	// Handle non multipart uploads older WebKit versions didn't support multipart in HTML5
 	if (strpos($contentType, "multipart") !== false) {
 		if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
 			// Open temp file
@@ -87,7 +90,7 @@
 					die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
 
 				fclose($out);
-				unlink($_FILES['file']['tmp_name']);
+				@unlink($_FILES['file']['tmp_name']);
 			} else
 				die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
 		} else
