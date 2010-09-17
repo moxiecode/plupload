@@ -102,25 +102,29 @@
 				uploaders[id] = uploader;
 
 				function handleStatus(file) {
-					var actionClass;
+					var actionClass, title;
 
 					if (file.status == plupload.DONE) {
 						actionClass = 'plupload_done';
+            title = "done";
 					}
 
 					if (file.status == plupload.FAILED) {
 						actionClass = 'plupload_failed';
+            title = "failed: " + file.error_message;
 					}
 
 					if (file.status == plupload.QUEUED) {
 						actionClass = 'plupload_delete';
+            title = "queued";
 					}
 
 					if (file.status == plupload.UPLOADING) {
 						actionClass = 'plupload_uploading';
+            title = "uploading";
 					}
 
-					$('#' + file.id).attr('class', actionClass).find('a').css('display', 'block');
+					$('#' + file.id).attr('class', actionClass).find('a').css('display', 'block').attr('title', title);
 				}
 
 				function updateTotalProgress() {
@@ -274,6 +278,7 @@
 
 						if (err.details) {
 							message += " (" + err.details + ")";
+							alert(_("Error: ") + message); 
 						}
 
 						if (err.code == plupload.FILE_SIZE_ERROR) {
@@ -284,7 +289,8 @@
 							alert(_("Error: Invalid file extension: ") + file.name);
 						}
 
-						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
+            // FIXME: never takes effect, since its rerendered! So commented out!
+						//$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
 				});
 

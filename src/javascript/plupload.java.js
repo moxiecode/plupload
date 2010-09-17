@@ -12,10 +12,7 @@
 					uploader.trigger('applet:' + name, obj);
 				}
 			}, 0);
-		},
-    foo: function(){
-      alert('via foo');
-    }
+		}
   };
 
   plupload.runtimes.Applet = plupload.addRuntime("java", {
@@ -67,24 +64,11 @@
       archive += ',' + uploader.settings.java_applet_url + '../libs/httpcore-4.0.1.jar';
       archive += ',' + uploader.settings.java_applet_url + '../libs/commons-logging-1.1.1.jar';
 
-      var applet;
-      if(navigator.appName === "Microsoft Internet Explorer"){
-        applet = '<object id="' + uploader.id + '_applet" \
-classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"\
-width="100%" height="100%">\
-<param name="code" value="plupload.Plupload">\
-<param name="archive" value="' + archive +'">\
-<param name="id" value="' + escape(uploader.id) +'">\
-</object>';
-      }
-      else{
-        applet = '<applet id="' + uploader.id + '_applet" \
+      appletContainer.innerHTML = '<applet id="' + uploader.id + '_applet" \
 width="100%" height="100%" code="plupload.Plupload" \
 archive="' + archive + '" >\
 <param name="id" value="' + escape(uploader.id) + '"></param>\
 </applet>';
-      }
-      appletContainer.innerHTML = applet;
 
 			function getAppletObj() {
 				return document.getElementById(uploader.id + '_applet');
@@ -120,18 +104,10 @@ archive="' + archive + '" >\
 					var settings = up.settings;
 
 					getAppletObj().uploadFile(
-            lookup[file.id], 
-            plupload.buildUrl(settings.url, 
-            {name : file.target_name || file.name}), {
-					   chunk_size : settings.chunk_size,
-            // TODO: Image resizing in applet
-						  // width : resize.width,
-						  // height : resize.height,
-						  // quality : resize.quality || 90,
-						  // multipart : settings.multipart,
-						  // multipart_params : settings.multipart_params,
+            lookup[file.id], settings.url, {
+					    chunk_size : settings.chunk_size,
+              resume: settings.java_resume, 
 						  file_data_name : settings.file_data_name,
-						  // format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png',
 						  headers : settings.headers
 					  });
 				});

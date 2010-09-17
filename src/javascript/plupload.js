@@ -811,6 +811,7 @@
 					// Set failed status if an error occured on a file
 					if (err.file) {
 						err.file.status = plupload.FAILED;
+            err.file.error_message = err.details;
 						calc();
 
 						// Upload next file but detach it from the error event
@@ -1167,6 +1168,14 @@
 	 */
 	plupload.File = function(id, name, size) {
 		var self = this; // Setup alias for self to reduce code size when it's compressed
+
+		/**
+		 * Error message.
+		 *
+		 * @property error_message
+		 * @type String
+		 */
+    self.error_message = "";
 
 		/**
 		 * File id this is a globally unique id for the specific file.

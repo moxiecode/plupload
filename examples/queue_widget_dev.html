@@ -23,7 +23,7 @@ body {background: #9A7C5F;}
 <script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.java.js"></script>
 <script type="text/javascript" src="../src/javascript/jquery.plupload.queue.js"></script>
-<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>
+<!-- <script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
 <script>
 $(function() {
 	// Setup flash version
@@ -129,8 +129,8 @@ $(function() {
 		// max_file_size : '1000mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		//resize : {width : 320, height : 240, quality : 90},
-		applet_url : '../src/java/plupload/bin/'
+		// resize : {width : 320, height : 240, quality : 90},
+		java_applet_url : '../src/java/plupload/bin/'
 	});
 
 	// Custom example
@@ -197,16 +197,14 @@ $(function() {
 		</div>
 	</div>
 
+	<input type="submit" value="Send" />
+
 	<div style="float: left; margin-right: 20px">
 		<h3>Java runtime</h3>
 		<div id="java_uploader" style="width: 450px; height: 330px;">You browser doesn't have Java installed.</div>
 	</div>
 
-
 	<br style="clear: both" />
-
-	<input type="submit" value="Send" />
 </form>
-
 </body>
 </html>
