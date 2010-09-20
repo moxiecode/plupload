@@ -163,7 +163,7 @@ archive="' + archive + '" >\
 					// Stop upload if file is marked as failed
 					if (file.status != plupload.FAILED) {
             var applet = getAppletObj();
-            if(java_file.chunk <= java_file.server_chunk){
+            if(java_file.chunk <= java_file.chunk_server){
 						  applet.skipNextChunk();	
             }
             else{
