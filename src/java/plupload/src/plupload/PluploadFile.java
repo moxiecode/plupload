@@ -31,7 +31,7 @@ public class PluploadFile {
 	public long chunks;			// chunks uploaded at client
 	public int chunk_server; 	// chunks uploaded at server
 	public File file;
-	public int loaded; 			// bytes uploaded
+	public long loaded;			// bytes uploaded
 	public String name;
 	public boolean overwrite = false;
 	public long size;			
