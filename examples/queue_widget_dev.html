@@ -125,12 +125,9 @@ $(function() {
 	$("#java_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'java',
-		url : 'upload.php',
-		// max_file_size : '1000mb',
+    url : 'http://localhost:5000',
+		java_applet_url : '../src/java/plupload/bin/',
 		chunk_size : '1mb',
-		unique_names : true,
-		// resize : {width : 320, height : 240, quality : 90},
-		java_applet_url : '../src/java/plupload/bin/'
 	});
 
 	// Custom example
@@ -197,7 +194,6 @@ $(function() {
 		</div>
 	</div>
 
-	<input type="submit" value="Send" />
 
 	<div style="float: left; margin-right: 20px">
 		<h3>Java runtime</h3>
@@ -205,6 +201,8 @@ $(function() {
 	</div>
 
 	<br style="clear: both" />
+
+	<input type="submit" value="Send" />
 </form>
 </body>
 </html>
