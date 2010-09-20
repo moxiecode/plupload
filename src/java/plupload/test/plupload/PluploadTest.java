@@ -22,7 +22,7 @@ public class UploaderTest {
 
 	@Test
 	public void testGetQueryParams() {
-		String query = Uploader.getQueryParams(1, 1, 1024, "abc", "dfg", "file.img");
+		String query = Http.getQueryParams(1, 1, 1024, "abc", "dfg", "file.img");
 		System.out.println(query);
 		assertEquals(query, "chunk=1&chunks=1&chunk_size=1024&md5chunk=dfg&md5total=abc&name=file.img");
 	}
@@ -40,7 +40,7 @@ public class UploaderTest {
 			}
 			md5.update(buffer, 0, bytes_read);
 		}
-		String hexdigest = Uploader.hexdigest(md5);
+		String hexdigest = HashUtil.hexdigest(md5);
 		assertEquals(hexdigest, "55fb6115c4ce1b41af858f56da5d729d");
 	}
 
