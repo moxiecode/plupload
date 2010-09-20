@@ -105,10 +105,7 @@ archive="' + archive + '" >\
 
 					getAppletObj().uploadFile(
             lookup[file.id], settings.url, {
-					    chunk_size : settings.chunk_size,
-              resume: settings.java_resume, 
-						  file_data_name : settings.file_data_name,
-						  headers : settings.headers
+					    chunk_size : settings.chunk_size
 					  });
 				});
 
@@ -165,16 +162,19 @@ archive="' + archive + '" >\
 
 					// Stop upload if file is marked as failed
 					if (file.status != plupload.FAILED) {
+            var applet = getAppletObj();
             if(java_file.chunk <= java_file.server_chunk){
-						  getAppletObj().skipNextChunk();	
+						  applet.skipNextChunk();	
             }
             else{
-            	var is_valid = getAppletObj().checkIntegrity();
+            	var is_valid = applet.checkIntegrity();
               if(is_valid){
-                getAppletObj().uploadNextChunk();	
+                applet.uploadNextChunk();	
               }
               else{
-                alert("File is changed: Maybe reupload");
+                // file changed, reupload everything
+                java_file.overwrite = true;
+                applet.upload();
               }
             }
 				  }
