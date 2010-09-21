@@ -58,18 +58,26 @@
 			}
 
 			container.appendChild(appletContainer);
+      
+      var url = uploader.settings.java_applet_url;
+      var base_url = url.slice(0, url.lastIndexOf('/'));
+      var archive = url.slice(url.lastIndexOf('/') + 1);
 
-      var archive = uploader.settings.java_applet_url;
-      archive += ',' + uploader.settings.java_applet_url + '../libs/httpclient-4.0.1.jar';
-      archive += ',' + uploader.settings.java_applet_url + '../libs/httpcore-4.0.1.jar';
-      archive += ',' + uploader.settings.java_applet_url + '../libs/commons-logging-1.1.1.jar';
-
+      // archive += ',' + uploader.settings.java_applet_base_url + '/libs/httpclient-4.0.1.jar';
+      // archive += ',' + uploader.settings.java_applet_base_url + '/libs/httpcore-4.0.1.jar';
+      // archive += ',' + uploader.settings.java_applet_base_url + '/libs/commons-logging-1.1.1.jar';
+      
       appletContainer.innerHTML = '<applet id="' + uploader.id + '_applet" \
 width="100%" height="100%" code="plupload.Plupload" \
-archive="' + archive + '" >\
+codebase="' + base_url + '" archive="' + archive + '" >\
 <param name="id" value="' + escape(uploader.id) + '"></param>\
 </applet>';
 
+      console.log('<applet id="' + uploader.id + '_applet" \
+width="100%" height="100%" code="plupload.Plupload" \
+codebase="' + base_url + '" archive="' + archive + '" >\
+<param name="id" value="' + escape(uploader.id) + '"></param>\
+</applet>');
 			function getAppletObj() {
 				return document.getElementById(uploader.id + '_applet');
 			}
@@ -91,9 +99,8 @@ archive="' + archive + '" >\
 			// Fix IE memory leaks
 			browseButton = appletContainer = null;
 
-			// Wait for Flash to send init event
+			// Wait for Applet to send init event
 			uploader.bind("Applet:Init", function() {
-        console.log("Applet:Init");
 				var lookup = {}, i, resize = uploader.settings.resize || {};
 
 				initialized = true;
@@ -102,7 +109,6 @@ archive="' + archive + '" >\
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
-
 					getAppletObj().uploadFile(
             lookup[file.id], settings.url, {
 					    chunk_size : settings.chunk_size
