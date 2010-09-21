@@ -34,6 +34,7 @@ package com.plupload {
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.errors.IllegalOperationError;
+	import flash.system.Security;
 
 	/**
 	 * This is the main class of the Plupload package.
@@ -67,6 +68,9 @@ package com.plupload {
 		 */
 		private function init(e:Event = null):void {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
+
+			// Allow upload cross domain upload
+			Security.allowDomain("*");
 
 			// Setup id
 			this.id = this.stage.loaderInfo.parameters["id"];

@@ -222,6 +222,7 @@
 				'<param name="source" value="' + uploader.settings.silverlight_xap_url + '"/>' +
 				'<param name="background" value="Transparent"/>' +
 				'<param name="windowless" value="true"/>' +
+				'<param name="enablehtmlaccess" value="true"/>' +
 				'<param name="initParams" value="id=' + uploader.id + ',filter=' + filter + '"/>' +
 				'</object>';
 
