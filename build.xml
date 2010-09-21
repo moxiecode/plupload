@@ -2,6 +2,17 @@
 <project name="Plupload" default="build" basedir=".">
 	<!-- Properties -->
 	<property description="Temp directory" name="tmp_dir" value="tmp" />
+  <property description="Java Plupload runtime directory" name="dir.java" value="src/java/plupload/"/>
+  <property environment="env"/>
+  
+  <path id="java.classpath">
+      <fileset dir="${dir.java}">
+        <include name="libs/*.jar"/>
+      </fileset>
+      <fileset dir="${env.JAVA_HOME}/jre/lib/">
+        <include name="plugin.jar"/>
+      </fileset>
+  </path>
 
 	<!-- Setup classpath for js-build-tools ant tasks -->
 	<path id="tasks.classpath">
@@ -56,6 +67,42 @@
 		</exec>
 	</target>
 
+  <target name="build-java" description="Compiles the plupload Java runtime.">
+    <mkdir dir="${dir.java}/bin"/>
+    <javac srcdir="${dir.java}/src" destdir="${dir.java}/bin">
+        <classpath refid="java.classpath"/>
+    </javac>
+    <copy todir="${dir.java}/bin/resources">
+      <fileset dir="${dir.java}/src/resources" includes="**/*" />
+    </copy>
+  </target>
+
+  <target name="clean-java" description="Cleans the Java Runtime.">
+    <delete dir="${dir.java}/bin"/>
+  </target>
+
+  <target name="jar" description="Jars the plupload Java runtime, the jar and its jar dependencies goes to the bin dir.">
+    <mkdir dir="bin"/>
+    <jar destfile="bin/plupload.java.jar" basedir="${dir.java}/bin">
+      <manifest>
+        <!-- by doing this we expect the dependencies to be in the same dir as the plupload.java.jar -->
+        <attribute name="Class-Path" value="commons-logging-1.1.1.jar httpcore-4.0.1.jar httpclient-4.0.1.jar" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="sign-jar" description="Signs the Java applet jar. Before this run: keytool -genkey -alias plupload">
+    <signjar jar="bin/plupload.java.jar" alias="plupload" storepass="abraxas" />
+  </target>
+
+  <target name="deploy-jar" depends="clean-java, build-java, jar, sign-jar">
+    <copy todir="bin">
+      <fileset dir="${dir.java}/libs">
+        <include name="*.jar"/>
+      </fileset>
+    </copy>
+  </target>
+          
 	<target name="build">
 		<!-- Concat multuple JS files together -->
 		<concat destfile="js/plupload.full.tmp.js">
