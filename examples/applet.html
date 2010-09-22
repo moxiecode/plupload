@@ -4,8 +4,8 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
     </script>
     
-    <script type="text/javascript" src="../src/javascript/plupload.js"></script>
-    <script type="text/javascript" src="../src/javascript/plupload.java.js"></script>
+    <script type="text/javascript" src="/javascript/plupload.js"></script>
+    <script type="text/javascript" src="/javascript/plupload.java.js"></script>
   </head>
   <body>
 
@@ -18,8 +18,8 @@ $(function() {
 		container : 'container',
 		max_file_size : '10mb',
     chunk_size: '10mb',
-		url : 'http://localhost:5000',
-		java_applet_url : '../src/java/plupload/bin/'
+		url : 'http://localhost:5000/upload/',
+    java_applet_url: 'applet/plupload.java.jar'
 	});
 
 	uploader.bind('Init', function(up, params) {
