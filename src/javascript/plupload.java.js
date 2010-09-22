@@ -54,6 +54,7 @@ width="' + width + '" height="' + height + '">' +
 objectParams + '\
 </applet>';
       }
+      console.log(appletHTML);
       return appletHTML; 
     }
  };
