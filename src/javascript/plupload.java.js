@@ -12,8 +12,51 @@
 					uploader.trigger('applet:' + name, obj);
 				}
 			}, 0);
-		}
-  };
+		},
+    // inspired by pulpCore http://code.google.com/p/pulpcore/
+    getObjectHTML: function(attrs) {
+      var appletHTML = "";
+
+      // Applet attributes and parameters
+      var code         = attrs.code;
+      var width        = attrs.width;
+      var height       = attrs.height;
+      var archive      = attrs.archive;
+      var codebase     = attrs.codebase;
+      var id           = attrs.id;
+
+      // Create the object tag parameters
+      var objectParams ='\
+<param name="codebase" value="' + codebase + '" />\
+<param name="archive" value="' + archive + '" />\
+<param name="id" value="' + id + '" />\
+<param name="mayscript" value="true" />\
+<param name="code" value="' + code + '" />\
+<param name="scriptable" value="true" />';
+      
+      // Create the Object tag.
+      if (navigator.appName == 'Microsoft Internet Explorer') {
+        var extraAttributes = '';
+        // Use the <object> tag instead of <applet>. IE users without Java can get the
+        // latest JRE without leaving the page or restarting the browser.
+        appletHTML = '\
+<object \
+classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" \
+codebase="http://java.sun.com/products/plugin/1.4/jinstall-14-win32.cab#Version=1,4,0,mn" \
+width="' + width + '" height="' + height + '">' +
+objectParams + '\
+</object>';
+      }
+      else {
+        appletHTML = '\
+<applet code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" \
+width="' + width + '" height="' + height + '">' +
+objectParams + '\
+</applet>';
+      }
+      return appletHTML; 
+    }
+ };
 
   plupload.runtimes.Applet = plupload.addRuntime("java", {
     getFeatures : function() {
@@ -61,23 +104,23 @@
       
       var url = uploader.settings.java_applet_url;
       var base_url = url.slice(0, url.lastIndexOf('/'));
-      var archive = url.slice(url.lastIndexOf('/') + 1);
+      // disable cache for now
+      var archive = url.slice(url.lastIndexOf('/') + 1) + '?v=' + new Date().getTime();
 
       // archive += ',' + uploader.settings.java_applet_base_url + '/libs/httpclient-4.0.1.jar';
       // archive += ',' + uploader.settings.java_applet_base_url + '/libs/httpcore-4.0.1.jar';
       // archive += ',' + uploader.settings.java_applet_base_url + '/libs/commons-logging-1.1.1.jar';
-      
-      appletContainer.innerHTML = '<applet id="' + uploader.id + '_applet" \
-width="100%" height="100%" code="plupload.Plupload" \
-codebase="' + base_url + '" archive="' + archive + '" >\
-<param name="id" value="' + escape(uploader.id) + '"></param>\
-</applet>';
 
-      console.log('<applet id="' + uploader.id + '_applet" \
-width="100%" height="100%" code="plupload.Plupload" \
-codebase="' + base_url + '" archive="' + archive + '" >\
-<param name="id" value="' + escape(uploader.id) + '"></param>\
-</applet>');
+      var attributes = {
+        codebase:base_url,
+        code: "plupload.Plupload",
+        archive: archive, 
+        width: "100%",
+        height: "100%",
+        id: uploader.id
+      };
+      appletContainer.innerHTML =  plupload.applet.getObjectHTML(attributes);
+
 			function getAppletObj() {
 				return document.getElementById(uploader.id + '_applet');
 			}
@@ -111,7 +154,8 @@ codebase="' + base_url + '" archive="' + archive + '" >\
 					var settings = up.settings;
 					getAppletObj().uploadFile(
             lookup[file.id], settings.url, {
-					    chunk_size : settings.chunk_size
+					    chunk_size : settings.chunk_size,
+					    retries: settings.retries || 3
 					  });
 				});
 
@@ -130,7 +174,9 @@ codebase="' + base_url + '" archive="' + archive + '" >\
 				});
 
 				uploader.bind("Applet:UploadChunkComplete", function(up, java_file) {
-					var chunkArgs, file = up.getFile(lookup[java_file.id]);
+					var chunkArgs, 
+              file = up.getFile(lookup[java_file.id]),
+              finished = java_file.chunk === java_file.chunks;
 
 				  chunkArgs = {
 						chunk : java_file.chunk,
@@ -141,12 +187,12 @@ codebase="' + base_url + '" archive="' + archive + '" >\
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is marked as failed
-					if (file.status != plupload.FAILED) {
+					if (file.status != plupload.FAILED && !finished) {
 						getAppletObj().uploadNextChunk();	
-				}
+				  }
 
 					// Last chunk then dispatch FileUploaded event
-					if (java_file.chunk == java_file.chunks /*- 1 */) {
+					if (finished) {
 						file.status = plupload.DONE;
 
 						up.trigger('FileUploaded', file, {
@@ -255,7 +301,7 @@ codebase="' + base_url + '" archive="' + archive + '" >\
 					var browseButton, browsePos, browseSize;
 
 					// Set file filters incase it has been changed dynamically
-					getAppletObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+					//getAppletObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
 					browseButton = document.getElementById(up.settings.browse_button);
 					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
