@@ -6,8 +6,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +22,8 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+
+import org.apache.http.client.ClientProtocolException;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
@@ -29,7 +36,7 @@ public class Plupload extends JApplet implements MouseListener {
 	// events
 	static final String CLICK = "Click";
 	static final String SELECT_FILE = "SelectFiles"; // we only select one at a
-														// time
+	// time
 	static final String UPLOAD_PROCESS = "UploadProcess";
 	static final String UPLOAD_CHUNK_COMPLETE = "UploadChunkComplete";
 	static final String SKIP_UPLOAD_CHUNK_COMPLETE = "SkipUploadChunkComplete";
@@ -51,6 +58,7 @@ public class Plupload extends JApplet implements MouseListener {
 
 	@Override
 	public void init() {
+		System.out.println("version 6");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -89,44 +97,60 @@ public class Plupload extends JApplet implements MouseListener {
 	}
 
 	// LiveConnect calls from JS
-	public void uploadFile(Integer id, String url, JSObject settings) {
+	@SuppressWarnings("unchecked")
+	public void uploadFile(final Integer id, final String url,
+			final JSObject settings) {
+		final PluploadFile file = files.get(id);
+		final int chunk_size = (Integer) settings.getMember("chunk_size");
+		final int retries = (Integer) settings.getMember("retries");
+		if (file != null) {
+			this.current_file = file;
+		}
 		try {
-			PluploadFile file = files.get(id);
-			if (file != null) {
-				this.current_file = file;
-				file.upload(url, settings);
+			// Because of LiveConnect our security privileges are degraded
+			// elevate them again.
+			AccessController.doPrivileged(new PrivilegedExceptionAction() {
+				public Object run() throws IOException, Exception {
+					file.upload(url, chunk_size, retries);
+					return null;
+				}
+			});
+		} catch (PrivilegedActionException e) {
+			Exception ex = e.getException();
+			if (ex instanceof IOException) {
+				sendIOError(ex);
+			} else if (ex instanceof Exception) {
+				sendError(ex);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			sendIOError(e, id.toString());
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
-			sendError(e, id.toString());
 		}
 	}
 
-	public void uploadNextChunk() {
+	@SuppressWarnings("unchecked")
+	public void uploadNextChunk() throws NoSuchAlgorithmException,
+			ClientProtocolException, URISyntaxException, IOException {
 		try {
 			if (this.current_file != null) {
-				this.current_file.uploadNextChunk();
+				final PluploadFile file = this.current_file;
+				file.uploadNextChunk();
 			}
 		} catch (IOException e) {
-			sendIOError(e, Integer.toString(this.current_file.id));
+			sendIOError(e);
 		} catch (Exception e) {
-			sendError(e, Integer.toString(this.current_file.id));
+			sendError(e);
 		}
 	}
 
-	public void skipNextChunk() {
+	@SuppressWarnings("unchecked")
+	public void skipNextChunk() throws IOException {
 		try {
 			if (this.current_file != null) {
-				this.current_file.skipNextChunk();
+				final PluploadFile file = this.current_file;
+				file.skipNextChunk();
 			}
 		} catch (IOException e) {
-			sendIOError(e, Integer.toString(this.current_file.id));
+			sendIOError(e);
 		} catch (Exception e) {
-			sendError(e, Integer.toString(this.current_file.id));
+			sendError(e);
 		}
 	}
 
@@ -145,7 +169,7 @@ public class Plupload extends JApplet implements MouseListener {
 	public void setFileFilters(String[] filters, boolean multi) {
 		// TODO:
 	}
-	
+
 	public boolean checkIntegrity() {
 		return this.current_file.checkIntegrity();
 	}
@@ -158,16 +182,19 @@ public class Plupload extends JApplet implements MouseListener {
 		plupload.call("trigger", args);
 	}
 
-	public void sendIOError(Exception e, String fileId) {
-		fireEvent("IOError", new PluploadError(e.getMessage(), fileId));
+	public void sendIOError(Exception e) {
+		fireEvent("IOError", new PluploadError(e.getMessage(), Integer
+				.toString(this.current_file.id)));
 	}
 
-	public void sendError(Exception e, String fileId) {
-		fireEvent("GenericError", new PluploadError(e.getMessage(), fileId));
+	public void sendError(Exception e) {
+		fireEvent("GenericError", new PluploadError(e.getMessage(), Integer
+				.toString(this.current_file.id)));
 	}
 
-	public void sendFileModifiedError(Exception e, String fileId) {
-		fireEvent("FileChangedError", new PluploadError(e.getMessage(), fileId));
+	public void sendFileModifiedError(Exception e) {
+		fireEvent("FileChangedError", new PluploadError(e.getMessage(), Integer
+				.toString(this.current_file.id)));
 	}
 
 	public ActionListener getFileChooserActionListener() {
@@ -185,7 +212,7 @@ public class Plupload extends JApplet implements MouseListener {
 			}
 		};
 	}
-	
+
 	private void selectEvent(PluploadFile file) {
 		// handles file add from file chooser
 		files.put(file.id, file);
@@ -234,5 +261,4 @@ public class Plupload extends JApplet implements MouseListener {
 	@Override
 	public void mouseReleased(MouseEvent e) {
 	}
-
 }
