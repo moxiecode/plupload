@@ -3,7 +3,6 @@ package plupload;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -43,12 +42,14 @@ public class PluploadFile {
 	private String md5hex_chunk;
 	private List<FileUploadListener> file_upload_listeners = new ArrayList<FileUploadListener>();
 	private InputStream stream;
+	private HttpUploader uploader;
 
 	public PluploadFile(int id, File file) {
 		this.id = id;
 		this.name = file.getName();
 		this.size = file.length();
 		this.file = file;
+		
 		try {
 			md5_total = MessageDigest.getInstance("MD5");
 		} catch (NoSuchAlgorithmException e) {
@@ -56,29 +57,29 @@ public class PluploadFile {
 		}
 	}
 
-	private void prepare(String upload_uri, JSObject settings)
-			throws URISyntaxException, FileNotFoundException {
+	protected void prepare(String upload_uri, int chunk_size, int retries)
+			throws URISyntaxException, IOException {
+		if(size == 0){
+			throw new IOException("File is empty!");
+		}
 		uri = new URI(upload_uri);
-		chunk_size = (Integer) settings.getMember("chunk_size");
+		uploader = new HttpUploader(retries);
+		this.chunk_size = chunk_size;
 		stream = new BufferedInputStream(new FileInputStream(file), chunk_size);
 		chunks = (size + chunk_size - 1) / chunk_size;
 		buffer = new byte[chunk_size];
 		chunk = 0;
 		loaded = 0;
-		Http.CHUNK_SIZE = chunk_size;
-		// TODO: set from JS
-		Http.CHUNK_RETRIES = 3;
 	}
 
-	public void upload(String upload_uri, JSObject settings)
+	public void upload(String upload_uri, int chunk_size, int retries)
 			throws IOException, NoSuchAlgorithmException, URISyntaxException {
-
-		prepare(upload_uri, settings);
+		prepare(upload_uri, chunk_size, retries);
 
 		if (!overwrite) {
-			Map<String, String> result = Http.probe(getProbeUri());
+			Map<String, String> result = uploader.probe(getProbeUri());
 			String status = result.get("status");
-
+			
 			if (status.equals("uploading")) {
 				chunk_server = Integer.parseInt(result.get("chunk"));
 				int server_chunks = Integer.parseInt(result.get("chunks"));
@@ -122,18 +123,18 @@ public class PluploadFile {
 
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
-
+		//Plupload.log("uploadNextChunk", "chunk", chunk, "chunks", chunks);
 		int bytes_read = stream.read(buffer);
 		// the finished check is done in JS
-
 		MessageDigest md5_chunk = MessageDigest.getInstance("MD5");
+		
 		md5_chunk.update(buffer, 0, bytes_read);
 		md5_total.update(buffer, 0, bytes_read);
 
 		md5hex_total = HashUtil.hexdigest(md5_total, true);
 		md5hex_chunk = HashUtil.hexdigest(md5_chunk);
 
-		Http.sendChunk(buffer, bytes_read, chunk, chunks, name,
+		uploader.sendChunk(buffer, bytes_read, chunk, chunks, name,
 				getUploadUri());
 
 		loaded += bytes_read;
@@ -144,7 +145,7 @@ public class PluploadFile {
 	}
 
 	public URI getUploadUri() throws URISyntaxException {
-		String params = Http.getQueryParams(chunk, chunks, chunk_size,
+		String params = HttpUploader.getQueryParams(chunk, chunks, chunk_size,
 				md5hex_total, md5hex_chunk, name);
 		String query = uri.getQuery() != null ? uri.getQuery() + "&" + params
 				: params;
