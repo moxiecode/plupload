@@ -23,7 +23,7 @@
       var height       = attrs.height;
       var archive      = attrs.archive;
       var codebase     = attrs.codebase;
-      var id           = attrs.id;
+      var id           = escape(attrs.id);
 
       // Create the object tag parameters
       var objectParams ='\
@@ -49,7 +49,7 @@ objectParams + '\
       }
       else {
         appletHTML = '\
-<applet code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" \
+<applet code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" id="' + id + '" \
 width="' + width + '" height="' + height + '">' +
 objectParams + '\
 </applet>';
@@ -123,7 +123,7 @@ objectParams + '\
       appletContainer.innerHTML =  plupload.applet.getObjectHTML(attributes);
 
 			function getAppletObj() {
-				return document.getElementById(uploader.id + '_applet');
+				return document.getElementById(uploader.id);
 			}
 
 			function waitLoad() {
