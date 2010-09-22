@@ -93,11 +93,12 @@ def write_to_file(file, stream):
     file.close()
     return md5.hexdigest()
 
+@expose('^/$')
 def upload_form(request):
-    html = file(os.path.join(root_path, 'uploadform.html')).read()
+    html = file(os.path.join(root_path, 'queue_applet.html')).read()
     return Response(html, mimetype='text/html')
 
-@expose('^/$')
+@expose('^/upload/$')
 def upload(request):
     if request.method != "POST":
         return probe(request)
@@ -160,6 +161,7 @@ else:
         os.mkdir(upload_dir)
     from werkzeug import SharedDataMiddleware
     app = SharedDataMiddleware(app, {
-            '/steamengine/static':  root_path + '/../static',
-            '/applet': '/home/dam/workspace/example/bin'
+            '/javascript':  os.path.join(root_path, '../src/javascript'),
+            '/applet': os.path.join(root_path, '../bin'),
+            '/': root_path,
     })
