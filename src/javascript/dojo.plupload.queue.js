@@ -2,8 +2,10 @@ dojo.require("dojo.NodeList-html"); // NodeList::html()
 dojo.require("dojo.NodeList-traverse"); // NodeList::children()
 dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 
+// TODO: share between dojo / jqury version
 (function(d){
    var $ = d.query;
+
    var uploaders = {};
    
    function _(str) {
@@ -154,7 +156,7 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 						handleStatus(file);
 
 						$('#' + file.id + '.plupload_delete a').onclick(function(e) {
-							$('#' + file.id).destroy();
+							$('#' + file.id).empty();
 							uploader.removeFile(file);
 
 							e.preventDefault();
@@ -199,6 +201,11 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 					}
 
 					$('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);
+
+          $('a.plupload_add', target).onclick(function(e){ 
+            uploader.selectFiles();                                
+						e.preventDefault();
+          });
 
 					$('a.plupload_start', target).onclick(function(e) {
 						if (!d.hasClass(target, 'plupload_disabled')) {

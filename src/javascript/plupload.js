@@ -926,6 +926,15 @@
 				}
 			},
 
+      /**
+       * Select files event. 
+       * 
+       * @method selectFiles  
+       */
+      selectFiles : function() {
+        this.trigger("SelectFiles");
+      },
+
 			/**
 			 * Returns the specified file object by id.
 			 *

@@ -55,7 +55,6 @@ objectParams + '\
 You browser doesn\'t have Java installed.\
 </applet>';
       }
-      console.log(appletHTML);
       return appletHTML; 
     }
  };
@@ -71,7 +70,7 @@ You browser doesn\'t have Java installed.\
 			};
 		},		
     init : function(uploader, callback) {
-			var browseButton, 
+			var //browseButton, 
           appletContainer, 
           appletVars, 
           initialized, 
@@ -81,7 +80,8 @@ You browser doesn\'t have Java installed.\
 			uploadInstances[uploader.id] = uploader;
 
 			// Find browse button and set to to be relative
-			browseButton = document.getElementById(uploader.settings.browse_button);
+			//browseButton = document.getElementById(uploader.settings.browse_button);
+      // browseButton.onclick = uploader.trigger("AddFilesClick");
 
 			appletContainer = document.createElement('div');
 			appletContainer.id = uploader.id + '_applet_container';
@@ -91,19 +91,19 @@ You browser doesn\'t have Java installed.\
 				top : '0px',
 				background : uploader.settings.shim_bgcolor || 'transparent',
 				zIndex : 99999,
-				width : '100%', // Chrome doesn't init the app when zero
-				height : '100%'
+				width : '1px', // Chrome doesn't init the app when zero
+				height : '1px'
 			});
 
 			appletContainer.className = 'plupload applet';
 
-			if (uploader.settings.container) {
-				container = document.getElementById(uploader.settings.container);
-				container.style.position = 'relative';
-			}
+			// if (uploader.settings.container) {
+			// 	container = document.getElementById(uploader.settings.container);
+			// 	container.style.position = 'relative';
+			// }
 
-			container.appendChild(appletContainer);
-      
+      document.body.appendChild(appletContainer);
+
       var url = uploader.settings.java_applet_url;
       var base_url = url.slice(0, url.lastIndexOf('/'));
       // disable cache for now
@@ -142,7 +142,7 @@ You browser doesn\'t have Java installed.\
 			waitLoad();
 
 			// Fix IE memory leaks
-			browseButton = appletContainer = null;
+			appletContainer = null;
 
 			// Wait for Applet to send init event
 			uploader.bind("Applet:Init", function() {
@@ -160,6 +160,10 @@ You browser doesn\'t have Java installed.\
 					    retries: settings.retries || 3
 					  });
 				});
+
+        uploader.bind("SelectFiles", function(up){
+            getAppletObj().openFileDialog();
+        });
 
 				uploader.bind("Applet:UploadProcess", function(up, applet_file) {
 					var file = up.getFile(lookup[applet_file.id]);
@@ -310,12 +314,12 @@ You browser doesn\'t have Java installed.\
 					browseSize = plupload.getSize(browseButton);
 
           // reposition applet
-					plupload.extend(document.getElementById(up.id + '_applet_container').style, {
-						top : browsePos.y + 'px',
-						left : browsePos.x + 'px',
-						width : browseSize.w + 'px',
-						height : browseSize.h + 'px'
-					});
+					// plupload.extend(document.getElementById(up.id + '_applet_container').style, {
+					// 	top : browsePos.y + 'px',
+					// 	left : browsePos.x + 'px',
+					// 	width : browseSize.w + 'px',
+					// 	height : browseSize.h + 'px'
+					// });
 				}); // end refresh
 
 				callback({success : true});

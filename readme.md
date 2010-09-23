@@ -33,6 +33,26 @@ How to build Flash runtime
 ---------------------------
 The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/products/flex/flexdownloads/](http://www.adobe.com/products/flex/flexdownloads/)
 
+How to build Java runtime
+---------------------------
+The Java runtime uses ant for building.
+
+`ant build-java`
+
+compiles the classes.
+
+`ant jar`
+
+Jars the classes into the bin dir.
+
+`ant sign-jar`
+
+Signs the jar. Before running this you should create a certificate `keytool -genkey -alias plupload`
+
+`ant deploy-jar`
+
+Combines the three steps above.
+
 How to build Silverlight runtime
 ---------------------------------
 The Silverlight runtime uses a .xap file that can be built using the Silverlight SDK or Visual Studio. [http://silverlight.net/getstarted/](http://silverlight.net/getstarted/)

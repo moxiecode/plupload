@@ -267,6 +267,11 @@
 						e.preventDefault();
 					});
 
+          $('a.plupload_add', target).click(function(e){ 
+            uploader.selectFiles();                                
+						e.preventDefault();
+          });
+
 					$('a.plupload_start', target).addClass('plupload_disabled');
 				});
 

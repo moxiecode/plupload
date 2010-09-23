@@ -24,7 +24,6 @@ $.ready(function() {
 	$.query("#java_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'java',
-    dragdrop: true,
 		url : 'http://localhost:5000/upload/',
 		chunk_size : '1mb',
     java_applet_url: 'applet/plupload.java.jar'
@@ -38,7 +37,7 @@ $.ready(function() {
 <form method="post" action="dump.php">
 	<h1>Queue widget example</h1>
 
-	<p>Shows the jQuery Plupload Queue widget and under different runtimes.</p>
+	<p>Shows the dojo Plupload Queue widget with the Java runtime.</p>
 
 	<div style="float: left; margin-right: 20px">
 		<h3>Java runtime</h3>

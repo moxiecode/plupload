@@ -28,7 +28,7 @@ import org.apache.http.client.ClientProtocolException;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class Plupload extends JApplet implements MouseListener {
+public class Plupload extends JApplet {
 
 	// window.console
 	static JSObject console;
@@ -58,7 +58,7 @@ public class Plupload extends JApplet implements MouseListener {
 
 	@Override
 	public void init() {
-		System.out.println("version 6");
+		System.out.println("version 7");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -84,13 +84,13 @@ public class Plupload extends JApplet implements MouseListener {
 		dialog = new JFileChooser();
 		dialog.addActionListener(getFileChooserActionListener());
 
-		ImageIcon icon = new ImageIcon(getClass().getResource(
-				"/resources/upload_button.png"));
-		JButton add_file_button = new JButton("Add files", icon);
-
-		add_file_button.setContentAreaFilled(false);
-		getContentPane().add(add_file_button);
-		add_file_button.addMouseListener(this);
+//		ImageIcon icon = new ImageIcon(getClass().getResource(
+//				"/resources/upload_button.png"));
+//		JButton add_file_button = new JButton("Add files", icon);
+//
+//		add_file_button.setContentAreaFilled(false);
+//		getContentPane().add(add_file_button);
+		//add_file_button.addMouseListener(this);
 
 		// callback to JS
 		fireEvent("Init");
@@ -124,6 +124,7 @@ public class Plupload extends JApplet implements MouseListener {
 			}
 		}
 	}
+	
 
 	@SuppressWarnings("unchecked")
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
@@ -160,6 +161,10 @@ public class Plupload extends JApplet implements MouseListener {
 
 	public void clearFiles() {
 		files.clear();
+	}
+	
+	public void openFileDialog(){
+		file_chose_return_value = dialog.showOpenDialog(this);
 	}
 
 	public void fireEvent(String event) {
@@ -238,27 +243,27 @@ public class Plupload extends JApplet implements MouseListener {
 		fireEvent(SELECT_FILE, new Object[] { file });
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		file_chose_return_value = dialog.showOpenDialog(this);
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// change cursor to hand when entering applet.
-		e.getComponent().setCursor(
-				Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-	}
+//	@Override
+//	public void mouseClicked(MouseEvent e) {
+//		file_chose_return_value = dialog.showOpenDialog(this);
+//	}
+//
+//	@Override
+//	public void mouseEntered(MouseEvent e) {
+//		// change cursor to hand when entering applet.
+//		e.getComponent().setCursor(
+//				Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//	}
+//
+//	@Override
+//	public void mouseExited(MouseEvent e) {
+//	}
+//
+//	@Override
+//	public void mousePressed(MouseEvent e) {
+//	}
+//
+//	@Override
+//	public void mouseReleased(MouseEvent e) {
+//	}
 }

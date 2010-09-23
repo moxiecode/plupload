@@ -31,6 +31,11 @@ $(function() {
 		e.preventDefault();
 	});
 
+	$('#pickfiles').click(function(e) {
+		uploader.selectFiles();
+		e.preventDefault();
+	});
+
 	uploader.init();
 
 	uploader.bind('FilesAdded', function(up, files) {
@@ -54,7 +59,6 @@ $(function() {
 			(err.file ? ", File: " + err.file.name : "") +
 			"</div>"
 		);
-
 		up.refresh();
 	});
 
