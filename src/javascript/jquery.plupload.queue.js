@@ -20,7 +20,9 @@
 
 	function renderUI(id, target) {
 		// Remove all existing non plupload items
+    
 		target.contents().each(function(i, node) {
+
 			node = $(node);
 
 			if (!node.is('.plupload')) {
@@ -80,7 +82,6 @@
 		if (settings) {
 			this.each(function() {
 				var uploader, target, id;
-
 				target = $(this);
 				id = target.attr('id');
 
@@ -180,6 +181,7 @@
 
 					$('span.plupload_total_file_size', target).html(plupload.formatSize(uploader.total.size));
 
+          // FIXME: plupload_add_text doesn't exist!
 					if (uploader.total.queued === 0) {
 						$('span.plupload_add_text', target).text(_('Add files.'));
 					} else {

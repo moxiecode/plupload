@@ -52,6 +52,7 @@ objectParams + '\
 <applet code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" id="' + id + '" \
 width="' + width + '" height="' + height + '">' +
 objectParams + '\
+You browser doesn\'t have Java installed.\
 </applet>';
       }
       console.log(appletHTML);
