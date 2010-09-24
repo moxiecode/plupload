@@ -164,11 +164,11 @@
 				file.size = blobs[file.id].length;
 
 				function uploadNextChunk() {
-					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, reqArgs = {name : file.target_name || file.name};
+					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, reqArgs = {name : file.target_name || file.name}, url = up.settings.url;
 
 					// Sends the binary blob multipart encoded or raw depending on config
 					function sendBinaryBlob(blob) {
-						var builder, boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n', multipartBlob;
+						var builder, boundary = '----pluploadboundary' + plupload.guid(), dashdash = '--', crlf = '\r\n', multipartBlob, mimeType;
 
 						// Build multipart request
 						if (multipart) {
@@ -176,7 +176,7 @@
 							builder = google.gears.factory.create('beta.blobbuilder');
 
 							// Append mutlipart parameters
-							plupload.each(up.settings.multipart_params, function(value, name) {
+							plupload.each(plupload.extend(reqArgs, up.settings.multipart_params), function(value, name) {
 								builder.append(
 									dashdash + boundary + crlf +
 									'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf
@@ -185,11 +185,13 @@
 								builder.append(value + crlf);
 							});
 
+							mimeType = plupload.mimeTypes[file.name.replace('c.gif'.replace(/^.+\.([^.]+)/, '$1'))] || 'application/octet-stream';
+
 							// Add file header
 							builder.append(
 								dashdash + boundary + crlf +
 								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + file.name + '"' + crlf +
-								'Content-Type: application/octet-stream' + crlf + crlf
+								'Content-Type: ' + mimeType + crlf + crlf
 							);
 
 							// Add file data
@@ -220,8 +222,12 @@
 					// Setup current chunk size
 					curChunkSize = Math.min(chunkSize, file.size - (chunk  * chunkSize));
 
+					if (!multipart) {
+						url = plupload.buildUrl(up.settings.url, reqArgs);
+					}
+
 					req = google.gears.factory.create('beta.httprequest');
-					req.open('POST', plupload.buildUrl(up.settings.url, reqArgs));
+					req.open('POST', url);
 
 					// Add disposition and type if multipart is disabled
 					if (!multipart) {

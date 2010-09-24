@@ -167,7 +167,7 @@
 				});
 
 				uploader.bind("UploadFile", function(up, file) {
-					var nativeFile = browserPlusFiles[file.id], urlParams = {},
+					var nativeFile = browserPlusFiles[file.id], reqParams = {},
 					    chunkSize = up.settings.chunk_size, loadProgress, chunkStack = [];
 
 					function uploadFile(chunk, chunks) {
@@ -178,21 +178,21 @@
 							return;
 						}
 
-						urlParams.name = file.target_name || file.name;
+						reqParams.name = file.target_name || file.name;
 
 						// Only send chunk parameters if chunk size is defined
 						if (chunkSize) {
-							urlParams.chunk = chunk;
-							urlParams.chunks = chunks;
+							reqParams.chunk = "" + chunk;
+							reqParams.chunks = "" + chunks;
 						}
 
 					    chunkFile = chunkStack.shift();
 
 						browserPlus.Uploader.upload({
-							url : plupload.buildUrl(up.settings.url, urlParams),
+							url : up.settings.url,
 							files : {file : chunkFile},
 							cookies : document.cookies,
-							postvars : up.settings.multipart_params,
+							postvars : plupload.extend(reqParams, up.settings.multipart_params),
 							progressCallback : function(res) {
 								var i, loaded = 0;
 

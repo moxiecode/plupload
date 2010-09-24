@@ -12,6 +12,8 @@
 /*global plupload:false, File:false, window:false, atob:false, FormData:false */
 
 (function(plupload) {
+	var fakeSafariDragDrop;
+
 	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
 		var canvas, context, img, data, scale;
 
@@ -84,10 +86,13 @@
 				sliceSupport = !!(File && File.prototype.slice);
 			}
 
+			// Sniff for Safari and fake drag/drop
+			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0;
+
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport,
+				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
@@ -192,6 +197,48 @@
 				var dropElm = document.getElementById(uploader.settings.drop_element);
 
 				if (dropElm) {
+					// Lets fake drag/drop on Safari by moving a inpit type file in front of the mouse pointer when we drag into the drop zone
+					// TODO: Remove this logic once Safari has official drag/drop support
+					if (fakeSafariDragDrop) {
+						plupload.addEvent(dropElm, 'dragenter', function(e) {
+							var dropInputElm, dropPos, dropSize;
+
+							// Get or create drop zone
+							dropInputElm = document.getElementById(uploader.id + "_drop");
+							if (!dropInputElm) {
+								dropInputElm = document.createElement("input");
+								dropInputElm.setAttribute('type', "file");
+								dropInputElm.setAttribute('id', uploader.id + "_drop");
+								dropInputElm.setAttribute('multiple', 'multiple');
+
+								dropInputElm.onchange = function() {
+									// Add the selected files from file input
+									addSelectedFiles(this.files);
+
+									// Clearing the value enables the user to select the same file again if they want to
+									this.value = '';
+								};
+							}
+
+							dropPos = plupload.getPos(dropElm, document.getElementById(uploader.settings.container));
+							dropSize = plupload.getSize(dropElm);
+
+							plupload.extend(dropInputElm.style, {
+								position : 'absolute',
+								display : 'block',
+								top : dropPos.y + 'px',
+								left : dropPos.x + 'px',
+								width : dropSize.w + 'px',
+								height : dropSize.h + 'px',
+								opacity : 0
+							});
+
+							dropElm.appendChild(dropInputElm);
+						});
+
+						return;
+					}
+
 					// Block browser default drag over
 					plupload.addEvent(dropElm, 'dragover', function(e) {
 						e.preventDefault();
@@ -235,7 +282,7 @@
 					function uploadNextChunk() {
 						var chunkBlob = blob, xhr, upload, chunks, args, multipartDeltaSize = 0,
 							boundary = '----pluploadboundary' + plupload.guid(), chunkSize, curChunkSize,
-							dashdash = '--', crlf = '\r\n', multipartBlob = '';
+							dashdash = '--', crlf = '\r\n', multipartBlob = '', mimeType, url = up.settings.url;
 
 						// File upload finished
 						if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
@@ -279,7 +326,14 @@
 							};
 						}
 
-						xhr.open("post", plupload.buildUrl(up.settings.url, args), true);
+						// Add name, chunk and chunks to query string on direct streaming
+						if (!up.settings.multipart || !features.multipart) {
+							url = plupload.buildUrl(up.settings.url, args);
+						} else {
+							args.name = file.target_name || file.name;
+						}
+
+						xhr.open("post", url, true);
 
 						xhr.onreadystatechange = function() {
 							var httpStatus, chunkArgs;
@@ -353,7 +407,7 @@
 								var data = new FormData();
 
 								// Add multipart params
-								plupload.each(up.settings.multipart_params, function(value, name) {
+								plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
 									data.append(name, value);
 								});
 
@@ -367,18 +421,20 @@
 							// Gecko multipart request
 							xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
-							// Append mutlipart parameters
-							plupload.each(up.settings.multipart_params, function(value, name) {
+							// Append multipart parameters
+							plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
 								multipartBlob += dashdash + boundary + crlf +
 									'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf;
 
 								multipartBlob += value + crlf;
 							});
 
+							mimeType = plupload.mimeTypes[file.name.replace('c.gif'.replace(/^.+\.([^.]+)/, '$1'))] || 'application/octet-stream';
+
 							// Build RFC2388 blob
 							multipartBlob += dashdash + boundary + crlf +
 								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + file.name + '"' + crlf +
-								'Content-Type: application/octet-stream' + crlf + crlf +
+								'Content-Type: ' + mimeType + crlf + crlf +
 								chunkBlob + crlf +
 								dashdash + boundary + dashdash + crlf;
 
