@@ -24,48 +24,54 @@ import org.apache.http.util.EntityUtils;
 public class HttpUploader {
 
 	private int retries;
+	private String cookie;
 	private HttpClient httpclient;
 	
-	public HttpUploader(int chunk_retries){
+	public HttpUploader(int chunk_retries, String cookie){
 		this.httpclient = HttpUtil.getHttpClient();
 		this.retries = chunk_retries;
+		this.cookie = cookie;
 	}
 	
 	public int sendChunk(byte[] data, int len, int chunk, long chunks,
 			String name, URI uri) throws NoSuchAlgorithmException, URISyntaxException,
 			ClientProtocolException, IOException {
-		
 		InputStreamEntity entity = new InputStreamEntity(
 				new ByteArrayInputStream(data), len);
 		entity.setContentType("application/octet-stream");
-
+		
 		HttpPost httppost = new HttpPost(uri);
 		httppost.setEntity(entity);
-
+		httppost.addHeader("Cookie", cookie);
 		HttpResponse response = httpclient.execute(httppost);
-
+		
 		HttpEntity resEntity = response.getEntity();
 		int status_code = response.getStatusLine().getStatusCode();
 
-		if (resEntity != null) {
-			resEntity.consumeContent();
-		}
-
+		String body = EntityUtils.toString(resEntity);
+		
 		if (status_code != 200) {
 			if (retries > 0) {
 				retries--;
 				sendChunk(data, len, chunk, chunks, name, uri);
 			} else {
-				throw new IOException(Integer.toString(status_code));
+				throw new IOException("Exception uploading to server: " + body);
 			}
 		}
 		return status_code;
 	}
 	
 	public Map<String, String> probe(URI uri) throws ClientProtocolException, IOException{
+		System.out.println("probe");
 		HttpGet get = new HttpGet(uri);
+		get.addHeader("Cookie", cookie);
+		System.out.println("cookie:" + cookie);
+		
 		HttpResponse response = httpclient.execute(get);
 		String body = EntityUtils.toString(response.getEntity());
+		if(response.getStatusLine().getStatusCode() != 200){
+			throw new IOException("Exception probing server: " + body);
+		}
 		return HttpUtil.parse_qs(body);
 	}
 

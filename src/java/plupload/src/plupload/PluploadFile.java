@@ -57,13 +57,13 @@ public class PluploadFile {
 		}
 	}
 
-	protected void prepare(String upload_uri, int chunk_size, int retries)
+	protected void prepare(String upload_uri, int chunk_size, int retries, String cookie)
 			throws URISyntaxException, IOException {
 		if(size == 0){
 			throw new IOException("File is empty!");
 		}
 		uri = new URI(upload_uri);
-		uploader = new HttpUploader(retries);
+		uploader = new HttpUploader(retries, cookie);
 		this.chunk_size = chunk_size;
 		stream = new BufferedInputStream(new FileInputStream(file), chunk_size);
 		chunks = (size + chunk_size - 1) / chunk_size;
@@ -72,9 +72,9 @@ public class PluploadFile {
 		loaded = 0;
 	}
 
-	public void upload(String upload_uri, int chunk_size, int retries)
+	public void upload(String upload_uri, int chunk_size, int retries, String cookie)
 			throws IOException, NoSuchAlgorithmException, URISyntaxException {
-		prepare(upload_uri, chunk_size, retries);
+		prepare(upload_uri, chunk_size, retries, cookie);
 
 		if (!overwrite) {
 			Map<String, String> result = uploader.probe(getProbeUri());
@@ -87,6 +87,7 @@ public class PluploadFile {
 					md5hex_server_total = result.get("md5");
 					skipNextChunk();
 				} else {
+					Plupload.log(server_chunks, chunks, "mismatch");
 					// file is modified for sure, so don't run through all the chunks
 					// start over
 					uploadNextChunk();
@@ -118,11 +119,12 @@ public class PluploadFile {
 	}
 
 	public boolean checkIntegrity() {
-		return HashUtil.hexdigest(md5_total).equals(md5hex_server_total);
+		return HashUtil.hexdigest(md5_total, true).equals(md5hex_server_total);
 	}
 
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
+		System.out.println("upload next chunk: " + chunk);
 		//Plupload.log("uploadNextChunk", "chunk", chunk, "chunks", chunks);
 		int bytes_read = stream.read(buffer);
 		// the finished check is done in JS

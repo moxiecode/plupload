@@ -58,7 +58,7 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 7");
+		System.out.println("version 8");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -84,14 +84,6 @@ public class Plupload extends JApplet {
 		dialog = new JFileChooser();
 		dialog.addActionListener(getFileChooserActionListener());
 
-//		ImageIcon icon = new ImageIcon(getClass().getResource(
-//				"/resources/upload_button.png"));
-//		JButton add_file_button = new JButton("Add files", icon);
-//
-//		add_file_button.setContentAreaFilled(false);
-//		getContentPane().add(add_file_button);
-		//add_file_button.addMouseListener(this);
-
 		// callback to JS
 		fireEvent("Init");
 	}
@@ -103,6 +95,11 @@ public class Plupload extends JApplet {
 		final PluploadFile file = files.get(id);
 		final int chunk_size = (Integer) settings.getMember("chunk_size");
 		final int retries = (Integer) settings.getMember("retries");
+		System.out.println("before cookie");
+		final Object cookie = settings.getMember("cookie");
+		System.out.println("cookie" + cookie);
+		System.out.println("after getting props");
+		
 		if (file != null) {
 			this.current_file = file;
 		}
@@ -111,7 +108,7 @@ public class Plupload extends JApplet {
 			// elevate them again.
 			AccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public Object run() throws IOException, Exception {
-					file.upload(url, chunk_size, retries);
+					file.upload(url, chunk_size, retries, (String)cookie);
 					return null;
 				}
 			});
@@ -163,8 +160,16 @@ public class Plupload extends JApplet {
 		files.clear();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void openFileDialog(){
-		file_chose_return_value = dialog.showOpenDialog(this);
+		final JApplet a = this;
+		// won't access look and feel otherwise
+		AccessController.doPrivileged(new PrivilegedAction() {
+			public Object run() {
+				file_chose_return_value = dialog.showOpenDialog(a);
+				return null;
+			}
+		});
 	}
 
 	public void fireEvent(String event) {
@@ -242,28 +247,4 @@ public class Plupload extends JApplet {
 
 		fireEvent(SELECT_FILE, new Object[] { file });
 	}
-
-//	@Override
-//	public void mouseClicked(MouseEvent e) {
-//		file_chose_return_value = dialog.showOpenDialog(this);
-//	}
-//
-//	@Override
-//	public void mouseEntered(MouseEvent e) {
-//		// change cursor to hand when entering applet.
-//		e.getComponent().setCursor(
-//				Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//	}
-//
-//	@Override
-//	public void mouseExited(MouseEvent e) {
-//	}
-//
-//	@Override
-//	public void mousePressed(MouseEvent e) {
-//	}
-//
-//	@Override
-//	public void mouseReleased(MouseEvent e) {
-//	}
 }

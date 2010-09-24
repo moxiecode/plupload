@@ -24,8 +24,10 @@
       var archive      = attrs.archive;
       var codebase     = attrs.codebase;
       var id           = escape(attrs.id);
-
       // Create the object tag parameters
+      // Why isn't this working: 
+      // <param name="java_arguments" value="-Xrunjdwp:transport=dt_socket,address=8000" />\
+
       var objectParams ='\
 <param name="codebase" value="' + codebase + '" />\
 <param name="archive" value="' + archive + '" />\
@@ -154,8 +156,10 @@ You browser doesn\'t have Java installed.\
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
+                        
 					getAppletObj().uploadFile(
             lookup[file.id], settings.url, {
+              cookie: document.cookie,
 					    chunk_size : settings.chunk_size,
 					    retries: settings.retries || 3
 					  });
@@ -232,7 +236,13 @@ You browser doesn\'t have Java installed.\
               else{
                 // file changed, reupload everything
                 java_file.overwrite = true;
-                applet.upload();
+					      var settings = up.settings;
+					      applet.uploadFile(
+                    lookup[file.id], settings.url, {
+                      cookie: document.cookie,
+					            chunk_size : settings.chunk_size,
+					            retries: settings.retries || 3
+					          });
               }
             }
 				  }

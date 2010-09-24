@@ -97,7 +97,7 @@
 	border-bottom: 1px solid #CDCDCD;
 }
 
-.plupload_filelist_footer {border-top: 1px solid #FFF; height: 22px; line-height: 20px; vertical-align: middle;}
+.plupload_filelist_footer {border-top: 1px solid #FFF; height: 45px; line-height: 20px; vertical-align: middle;}
 .plupload_file_name {float: left; overflow: hidden}
 .plupload_file_status {color: #777;}
 .plupload_file_status span {color: #42454A;}

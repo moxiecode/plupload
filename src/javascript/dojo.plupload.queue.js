@@ -39,10 +39,6 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
-									'<div class="plupload_buttons">' +
-										'<a href="#" class="plupload_button plupload_add">' + _('Add files') + '</a>' +
-										'<a href="#" class="plupload_button plupload_start">' + _('Start upload') + '</a>' +
-									'</div>' +
 									'<span class="plupload_upload_status"></span>' +
 								'</div>' +
 								'<div class="plupload_file_action"></div>' +
@@ -54,6 +50,10 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 									'</div>' +
 								'</div>' +
 								'<div class="plupload_clearer">&nbsp;</div>' +
+								'<div class="plupload_buttons">' +
+									'<a href="#" class="plupload_button plupload_add">' + _('Add files') + '</a>' +
+									'<a href="#" class="plupload_button plupload_start">' + _('Start upload') + '</a>' +
+								'</div>' +
 							'</div>' +
 						'</div>' +
 					'</div>' +
@@ -111,9 +111,11 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
         }
 
 				function updateTotalProgress() {
-					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
-					$('div.plupload_progress_bar', target).style('width', uploader.total.percent + '%');
-					$('span.plupload_upload_status', target).html('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
+          // removed target here
+          $('div.plupload_progress').style('display', 'block');
+					$('span.plupload_total_status').html(uploader.total.percent + '%');
+					$('div.plupload_progress_bar').style('width', uploader.total.percent + '%');
+					$('span.plupload_upload_status').html('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
 
 					// All files are uploaded
 					if (uploader.total.uploaded == uploader.files.length) {
@@ -173,6 +175,7 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 					// }
 
 					$('a.plupload_start', target).toggleClass('plupload_disabled', uploader.files.length === 0);
+          
 
 					// Scroll to end of file list
 					fileList[0].scrollTop = fileList[0].scrollHeight;
@@ -247,11 +250,12 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
-						$('li.plupload_delete a,div.plupload_buttons', target).style('display', 'none');
+						// $('li.plupload_delete a,div.plupload_buttons', target).style('display', 'none');
+            // removed target so we can have the progressbar several place
 						$('span.plupload_upload_status,div.plupload_progress,a.plupload_stop', target).style('display', 'block');
 						$('span.plupload_upload_status', target).html('Uploaded 0/' + uploader.files.length + ' files');
 					} else {
-						$('a.plupload_stop,div.plupload_progress', target).style('display', 'none');
+            $('a.plupload_stop,div.plupload_progress', target).style('display', 'none');
 						$('a.plupload_delete', target).style('display', 'block');
 					}
 				});

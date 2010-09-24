@@ -35,6 +35,7 @@ public class HttpUtil {
 		// Reuse connections. Very important for performance! 
 		params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION,
 				HttpVersion.HTTP_1_1);
+		
 		httpclient = new DefaultHttpClient(params);
 		return httpclient;
 	}
