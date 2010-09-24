@@ -45,7 +45,7 @@ package com.plupload {
 		private var _uploadUrl:String, _uploadPath:String;
 		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
-		private var _headers:Object;
+		private var _headers:Object, _settings:Object;
 
 		/**
 		 * Id property of file.
@@ -97,6 +97,8 @@ package com.plupload {
 		 * @param settings Settings object.
 		 */
 		public function upload(url:String, settings:Object):void {
+			this._settings = settings;
+
 			if (this.canUseSimpleUpload(settings)) {
 				this.simpleUpload(url, settings);
 			} else {
@@ -123,6 +125,8 @@ package com.plupload {
 			file._chunks = 1;
 
 			postData = new URLVariables();
+	
+			file._postvars["name"] = settings["name"];
 
 			for (var key:String in file._postvars) {
 				postData[key] = file._postvars[key];
@@ -406,14 +410,18 @@ package com.plupload {
 			// Setup URL
 			url = this._uploadUrl;
 
-			// Chunk size is defined then add query string params for it
-			if (this._chunking) {
+			// Add name and chunk/chunks to URL if we use direct streaming method
+			if (!this._multipart) {
 				if (url.indexOf('?') == -1)
 					url += '?';
 				else
 					url += '&';
 
-				url += "chunk=" + this._chunk + "&chunks=" + this._chunks;
+				url += "name=" + escape(this._settings["name"]);
+
+				if (this._chunking) {
+					url += "chunk=" + this._chunk + "&chunks=" + this._chunks;
+				}
 			}
 
 			// Setup request
@@ -433,6 +441,14 @@ package com.plupload {
 					dashdash:String = '--', crlf:String = '\r\n', multipartBlob: ByteArray = new ByteArray();
 
 				req.requestHeaders.push(new URLRequestHeader("Content-Type", 'multipart/form-data; boundary=' + boundary));
+
+				this._postvars["name"] = this._settings["name"];
+
+				// Add chunking parameters if needed
+				if (this._chunking) {
+					this._postvars["chunk"] = this._chunk;
+					this._postvars["chunks"] = this._chunks;
+				}
 
 				// Append mutlipart parameters
 				for (var name:String in this._postvars) {

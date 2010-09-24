@@ -158,13 +158,14 @@
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
 
-					getFlashObj().uploadFile(lookup[file.id], plupload.buildUrl(settings.url, {name : file.target_name || file.name}), {
+					getFlashObj().uploadFile(lookup[file.id], settings.url, {
+						name : file.target_name || file.name,
 						chunk_size : settings.chunk_size,
 						width : resize.width,
 						height : resize.height,
 						quality : resize.quality || 90,
 						multipart : settings.multipart,
-						multipart_params : settings.multipart_params,
+						multipart_params : settings.multipart_params || {},
 						file_data_name : settings.file_data_name,
 						format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png',
 						headers : settings.headers,
