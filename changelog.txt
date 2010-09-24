@@ -1,6 +1,7 @@
 Version 1.2.x (2010-xx-xx)
 	Added support for crossdomain loading of the XAP and SWF files and crossdomain upload.
 	Fixed logic issue with the upload.php example file. Chunking wasn't working correctly.
+	Fixed issue with HTML4 not handling the form encoding correctly on older IE versions. Patch contributed by jinxdone.
 Version 1.2.4 (2010-09-08)
 	Added new BeforeUpload event to make it easier to override settings before a file is uploaded.
 	Added new automatic usage of FileReference in Flash if it's possible. Contributed by Marcel Jackwerth.
