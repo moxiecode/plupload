@@ -13,6 +13,10 @@
 /*global plupload:false, window:false */
 
 (function(plupload) {
+	function getById(id) {
+		return document.getElementById(id);
+	}
+
 	/**
 	 * HTML4 implementation. This runtime has no special features it uses an form that posts files into an hidden iframe.
 	 *
@@ -41,150 +45,10 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var iframefiles = {}, form, iframe;
-
-			function addSelectedFiles(element) {
-				var file, i, files = [], id, name;
-
-				name = element.value.replace(/\\/g, '/');
-				name = name.substring(name.length, name.lastIndexOf('/')+1);
-
-				// Store away gears blob internally
-				id = plupload.guid();
-
-				// Expose id, name and size
-				file = new plupload.File(id, name);
-
-				iframefiles[id] = file;
-
-				file.input = element;
-				files.push(file);
-
-				// Fire FilesAdded event
-				if (files.length) {
-					uploader.trigger("FilesAdded", files);
-				}
-			}
-
 			uploader.bind("Init", function(up) {
-				var forms, inputContainer, input, mimes = [], i, y,
-					filters = up.settings.filters, ext, type, IE = /MSIE/.test(navigator.userAgent),
-					url = "javascript", bgcolor, container = document.body, node;
-
-				if (uploader.settings.container) {
-					container = document.getElementById(uploader.settings.container);
-					container.style.position = 'relative';
-				}
-
-				// Find existing form
-				form = (typeof up.settings.form == 'string') ? document.getElementById(up.settings.form) : up.settings.form;
-				if (!form) {
-					node = document.getElementById(uploader.settings.browse_button);
-					for (; node; node = node.parentNode) {
-						if (node.nodeName == 'FORM') {
-							form = node;
-						}
-					}
-				}
-
-				// If no form set, create a new one
-				if (!form) {
-					// Create a form and set it as inline so it doesn't mess up any layout
-					form = document.createElement("form");
-					form.style.display = 'inline';
-
-					// Wrap browse button in empty form
-					node = document.getElementById(uploader.settings.container);
-					node.parentNode.insertBefore(form, node);
-					form.appendChild(node);
-				}
-
-				// Force the form into post and multipart
-				form.setAttribute('method', 'post');
-				form.setAttribute(form.encoding ? 'encoding' : 'enctype', 'multipart/form-data');
-
-				// Append mutlipart parameters
-				plupload.each(up.settings.multipart_params, function(value, name) {
-					var input = document.createElement('input');
-
-					plupload.extend(input, {
-						type : 'hidden',
-						name : name,
-						value : value
-					});
-
-					form.appendChild(input);
-				});
-
-				iframe = document.createElement('iframe');
-				iframe.setAttribute('src', url + ':""'); // javascript:"" for HTTPS issue on IE6, uses a variable to make an ignore for jslint
-				iframe.setAttribute('name', up.id + '_iframe');
-				iframe.setAttribute('id', up.id + '_iframe');
-				iframe.style.display = 'none';
-
-				// Add IFrame onload event
-				plupload.addEvent(iframe, 'load', function(e){
-					var n = e.target, file = uploader.currentfile, el;
-
-					try {
-						el = n.contentWindow.document || n.contentDocument || window.frames[n.id].document;
-					} catch (ex) {
-						// Probably a permission denied error
-						up.trigger('Error', {
-							code : plupload.SECURITY_ERROR,
-							message : 'Security error.',
-							file : file
-						});
-
-						return;
-					}
-
-					// Return on first load
-					if (el.location.href == 'about:blank' || !file) {
-						return;
-					}
-
-					// Get result
-					var result = el.documentElement.innerText || el.documentElement.textContent;
-
-					// Assume no error
-					if (result != '') {
-						file.status = plupload.DONE;
-						file.loaded = 1025;
-						file.percent = 100;
-
-						// Remove input element
-						if (file.input) {
-							file.input.removeAttribute('name');
-						}
-
-						up.trigger('UploadProgress', file);
-						up.trigger('FileUploaded', file, {
-							response : result
-						});
-
-						// Reset action and target
-						if (form.tmpAction) {
-							form.setAttribute("action", form.tmpAction);
-						}
-
-						if (form.tmpTarget) {
-							form.setAttribute("target", form.tmpTarget);
-						}
-					}
-				});
-
-				// append iframe to form
-				form.appendChild(iframe);
-
-				// Change iframe name
-				if (IE) {
-					window.frames[iframe.id].name = iframe.name;
-				}
-
-				// Create container for iframe
-				inputContainer = document.createElement('div');
-				inputContainer.id = up.id + '_iframe_container';
+				var container = document.body, iframe, url = "javascript", currentFile,
+					input, currentFileId, IE = /MSIE/.test(navigator.userAgent), mimes = [],
+					filters = up.settings.filters, i, ext, type, y;
 
 				// Convert extensions to mime types list
 				for (i = 0; i < filters.length; i++) {
@@ -199,46 +63,42 @@
 					}
 				}
 
-				// Set container styles
-				plupload.extend(inputContainer.style, {
-					position : 'absolute',
-					background : 'transparent',
-					width : '100px',
-					height : '100px',
-					overflow : 'hidden',
-					zIndex : 99999,
-					opacity : 0
-				});
+				mimes = mimes.join(',');
 
-				// Show the container if shim_bgcolor is specified
-				bgcolor = uploader.settings.shim_bgcolor;
-				if (bgcolor) {
-					plupload.extend(inputContainer.style, {
-						background : bgcolor,
-						opacity : 1
-					});
-				}
+				function createForm() {
+					var form, input, bgcolor;
 
-				// set container class
-				inputContainer.className = 'plupload_iframe';
+					// Setup unique id for form
+					currentFileId = plupload.guid();
 
-				// Append to form
-				container.appendChild(inputContainer);
+					// Create form
+					form = document.createElement('form');
+					form.setAttribute('id', 'form_' + currentFileId);
+					form.setAttribute('method', 'post');
+					form.setAttribute('enctype', 'multipart/form-data');
+					form.setAttribute('encoding', 'multipart/form-data');
+					form.setAttribute("target", up.id + '_iframe');
+					form.style.position = 'absolute';
 
-				// Create an input element
-				function createInput() {
-					// Create element and set attributes
+					// Create input and set attributes
 					input = document.createElement('input');
+					input.setAttribute('id', 'input_' + currentFileId);
 					input.setAttribute('type', 'file');
-					input.setAttribute('accept', mimes.join(','));
+					input.setAttribute('accept', mimes);
 					input.setAttribute('size', 1);
 
-					// set input styles
+					// Set input styles
 					plupload.extend(input.style, {
 						width : '100%',
 						height : '100%',
 						opacity : 0
 					});
+
+					// Show the container if shim_bgcolor is specified
+					bgcolor = up.settings.shim_bgcolor;
+					if (bgcolor) {
+						form.style.background = bgcolor;
+					}
 
 					// no opacity in IE
 					if (IE) {
@@ -249,83 +109,150 @@
 
 					// add change event
 					plupload.addEvent(input, 'change', function(e) {
-						var n = e.target;
+						var element = e.target, name, files = [];
 
-						if (n.value) {
-							// Create next input
-							createInput();
-							n.style.display = 'none';
-							addSelectedFiles(n);
+						if (element.value) {
+							getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
+
+							// Get file name
+							name = element.value.replace(/\\/g, '/');
+							name = name.substring(name.length, name.lastIndexOf('/') + 1);
+
+							// Push files
+							files.push(new plupload.File(currentFileId, name));
+
+							// Create and position next form
+							createForm();
+
+							// Fire FilesAdded event
+							if (files.length) {
+								uploader.trigger("FilesAdded", files);
+							}
 						}
 					});
 
 					// append to container
-					inputContainer.appendChild(input);
-					return true;
+					form.appendChild(input);
+					container.appendChild(form);
+
+					up.refresh();
 				}
 
-				// Create input element
-				createInput();
-			});
+				if (up.settings.container) {
+					container = getById(up.settings.container);
+					container.style.position = 'relative';
+				}
 
-			// Refresh button
-			uploader.bind("Refresh", function(up) {
-				var browseButton, browsePos, browseSize;
+				// Create iframe and add it to the container
+				iframe = document.createElement('iframe');
+				iframe.setAttribute('src', url + ':""'); // javascript:"" for HTTPS issue on IE6, uses a variable to make an ignore for jslint
+				iframe.setAttribute('id', up.id + '_iframe');
+				iframe.setAttribute('name', up.id + '_iframe');
+				iframe.style.display = 'none';
 
-				browseButton = document.getElementById(uploader.settings.browse_button);
-				browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
-				browseSize = plupload.getSize(browseButton);
+				container.appendChild(iframe);
 
-				plupload.extend(document.getElementById(uploader.id + '_iframe_container').style, {
-					top : browsePos.y + 'px',
-					left : browsePos.x + 'px',
-					width : browseSize.w + 'px',
-					height : browseSize.h + 'px'
+				// Add IFrame onload event
+				plupload.addEvent(iframe, 'load', function(e){
+					var n = e.target, el, result;
+
+					try {
+						el = n.contentWindow.document || n.contentDocument || window.frames[n.id].document;
+					} catch (ex) {
+						// Probably a permission denied error
+						up.trigger('Error', {
+							code : plupload.SECURITY_ERROR,
+							message : 'Security error.',
+							file : currentFile
+						});
+
+						return;
+					}
+
+					// Get result
+					result = el.documentElement.innerText || el.documentElement.textContent;
+
+					// Assume no error
+					if (result) {
+						currentFile.status = plupload.DONE;
+						currentFile.loaded = 1025;
+						currentFile.percent = 100;
+
+						up.trigger('UploadProgress', currentFile);
+						up.trigger('FileUploaded', currentFile, {
+							response : result
+						});
+					}
 				});
-			});
 
-			// Upload file
-			uploader.bind("UploadFile", function(up, file) {
-				// File upload finished
-				if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
-					return;
-				}
+				// Upload file
+				uploader.bind("UploadFile", function(up, file) {
+					var form, input;
 
-				// No input element so set error
-				if (!file.input) {
-					file.status = plupload.ERROR;
-					return;
-				}
+					// File upload finished
+					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
+						return;
+					}
 
-				// Set input element name attribute which allows it to be submitted
-				file.input.setAttribute('name', up.settings.file_data_name);
+					// Get the form and input elements
+					form = getById('form_' + file.id);
+					input = getById('input_' + file.id);
 
-				// Store action
-				form.tmpAction = form.getAttribute("action");
-				form.setAttribute("action", plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}));
+					// Set input element name attribute which allows it to be submitted
+					input.setAttribute('name', up.settings.file_data_name);
 
-				// Store Target
-				form.tmpTarget = form.getAttribute("target");
-				form.setAttribute("target", iframe.name);
+					// Store action
+					form.setAttribute("action", up.settings.url);
 
-				// set current file
-				this.currentfile = file;
+					// Append multipart parameters
+					plupload.each(plupload.extend({name : file.target_name || file.name}, up.settings.multipart_params), function(value, name) {
+						var input = document.createElement('input');
 
-				form.submit();
-			});
+						plupload.extend(input, {
+							type : 'hidden',
+							name : name,
+							value : value
+						});
 
-			// Remove files
-			uploader.bind("FilesRemoved", function(up, files) {
-				var i, n;
+						form.insertBefore(input, form.firstChild);
+					});
 
-				for (i = 0; i < files.length; i++) {
-					n = files[i].input;
+					currentFile = file;
 
-					// Remove input element
-					if (n) {
+					// Hide the current form
+					getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
+
+					form.submit();
+				});
+
+				// Refresh button, will reposition the input form
+				up.bind("Refresh", function(up) {
+					var browseButton, browsePos, browseSize;
+
+					browseButton = getById(up.settings.browse_button);
+					browsePos = plupload.getPos(browseButton, getById(up.settings.container));
+					browseSize = plupload.getSize(browseButton);
+
+					plupload.extend(getById('form_' + currentFileId).style, {
+						top : browsePos.y + 'px',
+						left : browsePos.x + 'px',
+						width : browseSize.w + 'px',
+						height : browseSize.h + 'px'
+					});
+				});
+
+				// Remove files
+				uploader.bind("FilesRemoved", function(up, files) {
+					var i, n;
+
+					for (i = 0; i < files.length; i++) {
+						n = getById('form_' + files[i].id);
 						n.parentNode.removeChild(n);
 					}
-				}
+				});
+
+				// Create initial form
+				createForm();
 			});
 
 			callback({success : true});
