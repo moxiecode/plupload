@@ -342,7 +342,7 @@
 						lookup[file.id],
 						up.settings.url,
 						jsonSerialize({
-							name : encodeURIComponent(file.target_name || file.name),
+							name : file.target_name || file.name,
 							mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream',
 							chunk_size : settings.chunk_size,
 							image_width : resize.width,

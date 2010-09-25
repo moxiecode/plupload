@@ -191,8 +191,8 @@ namespace Moxiecode.Plupload {
 					url += '?';
 				}
 
-				url += "name=" + this.targetName;
-
+                url += "name=" + Uri.EscapeDataString(this.targetName);
+                
 				if (this.chunking) {
 					url += "&chunk=" + this.chunk;
 					url += "&chunks=" + this.chunks;

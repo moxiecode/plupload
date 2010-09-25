@@ -417,7 +417,7 @@ package com.plupload {
 				else
 					url += '&';
 
-				url += "name=" + this._settings["name"];
+				url += "name=" + encodeURIComponent(this._settings["name"]);
 
 				if (this._chunking) {
 					url += "&chunk=" + this._chunk + "&chunks=" + this._chunks;

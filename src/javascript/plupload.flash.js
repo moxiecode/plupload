@@ -159,7 +159,7 @@
 					var settings = up.settings;
 
 					getFlashObj().uploadFile(lookup[file.id], settings.url, {
-						name : encodeURIComponent(file.target_name || file.name),
+						name : file.target_name || file.name,
 						mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream',
 						chunk_size : settings.chunk_size,
 						width : resize.width,
