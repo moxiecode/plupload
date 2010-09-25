@@ -94,11 +94,6 @@
 					container : id
 				}, settings));
 
-				// Call preinit function
-				if (settings.preinit) {
-					settings.preinit(uploader);
-				}
-
 				uploaders[id] = uploader;
 
 				function handleStatus(file) {

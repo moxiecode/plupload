@@ -708,6 +708,14 @@
 			init : function() {
 				var self = this, i, runtimeList, a, runTimeIndex = 0, items;
 
+				if (typeof(settings.preinit) == "function") {
+					settings.preinit(self);
+				} else {
+					plupload.each(settings.preinit, function(func, name) {
+						self.bind(name, func);
+					});
+				}
+
 				settings.page_url = settings.page_url || document.location.pathname.replace(/\/[^\/]+$/g, '/');
 
 				// If url is relative force it absolute to the current page
@@ -885,6 +893,14 @@
 				}
 
 				callNextInit();
+
+				if (typeof(settings.init) == "function") {
+					settings.init(self);
+				} else {
+					plupload.each(settings.init, function(func, name) {
+						self.bind(name, func);
+					});
+				}
 			},
 
 			/**
