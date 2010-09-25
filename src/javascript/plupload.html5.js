@@ -429,7 +429,7 @@
 								multipartBlob += value + crlf;
 							});
 
-							mimeType = plupload.mimeTypes[file.name.replace('c.gif'.replace(/^.+\.([^.]+)/, '$1'))] || 'application/octet-stream';
+							mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream';
 
 							// Build RFC2388 blob
 							multipartBlob += dashdash + boundary + crlf +

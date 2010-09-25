@@ -417,10 +417,10 @@ package com.plupload {
 				else
 					url += '&';
 
-				url += "name=" + escape(this._settings["name"]);
+				url += "name=" + this._settings["name"];
 
 				if (this._chunking) {
-					url += "chunk=" + this._chunk + "&chunks=" + this._chunks;
+					url += "&chunk=" + this._chunk + "&chunks=" + this._chunks;
 				}
 			}
 

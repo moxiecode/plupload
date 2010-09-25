@@ -340,8 +340,10 @@
 
 					getSilverlightObj().UploadFile(
 						lookup[file.id],
-						plupload.buildUrl(up.settings.url, {name : file.target_name || file.name}),
+						up.settings.url,
 						jsonSerialize({
+							name : encodeURIComponent(file.target_name || file.name),
+							mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream',
 							chunk_size : settings.chunk_size,
 							image_width : resize.width,
 							image_height : resize.height,

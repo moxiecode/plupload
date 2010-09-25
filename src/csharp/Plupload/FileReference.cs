@@ -32,7 +32,7 @@ namespace Moxiecode.Plupload {
 	/// </summary>
 	public class FileReference {
 		#region private fields
-		private string name, uploadUrl, id;
+		private string name, uploadUrl, id, targetName, mimeType;
 		private FileInfo info;
 		private SynchronizationContext syncContext;
 		private int chunk, chunks, chunkSize;
@@ -115,6 +115,8 @@ namespace Moxiecode.Plupload {
 			this.multipart = Convert.ToBoolean(settings["multipart"]);
 			this.multipartParams = (Dictionary<string, object>)settings["multipart_params"];
 			this.headers = (Dictionary<string, object>)settings["headers"];
+			this.targetName = (string) settings["name"];
+            this.mimeType = (string) settings["mime"];
 
             this.chunk = 0;
 			this.chunking = chunkSize > 0;
@@ -183,10 +185,18 @@ namespace Moxiecode.Plupload {
 
 			this.syncContext = SynchronizationContext.Current;
 
-			if (this.chunking) {
-				url += url.IndexOf('?') == -1 ? '?' : '&';
-				url += "chunk=" + this.chunk;
-				url += "&chunks=" + this.chunks;
+			// Add name, chunk and chunks to query string when we don't use multipart
+			if (!this.multipart) {
+				if (url.IndexOf('?') == -1) {
+					url += '?';
+				}
+
+				url += "name=" + this.targetName;
+
+				if (this.chunking) {
+					url += "&chunk=" + this.chunk;
+					url += "&chunks=" + this.chunks;
+				}
 			}
 
 			HttpWebRequest req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
@@ -243,6 +253,15 @@ namespace Moxiecode.Plupload {
 				if (this.multipart) {
 					request.ContentType = "multipart/form-data; boundary=" + boundary;
 
+					// Add name to multipart array
+					this.multipartParams["name"] = this.targetName;
+
+					// Add chunking when needed
+					if (this.chunking) {
+						this.multipartParams["chunk"] = this.chunk;
+						this.multipartParams["chunks"] = this.chunks;
+					}
+
 					// Append mutlipart parameters
 					foreach (KeyValuePair<string, object> pair in this.multipartParams) {
 						strBuff = this.StrToByteArray(dashdash + boundary + crlf +
@@ -257,7 +276,7 @@ namespace Moxiecode.Plupload {
 					strBuff = this.StrToByteArray(
 						dashdash + boundary + crlf +
 						"Content-Disposition: form-data; name=\"file\"; filename=\"" + this.name + '"' + crlf +
-						"Content-Type: application/octet-stream" + crlf + crlf
+						"Content-Type: " + this.mimeType + crlf + crlf
 					);
 
 					requestStream.Write(strBuff, 0, strBuff.Length);
