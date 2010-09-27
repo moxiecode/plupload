@@ -42,7 +42,7 @@ package com.plupload {
 	public class File extends EventDispatcher {
 		// Private fields
 		private var _fileRef:FileReference, _cancelled:Boolean;
-		private var _uploadUrl:String, _uploadPath:String;
+		private var _uploadUrl:String, _uploadPath:String, _mimeType:String;
 		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
 		private var _headers:Object, _settings:Object;
@@ -185,6 +185,7 @@ package com.plupload {
 			this._uploadUrl = url;
 			this._cancelled = false;
 			this._headers = settings.headers;
+			this._mimeType = settings.mime;
 
 			// Handle image resizing settings
 			if (settings["width"] || settings["height"]) {
@@ -463,7 +464,7 @@ package com.plupload {
 				multipartBlob.writeUTFBytes(
 					dashdash + boundary + crlf +
 					'Content-Disposition: form-data; name="' + this._fileDataName + '"; filename="' + this._fileName + '"' + crlf +
-					'Content-Type: application/octet-stream' + crlf + crlf
+					'Content-Type: ' + this._mimeType + crlf + crlf
 				);
 
 				// Add file data
