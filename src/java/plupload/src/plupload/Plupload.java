@@ -1,12 +1,8 @@
 package plupload;
 
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
@@ -16,17 +12,15 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
 import javax.swing.JApplet;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.apache.http.client.ClientProtocolException;
-
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
+
+import org.apache.http.client.ClientProtocolException;
 
 public class Plupload extends JApplet {
 
@@ -48,7 +42,8 @@ public class Plupload extends JApplet {
 	private int file_chose_return_value;
 	private Map<Integer, PluploadFile> files;
 	private int id_counter = 0;
-	private JSObject plupload;
+
+	public JSObject plupload;
 
 	public static void log(Object... args) {
 		if (console != null) {
@@ -58,7 +53,7 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 8");
+		System.out.println("version 12");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -70,15 +65,22 @@ public class Plupload extends JApplet {
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		plupload = (JSObject) ((JSObject) JSObject.getWindow(this).getMember(
-				"plupload")).getMember("applet");
-		files = new HashMap<Integer, PluploadFile>();
-		dom_id = getParameter("id");
-
+		
 		try {
 			console = (JSObject) JSObject.getWindow(this).getMember("console");
 		} catch (JSException e) {
 			System.err.println("console not available");
+		}
+		files = new HashMap<Integer, PluploadFile>();
+		dom_id = getParameter("id");
+
+		if(getParameter("mozillaMac").equals("true")){
+			// LiveConnect in Mozilla Mac (MRJ runtime) is broken.
+			// we can't access nested objects
+			plupload = JSObject.getWindow(this);
+		}
+		else{
+			plupload = (JSObject) ((JSObject) JSObject.getWindow(this).getMember("plupload")).getMember("applet");
 		}
 
 		dialog = new JFileChooser();
@@ -95,10 +97,7 @@ public class Plupload extends JApplet {
 		final PluploadFile file = files.get(id);
 		final int chunk_size = (Integer) settings.getMember("chunk_size");
 		final int retries = (Integer) settings.getMember("retries");
-		System.out.println("before cookie");
 		final Object cookie = settings.getMember("cookie");
-		System.out.println("cookie" + cookie);
-		System.out.println("after getting props");
 		
 		if (file != null) {
 			this.current_file = file;
@@ -189,7 +188,7 @@ public class Plupload extends JApplet {
 	// fires event to JS
 	public void fireEvent(String event, Object obj) {
 		Object[] args = { dom_id, event, obj };
-		plupload.call("trigger", args);
+		plupload.call("pluploadjavatrigger", args);
 	}
 
 	public void sendIOError(Exception e) {

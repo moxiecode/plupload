@@ -29,10 +29,6 @@ Will generate API Documentation for the project using the Moxiedoc tool. The doc
 
 Will produce release packages. The release packages will be placed in the tmp directory.
 
-`examples/dev_server.py`
-
-Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: http://localhost:5000/queue_applet_dojo.html
-
 How to build Flash runtime
 ---------------------------
 The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/products/flex/flexdownloads/](http://www.adobe.com/products/flex/flexdownloads/)
@@ -56,6 +52,10 @@ Signs the jar. Before running this you should create a certificate `keytool -gen
 `ant deploy-jar`
 
 Combines the three steps above.
+
+`examples/dev_server.py`
+
+Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: http://localhost:5000/queue_applet_dojo.html
 
 How to build Silverlight runtime
 ---------------------------------

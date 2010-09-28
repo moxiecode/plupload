@@ -70,7 +70,7 @@
   <target name="build-java" description="Compiles the plupload Java runtime.">
     <mkdir dir="${dir.java}/bin"/>
     <!-- can't get jdb to work anyway debug="on" -->
-    <javac srcdir="${dir.java}/src" destdir="${dir.java}/bin">
+    <javac srcdir="${dir.java}/src" destdir="${dir.java}/bin" target="1.5">
         <classpath refid="java.classpath"/>
     </javac>
     <copy todir="${dir.java}/bin/resources">

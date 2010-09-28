@@ -3,7 +3,7 @@
   var uploadInstances = {};
 
   plupload.applet = {
-		trigger : function(id, name, obj) {
+		pluploadjavatrigger : function(id, name, obj) {
 			// Detach the call so that error handling in the browser is presented correctly
       // Why is that?
 			setTimeout(function() {
@@ -35,14 +35,23 @@
 <param name="mayscript" value="true" />\
 <param name="code" value="' + code + '" />\
 <param name="scriptable" value="true" />';
+
+      if(navigator.userAgent.indexOf('Macintosh') && navigator.userAgent.indexOf('Mozilla')){
+        objectParams += '<param name="mozillaMac" value="true"></param>';
+        // LiveConnect in Mozilla Mac (MRJ runtime) is broken.
+			  // we can't access nested objects there, i.d., putting function in global namespace instead
+        window['pluploadjavatrigger'] = plupload.applet.trigger;
+      }
+      else{
+        objectParams += '<param name="mozillaMac" value="false"></param>';
+      }
       
       // Create the Object tag.
       if (navigator.appName == 'Microsoft Internet Explorer') {
         var extraAttributes = '';
-        // Use the <object> tag instead of <applet>. IE users without Java can get the
-        // latest JRE without leaving the page or restarting the browser.
         appletHTML = '\
 <object \
+id="' + id + '" \
 classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" \
 codebase="http://java.sun.com/products/plugin/1.4/jinstall-14-win32.cab#Version=1,4,0,mn" \
 width="' + width + '" height="' + height + '">' +
@@ -50,16 +59,29 @@ objectParams + '\
 </object>';
       }
       else {
-        appletHTML = '\
+        if(navigator.userAgent.indexOf('Chrome') !== -1){
+          // Chrome issues an errounous request, when using the object tag
+          appletHTML = '\
 <applet code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" id="' + id + '" \
 width="' + width + '" height="' + height + '">' +
 objectParams + '\
-You browser doesn\'t have Java installed.\
 </applet>';
+        }
+        else{
+          appletHTML = '\
+<object \
+id="' + id + '" \
+classid="java:plupload.Plupload.class" \
+type="application/x-java-applet" \
+width="' + width + '" height="' + height + '">' +
+objectParams + '\
+</object>';
+        }
       }
       return appletHTML; 
     }
  };
+
 
   plupload.runtimes.Applet = plupload.addRuntime("java", {
     getFeatures : function() {
@@ -148,7 +170,9 @@ You browser doesn\'t have Java installed.\
 
 			// Wait for Applet to send init event
 			uploader.bind("Applet:Init", function() {
-				var lookup = {}, i, resize = uploader.settings.resize || {};
+				console.log("Applet:Init");
+
+        var lookup = {}, i, resize = uploader.settings.resize || {};
 
 				initialized = true;
         // FIXME
