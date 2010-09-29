@@ -833,7 +833,12 @@
 					file.status = plupload.DONE;
 					file.loaded = file.size;
 					up.trigger('UploadProgress', file);
-					uploadNext.call(self);
+
+					// Upload next file but detach it from the error event
+					// since other custom listeners might want to stop the queue
+					window.setTimeout(function() {
+						uploadNext.call(self);
+					});
 				});
 
 				// Setup runtimeList
@@ -984,9 +989,9 @@
 			 */
 			splice : function(start, length) {
 				var removed;
-	
+
 				// Splice and trigger events
-				removed = files.splice(start, length);
+				removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
 				this.trigger("FilesRemoved", removed);
 				this.trigger("QueueChanged");
