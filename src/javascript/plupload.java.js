@@ -35,12 +35,12 @@
 <param name="mayscript" value="true" />\
 <param name="code" value="' + code + '" />\
 <param name="scriptable" value="true" />';
-
-      if(navigator.userAgent.indexOf('Macintosh') && navigator.userAgent.indexOf('Mozilla')){
+      
+      if(navigator.userAgent.indexOf('Macintosh') !== -1 && navigator.userAgent.indexOf('Mozilla') !== -1){
         objectParams += '<param name="mozillaMac" value="true"></param>';
         // LiveConnect in Mozilla Mac (MRJ runtime) is broken.
 			  // we can't access nested objects there, i.d., putting function in global namespace instead
-        window['pluploadjavatrigger'] = plupload.applet.trigger;
+        window['pluploadjavatrigger'] = plupload.applet.pluploadjavatrigger;
       }
       else{
         objectParams += '<param name="mozillaMac" value="false"></param>';
@@ -170,10 +170,7 @@ objectParams + '\
 
 			// Wait for Applet to send init event
 			uploader.bind("Applet:Init", function() {
-				console.log("Applet:Init");
-
         var lookup = {}, i, resize = uploader.settings.resize || {};
-
 				initialized = true;
         // FIXME
 				// getAppletObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
@@ -361,4 +358,3 @@ objectParams + '\
     }// end object arg
   });// end add runtime
 })(plupload);
-

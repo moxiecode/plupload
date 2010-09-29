@@ -16,7 +16,7 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 		 // Remove all existing non plupload items
      // Skip -- we don't have anything inside
 
-     d.place('<div class="plupload_wrapper plupload_scroll">' +
+     target.innerHTML = '<div class="plupload_wrapper plupload_scroll">' +
 				'<div id="' + id + '_container" class="plupload_container">' +
 					'<div class="plupload">' +
 						'<div class="plupload_header">' +
@@ -59,13 +59,16 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
 					'</div>' +
 				'</div>' +
 				'<input type="hidden" id="' + id + '_count" name="' + id + '_count" value="0" />' +
-			'</div>', target, 'first');
+			'</div>';
    }
 
    function pluploadQueue(target, settings){
      
      var uploader, id;
 		 id = d.attr(target, 'id');
+     if(settings.loader_url){
+       target.innerHTML = '<div style="width:100%;text-align:center"><img src="' + settings.loader_url + '" /></div>';
+     }
 
      if(!id){
      	 id = plupload.guid();
