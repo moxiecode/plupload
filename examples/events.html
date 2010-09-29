@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" href="css/plupload.queue.css" type="text/css" media="screen" />
+<title>Plupload - Events example</title>
+<style type="text/css">
+body {background: #9A7C5F;}
+</style>
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+	google.load("jquery", "1.3");
+</script>
+<script type="text/javascript" src="../js/gears_init.js"></script>
+<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+<script type="text/javascript" src="../js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../js/jquery.plupload.queue.min.js"></script>
+<script>
+$(function() {
+	function log() {
+		var str = "";
+
+		plupload.each(arguments, function(arg) {
+			var row = "";
+
+			if (typeof(arg) != "string") {
+				plupload.each(arg, function(value, key) {
+					// Convert items in File objects to human readable form
+					if (arg instanceof plupload.File) {
+						// Convert status to human readable
+						switch (value) {
+							case plupload.QUEUED:
+								value = 'QUEUED';
+								break;
+
+							case plupload.UPLOADING:
+								value = 'UPLOADING';
+								break;
+
+							case plupload.FAILED:
+								value = 'FAILED';
+								break;
+
+							case plupload.DONE:
+								value = 'DONE';
+								break;
+						}
+					}
+
+					if (typeof(value) != "function") {
+						row += (row ? ', ': '') + key + '=' + value;
+					}
+				});
+
+				str += row + " ";
+			} else { 
+				str += arg + " ";
+			}
+		});
+
+		$('#log').val($('#log').val() + str + "\r\n");
+	}
+
+	$("#uploader").pluploadQueue({
+		// General settings
+		runtimes: 'html5,gears,browserplus,silverlight,flash,html4',
+		url: 'upload.php',
+		max_file_size: '10mb',
+		chunk_size: '1mb',
+		unique_names: true,
+
+		// Resize images on clientside if we can
+		resize: {width: 320, height: 240, quality: 90},
+
+		// Specify what files to browse for
+		filters: [
+			{title: "Image files", extensions: "jpg,gif,png"},
+			{title: "Zip files", extensions: "zip"}
+		],
+
+		// Flash/Silverlight paths
+		flash_swf_url: '../js/plupload.flash.swf',
+		silverlight_xap_url: '../js/plupload.silverlight.xap',
+
+		// PreInit events, bound before any internal events
+		preinit: {
+			Init: function(up, info) {
+				log('[Init]', 'Info:', info, 'Features:', up.features);
+			},
+
+			UploadFile: function(up, file) {
+				log('[UploadFile]', file);
+
+				// You can override settings before the file is uploaded
+				// up.settings.url = 'upload.php?id=' + file.id;
+				// up.settings.multipart_params = {param1: 'value1', param2: 'value2'};
+			}
+		},
+
+		// Post init events, bound after the internal events
+		init: {
+			Refresh: function(up) {
+				// Called when upload shim is moved
+				log('[Refresh]');
+			},
+
+			StateChanged: function(up) {
+				// Called when the state of the queue is changed
+				log('[StateChanged]', up.state == plupload.STARTED ? "STARTED": "STOPPED");
+			},
+
+			QueueChanged: function(up) {
+				// Called when the files in queue are changed by adding/removing files
+				log('[QueueChanged]');
+			},
+
+			UploadProgress: function(up, file) {
+				// Called while a file is being uploaded
+				log('[UploadProgress]', 'File:', file, "Total:", up.total);
+			},
+
+			FilesAdded: function(up, files) {
+				// Callced when files are added to queue
+				log('[FilesAdded]');
+
+				plupload.each(files, function(file) {
+					log('  File:', file);
+				});
+			},
+
+			FilesRemoved: function(up, files) {
+				// Called when files where removed from queue
+				log('[FilesRemoved]');
+
+				plupload.each(files, function(file) {
+					log('  File:', file);
+				});
+			},
+
+			FileUploaded: function(up, file, info) {
+				// Called when a file has finished uploading
+				log('[FileUploaded] File:', file, "Info:", info);
+			},
+
+			ChunkUploaded: function(up, file, info) {
+				// Called when a file chunk has finished uploading
+				log('[ChunkUploaded] File:', file, "Info:", info);
+			},
+
+			Error: function(up, args) {
+				// Called when a error has occured
+				log('[error] ', args);
+			}
+		}
+	});
+
+	$('#log').val('');
+	$('#clear').click(function(e) {
+		e.preventDefault();
+		$("#uploader").pluploadQueue().splice();
+	});
+});
+</script>
+</head>
+<body>
+
+<form method="post" action="dump.php">
+	<h1>Events example</h1>
+
+	<p>Shows how to bind and use all available events.</p>
+
+	<h3>Log messages</h3>
+	<textarea id="log" style="width: 100%; height: 150px; font-size: 11px" spellcheck="false" wrap="off"></textarea>
+
+	<h3>Queue widget</h3>
+	<div id="uploader" style="width: 450px; height: 330px;">You browser doesn't support upload.</div>
+	<a id="clear" href="#">Clear queue</a>
+</form>
+
+</body>
+</html>

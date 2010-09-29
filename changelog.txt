@@ -2,12 +2,14 @@ Version 1.2.x (2010-xx-xx)
 	Added support for crossdomain loading of the XAP and SWF files and crossdomain upload.
 	Added preinit/init options to to ease up the binding of custom events to queueWidget and the Uploader class.
 	Added drag/drop support for Safari kind of a hack until they release official drag/drop support like Chrome.
+	Added events example file that show how to bind all events and display event specific data.
 	Fixed logic issue with the upload.php example file. Chunking wasn't working correctly.
 	Fixed issue with HTML4 not handling the form encoding correctly on older IE versions. Patch contributed by jinxdone.
 	Fixed so the HTML4 runtime only submits the defined multipart_params arguments.
 	Fixes issue where it wasn't possible to dynamically override url or mutlipart_params for the HTML4 runtime.
 	Fixed so all runtimes pass the name, chunk and chunks parameters as multipart parameters instead of querystring parameters.
 	Fixed so files are read using the newer FileReader class if it's available if not it tries the older getAsXXX on Gecko.
+	Fixed bug where IE 9 beta 1 wouldn't render Silverlight properly.
 Version 1.2.4 (2010-09-08)
 	Added new BeforeUpload event to make it easier to override settings before a file is uploaded.
 	Added new automatic usage of FileReference in Flash if it's possible. Contributed by Marcel Jackwerth.
