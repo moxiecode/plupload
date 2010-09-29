@@ -201,7 +201,7 @@
 				width : '100px',
 				height : '100px',
 				overflow : 'hidden',
-				opacity : uploader.settings.shim_bgcolor ? '' : 0.01 // Force transparent if bgcolor is undefined
+				opacity : uploader.settings.shim_bgcolor || document.documentMode > 8 ? '' : 0.01 // Force transparent if bgcolor is undefined
 			});
 
 			silverlightContainer.className = 'plupload silverlight';
