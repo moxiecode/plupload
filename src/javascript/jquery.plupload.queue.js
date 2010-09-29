@@ -122,11 +122,6 @@
 					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
 					$('div.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
 					$('span.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
-
-					// All files are uploaded
-					if (uploader.total.uploaded == uploader.files.length) {
-						uploader.stop();
-					}
 				}
 
 				function updateList() {
@@ -251,9 +246,8 @@
 					});
 
 					$('a.plupload_stop', target).click(function(e) {
-						uploader.stop();
-
 						e.preventDefault();
+						uploader.stop();
 					});
 
 					$('a.plupload_start', target).addClass('plupload_disabled');
