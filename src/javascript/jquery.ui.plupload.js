@@ -375,7 +375,6 @@
 				switch (settings) {
 					case 'getUploader':
 						return this.pluploadQueue();
-						break;
 
 					case 'destroy':
 						this.pluploadQueue().events = {};

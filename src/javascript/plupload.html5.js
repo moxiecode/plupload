@@ -9,10 +9,25 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, File:false, window:false, atob:false, FormData:false */
+/*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false */
 
 (function(plupload) {
 	var fakeSafariDragDrop;
+
+	function readFile(file, callback) {
+		var reader;
+
+		// Use FileReader if it's available
+		if ("FileReader" in window) {
+			reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = function() {
+				callback(reader.result);
+			};
+		} else {
+			return callback(file.getAsDataURL());
+		}
+	}
 
 	function scaleImage(image_file, max_width, max_height, mime, callback) {
 		var canvas, context, img, data, scale;
@@ -56,21 +71,6 @@
 
 			img.src = data;
 		});
-	}
-
-	function readFile(file, callback) {
-		var reader;
-
-		// Use FileReader if it's available
-		if ("FileReader" in window) {
-			reader = new FileReader();
-			reader.readAsDataURL(file);
-			reader.onload = function() {
-				callback(reader.result);
-			};
-		} else {
-			return callback(file.getAsDataURL());
-		}
 	}
 
 	/**
