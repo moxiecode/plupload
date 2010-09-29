@@ -14,46 +14,63 @@
 (function(plupload) {
 	var fakeSafariDragDrop;
 
-	function scaleImage(image_data_url, max_width, max_height, mime, callback) {
+	function scaleImage(image_file, max_width, max_height, mime, callback) {
 		var canvas, context, img, data, scale;
 
-		// Setup canvas and context
-		canvas = document.createElement("canvas");
-		canvas.style.display = 'none';
-		document.body.appendChild(canvas);
-		context = canvas.getContext('2d');
+		readFile(image_file, function(data) {
+			// Setup canvas and context
+			canvas = document.createElement("canvas");
+			canvas.style.display = 'none';
+			document.body.appendChild(canvas);
+			context = canvas.getContext('2d');
 
-		// Load image
-		img = new Image();
-		img.onload = function() {
-			var width, height, percentage;
+			// Load image
+			img = new Image();
+			img.onload = function() {
+				var width, height, percentage;
 
-			scale = Math.min(max_width / img.width, max_height / img.height);
+				scale = Math.min(max_width / img.width, max_height / img.height);
 
-			if (scale < 1) {
-				width = Math.round(img.width * scale);
-				height = Math.round(img.height * scale);
-			} else {
-				width = img.width;
-				height = img.height;
-			}
+				if (scale < 1) {
+					width = Math.round(img.width * scale);
+					height = Math.round(img.height * scale);
+				} else {
+					width = img.width;
+					height = img.height;
+				}
 
-			// Scale image and canvas
-			canvas.width = width;
-			canvas.height = height;
-			context.drawImage(img, 0, 0, width, height);
+				// Scale image and canvas
+				canvas.width = width;
+				canvas.height = height;
+				context.drawImage(img, 0, 0, width, height);
 
-			// Remove data prefix information and grab the base64 encoded data and decode it
-			data = canvas.toDataURL(mime);
-			data = data.substring(data.indexOf('base64,') + 7);
-			data = atob(data);
+				// Remove data prefix information and grab the base64 encoded data and decode it
+				data = canvas.toDataURL(mime);
+				data = data.substring(data.indexOf('base64,') + 7);
+				data = atob(data);
 
-			// Remove canvas and execute callback with decoded image data
-			canvas.parentNode.removeChild(canvas);
-			callback({success : true, data : data});
-		};
+				// Remove canvas and execute callback with decoded image data
+				canvas.parentNode.removeChild(canvas);
+				callback({success : true, data : data});
+			};
 
-		img.src = image_data_url;
+			img.src = data;
+		});
+	}
+
+	function readFile(file, callback) {
+		var reader;
+
+		// Use FileReader if it's available
+		if ("FileReader" in window) {
+			reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = function() {
+				callback(reader.result);
+			};
+		} else {
+			return callback(file.getAsDataURL());
+		}
 	}
 
 	/**
@@ -70,11 +87,11 @@
 		 * @return {Object} Name/value object with supported features.
 		 */
 		getFeatures : function() {
-			var xhr, hasXhrSupport, hasProgress, dataAccessSupport, sliceSupport;
+			var xhr, hasXhrSupport, hasProgress, dataAccessSupport, sliceSupport, win = window;
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
 
-			if (window.XMLHttpRequest) {
+			if (win.XMLHttpRequest) {
 				xhr = new XMLHttpRequest();
 				hasProgress = !!xhr.upload;
 				hasXhrSupport = !!(xhr.sendAsBinary || xhr.upload);
@@ -82,7 +99,8 @@
 
 			// Check for support for various features
 			if (hasXhrSupport) {
-				dataAccessSupport = !!(File && File.prototype.getAsDataURL);
+				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly
+				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || win.FileReader) && xhr.sendAsBinary);
 				sliceSupport = !!(File && File.prototype.slice);
 			}
 
@@ -92,10 +110,10 @@
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: window.mozInnerScreenX !== undefined || sliceSupport || fakeSafariDragDrop,
+				dragdrop: win.mozInnerScreenX !== undefined || sliceSupport || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
-				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
+				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
 				progress: hasProgress,
 				chunking: sliceSupport || dataAccessSupport
 			};
@@ -462,7 +480,7 @@
 				if (features.jpgresize) {
 					// Resize image if it's a supported format and resize is enabled
 					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-						scaleImage(nativeFile.getAsDataURL(), resize.width, resize.height, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
+						scaleImage(nativeFile, resize.width, resize.height, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
 							// If it was scaled send the scaled image if it failed then
 							// send the raw image and let the server do the scaling
 							if (res.success) {
