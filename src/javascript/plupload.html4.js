@@ -240,7 +240,9 @@
 					}
 
 					if (up.state == plupload.STOPPED) {
-						iframe.parentNode.removeChild(iframe);
+						window.setTimeout(function() {
+							iframe.parentNode.removeChild(iframe);
+						}, 0);
 					}
 				});
 
