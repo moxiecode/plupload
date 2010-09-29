@@ -149,7 +149,13 @@ $(function() {
 
 			Error: function(up, args) {
 				// Called when a error has occured
-				log('[error] ', args);
+
+				// Handle file specific error and general error
+				if (args.file) {
+					log('[error]', args, "File:", args.file);
+				} else {
+					log('[error]', args);
+				}
 			}
 		}
 	});

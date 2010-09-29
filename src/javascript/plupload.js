@@ -14,7 +14,7 @@
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
-		xmlEncodeRegExp = /[<>&\"\']/g, undef;
+		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout;
 
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -779,8 +779,12 @@
 
 					// Only trigger QueueChanged event if any files where added
 					if (count) {
-						self.trigger("QueueChanged");
-						self.refresh();
+						delay(function() {
+							self.trigger("QueueChanged");
+							self.refresh();
+						});
+					} else {
+						return false; // Stop the FilesAdded event from immediate propagation
 					}
 				});
 
@@ -823,7 +827,7 @@
 
 						// Upload next file but detach it from the error event
 						// since other custom listeners might want to stop the queue
-						window.setTimeout(function() {
+						delay(function() {
 							uploadNext.call(self);
 						});
 					}
@@ -836,7 +840,7 @@
 
 					// Upload next file but detach it from the error event
 					// since other custom listeners might want to stop the queue
-					window.setTimeout(function() {
+					delay(function() {
 						uploadNext.call(self);
 					});
 				});
