@@ -36,15 +36,9 @@
 <param name="code" value="' + code + '" />\
 <param name="scriptable" value="true" />';
       
-      if(navigator.userAgent.indexOf('Macintosh') !== -1 && navigator.userAgent.indexOf('Mozilla') !== -1){
-        objectParams += '<param name="mozillaMac" value="true"></param>';
-        // LiveConnect in Mozilla Mac (MRJ runtime) is broken.
-			  // we can't access nested objects there, i.d., putting function in global namespace instead
-        window['pluploadjavatrigger'] = plupload.applet.pluploadjavatrigger;
-      }
-      else{
-        objectParams += '<param name="mozillaMac" value="false"></param>';
-      }
+      // LiveConnect in Mozilla Mac (MRJ runtime) is broken.
+			// we can't access nested objects there, i.d., putting function in global namespace instead
+      // Ah, it works with eval("foo.bar") but not getMember
       
       // Create the Object tag.
       if (navigator.appName == 'Microsoft Internet Explorer') {
@@ -177,12 +171,15 @@ objectParams + '\
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
-                        
+
+          // converted to string since number type conversion is buggy in MRJ runtime
+	        // In Firefox Mac (MRJ) runtime every number is a double
+
 					getAppletObj().uploadFile(
-            lookup[file.id], settings.url, {
+            lookup[file.id] + "", settings.url, {
               cookie: document.cookie,
-					    chunk_size : settings.chunk_size,
-					    retries: settings.retries || 3
+					    chunk_size : settings.chunk_size + "",
+					    retries: (settings.retries || 3) + ""
 					  });
 				});
 

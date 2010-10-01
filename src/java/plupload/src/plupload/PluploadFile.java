@@ -11,11 +11,10 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import netscape.javascript.JSObject;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.utils.URIUtils;
@@ -73,12 +72,14 @@ public class PluploadFile {
 	}
 
 	public void upload(String upload_uri, int chunk_size, int retries, String cookie)
-			throws IOException, NoSuchAlgorithmException, URISyntaxException {
+			throws IOException, NoSuchAlgorithmException, URISyntaxException, ParseException {
 		prepare(upload_uri, chunk_size, retries, cookie);
 
 		if (!overwrite) {
-			Map<String, String> result = uploader.probe(getProbeUri());
+			Map<String, String> result = uploader.probe(getProbeUri());	
 			String status = result.get("status");
+			
+			System.out.println("got status from server: " + status);
 			
 			if (status.equals("uploading")) {
 				chunk_server = Integer.parseInt(result.get("chunk"));

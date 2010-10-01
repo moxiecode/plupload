@@ -40,7 +40,7 @@ public class Plupload extends JApplet {
 	private JFileChooser dialog;
 	private String dom_id;
 	private int file_chose_return_value;
-	private Map<Integer, PluploadFile> files;
+	private Map<String, PluploadFile> files;
 	private int id_counter = 0;
 
 	public JSObject plupload;
@@ -53,7 +53,7 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 13");
+		System.out.println("version 14");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -71,18 +71,21 @@ public class Plupload extends JApplet {
 		} catch (JSException e) {
 			System.err.println("console not available");
 		}
-		files = new HashMap<Integer, PluploadFile>();
+		files = new HashMap<String, PluploadFile>();
 		dom_id = getParameter("id");
 
-		if(getParameter("mozillaMac").equals("true")){
-			// LiveConnect in Mozilla Mac (MRJ runtime) is broken.
-			// we can't access nested objects
-			plupload = JSObject.getWindow(this);
-		}
-		else{
-			plupload = (JSObject) ((JSObject) JSObject.getWindow(this).getMember("plupload")).getMember("applet");
-		}
+//		if(getParameter("mozillaMac").equals("true")){
+//			// LiveConnect in Mozilla Mac (MRJ runtime) is broken.
+//			// we can't access nested objects
+//			plupload = JSObject.getWindow(this);
+//		}
+//		else{
+//			plupload = (JSObject) ((JSObject) JSObject.getWindow(this).getMember("plupload")).getMember("applet");
+//		}
 
+		// nested getMember is broken, e.g., getMember("plupload").getMember("applet")
+		// eval does the trick
+		plupload = (JSObject)JSObject.getWindow(this).eval("plupload.applet");
 		dialog = new JFileChooser();
 		dialog.addActionListener(getFileChooserActionListener());
 
@@ -92,11 +95,11 @@ public class Plupload extends JApplet {
 
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
-	public void uploadFile(final Integer id, final String url,
+	public void uploadFile(final String id, final String url,
 			final JSObject settings) {
 		final PluploadFile file = files.get(id);
-		final int chunk_size = (Integer) settings.getMember("chunk_size");
-		final int retries = (Integer) settings.getMember("retries");
+		final int chunk_size = Integer.parseInt((String)settings.getMember("chunk_size"));
+		final int retries = Integer.parseInt((String)settings.getMember("retries"));
 		final Object cookie = settings.getMember("cookie");
 		
 		if (file != null) {
@@ -125,6 +128,7 @@ public class Plupload extends JApplet {
 	@SuppressWarnings("unchecked")
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
+		System.out.println("upload next chunk");
 		try {
 			if (this.current_file != null) {
 				final PluploadFile file = this.current_file;
@@ -224,7 +228,7 @@ public class Plupload extends JApplet {
 
 	private void selectEvent(PluploadFile file) {
 		// handles file add from file chooser
-		files.put(file.id, file);
+		files.put(file.id + "", file);
 
 		file.addFileUploadListener(new FileUploadListener() {
 

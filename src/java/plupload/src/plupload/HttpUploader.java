@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,30 +27,30 @@ public class HttpUploader {
 	private int retries;
 	private String cookie;
 	private HttpClient httpclient;
-	
+
 	public HttpUploader(int chunk_retries, String cookie){
 		this.httpclient = HttpUtil.getHttpClient();
 		this.retries = chunk_retries;
 		this.cookie = cookie;
 	}
-	
+
 	public int sendChunk(byte[] data, int len, int chunk, long chunks,
 			String name, URI uri) throws NoSuchAlgorithmException, URISyntaxException,
 			ClientProtocolException, IOException {
 		InputStreamEntity entity = new InputStreamEntity(
 				new ByteArrayInputStream(data), len);
 		entity.setContentType("application/octet-stream");
-		
+
 		HttpPost httppost = new HttpPost(uri);
 		httppost.setEntity(entity);
 		httppost.addHeader("Cookie", cookie);
 		HttpResponse response = httpclient.execute(httppost);
-		
+
 		HttpEntity resEntity = response.getEntity();
 		int status_code = response.getStatusLine().getStatusCode();
 
 		String body = EntityUtils.toString(resEntity);
-		
+
 		if (status_code != 200) {
 			if (retries > 0) {
 				retries--;
@@ -60,15 +61,15 @@ public class HttpUploader {
 		}
 		return status_code;
 	}
-	
-	public Map<String, String> probe(URI uri) throws ClientProtocolException, IOException{
+
+	public Map<String, String> probe(URI uri) throws ClientProtocolException, IOException, ParseException{
 		System.out.println("probe");
 		HttpGet get = new HttpGet(uri);
 		get.addHeader("Cookie", cookie);
 		System.out.println("cookie:" + cookie);
-		
+
 		HttpResponse response = httpclient.execute(get);
-		String body = EntityUtils.toString(response.getEntity());
+		String body = HttpUtil.toString(response.getEntity());
 		if(response.getStatusLine().getStatusCode() != 200){
 			throw new IOException("Exception probing server: " + body);
 		}
@@ -87,55 +88,55 @@ public class HttpUploader {
 		return URLEncodedUtils.format(q, "UTF-8");
 	}
 
-//	public static void sendFile(PluploadFile file)
-//			throws NoSuchAlgorithmException, ClientProtocolException,
-//			URISyntaxException, IOException {
-//		InputStream in = new BufferedInputStream(
-//				new FileInputStream(file.file), CHUNK_SIZE);
-//		String name = file.name;
-//
-//		long chunks = (file.size + CHUNK_SIZE - 1) / CHUNK_SIZE;
-//		byte[] buffer = new byte[CHUNK_SIZE];
-//		int chunk = 0;
-//		while (true) {
-//			if (-1 == in.read(buffer)) {
-//				break;
-//			}
-//			MessageDigest md5 = MessageDigest.getInstance("MD5");
-//			md5.update(buffer);
-//			String md5hex = hexdigest(md5);
-//			String params = getQueryParams(chunk, chunks, md5hex, name);
-//			URI uri = URIUtils.createURI("http", "localhost", 5000, "/", params, null);
-//			sendChunk(buffer, chunk, chunks, name, uri);
-//			chunk++;
-//		}
-//	}
+	//	public static void sendFile(PluploadFile file)
+	//			throws NoSuchAlgorithmException, ClientProtocolException,
+	//			URISyntaxException, IOException {
+	//		InputStream in = new BufferedInputStream(
+	//				new FileInputStream(file.file), CHUNK_SIZE);
+	//		String name = file.name;
+	//
+	//		long chunks = (file.size + CHUNK_SIZE - 1) / CHUNK_SIZE;
+	//		byte[] buffer = new byte[CHUNK_SIZE];
+	//		int chunk = 0;
+	//		while (true) {
+	//			if (-1 == in.read(buffer)) {
+	//				break;
+	//			}
+	//			MessageDigest md5 = MessageDigest.getInstance("MD5");
+	//			md5.update(buffer);
+	//			String md5hex = hexdigest(md5);
+	//			String params = getQueryParams(chunk, chunks, md5hex, name);
+	//			URI uri = URIUtils.createURI("http", "localhost", 5000, "/", params, null);
+	//			sendChunk(buffer, chunk, chunks, name, uri);
+	//			chunk++;
+	//		}
+	//	}
 
-//	public static void main(String[] args) throws Exception {
-//		if (args.length != 1) {
-//			System.out.println("File path not given");
-//			System.exit(1);
-//		}
-//
-//		PluploadFile file = new PluploadFile(0, new File(args[0]));
-//		sendFile(file);
+	//	public static void main(String[] args) throws Exception {
+	//		if (args.length != 1) {
+	//			System.out.println("File path not given");
+	//			System.exit(1);
+	//		}
+	//
+	//		PluploadFile file = new PluploadFile(0, new File(args[0]));
+	//		sendFile(file);
 
-		// FileEntity entity = new FileEntity(file, "application/octet-stream");
-		// MultipartEntity entity = new MultipartEntity();
-		// entity.addPart("file", new FileBody(file,
-		// "application/octet-stream"));
+	// FileEntity entity = new FileEntity(file, "application/octet-stream");
+	// MultipartEntity entity = new MultipartEntity();
+	// entity.addPart("file", new FileBody(file,
+	// "application/octet-stream"));
 
-		// reqEntity.setChunked(true);
-		// It may be more appropriate to use FileEntity class in this particular
-		// instance but we are using a more generic InputStreamEntity to
-		// demonstrate
-		// the capability to stream out data from any arbitrary source
-		// 
-		// FileEntity entity = new FileEntity(file, "binary/octet-stream");
+	// reqEntity.setChunked(true);
+	// It may be more appropriate to use FileEntity class in this particular
+	// instance but we are using a more generic InputStreamEntity to
+	// demonstrate
+	// the capability to stream out data from any arbitrary source
+	// 
+	// FileEntity entity = new FileEntity(file, "binary/octet-stream");
 
-		// When HttpClient instance is no longer needed,
-		// shut down the connection manager to ensure
-		// immediate deallocation of all system resources
-//		httpclient.getConnectionManager().shutdown();
-//	}
+	// When HttpClient instance is no longer needed,
+	// shut down the connection manager to ensure
+	// immediate deallocation of all system resources
+	//		httpclient.getConnectionManager().shutdown();
+	//	}
 }
