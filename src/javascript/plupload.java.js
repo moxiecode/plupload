@@ -65,7 +65,7 @@ objectParams + '\
           appletHTML = '\
 <object \
 id="' + id + '" \
-classid="java:plupload.Plupload.class" \
+classid="java:plupload.Plupload" \
 type="application/x-java-applet" \
 width="' + width + '" height="' + height + '">' +
 objectParams + '\
@@ -166,8 +166,14 @@ objectParams + '\
 			uploader.bind("Applet:Init", function() {
         var lookup = {}, i, resize = uploader.settings.resize || {};
 				initialized = true;
-        // FIXME
-				// getAppletObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+
+        if(uploader.settings.filters){
+          var filters = [];
+          for(i = 0; i < uploader.settings.filters.length; i++){
+            filters.push(uploader.settings.filters[i].extensions);
+          }
+			    getAppletObj().setFileFilters(filters.join(","));          
+        }
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;

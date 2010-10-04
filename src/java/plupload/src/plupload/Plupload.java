@@ -2,6 +2,8 @@ package plupload;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.AccessController;
@@ -91,6 +93,30 @@ public class Plupload extends JApplet {
 
 		// callback to JS
 		fireEvent("Init");
+	}
+	
+	public void setFileFilters(final String filters){
+		dialog.setFileFilter(new javax.swing.filechooser.FileFilter() {
+			
+			@Override
+			public String getDescription() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public boolean accept(File f) {
+				if(f.isDirectory()){
+					return true;
+				}
+				for(String filter : filters.split(",")){
+					if(f.getName().toLowerCase().endsWith(filter.toLowerCase())){
+						return true;
+					}
+				}
+				return false;
+			}
+		});
 	}
 
 	// LiveConnect calls from JS

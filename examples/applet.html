@@ -18,7 +18,11 @@ $(function() {
 		container : 'container',
     chunk_size: '1mb',
 		url : 'http://localhost:5000/',
-    java_applet_url: 'applet/plupload.java.jar'
+    java_applet_url: 'applet/plupload.java.jar',
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		]
 	});
 
 	uploader.bind('Init', function(up, params) {
