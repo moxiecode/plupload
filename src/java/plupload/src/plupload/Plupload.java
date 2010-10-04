@@ -95,28 +95,44 @@ public class Plupload extends JApplet {
 		fireEvent("Init");
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void setFileFilters(final String filters){
-		dialog.setFileFilter(new javax.swing.filechooser.FileFilter() {
-			
-			@Override
-			public String getDescription() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			
-			@Override
-			public boolean accept(File f) {
-				if(f.isDirectory()){
-					return true;
+		try {
+			AccessController.doPrivileged(new PrivilegedExceptionAction() {
+				public Object run() throws IOException, Exception {
+					dialog.setFileFilter(new javax.swing.filechooser.FileFilter() {
+						
+						@Override
+						public String getDescription() {
+							// TODO Auto-generated method stub
+							return null;
+						}
+						
+						@Override
+						public boolean accept(File f) {
+							if(f.isDirectory()){
+								return true;
+							}
+							for(String filter : filters.split(",")){
+								if(f.getName().toLowerCase().endsWith(filter.toLowerCase())){
+									return true;
+								}
+							}
+							return false;
+						}
+					});
+					return null;
 				}
-				for(String filter : filters.split(",")){
-					if(f.getName().toLowerCase().endsWith(filter.toLowerCase())){
-						return true;
-					}
-				}
-				return false;
+			});
+		} catch (PrivilegedActionException e) {
+			Exception ex = e.getException();
+			if (ex instanceof IOException) {
+				sendIOError(ex);
+			} else if (ex instanceof Exception) {
+				sendError(ex);
 			}
-		});
+		}
+		
 	}
 
 	// LiveConnect calls from JS
