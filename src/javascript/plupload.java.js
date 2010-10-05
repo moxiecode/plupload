@@ -54,12 +54,18 @@ objectParams + '\
       }
       else {
         if(navigator.userAgent.indexOf('Chrome') !== -1){
-          // Chrome issues an errounous request, when using the object tag
+          // Chrome / Safari issues an errounous request, when using the object tag
           appletHTML = '\
-<applet code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" id="' + id + '" \
+<applet mayscript="true" code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" id="' + id + '" \
 width="' + width + '" height="' + height + '">' +
 objectParams + '\
 </applet>';
+        }
+        else if(navigator.userAgent.indexOf('Safari') !== -1){
+          // LiveConnect is flawed in Safari
+          // It only supports sending primtive types
+          // TODO: rewrite to support that
+          alert("Safari is currently not supported by Plupload");
         }
         else{
           appletHTML = '\
@@ -94,7 +100,7 @@ objectParams + '\
           initialized, 
           waitCount = 0, 
           container = document.body;
-
+      
 			uploadInstances[uploader.id] = uploader;
 
 			// Find browse button and set to to be relative

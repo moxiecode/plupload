@@ -57,6 +57,8 @@ Combines the three steps above.
 
 Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: http://localhost:5000/queue_applet_dojo.html
 
+The Java runtime is currently not working in Safari because it has a broken LiveConnect implementation.
+
 How to build Silverlight runtime
 ---------------------------------
 The Silverlight runtime uses a .xap file that can be built using the Silverlight SDK or Visual Studio. [http://silverlight.net/getstarted/](http://silverlight.net/getstarted/)

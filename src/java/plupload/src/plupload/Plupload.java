@@ -292,4 +292,23 @@ public class Plupload extends JApplet {
 
 		fireEvent(SELECT_FILE, new Object[] { file });
 	}
+	
+	// for broken Safari LiveConnect :(
+	// TODO: change the JS side
+//	public long getSize(String id){
+//		return files.get(id).size;
+//	}
+//	
+//	public int getChunk(String id){
+//		return files.get(id).chunk;
+//	}
+//	
+//	public long getChunks(String id){
+//		return files.get(id).chunks;
+//	}
+//	
+//	public long getChunksServer(String id){
+//		return files.get(id).chunk_server;
+//	}
+	
 }
