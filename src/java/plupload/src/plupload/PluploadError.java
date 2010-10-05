@@ -9,4 +9,8 @@ public class PluploadError {
 		this.message = message;
 		this.id = fileId;
 	}
+	
+	public String toString(){
+		return "{\"message\":\"" + message + "\",\"id\":\"" + id + "\"}";
+	}
 }

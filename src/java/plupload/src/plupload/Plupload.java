@@ -5,12 +5,14 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +57,7 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 14");
+		System.out.println("version 15");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
@@ -75,18 +77,10 @@ public class Plupload extends JApplet {
 		}
 		files = new HashMap<String, PluploadFile>();
 		dom_id = getParameter("id");
-
-//		if(getParameter("mozillaMac").equals("true")){
-//			// LiveConnect in Mozilla Mac (MRJ runtime) is broken.
-//			// we can't access nested objects
-//			plupload = JSObject.getWindow(this);
-//		}
-//		else{
-//			plupload = (JSObject) ((JSObject) JSObject.getWindow(this).getMember("plupload")).getMember("applet");
-//		}
-
-		// nested getMember is broken, e.g., getMember("plupload").getMember("applet")
+		
+		// Mozilla: nested getMember is broken, e.g., getMember("plupload").getMember("applet")
 		// eval does the trick
+		// Safari: any access to non-primitivate types is broken
 		plupload = (JSObject)JSObject.getWindow(this).eval("plupload.applet");
 		dialog = new JFileChooser();
 		dialog.addActionListener(getFileChooserActionListener());
@@ -97,6 +91,7 @@ public class Plupload extends JApplet {
 	
 	@SuppressWarnings("unchecked")
 	public void setFileFilters(final String filters){
+		System.out.println("setting filters" + filters);
 		try {
 			AccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public Object run() throws IOException, Exception {
@@ -137,13 +132,9 @@ public class Plupload extends JApplet {
 
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
-	public void uploadFile(final String id, final String url,
-			final JSObject settings) {
+	public void uploadFile(final String id, final String url, final String cookie,
+			final int chunk_size, final int retries) {
 		final PluploadFile file = files.get(id);
-		final int chunk_size = Integer.parseInt((String)settings.getMember("chunk_size"));
-		final int retries = Integer.parseInt((String)settings.getMember("retries"));
-		final Object cookie = settings.getMember("cookie");
-		
 		if (file != null) {
 			this.current_file = file;
 		}
@@ -152,7 +143,7 @@ public class Plupload extends JApplet {
 			// elevate them again.
 			AccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public Object run() throws IOException, Exception {
-					file.upload(url, chunk_size, retries, (String)cookie);
+					file.upload(url, chunk_size, retries, cookie);
 					return null;
 				}
 			});
@@ -160,7 +151,7 @@ public class Plupload extends JApplet {
 			Exception ex = e.getException();
 			if (ex instanceof IOException) {
 				sendIOError(ex);
-			} else if (ex instanceof Exception) {
+			} else {
 				sendError(ex);
 			}
 		}
@@ -170,7 +161,6 @@ public class Plupload extends JApplet {
 	@SuppressWarnings("unchecked")
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
-		System.out.println("upload next chunk");
 		try {
 			if (this.current_file != null) {
 				final PluploadFile file = this.current_file;
@@ -218,11 +208,7 @@ public class Plupload extends JApplet {
 	}
 
 	public void fireEvent(String event) {
-		fireEvent(event, null);
-	}
-
-	public void setFileFilters(String[] filters, boolean multi) {
-		// TODO:
+		fireEvent(event, "null");
 	}
 
 	public boolean checkIntegrity() {
@@ -232,8 +218,8 @@ public class Plupload extends JApplet {
 	// actions
 
 	// fires event to JS
-	public void fireEvent(String event, Object obj) {
-		Object[] args = { dom_id, event, obj };
+	public void fireEvent(String event, Object o) {
+		Object[] args = { dom_id, event, o.toString() };
 		plupload.call("pluploadjavatrigger", args);
 	}
 
@@ -290,25 +276,7 @@ public class Plupload extends JApplet {
 			}
 		});
 
-		fireEvent(SELECT_FILE, new Object[] { file });
+		fireEvent(SELECT_FILE, file.toString());
 	}
-	
-	// for broken Safari LiveConnect :(
-	// TODO: change the JS side
-//	public long getSize(String id){
-//		return files.get(id).size;
-//	}
-//	
-//	public int getChunk(String id){
-//		return files.get(id).chunk;
-//	}
-//	
-//	public long getChunks(String id){
-//		return files.get(id).chunks;
-//	}
-//	
-//	public long getChunksServer(String id){
-//		return files.get(id).chunk_server;
-//	}
 	
 }

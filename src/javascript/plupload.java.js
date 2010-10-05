@@ -3,13 +3,15 @@
   var uploadInstances = {};
 
   plupload.applet = {
-		pluploadjavatrigger : function(id, name, obj) {
+		pluploadjavatrigger : function(id, name, fileobjstring) {
+
 			// Detach the call so that error handling in the browser is presented correctly
       // Why is that?
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
+        var file = eval('(' + fileobjstring + ')');
 				if (uploader) {
-					uploader.trigger('applet:' + name, obj);
+					uploader.trigger('applet:' + name, file);
 				}
 			}, 0);
 		},
@@ -53,19 +55,14 @@ objectParams + '\
 </object>';
       }
       else {
-        if(navigator.userAgent.indexOf('Chrome') !== -1){
+        if(navigator.userAgent.indexOf('Chrome') !== -1 || navigator.userAgent.indexOf('Safari') !== -1
+          ){
           // Chrome / Safari issues an errounous request, when using the object tag
           appletHTML = '\
 <applet mayscript="true" code="' + code + '" codebase="' + codebase + '" archive="' + archive + '" id="' + id + '" \
 width="' + width + '" height="' + height + '">' +
 objectParams + '\
 </applet>';
-        }
-        else if(navigator.userAgent.indexOf('Safari') !== -1){
-          // LiveConnect is flawed in Safari
-          // It only supports sending primtive types
-          // TODO: rewrite to support that
-          alert("Safari is currently not supported by Plupload");
         }
         else{
           appletHTML = '\
@@ -188,11 +185,7 @@ objectParams + '\
 	        // In Firefox Mac (MRJ) runtime every number is a double
 
 					getAppletObj().uploadFile(
-            lookup[file.id] + "", settings.url, {
-              cookie: document.cookie,
-					    chunk_size : settings.chunk_size + "",
-					    retries: (settings.retries || 3) + ""
-					  });
+            lookup[file.id] + "", settings.url, document.cookie, settings.chunk_size + "", (settings.retries || 3) + "");
 				});
 
         uploader.bind("SelectFiles", function(up){
@@ -278,12 +271,12 @@ objectParams + '\
 				  }
 				});
 
-				uploader.bind("Applet:SelectFiles", function(up, selected_files) {
-					var file, i, files = [], id;
+				uploader.bind("Applet:SelectFiles", function(up, file) {
+					var i, files = [], id;
 
 					// Add the selected files to the file queue
-					for (i = 0; i < selected_files.length; i++) {
-						file = selected_files[i];
+					// for (i = 0; i < selected_files.length; i++) {
+					// 	file = selected_files[i];
 
 						// Store away flash ref internally
             // FIXME: WHAT is this?
@@ -292,7 +285,7 @@ objectParams + '\
 						lookup[file.id] = id;
 
 						files.push(new plupload.File(id, file.name, file.size));
-					}
+					// }
 
 					// Trigger FilesAdded event if we added any
 					if (files.length) {

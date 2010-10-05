@@ -79,7 +79,6 @@ public class PluploadFile {
 			Map<String, String> result = uploader.probe(getProbeUri());	
 			String status = result.get("status");
 			
-			System.out.println("got status from server: " + status);
 			
 			if (status.equals("uploading")) {
 				chunk_server = Integer.parseInt(result.get("chunk"));
@@ -125,7 +124,6 @@ public class PluploadFile {
 
 	public void uploadNextChunk() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
-		System.out.println("upload next chunk: " + chunk);
 		//Plupload.log("uploadNextChunk", "chunk", chunk, "chunks", chunks);
 		int bytes_read = stream.read(buffer);
 		// the finished check is done in JS
@@ -169,6 +167,7 @@ public class PluploadFile {
 	public void addFileUploadListener(FileUploadListener listener) {
 		file_upload_listeners.add(listener);
 	}
+	
 
 	private void skipChunkCompleteAction() {
 		for (FileUploadListener f : file_upload_listeners) {
@@ -186,6 +185,17 @@ public class PluploadFile {
 		for (FileUploadListener f : file_upload_listeners) {
 			f.uploadProcess(this);
 		}
+	}
+	public String toString(){
+		return "{\"chunk\":" + chunk + 
+		",\"chunks\":" + chunks + 
+		",\"chunk_server\":" + chunk_server +
+		",\"name\":\"" + name + "\"" +
+		",\"loaded\":" + loaded + 
+		",\"size\":" + size + 
+		",\"chunk_server\":" + chunk_server +
+		",\"id\":" + id +
+		"}";
 	}
 
 }
