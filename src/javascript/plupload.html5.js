@@ -433,7 +433,7 @@
 
 							// Build RFC2388 blob
 							multipartBlob += dashdash + boundary + crlf +
-								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + file.name + '"' + crlf +
+								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + encodeURIComponent(file.name) + '"' + crlf +
 								'Content-Type: ' + mimeType + crlf + crlf +
 								chunkBlob + crlf +
 								dashdash + boundary + dashdash + crlf;
