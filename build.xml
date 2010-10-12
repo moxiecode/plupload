@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Plupload" default="build" basedir=".">
-	<!-- Properties -->
-	<property description="Temp directory" name="tmp_dir" value="tmp" />
+  <!-- Properties -->
+  <property description="Temp directory" name="tmp_dir" value="tmp" />
   <property description="Java Plupload runtime directory" name="dir.java" value="src/java/plupload/"/>
   <property environment="env"/>
   
@@ -114,6 +114,7 @@
 			<fileset dir="src/javascript" includes="plupload.browserplus.js" />
 			<fileset dir="src/javascript" includes="plupload.html5.js" />
 			<fileset dir="src/javascript" includes="plupload.html4.js" />
+			<fileset dir="src/javascript" includes="plupload.java.js" />
 		</concat>
 
 		<!-- Compress Plupload full and base using the YUI Compressor -->
@@ -126,6 +127,7 @@
 		<yuicompress infile="src/javascript/plupload.browserplus.js" outfile="js/plupload.browserplus.min.js" />
 		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.min.js" />
 		<yuicompress infile="src/javascript/plupload.html4.js" outfile="js/plupload.html4.min.js" />
+		<yuicompress infile="src/javascript/plupload.java.js" outfile="js/plupload.java.min.js" />
 
 		<delete file="js/plupload.full.tmp.js" quiet="true" />
 		<copy file="src/javascript/gears_init.js" todir="js" />
