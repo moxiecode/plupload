@@ -49,24 +49,23 @@
 				if (scale < 1) {
 					width = Math.round(img.width * scale);
 					height = Math.round(img.height * scale);
+
+					// Scale image and canvas
+					canvas.width = width;
+					canvas.height = height;
+					context.drawImage(img, 0, 0, width, height);
+
+					// Remove data prefix information and grab the base64 encoded data and decode it
+					data = canvas.toDataURL(mime);
+					data = data.substring(data.indexOf('base64,') + 7);
+					data = atob(data);
+
+					// Remove canvas and execute callback with decoded image data
+					canvas.parentNode.removeChild(canvas);
+					callback({success : true, data : data});
 				} else {
-					width = img.width;
-					height = img.height;
-				}
-
-				// Scale image and canvas
-				canvas.width = width;
-				canvas.height = height;
-				context.drawImage(img, 0, 0, width, height);
-
-				// Remove data prefix information and grab the base64 encoded data and decode it
-				data = canvas.toDataURL(mime);
-				data = data.substring(data.indexOf('base64,') + 7);
-				data = atob(data);
-
-				// Remove canvas and execute callback with decoded image data
-				canvas.parentNode.removeChild(canvas);
-				callback({success : true, data : data});
+					// Image does not need to be resized
+					callback({success : false});
 			};
 
 			img.src = data;
