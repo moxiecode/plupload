@@ -517,14 +517,14 @@
 	ExifParser = function() {
 		// Private ExifParser fields
 		var Tiff, Exif, GPS, app0, app0_offset, app0_length, app1, app1_offset, data,
-			app1_length, exifIFD_offset, gpsIFD_offset, IFD0_offset, TIFFHeader_offset, undef, bin,
+			app1_length, exifIFD_offset, gpsIFD_offset, IFD0_offset, TIFFHeader_offset, undef,
 			tiffTags, exifTags, gpsTags, tagDescs;
 
 		/**
 		 * @constructor
 		 */
 		function BinaryReader() {
-			var II = false;
+			var II = false, bin;
 
 			// Private functions
 			function read(idx, size) {
