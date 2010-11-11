@@ -289,6 +289,10 @@ package com.plupload {
 						if (chunking && chunks < 4 && file._size > 1024 * 32) {
 							chunkSize = Math.ceil(file._size / 4);
 							chunks = 4;
+						} else {
+							// If the file is small or chunking is disabled force only one chunk
+							chunkSize = file._size;
+							chunks = 1;
 						}
 
 						// Start uploading the scaled down image
@@ -312,6 +316,10 @@ package com.plupload {
 					if (chunking && chunks < 4 && file._size > 1024 * 32) {
 						chunkSize = Math.ceil(file._size / 4);
 						chunks = 4;
+					} else {
+						// If the file is small or chunking is disabled force only one chunk
+						chunkSize = file._size;
+						chunks = 1;
 					}
 
 					file._multipart = multipart;
