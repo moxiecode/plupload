@@ -282,17 +282,17 @@ package com.plupload {
 							file._size = file._imageData.length;
 						}
 
-						// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
-						// doesn't have a upload progress event and we can't use FileReference.upload since it
-						// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
-						// side image resizing will not be possible.
-						if (chunking && chunks < 4 && file._size > 1024 * 32) {
-							chunkSize = Math.ceil(file._size / 4);
-							chunks = 4;
-						} else {
-							// If the file is small or chunking is disabled force only one chunk
-							chunkSize = file._size;
-							chunks = 1;
+						if (chunking) {
+							chunks = Math.ceil(file._size / chunkSize);
+
+							// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
+							// doesn't have a upload progress event and we can't use FileReference.upload since it
+							// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
+							// side image resizing will not be possible.
+							if (chunks < 4 && file._size > 1024 * 32) {
+								chunkSize = Math.ceil(file._size / 4);
+								chunks = 4;
+							}
 						}
 
 						// Start uploading the scaled down image
@@ -309,17 +309,17 @@ package com.plupload {
 
 					loader.loadBytes(file._fileRef.data);
 				} else {
-					// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
-					// doesn't have a upload progress event and we can't use FileReference.upload since it
-					// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
-					// side image resizing will not be possible.
-					if (chunking && chunks < 4 && file._size > 1024 * 32) {
-						chunkSize = Math.ceil(file._size / 4);
-						chunks = 4;
-					} else {
-						// If the file is small or chunking is disabled force only one chunk
-						chunkSize = file._size;
-						chunks = 1;
+					if (chunking) {
+						chunks = Math.ceil(file._size / chunkSize);
+
+						// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
+						// doesn't have a upload progress event and we can't use FileReference.upload since it
+						// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
+						// side image resizing will not be possible.
+						if (chunks < 4 && file._size > 1024 * 32) {
+							chunkSize = Math.ceil(file._size / 4);
+							chunks = 4;
+						}
 					}
 
 					file._multipart = multipart;
