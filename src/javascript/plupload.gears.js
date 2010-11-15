@@ -23,16 +23,12 @@
 		scale = Math.min(width / canvas.width, height / canvas.height);
 
 		if (scale < 1) {
-			width = Math.round(canvas.width * scale);
-			height = Math.round(canvas.height * scale);
-		} else {
-			width = canvas.width;
-			height = canvas.height;
+			canvas.resize(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
+
+			return canvas.encode(mime, {quality : quality / 100});
 		}
 
-		canvas.resize(width, height);
-
-		return canvas.encode(mime, {quality : quality / 100});
+		return image_blob;
 	}
 
 	/**
