@@ -311,7 +311,7 @@
 
 					function uploadNextChunk() {
 						var chunkBlob = blob, xhr, upload, chunks, args, multipartDeltaSize = 0,
-							boundary = '----pluploadboundary' + plupload.guid(), chunkSize, curChunkSize,
+							boundary = '----pluploadboundary' + plupload.guid(), chunkSize, curChunkSize, formData,
 							dashdash = '--', crlf = '\r\n', multipartBlob = '', mimeType, url = up.settings.url;
 
 						// File upload finished
@@ -417,11 +417,15 @@
 											response : xhr.responseText,
 											status : httpStatus
 										});
+
+										nativeFile = blob = html5files[file.id] = null; // Free memory
 									} else {
 										// Still chunks left
 										uploadNextChunk();
 									}
 								}
+
+								xhr = chunkBlob = formData = multipartBlob = null; // Free memory
 							}
 						};
 
@@ -434,16 +438,16 @@
 						if (up.settings.multipart && features.multipart) {
 							// Has FormData support like Chrome 6+, Safari 5+, Firefox 4
 							if (!xhr.sendAsBinary) {
-								var data = new FormData();
+								formData = new FormData();
 
 								// Add multipart params
 								plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
-									data.append(name, value);
+									formData.append(name, value);
 								});
 
 								// Add file and send it
-								data.append(up.settings.file_data_name, chunkBlob);
-								xhr.send(data);
+								formData.append(up.settings.file_data_name, chunkBlob);
+								xhr.send(formData);
 
 								return;
 							}
