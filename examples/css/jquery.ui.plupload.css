@@ -12,6 +12,7 @@
 .plupload .plupload_container input {width: 98%;}
 .plupload .plupload_filelist_footer {border-width: 1px 0 0 0}
 .plupload .plupload_filelist_header {border-width: 0 0 1px 0}
+div.plupload .plupload_file {border-width: 0 0 1px 0}
 div.plupload div.plupload_header {border-width: 0 0 1px 0}
 
 .plupload_header_content {

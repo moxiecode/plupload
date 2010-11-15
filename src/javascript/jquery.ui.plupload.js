@@ -132,7 +132,7 @@
 						iconClass = 'ui-icon ui-icon-circle-arrow-w';
 					}
 
-					actionClass += ' plupload_file ui-state-default';
+					actionClass += ' ui-state-default plupload_file';
 
 					$('#' + file.id).attr('class', actionClass).find('.ui-icon').attr('class', iconClass);
 				}
@@ -168,7 +168,7 @@
 						}
 
 						fileList.append(
-							'<tr class="plupload_file ui-state-default" id="' + file.id + '">' +
+							'<tr class="ui-state-default plupload_file" id="' + file.id + '">' +
 								'<td class="plupload_cell plupload_file_name"><span>' + file.name + '</span></td>' +
 								'<td class="plupload_cell plupload_file_status">' + file.percent + '%</td>' +
 								'<td class="plupload_cell plupload_file_size">' + plupload.formatSize(file.size) + '</td>' +
