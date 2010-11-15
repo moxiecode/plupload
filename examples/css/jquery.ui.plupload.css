@@ -8,12 +8,11 @@
 	font: normal 11px Verdana,sans-serif;
 	width: 100%;
 }
-.plupload_container {
-	background: url('../img/transp50.png');
-	padding: 8px;
-}
 
-.plupload_container input {width: 98%;}
+.plupload .plupload_container input {width: 98%;}
+.plupload .plupload_filelist_footer {border-width: 1px 0 0 0}
+.plupload .plupload_filelist_header {border-width: 0 0 1px 0}
+div.plupload div.plupload_header {border-width: 0 0 1px 0}
 
 .plupload_header_content {
 	background-image: url('../img/plupload.png');

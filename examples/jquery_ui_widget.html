@@ -28,7 +28,7 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'gears,browserplus,html5',
+		runtimes : 'html5,browserplus,flash,silverlight,gears,html4',
 		url : 'upload.php',
 		max_file_size : '1000mb',
 		chunk_size : '1mb',
@@ -41,13 +41,13 @@ $(function() {
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip,avi"}
-		]
+		],
 
 		// Flash settings
-		//flash_swf_url : '../src/javascript/plupload.flash.swf',
+		flash_swf_url : '../src/javascript/plupload.flash.swf',
 
 		// Silverlight settings
-		//silverlight_xap_url : '../src/javascript/plupload.silverlight.xap'
+		silverlight_xap_url : '../src/javascript/plupload.silverlight.xap'
 	});
 
 	// Client side form validation

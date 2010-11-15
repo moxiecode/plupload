@@ -30,9 +30,9 @@
 
 		target.prepend(
 			'<div class="plupload_wrapper">' +
-				'<div id="' + id + '_container" class="plupload_container">' +
+				'<div id="' + id + '_container" class="ui-widget-content plupload_container">' +
 					'<div class="plupload">' +
-						'<div class="plupload_header ui-state-default ui-widget-header">' +
+						'<div class="ui-state-default ui-widget-header plupload_header">' +
 							'<div class="plupload_header_content">' +
 								'<div class="plupload_header_title">' + _('Select files') + '</div>' +
 								'<div class="plupload_header_text">' + _('Add files to the upload queue and click the start button.') + '</div>' +
@@ -41,7 +41,7 @@
 
 						'<div class="plupload_content">' +
 							'<table class="plupload_filelist">' +
-							'<tr class="plupload_filelist_header ui-widget-header">' +
+							'<tr class="ui-widget-header plupload_filelist_header">' +
 								'<td class="plupload_cell plupload_file_name">' + _('Filename') + '</td>' +
 								'<td class="plupload_cell plupload_file_status">' + _('Status') + '</td>' +
 								'<td class="plupload_cell plupload_file_size">' + _('Size') + '</td>' +
@@ -54,7 +54,7 @@
 							'</div>' +
 
 							'<table class="plupload_filelist">' +
-							'<tr class="plupload_filelist_footer ui-widget-header ui-widget-content">' +
+							'<tr class="ui-widget-header ui-widget-content plupload_filelist_footer">' +
 								'<td class="plupload_cell plupload_file_name">' +
 
 									'<div class="plupload_buttons"><!-- Visible -->' +
@@ -170,7 +170,7 @@
 						fileList.append(
 							'<tr class="plupload_file ui-state-default" id="' + file.id + '">' +
 								'<td class="plupload_cell plupload_file_name"><span>' + file.name + '</span></td>' +
-								'<td class="plupload_cell plupload_file_status">' + file.percent + '</td>' +
+								'<td class="plupload_cell plupload_file_status">' + file.percent + '%</td>' +
 								'<td class="plupload_cell plupload_file_size">' + plupload.formatSize(file.size) + '</td>' +
 								'<td class="plupload_cell plupload_file_action"><div class="ui-icon"></div>' + inputHTML + '</td>' +
 							'</tr>'
