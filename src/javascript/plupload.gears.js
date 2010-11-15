@@ -19,13 +19,17 @@
 
 		// Setup canvas and scale
 		canvas = google.gears.factory.create('beta.canvas');
-		canvas.decode(image_blob);
-		scale = Math.min(width / canvas.width, height / canvas.height);
+		try {
+			canvas.decode(image_blob);
+			scale = Math.min(width / canvas.width, height / canvas.height);
 
-		if (scale < 1) {
-			canvas.resize(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
+			if (scale < 1) {
+				canvas.resize(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
 
-			return canvas.encode(mime, {quality : quality / 100});
+				return canvas.encode(mime, {quality : quality / 100});
+			}
+		} catch (e) {
+			// Ignore for example when a user uploads a file that can't be decoded
 		}
 
 		return image_blob;
