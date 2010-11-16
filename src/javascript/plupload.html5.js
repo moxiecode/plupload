@@ -460,14 +460,14 @@
 								multipartBlob += dashdash + boundary + crlf +
 									'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf;
 
-								multipartBlob += value + crlf;
+								multipartBlob += unescape(encodeURIComponent(value)) + crlf;
 							});
 
 							mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream';
 
 							// Build RFC2388 blob
 							multipartBlob += dashdash + boundary + crlf +
-								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + encodeURIComponent(file.name) + '"' + crlf +
+								'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + unescape(encodeURIComponent(file.name)) + '"' + crlf +
 								'Content-Type: ' + mimeType + crlf + crlf +
 								chunkBlob + crlf +
 								dashdash + boundary + dashdash + crlf;
