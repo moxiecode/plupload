@@ -146,6 +146,13 @@
 			uploader.bind("UploadFile", function(up, file) {
 				var chunk = 0, chunks, chunkSize, loaded = 0, resize = up.settings.resize, chunking;
 
+				// If file is png or jpeg and resize is configured then resize it
+				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
+					blobs[file.id] = scaleImage(blobs[file.id], resize.width, resize.height, resize.quality || 90, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
+				}
+
+				file.size = blobs[file.id].length;
+
 				chunkSize = up.settings.chunk_size;
 				chunking = chunkSize > 0;
 				chunks = Math.ceil(file.size / chunkSize);
@@ -155,13 +162,6 @@
 					chunkSize = file.size;
 					chunks = 1;
 				}
-
-				// If file is png or jpeg and resize is configured then resize it
-				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-					blobs[file.id] = scaleImage(blobs[file.id], resize.width, resize.height, resize.quality || 90, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
-				}
-
-				file.size = blobs[file.id].length;
 
 				function uploadNextChunk() {
 					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, reqArgs = {name : file.target_name || file.name}, url = up.settings.url;
