@@ -28,11 +28,12 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'html5,browserplus,flash,silverlight,gears,html4',
+		runtimes : 'flash,html5,browserplus,flash,silverlight,gears,html4',
 		url : 'upload.php',
 		max_file_size : '1000mb',
 		chunk_size : '1mb',
 		unique_names : true,
+		multiple_queues : true,
 
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90},
@@ -44,7 +45,7 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../src/javascript/plupload.flash.swf',
+		flash_swf_url : '../js/plupload.flash.swf',
 
 		// Silverlight settings
 		silverlight_xap_url : '../src/javascript/plupload.silverlight.xap'

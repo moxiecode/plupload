@@ -58,7 +58,7 @@
 								'<td class="plupload_cell plupload_file_name">' +
 
 									'<div class="plupload_buttons"><!-- Visible -->' +
-										'<a id="' + id + '_browse" class="plupload_button plupload ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon"><span class="ui-button-icon-primary ui-icon ui-icon-circle-plus"></span><span class="ui-button-text">' + _('Add Files') + '</span></a>' +
+										'<a id="' + id + '_browse" class="plupload_button plupload_add plupload ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon"><span class="ui-button-icon-primary ui-icon ui-icon-circle-plus"></span><span class="ui-button-text">' + _('Add Files') + '</span></a>' +
 										'<a class="plupload_button plupload_start ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon"><span class="ui-button-icon-primary ui-icon ui-icon-circle-arrow-e"></span><span class="ui-button-text">' + _('Start Upload') + '</span></a>' +
 									'</div>' +
 
@@ -194,7 +194,7 @@
 						$('.plupload_add_text', target).text(uploader.total.queued + ' files queued.');
 					}
 
-					$('.plupload_start', target).toggleClass('ui-state-disabled', uploader.files.length === 0);
+					$('.plupload_start', target).toggleClass('ui-state-disabled', uploader.files.length == (uploader.total.uploaded + uploader.total.failed));
 
 					// Scroll to end of file list
 					fileList[0].scrollTop = fileList[0].scrollHeight;
@@ -306,22 +306,21 @@
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
 						//$('.plupload_upload_status,.plupload_progress,.plupload_stop', target).css('display', 'block');
-						$('.plupload_buttons, .plupload_started', target).toggleClass('plupload_hidden');
-						$('.plupload_upload_status', target).text('Uploaded 0/' + uploader.files.length + ' files');
+						$('.plupload_start,.plupload_add', target).addClass('ui-state-disabled');
+						$('.plupload_buttons,.plupload_started,.plupload_progress', target).removeClass('plupload_hidden');
+						$('.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
 						$('.plupload_header_content', target).addClass('plupload_header_content_bw');
 					} else {
+						if (settings.multiple_queues) {
+							$('.plupload_start,.plupload_add', target).removeClass('ui-state-disabled');
+						}
+
 						$('.plupload_progress', target).toggleClass('plupload_hidden');
-						//$('.plupload_delete', target).css('display', 'block');
+						updateList();
 					}
 				});
 
 				uploader.bind('QueueChanged', updateList);
-
-				uploader.bind('StateChanged', function(up) {
-					if (up.state == plupload.STOPPED) {
-						updateList();
-					}
-				});
 
 				uploader.bind('FileUploaded', function(up, file) {
 					handleStatus(file);

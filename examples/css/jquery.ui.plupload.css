@@ -83,3 +83,5 @@ div.plupload div.plupload_header {border-width: 0 0 1px 0}
 	border: 0;
 	line-height: 165px;
 }
+
+.plupload_buttons, .plupload_upload_status {float: left}
