@@ -601,6 +601,7 @@
 				file = files[fileIndex++];
 
 				if (file.status == plupload.QUEUED) {
+					file.status = plupload.UPLOADING;
 					this.trigger('BeforeUpload', file);
 					this.trigger("UploadFile", file);
 				} else {
@@ -802,10 +803,6 @@
 				}
 
 				self.bind('UploadProgress', function(up, file) {
-					if (file.status == plupload.QUEUED) {
-						file.status = plupload.UPLOADING;
-					}
-
 					file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 100;
 					calc();
 				});

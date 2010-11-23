@@ -25,11 +25,11 @@
 	<!-- Generate JS documentation -->
 	<target name="moxiedoc" depends="" description="Generates HTML documentation out of js source">
 		<delete quiet="true">
-			<fileset dir="docs\api" includes="**/*"/>
+			<fileset dir="docs/api" includes="**/*"/>
 		</delete>
 		<mkdir dir="docs" />
 
-		<moxiedoc outdir="docs\api" templatedir="tools\templates" msintellisense="docs\api\plupload.vsdoc.js" title="Plupload API">
+		<moxiedoc outdir="docs/api" templatedir="tools/templates" msintellisense="docs/api/plupload.vsdoc.js" title="Plupload API">
 			<fileset dir="src">
 				<exclude name="jquery.*" />
 				<exclude name="gears_init.js" />
