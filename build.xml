@@ -71,6 +71,7 @@
 		<!-- Compress Plupload full and base using the YUI Compressor -->
 		<yuicompress infile="js/plupload.full.tmp.js" outfile="js/plupload.full.min.js" />
 		<yuicompress infile="src/javascript/jquery.plupload.queue.js" outfile="js/jquery.plupload.queue.min.js" />
+		<yuicompress infile="src/javascript/jquery.ui.plupload.js" outfile="js/jquery.ui.plupload.min.js" />
 		<yuicompress infile="src/javascript/plupload.js" outfile="js/plupload.min.js" />
 		<yuicompress infile="src/javascript/plupload.gears.js" outfile="js/plupload.gears.min.js" />
 		<yuicompress infile="src/javascript/plupload.silverlight.js" outfile="js/plupload.silverlight.min.js" />
