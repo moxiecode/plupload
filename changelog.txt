@@ -1,4 +1,4 @@
-Version 1.3.0 (2010-10-24)
+Version 1.3.0 (2010-11-24)
 	Added new jQuery UI widget that supports jQuery UI themes.
 	Added new multiple_queues option that enables you to upload multiple times in the queue widgets.
 	Added support for crossdomain loading of the XAP and SWF files and crossdomain upload.
