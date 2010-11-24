@@ -1,9 +1,13 @@
-Version 1.2.x (2010-xx-xx)
+Version 1.3.0 (2010-10-24)
+	Added new jQuery UI widget that supports jQuery UI themes.
+	Added new multiple_queues option that enables you to upload multiple times in the queue widgets.
+	Added support for crossdomain loading of the XAP and SWF files and crossdomain upload.
 	Added new multiple_queues option that enables you to upload multiple times in the queue widgets.
 	Added support for crossdomain loading of the XAP and SWF files and crossdomain upload.
 	Added preinit/init options to to ease up the binding of custom events to queueWidget and the Uploader class.
-	Added drag/drop support for Safari kind of a hack until they release official drag/drop support like Chrome.
+	Added drag/drop support for Safari until they fix the broken drag/drop support on Windows.
 	Added events example file that show how to bind all events and display event specific data.
+	Added support for retaining Exif data on images when they where resized using the HTML5 runtime.
 	Fixed logic issue with the upload.php example file. Chunking wasn't working correctly.
 	Fixed issue with HTML4 not handling the form encoding correctly on older IE versions. Patch contributed by jinxdone.
 	Fixed so the HTML4 runtime only submits the defined multipart_params arguments.
