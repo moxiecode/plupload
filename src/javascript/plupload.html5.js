@@ -380,7 +380,7 @@
 								if (httpStatus >= 400) {
 									up.trigger('Error', {
 										code : plupload.HTTP_ERROR,
-										message : 'HTTP Error.',
+										message : plupload.translate('HTTP Error.'),
 										file : file,
 										status : httpStatus
 									});

@@ -164,7 +164,7 @@
 							// Probably a permission denied error
 							up.trigger('Error', {
 								code : plupload.SECURITY_ERROR,
-								message : 'Security error.',
+								message : plupload.translate('Security error.'),
 								file : currentFile
 							});
 
