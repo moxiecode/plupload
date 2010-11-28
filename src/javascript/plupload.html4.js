@@ -140,13 +140,11 @@
 
 
 				function createIframe() {
-					// Create iframe and add it to the container
-					iframe = document.createElement('iframe');
-					iframe.setAttribute('src', url + ':""'); // javascript:"" for HTTPS issue on IE6, uses a variable to make an ignore for jslint
-					iframe.setAttribute('id', up.id + '_iframe');
-					iframe.setAttribute('name', up.id + '_iframe');
-					iframe.style.display = 'none';
+					var temp = document.createElement('div');
 
+					// Create iframe using a temp div since IE 6 won't be able to set the name using setAttribute or iframe.name
+					temp.innerHTML = '<iframe id="' + up.id + '_iframe" name="' + up.id + '_iframe" src="' + url + ':&quot;&quot;" style="display:none"></iframe>';
+					iframe = temp.firstChild;
 					container.appendChild(iframe);
 
 					// Add IFrame onload event
