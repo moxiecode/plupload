@@ -235,7 +235,7 @@
 				uploader.bind("Flash:SecurityError", function(up, err) {
 					uploader.trigger('Error', {
 						code : plupload.SECURITY_ERROR,
-						message : 'Security error.',
+						message : plupload.translate('Security error.'),
 						details : err.message,
 						file : uploader.getFile(lookup[err.id])
 					});
@@ -244,7 +244,7 @@
 				uploader.bind("Flash:GenericError", function(up, err) {
 					uploader.trigger('Error', {
 						code : plupload.GENERIC_ERROR,
-						message : 'Generic error.',
+						message : plupload.translate('Generic error.'),
 						details : err.message,
 						file : uploader.getFile(lookup[err.id])
 					});
@@ -253,7 +253,7 @@
 				uploader.bind("Flash:IOError", function(up, err) {
 					uploader.trigger('Error', {
 						code : plupload.IO_ERROR,
-						message : 'IO error.',
+						message : plupload.translate('IO error.'),
 						details : err.message,
 						file : uploader.getFile(lookup[err.id])
 					});

@@ -755,7 +755,7 @@
 						if (extensionsRegExp && !extensionsRegExp.test(file.name)) {
 							up.trigger('Error', {
 								code : plupload.FILE_EXTENSION_ERROR,
-								message : 'File extension error.',
+								message : plupload.translate('File extension error.'),
 								file : file
 							});
 
@@ -766,7 +766,7 @@
 						if (file.size !== undef && file.size > settings.max_file_size) {
 							up.trigger('Error', {
 								code : plupload.FILE_SIZE_ERROR,
-								message : 'File size error.',
+								message : plupload.translate('File size error.'),
 								file : file
 							});
 
@@ -893,7 +893,7 @@
 						// Trigger an init error if we run out of runtimes
 						self.trigger('Error', {
 							code : plupload.INIT_ERROR,
-							message : 'Init error.'
+							message : plupload.translate('Init error.')
 						});
 					}
 				}

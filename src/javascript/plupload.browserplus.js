@@ -236,7 +236,7 @@
 									if (httpStatus >= 400) {
 										up.trigger('Error', {
 											code : plupload.HTTP_ERROR,
-											message : 'HTTP Error.',
+											message : plupload.translate('HTTP Error.'),
 											file : file,
 											status : httpStatus
 										});
@@ -245,7 +245,7 @@
 							} else {
 								up.trigger('Error', {
 									code : plupload.GENERIC_ERROR,
-									message : 'Generic Error.',
+									message : plupload.translate('Generic Error.'),
 									file : file,
 									details : res.error
 								});
