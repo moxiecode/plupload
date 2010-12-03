@@ -28,7 +28,7 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'flash,html5,browserplus,flash,silverlight,gears,html4',
+		runtimes : 'flash,html5,browserplus,silverlight,gears,html4',
 		url : 'upload.php',
 		max_file_size : '1000mb',
 		chunk_size : '1mb',
@@ -45,10 +45,10 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../js/plupload.flash.swf',
+		flash_swf_url : '/plupload/js/plupload.flash.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../src/javascript/plupload.silverlight.xap'
+		silverlight_xap_url : '/plupload/js/plupload.silverlight.xap'
 	});
 
 	// Client side form validation
@@ -87,6 +87,8 @@ $(function() {
     );
 });
 </script>
+</head>
+<body>
 
 <h1>ThemeRoller</h1>
 

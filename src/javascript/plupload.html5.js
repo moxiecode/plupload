@@ -117,7 +117,7 @@
 			}
 
 			// Sniff for Safari and fake drag/drop
-			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0;
+			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1;
 
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
@@ -208,7 +208,7 @@
 
 				container.appendChild(inputContainer);
 
-				// Insert the input inide the input container
+				// Insert the input inside the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
 											'style="width:100%;" type="file" accept="' + mimes.join(',') + '" ' +
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
@@ -227,7 +227,7 @@
 				var dropElm = document.getElementById(uploader.settings.drop_element);
 
 				if (dropElm) {
-					// Lets fake drag/drop on Safari by moving a inpit type file in front of the mouse pointer when we drag into the drop zone
+					// Lets fake drag/drop on Safari by moving a input type file in front of the mouse pointer when we drag into the drop zone
 					// TODO: Remove this logic once Safari has official drag/drop support
 					if (fakeSafariDragDrop) {
 						plupload.addEvent(dropElm, 'dragenter', function(e) {
