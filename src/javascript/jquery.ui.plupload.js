@@ -58,8 +58,8 @@
 								'<td class="plupload_cell plupload_file_name">' +
 
 									'<div class="plupload_buttons"><!-- Visible -->' +
-										'<a id="' + id + '_browse" class="plupload_button plupload_add plupload ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon"><span class="ui-button-icon-primary ui-icon ui-icon-circle-plus"></span><span class="ui-button-text">' + _('Add Files') + '</span></a>' +
-										'<a class="plupload_button plupload_start ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon"><span class="ui-button-icon-primary ui-icon ui-icon-circle-arrow-e"></span><span class="ui-button-text">' + _('Start Upload') + '</span></a>' +
+										'<a id="' + id + '_browse" class="plupload_button plupload_add plupload ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon ui-button-text-icon-primary"><span class="ui-button-icon-primary ui-icon ui-icon-circle-plus"></span><span class="ui-button-text">' + _('Add Files') + '</span></a>' +
+										'<a class="plupload_button plupload_start ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon ui-button-text-icon-primary"><span class="ui-button-icon-primary ui-icon ui-icon-circle-arrow-e"></span><span class="ui-button-text">' + _('Start Upload') + '</span></a>' +
 									'</div>' +
 
 									'<div class="plupload_started plupload_hidden"><!-- Hidden -->' +
@@ -311,12 +311,12 @@
 						$('.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
 						$('.plupload_header_content', target).addClass('plupload_header_content_bw');
 					} else {
+						$('.plupload_progress', target).toggleClass('plupload_hidden');
+						
 						if (settings.multiple_queues) {
 							$('.plupload_start,.plupload_add', target).removeClass('ui-state-disabled');
+							updateList();
 						}
-
-						$('.plupload_progress', target).toggleClass('plupload_hidden');
-						updateList();
 					}
 				});
 
