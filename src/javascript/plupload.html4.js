@@ -33,7 +33,12 @@
 		getFeatures : function() {
 			// Only multipart feature
 			return {
-				multipart: true
+				multipart: true,
+				
+				/* IE and WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
+				sniff for them here... probably not that good idea, but impossibillity of controlling cursor style 
+				on top of add files button obviously feels even worse */
+				onclickFileDialog: navigator.userAgent.indexOf('WebKit') || /*@cc_on!@*/false
 			};
 		},
 
@@ -246,18 +251,44 @@
 
 				// Refresh button, will reposition the input form
 				up.bind("Refresh", function(up) {
-					var browseButton, browsePos, browseSize;
+					var browseButton, browsePos, browseSize, inputContainer, pzIndex;
 
 					browseButton = getById(up.settings.browse_button);
-					browsePos = plupload.getPos(browseButton, getById(up.settings.container));
-					browseSize = plupload.getSize(browseButton);
-
-					plupload.extend(getById('form_' + currentFileId).style, {
-						top : browsePos.y + 'px',
-						left : browsePos.x + 'px',
-						width : browseSize.w + 'px',
-						height : browseSize.h + 'px'
-					});
+					if (browseButton) {
+						browsePos = plupload.getPos(browseButton, getById(up.settings.container));
+						browseSize = plupload.getSize(browseButton);
+						inputContainer = getById('form_' + currentFileId);
+	
+						plupload.extend(inputContainer.style, {
+							top : browsePos.y + 'px',
+							left : browsePos.x + 'px',
+							width : browseSize.w + 'px',
+							height : browseSize.h + 'px'
+						});
+						
+						// for IE and WebKit place input element underneath the browse button and route onclick event 
+						// TODO: revise when browser support for this feature will change
+						if (up.features.onclickFileDialog) {
+							pzIndex = parseInt(browseButton.parentNode.style.zIndex);
+							if (isNaN(pzIndex))
+								pzIndex = 0;
+								
+							plupload.extend(browseButton.style, {
+								position : 'relative',
+								zIndex : pzIndex
+							});
+												
+							plupload.extend(inputContainer.style, {
+								zIndex : pzIndex - 1
+							});
+							
+							// not using plupload.addEvent here, cause there should be only one click event attached
+							browseButton.onclick = function(e) {
+								getById('input_' + currentFileId).click();
+								return false;
+							};
+						}
+					}
 				});
 
 				// Remove files
