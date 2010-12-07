@@ -141,7 +141,9 @@
 				function updateTotalProgress() {
 					$('.plupload_total_status', target).html(uploader.total.percent + '%');
 					$('.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
-					$('.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
+					$('.plupload_upload_status', target).text(
+						_('Uploaded %d/%d files').replace(/(\%d)\/(\%d)/, uploader.total.uploaded+'/'+uploader.files.length)
+					);
 
 					// All files are uploaded
 					if (uploader.total.uploaded == uploader.files.length) {
