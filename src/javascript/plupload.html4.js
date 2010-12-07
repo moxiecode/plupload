@@ -38,7 +38,7 @@
 				/* IE and WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
 				sniff for them here... probably not that good idea, but impossibillity of controlling cursor style 
 				on top of add files button obviously feels even worse */
-				onclickFileDialog: navigator.userAgent.indexOf('WebKit') || /*@cc_on!@*/false
+				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1 || /*@cc_on!@*/false
 			};
 		},
 
@@ -258,6 +258,7 @@
 						browsePos = plupload.getPos(browseButton, getById(up.settings.container));
 						browseSize = plupload.getSize(browseButton);
 						inputContainer = getById('form_' + currentFileId);
+						inputFile = getById('input_' + currentFileId);
 	
 						plupload.extend(inputContainer.style, {
 							top : browsePos.y + 'px',
@@ -268,7 +269,7 @@
 						
 						// for IE and WebKit place input element underneath the browse button and route onclick event 
 						// TODO: revise when browser support for this feature will change
-						if (up.features.onclickFileDialog) {
+						if (up.features.canOpenDialog) {
 							pzIndex = parseInt(browseButton.parentNode.style.zIndex);
 							if (isNaN(pzIndex))
 								pzIndex = 0;
@@ -284,10 +285,24 @@
 							
 							// not using plupload.addEvent here, cause there should be only one click event attached
 							browseButton.onclick = function(e) {
-								getById('input_' + currentFileId).click();
+								inputFile.click();
 								return false;
 							};
 						}
+						
+						/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
+						browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
+						with a special class
+						TODO: needs to be revised as things will change */
+						hoverClass = uploader.settings.browse_button_hover || 'plupload-hover';
+						hoverElement = uploader.features.canOpenDialog ? browseButton : inputFile;
+						
+						hoverElement.onmouseover = function() {
+							plupload.addClass(browseButton, hoverClass);	
+						};
+						hoverElement.onmouseout = function() {
+							plupload.removeClass(browseButton, hoverClass);
+						};
 					}
 				});
 

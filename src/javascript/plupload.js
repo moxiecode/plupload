@@ -517,6 +517,46 @@
 		translate : function(str) {
 			return i18n[str] || str;
 		},
+			
+		
+		/**
+		 * Checks if specified DOM element has specified class.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Class name
+		 */
+		hasClass : function(obj, name) {			
+			if (obj.className == '') return false;
+			
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+			return regExp.test(obj.className);
+		},
+		
+		/**
+		 * Adds specified className to specified DOM element.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Class name
+		 */
+		addClass : function(obj, name) {
+			if (!plupload.hasClass(obj, name)) {
+				obj.className = obj.className == '' ? name : obj.className.replace(/\s+$/, '')+' '+name;
+			}
+		},
+		
+		/**
+		 * Removes specified className from specified DOM element.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Class name
+		 */
+		removeClass : function(obj, name) {
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");			
+			obj.className = obj.className.replace(regExp, function($0, $1, $2) {
+				return $1 == ' ' && $2 == ' ' ? ' ' : '';
+			});
+		},
+		
 
 		/**
 		 * Adds an event handler to the specified object.

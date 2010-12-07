@@ -132,7 +132,7 @@
 				/* IE and WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
 				sniff for them here... IE may eventually become html5 compliant :) probably not that good idea, 
 				but impossibillity of controlling cursor style  on top of add files button obviously feels even worse */
-				onclickFileDialog: navigator.userAgent.indexOf('WebKit') || /*@cc_on!@*/false
+				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1 || /*@cc_on!@*/false
 			};
 		},
 
@@ -175,7 +175,7 @@
 			}
 
 			uploader.bind("Init", function(up) {
-				var inputContainer, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body;
+				var inputContainer, browseButton, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body;
 
 				// Create input container and insert it at an absolute position within the browse button
 				inputContainer = document.createElement('div');
@@ -217,14 +217,32 @@
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
 											'style="width:100%;" type="file" accept="' + mimes.join(',') + '" ' +
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
-
-				document.getElementById(uploader.id + '_html5').onchange = function() {
+				
+				inputFile = document.getElementById(uploader.id + '_html5');
+				inputFile.onchange = function() {
 					// Add the selected files from file input
 					addSelectedFiles(this.files);
 
 					// Clearing the value enables the user to select the same file again if they want to
 					this.value = '';
 				};
+				
+				/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
+				browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
+				with a special class
+				TODO: needs to be revised as things will change */
+				browseButton = document.getElementById(uploader.settings.browse_button);
+				if (browseButton) {				
+					hoverClass = uploader.settings.browse_button_hover || 'plupload-hover';
+					hoverElement = uploader.features.canOpenDialog ? browseButton : inputFile;
+					
+					hoverElement.onmouseover = function() {
+						plupload.addClass(browseButton, hoverClass);	
+					};
+					hoverElement.onmouseout = function() {
+						plupload.removeClass(browseButton, hoverClass);
+					};
+				}
 			});
 
 			// Add drop handler
@@ -311,7 +329,7 @@
 					
 					// for IE and WebKit place input element underneath the browse button and route onclick event 
 					// TODO: revise when browser support for this feature will change
-					if (uploader.features.onclickFileDialog) {
+					if (uploader.features.canOpenDialog) {
 						pzIndex = parseInt(browseButton.parentNode.style.zIndex);
 						if (isNaN(pzIndex))
 							pzIndex = 0;

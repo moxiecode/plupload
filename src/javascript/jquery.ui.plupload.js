@@ -104,7 +104,8 @@
 
 				uploader = new plupload.Uploader($.extend({
 					dragdrop : true,
-					container : id
+					container : id,
+					browse_button_hover: 'ui-state-hover' 
 				}, settings));
 
 				uploaders[id] = uploader;
