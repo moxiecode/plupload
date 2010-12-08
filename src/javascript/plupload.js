@@ -823,7 +823,7 @@
 						delay(function() {
 							self.trigger("QueueChanged");
 							self.refresh();
-						});
+						}, 1);
 					} else {
 						return false; // Stop the FilesAdded event from immediate propagation
 					}
@@ -866,7 +866,7 @@
 						// since other custom listeners might want to stop the queue
 						delay(function() {
 							uploadNext.call(self);
-						});
+						}, 1);
 					}
 				});
 
@@ -879,7 +879,7 @@
 					// since other custom listeners might want to stop the queue
 					delay(function() {
 						uploadNext.call(self);
-					});
+					}, 1);
 				});
 
 				// Setup runtimeList
