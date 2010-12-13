@@ -121,13 +121,6 @@ namespace Moxiecode.Plupload {
             this.chunk = 0;
 			this.chunking = chunkSize > 0;
 
-			if (this.chunking) {
-				this.chunkSize = chunkSize;
-				this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunkSize);
-			} else {
-				this.chunkSize = (int) this.Size;
-				this.chunks = 1;
-			}
 
 			this.uploadUrl = upload_url;
 
@@ -148,6 +141,14 @@ namespace Moxiecode.Plupload {
                 }, this);
             }
 
+			if (this.chunking) {
+				this.chunkSize = chunkSize;
+				this.chunks = (int) Math.Ceiling((double) this.Size / (double) chunkSize);
+			} else {
+				this.chunkSize = (int) this.Size;
+				this.chunks = 1;
+			}
+            
             this.UploadNextChunk();
 		}
 
