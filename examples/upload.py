@@ -17,6 +17,7 @@ from wsgiref.handlers import CGIHandler
 
 from werkzeug import Request
 from werkzeug import Response
+from werkzeug import secure_filename
 from werkzeug.exceptions import BadRequest
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import NotFound
@@ -78,13 +79,25 @@ def write_meta_information_to_file(meta_file, md5sum, chunk, chunks):
         path = meta_file.name
         meta_file.close()
         os.remove(path)
-    
+
+def clean_filename(filename):
+    i = filename.rindex(".")
+    if i != -1:
+        filename = filename[0:i] + filename[i:].lower()
+    return secure_filename(filename)
+
+def get_or_create_file(chunk, dst):
+    if chunk == 0:
+        f = file(dst, 'wb')
+    else:
+        f = file(dst, 'ab')
+    return f
+
 @expose('^/$')
 def upload(request):
     if request.method != "POST":
         return probe(request)
-        
-    filename = request.args['name']
+    filename = clean_filename(request.args['name'])
     md5chunk = request.args['md5chunk']
     md5total = request.args['md5total']
     chunk = int(request.args['chunk'])
@@ -97,12 +110,9 @@ def upload(request):
     if md5.hexdigest() != md5chunk:
         print "Checksum error"
         raise BadRequest("Checksum error")
-    
+
     dst = os.path.join(upload_dir,filename)
-    if chunk == 0:
-        f = file(dst, 'wb')
-    else:
-        f = file(dst, 'ab')
+    f = get_or_create_file(chunk, dst)
 
     f.write(buf)
     f.close()
@@ -113,8 +123,18 @@ def upload(request):
     print md5total
     return Response('uploaded')
 
+@expose('^/simple/$')
+def simple_upload(request):
+    if request.method != "POST":
+        return probe(request)
+    file = request.files['file']
+    filename = clean_filename(request.args.get('name', file.filename))
+    # file.save(os.path.join(upload_dir,filename))
+    # file.close()
+    return Response('Uploaded %s' % filename)
+
 def probe(request):
-    filename = request.args['name']
+    filename = clean_filename(request.args['name'])
 
     dst = os.path.join(upload_dir, filename)
     if(os.path.exists(dst)):

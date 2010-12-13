@@ -1,11 +1,13 @@
 package plupload;
 
-public interface FileUploadListener {
+import java.io.IOException;
 
-	public void uploadChunkComplete(PluploadFile file);
+public interface FileUploadListener {
 	
 	public void uploadProcess(PluploadFile file);
 
-	public void skipChunkComplete(PluploadFile pluploadFile);
+	public void ioError(IOException e);
+	
+	public void genericError(Exception e);
 	
 }

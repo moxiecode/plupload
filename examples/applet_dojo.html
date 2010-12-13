@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Plupload - Queue widget example</title>
+    <link rel="stylesheet" href="css/plupload.queue.css" />
+    <style>
+      body {background: #9A7C5F;}
+    </style>
+    <script src="http://www.google.com/jsapi"></script>
+    <script>
+	  google.load("dojo", "1.5");
+    </script>
+    <script src="/javascript/checkJava.js"></script>
+    <script src="/javascript/plupload.js"></script>
+    <script src="/javascript/plupload.java.js"></script>
+    <script src="/javascript/dojo.plupload.queue.js"></script>
+    <script>
+var $ = dojo;
+$.ready(function() {
+	$.query("#java_uploader").pluploadQueue({
+		runtimes : 'java',
+		url : '/',
+		chunk_size : '5mb',
+        java_applet_url: 'applet/plupload.java.jar',
+        loader_url: 'img/loader.gif'
+	});
+});
+    </script>  
+  </head>
+  <body>
+    <form method="post" action="dump.php">
+	  <h1>Queue widget example</h1>
+	  <p>Shows the dojo Plupload Queue widget with the Java runtime.</p>
+	  <div style="float: left; margin-right: 20px">
+		<h3>Java runtime</h3>
+		<div id="java_uploader" style="width: 450px; height: 330px;"></div>
+	  </div>
+    </form>
+  </body>
+</html>

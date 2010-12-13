@@ -25,6 +25,7 @@ public class HttpUtil {
 	private static HttpClient httpclient;
 
 	public static Map<String, String> parse_qs(String qs) {
+		System.out.println("parsesing qs: " + qs);
 		// i.d, not handling the general case where a list is possible
 		Map<String, String> map = new HashMap<String, String>();
 		for (String param : qs.split("&")) {

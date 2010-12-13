@@ -1,30 +1,21 @@
 package plupload;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.security.AccessControlException;
 import java.security.AccessController;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JApplet;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
-
-import org.apache.http.client.ClientProtocolException;
 
 public class Plupload extends JApplet {
 
@@ -38,6 +29,7 @@ public class Plupload extends JApplet {
 	static final String UPLOAD_PROCESS = "UploadProcess";
 	static final String UPLOAD_CHUNK_COMPLETE = "UploadChunkComplete";
 	static final String SKIP_UPLOAD_CHUNK_COMPLETE = "SkipUploadChunkComplete";
+	static final String IO_ERROR = "IOError";
 
 	// plupload.applet
 	private PluploadFile current_file;
@@ -57,16 +49,11 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 15");
+		System.out.println("version 20");
+		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -77,16 +64,18 @@ public class Plupload extends JApplet {
 		}
 		files = new HashMap<String, PluploadFile>();
 		dom_id = getParameter("id");
-		
-		// Mozilla: nested getMember is broken, e.g., getMember("plupload").getMember("applet")
-		// eval does the trick
-		// Safari: any access to non-primitivate types is broken
 		plupload = (JSObject)JSObject.getWindow(this).eval("plupload.applet");
-		dialog = new JFileChooser();
-		dialog.addActionListener(getFileChooserActionListener());
-
+		if(plupload == null){
+			throw new RuntimeException("plupload is null");
+		}
 		// callback to JS
-		fireEvent("Init");
+		try{
+			dialog = new JFileChooser();
+			fireEvent("Init");
+		}
+		catch(AccessControlException e){
+			JSObject.getWindow(this).eval("alert('Please approve the digital signature of the applet. Close the browser and start over')");
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -138,6 +127,7 @@ public class Plupload extends JApplet {
 		if (file != null) {
 			this.current_file = file;
 		}
+		
 		try {
 			// Because of LiveConnect our security privileges are degraded
 			// elevate them again.
@@ -156,36 +146,6 @@ public class Plupload extends JApplet {
 			}
 		}
 	}
-	
-
-	@SuppressWarnings("unchecked")
-	public void uploadNextChunk() throws NoSuchAlgorithmException,
-			ClientProtocolException, URISyntaxException, IOException {
-		try {
-			if (this.current_file != null) {
-				final PluploadFile file = this.current_file;
-				file.uploadNextChunk();
-			}
-		} catch (IOException e) {
-			sendIOError(e);
-		} catch (Exception e) {
-			sendError(e);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void skipNextChunk() throws IOException {
-		try {
-			if (this.current_file != null) {
-				final PluploadFile file = this.current_file;
-				file.skipNextChunk();
-			}
-		} catch (IOException e) {
-			sendIOError(e);
-		} catch (Exception e) {
-			sendError(e);
-		}
-	}
 
 	public void removeFile(String id) {
 		files.remove(id);
@@ -197,11 +157,14 @@ public class Plupload extends JApplet {
 	
 	@SuppressWarnings("unchecked")
 	public void openFileDialog(){
-		final JApplet a = this;
-		// won't access look and feel otherwise
 		AccessController.doPrivileged(new PrivilegedAction() {
 			public Object run() {
-				file_chose_return_value = dialog.showOpenDialog(a);
+				file_chose_return_value = dialog.showOpenDialog(Plupload.this);
+				// blocks until file selected
+				if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
+					PluploadFile file = new PluploadFile(id_counter++, dialog.getSelectedFile());
+					selectEvent(file);
+				}
 				return null;
 			}
 		});
@@ -224,8 +187,12 @@ public class Plupload extends JApplet {
 	}
 
 	public void sendIOError(Exception e) {
-		fireEvent("IOError", new PluploadError(e.getMessage(), Integer
+		fireEvent(IO_ERROR, new PluploadError(e.getMessage(), Integer
 				.toString(this.current_file.id)));
+	}
+	
+	public void sendSecurityError(Exception e){
+		fireEvent("SecurityError", new PluploadError(e.getMessage(), null));
 	}
 
 	public void sendError(Exception e) {
@@ -236,22 +203,6 @@ public class Plupload extends JApplet {
 	public void sendFileModifiedError(Exception e) {
 		fireEvent("FileChangedError", new PluploadError(e.getMessage(), Integer
 				.toString(this.current_file.id)));
-	}
-
-	public ActionListener getFileChooserActionListener() {
-		return new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
-					PluploadFile file = new PluploadFile(id_counter++, dialog
-							.getSelectedFile());
-					selectEvent(file);
-				} else {
-					// Save command cancelled.
-				}
-			}
-		};
 	}
 
 	private void selectEvent(PluploadFile file) {
@@ -266,13 +217,14 @@ public class Plupload extends JApplet {
 			}
 
 			@Override
-			public void uploadChunkComplete(PluploadFile file) {
-				fireEvent(UPLOAD_CHUNK_COMPLETE, file);
+			public void ioError(IOException e) {
+				sendIOError(e);
+				
 			}
 
 			@Override
-			public void skipChunkComplete(PluploadFile file) {
-				fireEvent(SKIP_UPLOAD_CHUNK_COMPLETE, file);
+			public void genericError(Exception e) {
+				sendError(e);
 			}
 		});
 
