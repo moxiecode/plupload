@@ -61,7 +61,7 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
       '</div>' +
       '<input type="hidden" id="' + id + '_count" name="' + id + '_count" value="0" />' +
     '</div>';
-  }
+  }// renderUI
 
   function pluploadQueue(target, settings){
   
@@ -130,68 +130,69 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
     }
 
     function updateList() {
-     var fileList = $('ul.plupload_filelist', target), 
-     inputCount = 0, 
-     inputHTML;
-     fileList.html('');
-     
-     plupload.each(uploader.files, 
-      function(file) {
+      var fileList = $('ul.plupload_filelist', target), 
+      inputCount = 0, 
+      inputHTML,
+      hasQueuedFiles = false;
+
+      fileList.html('');
+      
+      plupload.each(uploader.files, function(file) {
         inputHTML = '';
         
         if (file.status == plupload.DONE) {
-         if (file.target_name) {
-          inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_tmpname" value="' + plupload.xmlEncode(file.target_name) + '" />';
-         }
-         inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_name" value="' + plupload.xmlEncode(file.name) + '" />';
-         inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_status" value="' + (file.status == plupload.DONE ? 'done' : 'failed') + '" />';
-         inputCount++;
-         $('#' + id + '_count').val(inputCount);
+          if (file.target_name) {
+            inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_tmpname" value="' + plupload.xmlEncode(file.target_name) + '" />';
+          }
+          inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_name" value="' + plupload.xmlEncode(file.name) + '" />';
+          inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_status" value="' + (file.status == plupload.DONE ? 'done' : 'failed') + '" />';
+          inputCount++;
+          $('#' + id + '_count').val(inputCount);
+        } else if(file.status == plupload.QUEUED){
+          hasQueuedFiles = true;
         }
-        
+                      
         fileList.addContent(
-          '<li id="' + file.id + '">' +
-           '<div class="plupload_file_name"><span>' + file.name + '</span></div>' +
-           '<div class="plupload_file_action"><a href="#"></a></div>' +
-           '<div class="plupload_file_status">' + file.percent + '%</div>' +
-           '<div class="plupload_file_size">' + plupload.formatSize(file.size) + '</div>' +
-           '<div class="plupload_clearer">&nbsp;</div>' +
-           inputHTML +
-          '</li>');
-
+         '<li id="' + file.id + '">' +
+          '<div class="plupload_file_name"><span>' + file.name + '</span></div>' +
+          '<div class="plupload_file_action"><a href="#"></a></div>' +
+          '<div class="plupload_file_status">' + file.percent + '%</div>' +
+          '<div class="plupload_file_size">' + plupload.formatSize(file.size) + '</div>' +
+          '<div class="plupload_clearer">&nbsp;</div>' +
+          inputHTML +
+        '</li>');
+        
         handleStatus(file);
         
         $('#' + file.id + '.plupload_delete a').onclick(function(e) {
-         $('#' + file.id).empty();
-         uploader.removeFile(file);
-         e.preventDefault();
+          $('#' + file.id).empty();
+          uploader.removeFile(file);
+          e.preventDefault();
         });
       });
 
-     $('span.plupload_total_file_size', target).html(plupload.formatSize(uploader.total.size));
-
-     // What plupload_add_text?
-     // if (uploader.total.queued === 0) {
-     //  $('span.plupload_add_text', target).text(_('Add files.'));
-     // } else {
-     //  $('span.plupload_add_text', target).text(uploader.total.queued + ' files queued.');
-     // }
-     
-     $('a.plupload_start', target).toggleClass('plupload_disabled', uploader.files.length === 0);
-
-     // Scroll to end of file list
-     fileList[0].scrollTop = fileList[0].scrollHeight;
-
-     updateTotalProgress();
-
-     // Re-add drag message if there is no files
-     if (!uploader.files.length && uploader.features.dragdrop && uploader.settings.dragdrop) {
-      d.place('<li class="plupload_droptext">' + _("Drag files here.") + '</li>', id + '_filelist', 'last');
-     }
-    }
+      $('a.plupload_start', target).toggleClass('plupload_disabled', !hasQueuedFiles || uploader.state === plupload.STARTED);
+      $('span.plupload_total_file_size', target).html(plupload.formatSize(uploader.total.size));
+      
+      // What plupload_add_text?
+      // if (uploader.total.queued === 0) {
+      //  $('span.plupload_add_text', target).text(_('Add files.'));
+      // } else {
+      //  $('span.plupload_add_text', target).text(uploader.total.queued + ' files queued.');
+      // }
+       
+      // Scroll to end of file list
+      fileList[0].scrollTop = fileList[0].scrollHeight;
+      
+      updateTotalProgress();
+      
+      // Re-add drag message if there is no files
+      if (!uploader.files.length && uploader.features.dragdrop && uploader.settings.dragdrop) {
+       d.place('<li class="plupload_droptext">' + _("Drag files here.") + '</li>', id + '_filelist', 'last');
+      }
+    }//updateList
 
     // Event handlers
-
     uploader.bind('Init', function(up, res) {
       renderUI(id, target);
       
@@ -207,43 +208,40 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
       
       $('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);
       
-      $('a.plupload_add', target).onclick(
-        function(e){ 
-          var old_files = [];
-          plupload.each(uploader.files, 
-          function(file){
-            if(file.status == plupload.DONE || file.status == plupload.FAILED){
-              old_files.push(file);
-            }
-          });  
-         plupload.each(old_files, 
-           function(file){
-             $('#' + file.id).empty();
-             uploader.removeFile(file);
-         });
-         uploader.selectFiles();           
-         e.preventDefault();
-        }
-     );
-
-     $('a.plupload_start', target).onclick(
-       function(e) {
-         if (!d.hasClass(target, 'plupload_disabled')) {
-           uploader.start();
-         }
+      $('a.plupload_add', target).onclick(function(e){ 
+        var old_files = [];
+        plupload.each(uploader.files, function(file){
+          if(file.status == plupload.DONE || file.status == plupload.FAILED){
+            old_files.push(file);
+          }
+        });  
+        plupload.each(old_files, function(file){
+          $('#' + file.id).empty();
+          uploader.removeFile(file);
+        });
+        uploader.selectFiles();           
         e.preventDefault();
-       }
-     );
-
-     $('a.plupload_stop', target).onclick(
-       function(e) {
-         uploader.stop();
-         e.preventDefault();
-       }
-     );
-
-     $('a.plupload_start', target).addClass('plupload_disabled');
-    });
+      });
+    
+      $('a.plupload_start', target).onclick(function(e) {
+        if (!d.hasClass(target, 'plupload_disabled')) {
+          uploader.start();
+          $('a.plupload_start', target).toggleClass('plupload_disabled', true);
+        }
+        e.preventDefault();
+      });
+      
+      $('a.plupload_stop', target).onclick(function(e) {
+        var finished = true;
+        uploader.stop();
+        $('a.plupload_start', target).toggleClass('plupload_disabled', !finished);
+        e.preventDefault();
+      });
+      
+      // Initially start button is disabled.
+      $('a.plupload_start', target).addClass('plupload_disabled');
+    
+    });// end uploader.bind('Init',...
 
     uploader.init();
     
@@ -280,7 +278,7 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
         $('a.plupload_delete', target).style('display', 'block');
       }
     });
-    
+  
     uploader.bind('QueueChanged', updateList);
     
     uploader.bind('StateChanged', function(up) {
@@ -288,11 +286,11 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
         updateList();
       }
     });
-
+    
     uploader.bind('FileUploaded', function(up, file) {
       handleStatus(file);
     });
-
+    
     uploader.bind("UploadProgress", function(up, file) {
       // Set file specific progress
       $('#' + file.id + ' div.plupload_file_status', target).html(file.percent + '%');
@@ -300,12 +298,12 @@ dojo.require("dojo.NodeList-manipulate"); // NodeList::val()
       handleStatus(file);
       updateTotalProgress();
     });
-
+    
     // Call setup function
     if (settings.setup) {
       settings.setup(uploader);
     }
-  }
+  }//pluploadQueue
 
   dojo.extend(dojo.NodeList, {
     pluploadQueue: dojo.NodeList._adaptAsForEach(pluploadQueue)
