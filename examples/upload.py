@@ -161,11 +161,12 @@ def app(request):
         return e
 
 if __name__ == '__main__':
-    os.path.join(ROOT_PATH,'uploads',USER)
-    UPLOAD_DIR = os.path.join('/mnt/home/images',USER)
+    # in cgi environment
+    UPLOAD_DIR = os.path.join(ROOT_PATH, 'uploads')
     import cgitb; cgitb.enable()
     CGIHandler().run(app)
 else:
+    # for dev.
     ROOT_PATH = os.environ['ROOT_PATH']
     UPLOAD_DIR = os.path.join(ROOT_PATH, 'uploads')
     if not os.path.exists(UPLOAD_DIR):
