@@ -15,16 +15,16 @@ public class PluploadFileTest {
 
 	@Test
 	public void testGetUploadUri() throws URISyntaxException, IOException {
-		PluploadFile file = new PluploadFile(1, new File(getClass().getResource("/resources/upload_button.png").getFile()));
+		PluploadFile file = new PluploadFile(1, new File(getClass().getResource("/plupload/HashUtil.class").getFile()));
 		file.prepare("http://localhost", 1024, 10, "");
-		assertEquals(file.getUploadUri().toString(), "http://localhost/?chunk=0&chunks=2&chunk_size=1024&md5chunk=&md5total=&name=upload_button.png");
+		assertEquals(file.getUploadUri().toString(), "http://localhost/?chunk=0&chunks=2&chunk_size=1024&md5chunk=&md5total=&name=HashUtil.class");
 	}
 
 	@Test
 	public void testGetProbeUri() throws URISyntaxException, IOException {
-		PluploadFile file = new PluploadFile(1, new File(getClass().getResource("/resources/upload_button.png").getFile()));
+		PluploadFile file = new PluploadFile(1, new File(getClass().getResource("/plupload/HashUtil.class").getFile()));
 		file.prepare("http://localhost", 1024, 10, "");
-		assertEquals(file.getProbeUri().toString(), "http://localhost/?name=upload_button.png");
+		assertEquals(file.getProbeUri().toString(), "http://localhost/?name=HashUtil.class");
 	}
 
 }
