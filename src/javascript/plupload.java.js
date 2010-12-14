@@ -189,18 +189,10 @@
         });
       });
 
-      uploader.bind("QueueChanged", function(up) {
-        uploader.refresh();
-      });
-
       uploader.bind("FilesRemoved", function(up, files) {
         for (var i = 0, len = files.length; i < len; i++) {
           getApplet().removeFile(lookup[files[i].id]);
         }
-      });
-
-      uploader.bind("StateChanged", function(up) {
-        uploader.refresh();
       });
 
       waitForAppletToLoadIn5SecsErrorOtherwise();

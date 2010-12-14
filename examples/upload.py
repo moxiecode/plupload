@@ -25,9 +25,9 @@ from werkzeug.exceptions import NotFound
 if(os.environ['SERVER_SOFTWARE'] == 'development'):
     os.environ['REMOTE_USER'] = 'defaultuser'
     
-user = os.environ['REMOTE_USER']
-root_path = os.path.abspath(os.path.dirname(__file__))
-upload_dir = None
+USER = os.environ['REMOTE_USER']
+ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_DIR = None
 
 class Routes(object):
     
@@ -111,7 +111,7 @@ def upload(request):
         print "Checksum error"
         raise BadRequest("Checksum error")
 
-    dst = os.path.join(upload_dir,filename)
+    dst = os.path.join(UPLOAD_DIR,filename)
     f = get_or_create_file(chunk, dst)
 
     f.write(buf)
@@ -129,14 +129,14 @@ def simple_upload(request):
         return probe(request)
     file = request.files['file']
     filename = clean_filename(request.args.get('name', file.filename))
-    # file.save(os.path.join(upload_dir,filename))
+    # file.save(os.path.join(UPLOAD_DIR,filename))
     # file.close()
     return Response('Uploaded %s' % filename)
 
 def probe(request):
     filename = clean_filename(request.args['name'])
 
-    dst = os.path.join(upload_dir, filename)
+    dst = os.path.join(UPLOAD_DIR, filename)
     if(os.path.exists(dst)):
         f_meta_dst = dst + '.meta'
         if(os.path.exists(f_meta_dst)):
@@ -161,18 +161,19 @@ def app(request):
         return e
 
 if __name__ == '__main__':
-    os.path.join(root_path,'uploads',user)
-    upload_dir = os.path.join('/mnt/home/images',user)
+    os.path.join(ROOT_PATH,'uploads',USER)
+    UPLOAD_DIR = os.path.join('/mnt/home/images',USER)
     import cgitb; cgitb.enable()
     CGIHandler().run(app)
 else:
-    # for testing purpose purpose only
-    upload_dir = os.path.join(root_path, 'uploads')
-    if not os.path.exists(upload_dir):
-        os.mkdir(upload_dir)
+    ROOT_PATH = os.environ['ROOT_PATH']
+    UPLOAD_DIR = os.path.join(ROOT_PATH, 'uploads')
+    if not os.path.exists(UPLOAD_DIR):
+        os.mkdir(UPLOAD_DIR)
     from werkzeug import SharedDataMiddleware
     app = SharedDataMiddleware(app, {
-            '/javascript':  os.path.join(root_path, '../src/javascript'),
-            '/applet': os.path.join(root_path, '../bin'),
-            '/': root_path,
+            '/js_dev':  os.path.join(ROOT_PATH, 'src/javascript'),
+            '/js':  os.path.join(ROOT_PATH, 'js'),
+            '/applet': os.path.join(ROOT_PATH, 'bin'),
+            '/': os.path.join(ROOT_PATH, 'examples')
     })
