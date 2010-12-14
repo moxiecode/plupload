@@ -53,9 +53,9 @@ Signs the jar. Before running this you should create a certificate `keytool -gen
 
 Combines the three steps above.
 
-`examples/dev_server.py`
+`dev_server.py`
 
-Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: http://localhost:5000/queue_applet_dojo.html
+Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: http://localhost:8080/queue.html
 
 How to build Silverlight runtime
 ---------------------------------

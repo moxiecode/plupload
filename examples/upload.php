@@ -18,7 +18,7 @@
 	header("Pragma: no-cache");
 
 	// Settings
-	$targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
+	$targetDir = "uploads";
 	$cleanupTargetDir = false; // Remove old files
 	$maxFileAge = 60 * 60; // Temp file age in seconds
 
