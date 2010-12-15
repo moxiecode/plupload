@@ -50,7 +50,7 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 1");
+		System.out.println("version 2");
 		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -159,6 +159,7 @@ public class Plupload extends JApplet {
 	
 	@SuppressWarnings("unchecked")
 	public void openFileDialog(){
+		System.out.println("opening dialog");
 		if(dialogOpen){
 			// FIXME: bring openDialog to front
 			return;
@@ -169,15 +170,16 @@ public class Plupload extends JApplet {
 				SwingUtilities.invokeLater(new Runnable() {		
 					@Override
 					public void run() {
-						
 						int file_chose_return_value = dialog.showOpenDialog(Plupload.this);
-						
+						System.out.println("openDialog finished");
 						// blocks until file selected
-						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
+						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {					
 							for(File f : dialog.getSelectedFiles()){
+								// Wiredness: If PluploadFile extends Thread
+								// it just stopped here in my production environment
 								PluploadFile file = new PluploadFile(id_counter++, f);
 								selectEvent(file);								
-							}
+							}						
 						}
 						dialogOpen = false;
 					}
@@ -199,6 +201,7 @@ public class Plupload extends JApplet {
 
 	// fires event to JS
 	public void fireEvent(String event, Object o) {
+		System.out.println("fireEvent: " + event + " args: " + o);
 		Object[] args = { dom_id, event, o.toString() };
 		plupload.call("pluploadjavatrigger", args);
 	}
@@ -223,6 +226,7 @@ public class Plupload extends JApplet {
 	}
 
 	private void selectEvent(PluploadFile file) {
+		System.out.println("selectEvent");
 		// handles file add from file chooser
 		files.put(file.id + "", file);
 

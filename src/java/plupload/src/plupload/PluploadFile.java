@@ -19,7 +19,7 @@ import java.util.Map;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.utils.URIUtils;
 
-public class PluploadFile extends Thread{
+public class PluploadFile /*extends Thread*/{
 
 	public int id;
 	
@@ -45,6 +45,7 @@ public class PluploadFile extends Thread{
 	private HttpUploader uploader;
 
 	public PluploadFile(int id, File file) {
+		System.out.println("PluploadFile " + id + " " + file);
 		this.id = id;
 		this.name = file.getName();
 		this.size = file.length();
@@ -70,21 +71,6 @@ public class PluploadFile extends Thread{
 		buffer = new byte[chunk_size];
 		chunk = 0;
 		loaded = 0;
-	}
-	
-	@Override
-	public void run(){
-		try{
-			doUpload();
-		}
-		catch(IOException e){
-			e.printStackTrace();
-			ioErrorAction(e);
-		}
-		catch(Exception e){
-			e.printStackTrace();
-			genericErrorAction(e);
-		}
 	}
 
 	private void doUpload() throws ClientProtocolException, UnsupportedEncodingException, IOException, ParseException, URISyntaxException, NoSuchAlgorithmException{
@@ -129,8 +115,27 @@ public class PluploadFile extends Thread{
 	
 	public void upload(String upload_uri, int chunk_size, int retries, String cookie)
 			throws IOException, NoSuchAlgorithmException, URISyntaxException, ParseException {
+		
 		prepare(upload_uri, chunk_size, retries, cookie);
-		this.start();
+		
+		Thread uploadThread = new Thread(){
+			
+			@Override
+			public void run(){
+					try{
+						doUpload();
+					}
+					catch(IOException e){
+						e.printStackTrace();
+						ioErrorAction(e);
+					}
+					catch(Exception e){
+						e.printStackTrace();
+						genericErrorAction(e);
+					}
+				}
+		};
+		uploadThread.start();
 	}
 
 	public void skipUploadedChunks() throws IOException {
