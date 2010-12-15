@@ -129,11 +129,11 @@
           
           // converted to string since number type conversion is buggy in MRJ runtime
           // In Firefox Mac (MRJ) runtime every number is a double
-          getApplet().uploadFile(lookup[file.id] + "", abs_url, document.cookie, settings.chunk_size + "", (settings.retries || 3) + "");
+          getApplet().uploadFile(lookup[file.id] + "", abs_url, document.cookie, settings.chunk_size + "", (settings.retries || 3) + "");          
       });
    
       uploader.bind("SelectFiles", function(up){
-          getApplet().openFileDialog();
+        getApplet().openFileDialog();
       });
 
       uploader.bind("Applet:UploadProcess", function(up, javaFile) {

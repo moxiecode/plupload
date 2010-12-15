@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.swing.JApplet;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import netscape.javascript.JSException;
@@ -25,7 +26,6 @@ public class Plupload extends JApplet {
 	// events
 	static final String CLICK = "Click";
 	static final String SELECT_FILE = "SelectFiles"; // we only select one at a
-	// time
 	static final String UPLOAD_PROCESS = "UploadProcess";
 	static final String UPLOAD_CHUNK_COMPLETE = "UploadChunkComplete";
 	static final String SKIP_UPLOAD_CHUNK_COMPLETE = "SkipUploadChunkComplete";
@@ -34,8 +34,9 @@ public class Plupload extends JApplet {
 	// plupload.applet
 	private PluploadFile current_file;
 	private JFileChooser dialog;
+	private boolean dialogOpen = false;
+	
 	private String dom_id;
-	private int file_chose_return_value;
 	private Map<String, PluploadFile> files;
 	private int id_counter = 0;
 
@@ -157,14 +158,27 @@ public class Plupload extends JApplet {
 	
 	@SuppressWarnings("unchecked")
 	public void openFileDialog(){
+		if(dialogOpen){
+			// FIXME: bring openDialog to front
+			return;
+		}
+		dialogOpen = true;
 		AccessController.doPrivileged(new PrivilegedAction() {
-			public Object run() {
-				file_chose_return_value = dialog.showOpenDialog(Plupload.this);
-				// blocks until file selected
-				if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
-					PluploadFile file = new PluploadFile(id_counter++, dialog.getSelectedFile());
-					selectEvent(file);
-				}
+			public Object run() {			
+				SwingUtilities.invokeLater(new Runnable() {		
+					@Override
+					public void run() {
+						
+						int file_chose_return_value = dialog.showOpenDialog(Plupload.this);
+						
+						// blocks until file selected
+						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
+							PluploadFile file = new PluploadFile(id_counter++, dialog.getSelectedFile());
+							selectEvent(file);
+						}
+						dialogOpen = false;
+					}
+				});
 				return null;
 			}
 		});
