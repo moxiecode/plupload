@@ -50,7 +50,7 @@ public class Plupload extends JApplet {
 
 	@Override
 	public void init() {
-		System.out.println("version 20");
+		System.out.println("version 1");
 		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -72,6 +72,7 @@ public class Plupload extends JApplet {
 		// callback to JS
 		try{
 			dialog = new JFileChooser();
+			dialog.setMultiSelectionEnabled(true);
 			fireEvent("Init");
 		}
 		catch(AccessControlException e){
@@ -173,8 +174,10 @@ public class Plupload extends JApplet {
 						
 						// blocks until file selected
 						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
-							PluploadFile file = new PluploadFile(id_counter++, dialog.getSelectedFile());
-							selectEvent(file);
+							for(File f : dialog.getSelectedFiles()){
+								PluploadFile file = new PluploadFile(id_counter++, f);
+								selectEvent(file);								
+							}
 						}
 						dialogOpen = false;
 					}
