@@ -12,7 +12,7 @@
 /*global plupload:false, ActiveXObject:false, escape:false */
 
 (function(plupload) {
-	var uploadInstances = {};
+	var uploadInstances = {}, initialized = {};
 
 	function getFlashVersion() {
 		var version;
@@ -61,6 +61,7 @@
 	 * @extends plupload.Runtime
 	 */
 	plupload.runtimes.Flash = plupload.addRuntime("flash", {
+		
 		/**
 		 * Returns a list of supported features for the runtime.
 		 *
@@ -84,13 +85,14 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var browseButton, flashContainer, flashVars, initialized, waitCount = 0, container = document.body;
+			var browseButton, flashContainer, flashVars, waitCount = 0, container = document.body;
 
 			if (getFlashVersion() < 10) {
 				callback({success : false});
 				return;
 			}
 
+			initialized[uploader.id] = false;
 			uploadInstances[uploader.id] = uploader;
 
 			// Find browse button and set to to be relative
@@ -138,7 +140,7 @@
 					return;
 				}
 
-				if (!initialized) {
+				if (!initialized[uploader.id]) {
 					setTimeout(waitLoad, 1);
 				}
 			}
@@ -151,8 +153,13 @@
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {
 				var lookup = {}, i, resize = uploader.settings.resize || {};
+				
+				// Prevent eventual reinitialization of the instance
+				if (initialized[uploader.id])
+					return;
 
-				initialized = true;
+				initialized[uploader.id] = true;
+				
 				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
 				uploader.bind("UploadFile", function(up, file) {
