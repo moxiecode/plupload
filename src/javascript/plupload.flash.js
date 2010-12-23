@@ -134,6 +134,7 @@
 			}
 
 			function waitLoad() {
+								
 				// Wait for 5 sec
 				if (waitCount++ > 5000) {
 					callback({success : false});
@@ -154,13 +155,13 @@
 			uploader.bind("Flash:Init", function() {
 				var lookup = {}, i, resize = uploader.settings.resize || {};
 				
+				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+				
 				// Prevent eventual reinitialization of the instance
 				if (initialized[uploader.id])
 					return;
-
-				initialized[uploader.id] = true;
 				
-				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+				initialized[uploader.id] = true;
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;

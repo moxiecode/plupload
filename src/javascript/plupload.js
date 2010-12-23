@@ -557,17 +557,36 @@
 			});
 		},
 		
+		
+		/**
+		 * Check if specified object is empty.
+		 *
+		 * @param {Object} obj Object to check.
+		 */
+		isEmptyObj: function(obj) {
+			for (var prop in obj) {
+				return false;	
+			}
+			return true;
+		},
+		
 
 		/**
-		 * Adds an event handler to the specified object.
+		 * Adds an event handler to the specified object and store reference to the handler
+		 * in objects internal Plupload registry (@see removeEvent).
 		 *
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Name to add event listener to.
 		 * @param {function} callback Function to call when event occurs.
 		 */
 		addEvent : function(obj, name, callback) {
+			var func, events, types;
+			name = name.toLowerCase();
+			
+			// Add event listener
 			if (obj.attachEvent) {
-				obj.attachEvent('on' + name, function() {
+				
+				func = function() {
 					var evt = window.event;
 
 					if (!evt.target) {
@@ -578,12 +597,103 @@
 					evt.stopPropagation = stopPropagation;
 
 					callback(evt);
-				});
+				};
+				obj.attachEvent('on' + name, func);
+				
 			} else if (obj.addEventListener) {
-				obj.addEventListener(name, callback, false);
+				func = callback;
+				
+				obj.addEventListener(name, func, false);
 			}
+			
+			// Log event handler to objects internal Plupload registry
+			if (!obj.hasOwnProperty(plupload.uid))
+				obj[plupload.uid] = {};
+			
+			events = obj[plupload.uid];
+			
+			if (!events.hasOwnProperty(name))
+				events[name] = [];
+					
+			events[name].push({
+				func: func,
+				orig: callback // store original callback for IE
+			});
+		},
+		
+		
+		/**
+		 * Remove event handler from the specified object. If third argument (callback)
+		 * is not specified remove all events with the specified name.
+		 *
+		 * @param {Object} obj DOM element to remove event listener(s) from.
+		 * @param {String} name Name of event listener to remove.
+		 * @param {function} callback (optional) Event handler.
+		 */
+		removeEvent: function(obj, name) {
+			var type, 
+				callback = arguments[2];
+			name = name.toLowerCase();
+			
+			if (plupload.uid in obj && name in obj[plupload.uid])
+				type = obj[plupload.uid][name];
+			else
+				return;
+				
+			for (var i=type.length-1; i>=0; i--) {
+				if (callback === undef || type[i].orig == callback) {
+					if (obj.detachEvent) {
+						obj.detachEvent('on'+name, type[i].func);
+					} else if (obj.removeEventListener) {
+						obj.removeEventListener(name, type[i].func, false);		
+					}
+					
+					type[i].orig = null;
+					type[i].func = null;
+					
+					// If callback was passed we are done here, otherwise proceed
+					if (callback !== undef) {
+						type.splice(i, 1);
+						break;
+					}
+				}			
+			}	
+			
+			if (callback === undef)
+				type = [];
+			
+			// If event array got empty, remove it
+			if (!type.length) delete obj[plupload.uid][name];
+			
+			// If Plupload registry has become empty, remove it
+			if (plupload.isEmptyObj(obj[plupload.uid])) delete obj[plupload.uid];			
+		},
+		
+		
+		/**
+		 * Remove all kind of events from the specified object
+		 *
+		 * @param {Object} obj DOM element to remove event listeners from.
+		 */
+		removeAllEvents: function(obj) {
+			if (!obj.hasOwnProperty(plupload.uid))
+				return;
+			
+			plupload.each(obj[plupload.uid], function(events, name) {
+				plupload.removeEvent(obj, name);
+			});		
 		}
+		
+		
 	};
+
+	
+	/**
+	 * Generate unique id for current Plupload session, going to use this to store removable 
+	 * anonymous event handlers for internal purposes, in order to support public destroy method
+	 */
+	plupload.uid = 'Plupload_' + plupload.guid();
+	
 
 	/**
 	 * Uploader class, an instance of this class will be created for each upload field.
