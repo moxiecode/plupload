@@ -14,7 +14,10 @@
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
-		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout;
+		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout,
+		
+		// unique Plupload session identifier (@see addEvent for further details)
+		uid;
 
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -557,19 +560,6 @@
 			});
 		},
 		
-		
-		/**
-		 * Check if specified object is empty.
-		 *
-		 * @param {Object} obj Object to check.
-		 */
-		isEmptyObj: function(obj) {
-			for (var prop in obj) {
-				return false;	
-			}
-			return true;
-		},
-		
 
 		/**
 		 * Adds an event handler to the specified object and store reference to the handler
@@ -582,6 +572,10 @@
 		addEvent : function(obj, name, callback) {
 			var func, events, types;
 			name = name.toLowerCase();
+			
+			// Initialize unique identifier if needed
+			if (uid === undef)
+				uid = 'Plupload_' + plupload.guid();
 			
 			// Add event listener
 			if (obj.attachEvent) {
@@ -607,13 +601,15 @@
 			}
 			
 			// Log event handler to objects internal Plupload registry
-			if (!obj.hasOwnProperty(plupload.uid))
-				obj[plupload.uid] = {};
+			if (!obj.hasOwnProperty(uid)) {
+				obj[uid] = {};
+			}
 			
-			events = obj[plupload.uid];
+			events = obj[uid];
 			
-			if (!events.hasOwnProperty(name))
+			if (!events.hasOwnProperty(name)) {
 				events[name] = [];
+			}
 					
 			events[name].push({
 				func: func,
@@ -632,13 +628,23 @@
 		 */
 		removeEvent: function(obj, name) {
 			var type, 
-				callback = arguments[2];
+				callback = arguments[2],
+				
+				// check if object is empty
+				isEmptyObj = function(obj) {
+					for (var prop in obj) {
+						return false;	
+					}
+					return true;
+				};
+			
 			name = name.toLowerCase();
 			
-			if (plupload.uid in obj && name in obj[plupload.uid])
-				type = obj[plupload.uid][name];
-			else
+			if (uid in obj && name in obj[uid]) {
+				type = obj[uid][name];
+			} else {
 				return;
+			}
 				
 			for (var i=type.length-1; i>=0; i--) {
 				if (callback === undef || type[i].orig == callback) {
@@ -659,14 +665,19 @@
 				}			
 			}	
 			
-			if (callback === undef)
+			if (callback === undef) {
 				type = [];
+			}
 			
 			// If event array got empty, remove it
-			if (!type.length) delete obj[plupload.uid][name];
+			if (!type.length) {
+				delete obj[uid][name];
+			}
 			
 			// If Plupload registry has become empty, remove it
-			if (plupload.isEmptyObj(obj[plupload.uid])) delete obj[plupload.uid];			
+			if (isEmptyObj(obj[uid])) {
+				delete obj[uid];
+			}
 		},
 		
 		
@@ -676,23 +687,17 @@
 		 * @param {Object} obj DOM element to remove event listeners from.
 		 */
 		removeAllEvents: function(obj) {
-			if (!obj.hasOwnProperty(plupload.uid))
+			if (!obj.hasOwnProperty(uid)) {
 				return;
+			}
 			
-			plupload.each(obj[plupload.uid], function(events, name) {
+			plupload.each(obj[uid], function(events, name) {
 				plupload.removeEvent(obj, name);
 			});		
 		}
 		
 		
 	};
-
-	
-	/**
-	 * Generate unique id for current Plupload session, going to use this to store removable 
-	 * anonymous event handlers for internal purposes, in order to support public destroy method
-	 */
-	plupload.uid = 'Plupload_' + plupload.guid();
 	
 
 	/**
