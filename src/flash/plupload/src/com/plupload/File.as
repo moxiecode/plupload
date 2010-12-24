@@ -43,7 +43,7 @@ package com.plupload {
 		// Private fields
 		private var _fileRef:FileReference, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String, _mimeType:String;
-		private var _id:String, _fileName:String, _size:uint, _imageData:ByteArray;
+		private var _id:String, _fileName:String, _size:Number, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
 		private var _headers:Object, _settings:Object;
 
@@ -71,7 +71,7 @@ package com.plupload {
 		/**
 		 * File size property.
 		 */
-		public function get size():int {
+		public function get size():Number {
 			return this._size;
 		}
 

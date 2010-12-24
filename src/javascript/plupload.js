@@ -15,8 +15,8 @@
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
 		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout,
-		
-		// unique Plupload session identifier (@see addEvent for further details)
+		// A place to store references to event handlers
+		eventhash = {},
 		uid;
 
 	// IE W3C like event funcs
@@ -602,10 +602,14 @@
 			
 			// Log event handler to objects internal Plupload registry
 			if (!obj.hasOwnProperty(uid)) {
-				obj[uid] = {};
+				obj[uid] = plupload.guid();
 			}
 			
-			events = obj[uid];
+			if (!eventhash.hasOwnProperty(obj[uid])) {
+				eventhash[obj[uid]] = {};
+			}
+			
+			events = eventhash[obj[uid]];
 			
 			if (!events.hasOwnProperty(name)) {
 				events[name] = [];
@@ -640,8 +644,8 @@
 			
 			name = name.toLowerCase();
 			
-			if (uid in obj && name in obj[uid]) {
-				type = obj[uid][name];
+			if (uid in obj && obj[uid] in eventhash && name in eventhash[obj[uid]]) {
+				type = eventhash[obj[uid]][name];
 			} else {
 				return;
 			}
@@ -671,11 +675,12 @@
 			
 			// If event array got empty, remove it
 			if (!type.length) {
-				delete obj[uid][name];
+				delete eventhash[obj[uid]][name];
 			}
 			
 			// If Plupload registry has become empty, remove it
-			if (isEmptyObj(obj[uid])) {
+			if (isEmptyObj(eventhash[obj[uid]])) {
+				delete eventhash[obj[uid]];
 				delete obj[uid];
 			}
 		},
@@ -687,11 +692,11 @@
 		 * @param {Object} obj DOM element to remove event listeners from.
 		 */
 		removeAllEvents: function(obj) {
-			if (!obj.hasOwnProperty(uid)) {
+			if (!obj.hasOwnProperty(uid) || !eventhash.hasOwnProperty(obj[uid])) {
 				return;
 			}
 			
-			plupload.each(obj[uid], function(events, name) {
+			plupload.each(eventhash[obj[uid]], function(events, name) {
 				plupload.removeEvent(obj, name);
 			});		
 		}
