@@ -601,7 +601,7 @@
 			}
 			
 			// Log event handler to objects internal Plupload registry
-			if (!obj.hasOwnProperty(uid)) {
+			if (obj[uid] === undef) {
 				obj[uid] = plupload.guid();
 			}
 			
@@ -681,7 +681,13 @@
 			// If Plupload registry has become empty, remove it
 			if (isEmptyObj(eventhash[obj[uid]])) {
 				delete eventhash[obj[uid]];
-				delete obj[uid];
+				
+				// IE doesn't let you remove DOM object property with - delete
+				try {
+					delete obj[uid];
+				} catch(e) {
+					obj[uid] = undef;
+				}
 			}
 		},
 		
@@ -692,7 +698,7 @@
 		 * @param {Object} obj DOM element to remove event listeners from.
 		 */
 		removeAllEvents: function(obj) {
-			if (!obj.hasOwnProperty(uid) || !eventhash.hasOwnProperty(obj[uid])) {
+			if (obj[uid] !== undef || !eventhash.hasOwnProperty(obj[uid])) {
 				return;
 			}
 			
