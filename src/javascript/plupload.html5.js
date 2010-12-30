@@ -231,17 +231,32 @@
 				browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
 				with a special class
 				TODO: needs to be revised as things will change */
-				browseButton = document.getElementById(uploader.settings.browse_button);
+				browseButton = document.getElementById(up.settings.browse_button);
 				if (browseButton) {				
-					hoverClass = uploader.settings.browse_button_hover || 'plupload-hover';
-					hoverElement = uploader.features.canOpenDialog ? browseButton : inputFile;
+					var hoverClass = up.settings.browse_button_hover || 'plupload-hover',
+						activeClass = up.settings.browse_button_active || 'plupload-active',
+						topElement = up.features.canOpenDialog ? browseButton : inputContainer;
 					
-					hoverElement.onmouseover = function() {
+					plupload.addEvent(topElement, 'mouseover', function() {
 						plupload.addClass(browseButton, hoverClass);	
-					};
-					hoverElement.onmouseout = function() {
-						plupload.removeClass(browseButton, hoverClass);
-					};
+					});
+					plupload.addEvent(topElement, 'mouseout', function() {
+						plupload.removeClass(browseButton, hoverClass);	
+					});
+					plupload.addEvent(topElement, 'mousedown', function() {
+						plupload.addClass(browseButton, activeClass);	
+					});
+					plupload.addEvent(document.body, 'mouseup', function() {
+						plupload.removeClass(browseButton, activeClass);	
+					});
+
+					// Route click event to the input[type=file] element for supporting browsers
+					if (up.features.canOpenDialog) {
+						plupload.addEvent(browseButton, 'click', function(e) {
+							document.getElementById(up.id + '_html5').click();
+							return false;
+						}); 
+					}
 				}
 			});
 
@@ -342,12 +357,6 @@
 						plupload.extend(inputContainer.style, {
 							zIndex : pzIndex - 1
 						});
-						
-						// not using plupload.addEvent here, cause there should be only one click event attached
-						browseButton.onclick = function(e) {
-							document.getElementById(uploader.id + '_html5').click();
-							return false;
-						};
 					}
 				}
 			});

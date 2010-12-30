@@ -229,7 +229,7 @@
 
 			// Replace diacritics
 			lookup = [
-				/[\300-\306]/g, 'A', /[\340-\346]/g, 'a',
+				/[\300-\306]/g, 'A', /[\340-\346]/g, 'a', 
 				/\307/g, 'C', /\347/g, 'c',
 				/[\310-\313]/g, 'E', /[\350-\353]/g, 'e',
 				/[\314-\317]/g, 'I', /[\354-\357]/g, 'i',
@@ -768,12 +768,17 @@
 
 				if (file.status == plupload.QUEUED) {
 					file.status = plupload.UPLOADING;
-					this.trigger('BeforeUpload', file);
+					this.trigger("BeforeUpload", file);
 					this.trigger("UploadFile", file);
 				} else {
 					uploadNext.call(this);
 				}
 			} else {
+
+				if (fileIndex == files.length) {
+					this.trigger("UploadComplete", file);
+				}
+
 				this.stop();
 			}
 		}
@@ -1220,16 +1225,39 @@
 			 * @param {String} name Name of event to remove.
 			 * @param {function} func Function to remove from listener.
 			 */
-			unbind : function(name, func) {
-				var list = events[name.toLowerCase()], i;
+			unbind : function(name) {
+				name = name.toLowerCase();
+
+				var list = events[name], i, func = arguments[1];
 
 				if (list) {
-					for (i = list.length - 1; i >= 0; i--) {
-						if (list[i].func === func) {
-							list.splice(i, 1);
+					if (func !== undef) {
+						for (i = list.length - 1; i >= 0; i--) {
+							if (list[i].func === func) {
+								list.splice(i, 1);
+									break;
+							}
 						}
+					} else {
+						list = [];
+					}
+
+					// delete event list if it has become empty
+					if (!list.length) {
+						delete events[name];
 					}
 				}
+			},
+
+			/**
+			 * Removes all event listeners.
+			 *
+			 * @method unbindAll
+			 */
+			unbindAll : function() {
+				plupload.each(events, function(list, name) {
+					plupload.unbind(name);
+				});
 			}
 
 			/**
@@ -1324,6 +1352,14 @@
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 * @param {plupload.File} file File that the chunk was uploaded for.
 			 * @param {Object} response Object with response properties.
+			 */
+
+			/**
+			 * Fires when all files in a queue are uploaded.
+			 *
+			 * @event UploadComplete
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {Array} files Array of file objects that was added to queue/selected by the user.
 			 */
 
 			/**
