@@ -62,6 +62,8 @@
 		"text/rtf,rtf," +
 		"video/mpeg,mpeg mpg mpe," +
 		"video/quicktime,qt mov," +
+		"video/mp4,mp4," +
+		"video/x-m4v,m4v," +
 		"video/x-flv,flv," +
 		"video/vnd.rn-realvideo,rv," +
 		"text/plain,asc txt text diff log," +
