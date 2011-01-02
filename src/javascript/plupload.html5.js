@@ -2,6 +2,7 @@
  * plupload.html5.js
  *
  * Copyright 2009, Moxiecode Systems AB
+ * modified by Jocelyn Delalande, 2010
  * Released under GPL License.
  *
  * License: http://www.plupload.com/license
@@ -29,7 +30,7 @@
 		}
 	}
 
-	function scaleImage(image_file, max_width, max_height, mime, callback) {
+	function scaleImage(image_file, max_width, max_height, mime, quality, use_purejs_jpeg, callback) {
 		var canvas, context, img, scale;
 
 		readFile(image_file, function(data) {
@@ -61,7 +62,31 @@
 					APP1 = parser.APP1({width: width, height: height});
 
 					// Remove data prefix information and grab the base64 encoded data and decode it
-					data = canvas.toDataURL(mime);
+					if (mime ==  'image/jpeg') {
+						if (use_purejs_jpeg == 'enabled') {
+							data = new JPEGEncoder(quality).encode(
+								context.getImageData(0, 0, width, height));
+						} else {
+							/* Due to a mozilla bug, the call with 2 args will fail in Firefox
+							 * see https://bugzilla.mozilla.org/show_bug.cgi?id=564388
+							 */
+							try {
+								// Suposed to work regarding spec:
+								data = canvas.toDataURL(mime, quality);
+							} catch(e) {
+								if (use_purejs_jpeg == 'fallback') {
+									data = new JPEGEncoder(quality).encode(
+										context.getImageData(0, 0, width, height));
+								} else {
+									data = canvas.toDataURL(mime);
+								}
+							}
+						}
+						
+					} else {
+						data = canvas.toDataURL(mime);
+					}
+
 					data = data.substring(data.indexOf('base64,') + 7);
 					data = atob(data);
 
@@ -258,6 +283,16 @@
 						}); 
 					}
 				}
+			
+				// Load the js JPEG encoder if needed
+				if ((uploader.settings.html5_use_purejs_jpeg == 'enabled') || 
+					(uploader.settings.html5_use_purejs_jpeg == 'fallback')) {
+					var e = document.createElement("script");
+					e.src = uploader.settings.html5_purejs_jpeg_url;
+					e.type = "text/javascript";
+					document.getElementsByTagName("head")[0].appendChild(e); 
+				}
+
 			});
 
 			// Add drop handler
@@ -554,7 +589,10 @@
 				if (features.jpgresize) {
 					// Resize image if it's a supported format and resize is enabled
 					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-						scaleImage(nativeFile, resize.width, resize.height, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
+						scaleImage(nativeFile, resize.width, resize.height, 
+								   /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', 
+								   resize.quality, up.settings.html5_use_purejs_jpeg, 
+								   function(res) {
 							// If it was scaled send the scaled image if it failed then
 							// send the raw image and let the server do the scaling
 							if (res.success) {
