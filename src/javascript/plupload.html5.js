@@ -102,6 +102,28 @@
 			var xhr, hasXhrSupport, hasProgress, dataAccessSupport, sliceSupport, win = window;
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
+			
+			/* Introduce sendAsBinary for cutting edge WebKit builds that have support for BlobBuilder and typed arrays:
+			credits: http://javascript0.org/wiki/Portable_sendAsBinary, 
+			more info: http://code.google.com/p/chromium/issues/detail?id=35705 
+			*/			
+			if (win.Uint8Array && win.ArrayBuffer && !!XMLHttpRequest.prototype.sendAsBinary) {
+				XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
+					var data, ui8a, bb, blob;
+					
+					data = new ArrayBuffer(datastr.length);
+					ui8a = new Uint8Array(data, 0);
+					
+					for (var i=0; i<datastr.length; i++) {
+						ui8a[i] = (datastr.charCodeAt(i) & 0xff);
+					}
+					
+					bb = new BlobBuilder();
+					bb.append(data);
+					blob = bb.getBlob();
+					this.send(blob);
+				}
+			}
 
 			if (win.XMLHttpRequest) {
 				xhr = new XMLHttpRequest();
@@ -111,7 +133,7 @@
 
 			// Check for support for various features
 			if (hasXhrSupport) {
-				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly
+				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly				
 				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || win.FileReader) && xhr.sendAsBinary);
 				sliceSupport = !!(File && File.prototype.slice);
 			}
