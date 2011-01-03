@@ -260,7 +260,7 @@
 		 * @param {String} name Runtime name for example flash.
 		 * @param {Object} obj Object containing init/destroy method.
 		 */
-		addRuntime : function(name, runtime) {
+		addRuntime : function(name, runtime) {			
 			runtime.name = name;
 			runtimes[name] = runtime;
 			runtimes.push(runtime);
@@ -830,6 +830,14 @@
 			 * @type Number
 			 */
 			state : plupload.STOPPED,
+			
+			/**
+			 * Current runtime name.
+			 *
+			 * @property runtime
+			 * @type String
+			 */
+			runtime: '',
 
 			/**
 			 * Map of features that are available for the uploader runtime. Features will be filled
@@ -1055,6 +1063,7 @@
 							if (res && res.success) {
 								// Successful initialization
 								self.features = features;
+								self.runtime = runtime.name;
 								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
 								self.refresh();
@@ -1257,8 +1266,10 @@
 			 * @method unbindAll
 			 */
 			unbindAll : function() {
+				var self = this;
+				
 				plupload.each(events, function(list, name) {
-					plupload.unbind(name);
+					self.unbind(name);
 				});
 			}
 

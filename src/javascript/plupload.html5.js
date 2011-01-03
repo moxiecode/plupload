@@ -233,22 +233,27 @@
 				TODO: needs to be revised as things will change */
 				browseButton = document.getElementById(up.settings.browse_button);
 				if (browseButton) {				
-					var hoverClass = up.settings.browse_button_hover || 'plupload-hover',
-						activeClass = up.settings.browse_button_active || 'plupload-active',
+					var hoverClass = up.settings.browse_button_hover,
+						activeClass = up.settings.browse_button_active,
 						topElement = up.features.canOpenDialog ? browseButton : inputContainer;
 					
-					plupload.addEvent(topElement, 'mouseover', function() {
-						plupload.addClass(browseButton, hoverClass);	
-					});
-					plupload.addEvent(topElement, 'mouseout', function() {
-						plupload.removeClass(browseButton, hoverClass);	
-					});
-					plupload.addEvent(topElement, 'mousedown', function() {
-						plupload.addClass(browseButton, activeClass);	
-					});
-					plupload.addEvent(document.body, 'mouseup', function() {
-						plupload.removeClass(browseButton, activeClass);	
-					});
+					if (hoverClass) {
+						plupload.addEvent(topElement, 'mouseover', function() {
+							plupload.addClass(browseButton, hoverClass);	
+						});
+						plupload.addEvent(topElement, 'mouseout', function() {
+							plupload.removeClass(browseButton, hoverClass);	
+						});
+					}
+					
+					if (activeClass) {
+						plupload.addEvent(topElement, 'mousedown', function() {
+							plupload.addClass(browseButton, activeClass);	
+						});
+						plupload.addEvent(document.body, 'mouseup', function() {
+							plupload.removeClass(browseButton, activeClass);	
+						});
+					}
 
 					// Route click event to the input[type=file] element for supporting browsers
 					if (up.features.canOpenDialog) {

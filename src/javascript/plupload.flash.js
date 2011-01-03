@@ -42,6 +42,7 @@
 		 * @param {Object} obj Parameters to be passed with event.
 		 */
 		trigger : function(id, name, obj) {
+					
 			// Detach the call so that error handling in the browser is presented correctly
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
@@ -153,6 +154,7 @@
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {
+								
 				var lookup = {}, i, resize = uploader.settings.resize || {};
 				
 				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
@@ -181,6 +183,7 @@
 						urlstream_upload : settings.urlstream_upload
 					});
 				});
+
 
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
 					var file = up.getFile(lookup[flash_file.id]);
@@ -266,6 +269,55 @@
 						file : uploader.getFile(lookup[err.id])
 					});
 				});
+				
+				uploader.bind('Flash:StageEvent:rollOver', function(up) {
+					var browseButton, hoverClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					hoverClass = up.settings.browse_button_hover;
+					
+					if (browseButton && hoverClass) {
+						plupload.addClass(browseButton, hoverClass);
+					}
+				});
+				
+				uploader.bind('Flash:StageEvent:rollOut', function(up) {
+					var browseButton, hoverClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					hoverClass = up.settings.browse_button_hover;
+					
+					if (browseButton && hoverClass) {
+						plupload.removeClass(browseButton, hoverClass);
+					}
+				});
+				
+				uploader.bind('Flash:StageEvent:mouseDown', function(up) {
+					var browseButton, activeClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					activeClass = up.settings.browse_button_active;
+					
+					if (browseButton && activeClass) {
+						plupload.addClass(browseButton, activeClass);
+						
+						// Make sure that browse_button has active state removed from it
+						plupload.addEvent(document.body, 'mouseup', function() {
+							plupload.removeClass(browseButton, activeClass);	
+						});
+					}
+				});
+				
+				uploader.bind('Flash:StageEvent:mouseUp', function(up) {
+					var browseButton, activeClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					activeClass = up.settings.browse_button_active;
+					
+					if (browseButton && activeClass) {
+						plupload.removeClass(browseButton, activeClass);
+					}
+				});
 
 				uploader.bind("QueueChanged", function(up) {
 					uploader.refresh();
@@ -300,7 +352,7 @@
 						height : browseSize.h + 'px'
 					});
 				});
-
+							
 				callback({success : true});
 			});
 		}

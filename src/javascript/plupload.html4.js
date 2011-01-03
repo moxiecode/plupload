@@ -71,7 +71,7 @@
 				mimes = mimes.join(',');
 
 				function createForm() {
-					var form, input, bgcolor;
+					var form, input, bgcolor, browseButton;
 
 					// Setup unique id for form
 					currentFileId = plupload.guid();
@@ -91,6 +91,16 @@
 					input.setAttribute('type', 'file');
 					input.setAttribute('accept', mimes);
 					input.setAttribute('size', 1);
+					
+					browseButton = getById(up.settings.browse_button);
+					
+					// Route click event to input element programmatically, if possible
+					if (up.features.canOpenDialog && browseButton) {
+						plupload.addEvent(getById(up.settings.browse_button), 'click', function(e) {
+							input.click();
+							return false;
+						});
+					}
 
 					// Set input styles
 					plupload.extend(input.style, {
@@ -114,7 +124,7 @@
 
 					// add change event
 					plupload.addEvent(input, 'change', function(e) {
-						var element = e.target, name, files = [];
+						var element = e.target, name, files = [], topElement;
 
 						if (element.value) {
 							getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
@@ -125,6 +135,14 @@
 
 							// Push files
 							files.push(new plupload.File(currentFileId, name));
+							
+							// Clean-up events - they won't be needed anymore
+							if (!up.features.canOpenDialog) {
+								plupload.removeAllEvents(form);								
+							} else {
+								plupload.removeEvent(browseButton, 'click');	
+							}
+							plupload.removeEvent(input, 'change');
 
 							// Create and position next form
 							createForm();
@@ -132,7 +150,8 @@
 							// Fire FilesAdded event
 							if (files.length) {
 								uploader.trigger("FilesAdded", files);
-							}
+							}							
+							
 						}
 					});
 
@@ -251,7 +270,7 @@
 
 				// Refresh button, will reposition the input form
 				up.bind("Refresh", function(up) {
-					var browseButton, browsePos, browseSize, inputContainer, pzIndex;
+					var browseButton, topElement, hoverClass, activeClass, browsePos, browseSize, inputContainer, inputFile, pzIndex;
 
 					browseButton = getById(up.settings.browse_button);
 					if (browseButton) {
@@ -282,27 +301,33 @@
 							plupload.extend(inputContainer.style, {
 								zIndex : pzIndex - 1
 							});
-							
-							// not using plupload.addEvent here, cause there should be only one click event attached
-							browseButton.onclick = function(e) {
-								inputFile.click();
-								return false;
-							};
 						}
 						
 						/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
 						browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
 						with a special class
 						TODO: needs to be revised as things will change */
-						hoverClass = uploader.settings.browse_button_hover || 'plupload-hover';
-						hoverElement = uploader.features.canOpenDialog ? browseButton : inputFile;
+						hoverClass = up.settings.browse_button_hover;
+						activeClass = up.settings.browse_button_active;
+						topElement = up.features.canOpenDialog ? browseButton : inputContainer;
 						
-						hoverElement.onmouseover = function() {
-							plupload.addClass(browseButton, hoverClass);	
-						};
-						hoverElement.onmouseout = function() {
-							plupload.removeClass(browseButton, hoverClass);
-						};
+						if (hoverClass) {
+							plupload.addEvent(topElement, 'mouseover', function() {
+								plupload.addClass(browseButton, hoverClass);	
+							});
+							plupload.addEvent(topElement, 'mouseout', function() {
+								plupload.removeClass(browseButton, hoverClass);
+							});
+						}
+						
+						if (activeClass) {
+							plupload.addEvent(topElement, 'mousedown', function() {
+								plupload.addClass(browseButton, activeClass);	
+							});
+							plupload.addEvent(document.body, 'mouseup', function() {
+								plupload.removeClass(browseButton, activeClass);	
+							});
+						}
 					}
 				});
 
