@@ -14,11 +14,10 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
 public class Plupload extends Applet2 {
-
+	
 	private PluploadFile current_file;
 	private JFileChooser dialog;
 	private boolean dialog_open = false;
@@ -94,6 +93,7 @@ public class Plupload extends Applet2 {
 
 	}
 
+
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
 	public void uploadFile(final String id, final String url,
@@ -163,10 +163,6 @@ public class Plupload extends Applet2 {
 				return null;
 			}
 		});
-	}
-
-	public boolean checkIntegrity() {
-		return this.current_file.checkIntegrity();
 	}
 
 	// Events

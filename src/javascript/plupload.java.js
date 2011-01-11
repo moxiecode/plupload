@@ -9,6 +9,7 @@
       return [
         '<object id="' + args.id + '" type="application/x-java-applet" width="1" height="1">',
         '  <param name="archive" value="' + args.archive + '" />',
+        // '  <param name="archive" value="' + args.archive + '?v=' + new Date().getTime() + '" />',
         '  <param name="id" value="' + escape(args.id) + '" />',
         '  <param name="mayscript" value="true" />',
         '  <param name="code" value="plupload.Plupload" />',
