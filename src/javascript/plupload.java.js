@@ -3,8 +3,6 @@
 
 (function(plupload){
 
-   console.log("foo bar");
-   
   var uploadInstances = {};
    
   function getObjectHTML(args) {
