@@ -3,6 +3,8 @@
 
 (function(plupload){
 
+   console.log("foo bar");
+   
   var uploadInstances = {};
    
   function getObjectHTML(args) {
@@ -12,19 +14,20 @@
         '  <param name="id" value="' + escape(args.id) + '" />',
         '  <param name="mayscript" value="true" />',
         '  <param name="code" value="plupload.Plupload" />',
+        '  <param name="callback" value="plupload.applet.pluploadjavatrigger" />',
         '</object>'].join('\n');
   }
    
   plupload.applet = {
 
-    pluploadjavatrigger : function(id, name, fileobjstring) {
+    pluploadjavatrigger : function(eventname, id, fileobjstring) {
       // FF / Safari mac breaks down if it's not detached here
       // can't do java -> js -> java
       setTimeout(function() {
           var uploader = uploadInstances[id], i, args;
-          var file = eval('(' + fileobjstring + ')');
+          var file = fileobjstring ? eval('(' + fileobjstring + ')') : "";
           if (uploader) {
-            uploader.trigger('applet:' + name, file);
+            uploader.trigger('applet:' + eventname, file);
           }
       }, 0);
     }
@@ -106,7 +109,7 @@
       });
 
       document.body.appendChild(appletContainer);
-      
+
       appletContainer.innerHTML = getObjectHTML({
         archive: url, 
         id: uploader.id

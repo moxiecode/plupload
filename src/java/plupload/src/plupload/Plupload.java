@@ -10,7 +10,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JApplet;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -18,118 +17,92 @@ import javax.swing.UIManager;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class Plupload extends JApplet {
+public class Plupload extends Applet2 {
 
-	// window.console
-	static JSObject console;
-
-	// events
-	static final String CLICK = "Click";
-	static final String SELECT_FILE = "SelectFiles"; // we only select one at a
-	static final String UPLOAD_PROCESS = "UploadProcess";
-	static final String UPLOAD_CHUNK_COMPLETE = "UploadChunkComplete";
-	static final String SKIP_UPLOAD_CHUNK_COMPLETE = "SkipUploadChunkComplete";
-	static final String IO_ERROR = "IOError";
-
-	// plupload.applet
 	private PluploadFile current_file;
 	private JFileChooser dialog;
-	private boolean dialogOpen = false;
-	
-	private String dom_id;
+	private boolean dialog_open = false;
+
+	private String uploader_id;
 	private Map<String, PluploadFile> files;
 	private int id_counter = 0;
 
-	public JSObject plupload;
-
-	public static void log(Object... args) {
-		if (console != null) {
-			console.call("log", args);
-		}
-	}
-
 	@Override
 	public void init() {
-		System.out.println("version 2");
-		
+		super.init();
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		try {
-			console = (JSObject) JSObject.getWindow(this).getMember("console");
-		} catch (JSException e) {
-			System.err.println("console not available");
-		}
+
 		files = new HashMap<String, PluploadFile>();
-		dom_id = getParameter("id");
-		plupload = (JSObject)JSObject.getWindow(this).eval("plupload.applet");
-		if(plupload == null){
-			throw new RuntimeException("plupload is null");
-		}
-		// callback to JS
-		try{
+		uploader_id = getParameter("id");
+
+		try {
 			dialog = new JFileChooser();
 			dialog.setMultiSelectionEnabled(true);
-			fireEvent("Init");
+		} catch (AccessControlException e) {
+			JSObject
+					.getWindow(this)
+					.eval(
+							"alert('Please approve the digital signature of the applet. Close the browser and start over')");
 		}
-		catch(AccessControlException e){
-			JSObject.getWindow(this).eval("alert('Please approve the digital signature of the applet. Close the browser and start over')");
-		}
+		publishEvent(Event.INIT);
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public void setFileFilters(final String filters){
+	public void setFileFilters(final String filters) {
 		System.out.println("setting filters" + filters);
 		try {
 			AccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public Object run() throws IOException, Exception {
-					dialog.setFileFilter(new javax.swing.filechooser.FileFilter() {
-						
-						@Override
-						public String getDescription() {
-							// TODO Auto-generated method stub
-							return null;
-						}
-						
-						@Override
-						public boolean accept(File f) {
-							if(f.isDirectory()){
-								return true;
-							}
-							for(String filter : filters.split(",")){
-								if(f.getName().toLowerCase().endsWith(filter.toLowerCase())){
-									return true;
+					dialog
+							.setFileFilter(new javax.swing.filechooser.FileFilter() {
+
+								@Override
+								public String getDescription() {
+									// TODO Auto-generated method stub
+									return null;
 								}
-							}
-							return false;
-						}
-					});
+
+								@Override
+								public boolean accept(File f) {
+									if (f.isDirectory()) {
+										return true;
+									}
+									for (String filter : filters.split(",")) {
+										if (f.getName().toLowerCase().endsWith(
+												filter.toLowerCase())) {
+											return true;
+										}
+									}
+									return false;
+								}
+							});
 					return null;
 				}
 			});
 		} catch (PrivilegedActionException e) {
 			Exception ex = e.getException();
 			if (ex instanceof IOException) {
-				sendIOError(ex);
+				publishIOError(ex);
 			} else if (ex instanceof Exception) {
-				sendError(ex);
+				publishError(ex);
 			}
 		}
-		
+
 	}
 
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
-	public void uploadFile(final String id, final String url, final String cookie,
-			final int chunk_size, final int retries) {
+	public void uploadFile(final String id, final String url,
+			final String cookie, final int chunk_size, final int retries) {
 		final PluploadFile file = files.get(id);
 		if (file != null) {
 			this.current_file = file;
 		}
-		
+
 		try {
 			// Because of LiveConnect our security privileges are degraded
 			// elevate them again.
@@ -142,9 +115,9 @@ public class Plupload extends JApplet {
 		} catch (PrivilegedActionException e) {
 			Exception ex = e.getException();
 			if (ex instanceof IOException) {
-				sendIOError(ex);
+				publishIOError(ex);
 			} else {
-				sendError(ex);
+				publishError(ex);
 			}
 		}
 	}
@@ -156,32 +129,35 @@ public class Plupload extends JApplet {
 	public void clearFiles() {
 		files.clear();
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public void openFileDialog(){
+	public void openFileDialog() {
 		System.out.println("opening dialog");
-		if(dialogOpen){
+		if (dialog_open) {
 			// FIXME: bring openDialog to front
 			return;
 		}
-		dialogOpen = true;
+		dialog_open = true;
 		AccessController.doPrivileged(new PrivilegedAction() {
-			public Object run() {			
-				SwingUtilities.invokeLater(new Runnable() {		
+			public Object run() {
+				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						int file_chose_return_value = dialog.showOpenDialog(Plupload.this);
+						int file_chose_return_value = dialog
+								.showOpenDialog(Plupload.this);
 						System.out.println("openDialog finished");
 						// blocks until file selected
-						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {					
-							for(File f : dialog.getSelectedFiles()){
+						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
+							for (File f : dialog.getSelectedFiles()) {
 								// Wiredness: If PluploadFile extends Thread
-								// it just stopped here in my production environment
-								PluploadFile file = new PluploadFile(id_counter++, f);
-								selectEvent(file);								
-							}						
+								// it just stopped here in my production
+								// environment
+								PluploadFile file = new PluploadFile(
+										id_counter++, f);
+								selectEvent(file);
+							}
 						}
-						dialogOpen = false;
+						dialog_open = false;
 					}
 				});
 				return null;
@@ -189,40 +165,48 @@ public class Plupload extends JApplet {
 		});
 	}
 
-	public void fireEvent(String event) {
-		fireEvent(event, "null");
-	}
-
 	public boolean checkIntegrity() {
 		return this.current_file.checkIntegrity();
 	}
 
-	// actions
+	// Events
+	private enum Event {
+		CLICK("Click"), 
+		INIT("Init"),
+		SELECT_FILE("SelectFiles"), 
+		UPLOAD_PROCESS("UploadProcess"), 
+		UPLOAD_CHUNK_COMPLETE("UploadChunkComplete"), 
+		SKIP_UPLOAD_CHUNK_COMPLETE("SkipUploadChunkComplete"), 
+		IO_ERROR("IOError"), 
+		GENERIC_ERROR("GenericError");
 
-	// fires event to JS
-	public void fireEvent(String event, Object o) {
-		System.out.println("fireEvent: " + event + " args: " + o);
-		Object[] args = { dom_id, event, o.toString() };
-		plupload.call("pluploadjavatrigger", args);
+		private String name;
+
+		Event(String name) {
+			this.name = name;
+		}
+
+		private String getName() {
+			return name;
+		}
 	}
 
-	public void sendIOError(Exception e) {
-		fireEvent(IO_ERROR, new PluploadError(e.getMessage(), Integer
-				.toString(this.current_file.id)));
-	}
-	
-	public void sendSecurityError(Exception e){
-		fireEvent("SecurityError", new PluploadError(e.getMessage(), null));
-	}
-
-	public void sendError(Exception e) {
-		fireEvent("GenericError", new PluploadError(e.getMessage(), Integer
-				.toString(this.current_file.id)));
+	private void publishEvent(Event e, Object ... args) {
+		// is this really the way to do this?
+		// prepend args with upload id.
+		Object[] new_args = new Object[args.length + 1];
+		new_args[0] = uploader_id;
+		System.arraycopy(args, 0, new_args, 1, args.length);
+		// calls to superclass
+		publishEvent(e.getName(), new_args);
 	}
 
-	public void sendFileModifiedError(Exception e) {
-		fireEvent("FileChangedError", new PluploadError(e.getMessage(), Integer
-				.toString(this.current_file.id)));
+	private void publishIOError(Exception e) {
+		publishEvent(Event.IO_ERROR, new PluploadError(e.getMessage(), this.current_file.id));
+	}
+
+	private void publishError(Exception e) {
+		publishEvent(Event.GENERIC_ERROR, new PluploadError(e.getMessage(), this.current_file.id));
 	}
 
 	private void selectEvent(PluploadFile file) {
@@ -234,22 +218,21 @@ public class Plupload extends JApplet {
 
 			@Override
 			public void uploadProcess(PluploadFile file) {
-				fireEvent(UPLOAD_PROCESS, file);
+				publishEvent(Event.UPLOAD_PROCESS, file);
 			}
 
 			@Override
 			public void ioError(IOException e) {
-				sendIOError(e);
-				
+				publishIOError(e);
+
 			}
 
 			@Override
 			public void genericError(Exception e) {
-				sendError(e);
+				publishError(e);
 			}
 		});
 
-		fireEvent(SELECT_FILE, file.toString());
+		publishEvent(Event.SELECT_FILE, file.toString());
 	}
-	
 }

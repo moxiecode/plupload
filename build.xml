@@ -90,10 +90,10 @@
   </target>
 
   <target name="sign-jar" description="Signs the Java applet jar. Before this run: keytool -genkey -alias plupload">
-    <signjar jar="bin/plupload.java.jar" alias="plupload" storepass="abraxas" />
+    <signjar jar="bin/plupload.java.jar" alias="plupload" storepass="123456" />
   </target>
 
-  <target name="deploy-jar" depends="clean-java, build-java, jar, sign-jar">
+  <target name="deploy-jar" depends="clean-java, build-java, jar, sign-jar, build">
     <copy todir="bin">
       <fileset dir="${dir.java}/libs">
         <include name="*.jar"/>
