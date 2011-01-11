@@ -84,11 +84,13 @@
       appletContainer = document.createElement('div');
       appletContainer.id = uploader.id + '_applet_container';
       appletContainer.className = 'plupload applet';
+
       
       plupload.extend(appletContainer.style, {
+        // move the 1x1 pixel out of the way. 
         position : 'absolute',
-        top : '0px',
-        zIndex : 99999
+        left: '-9999px',
+        zIndex : -1
       });
 
       uploader.bind("Applet:Init", function() {
