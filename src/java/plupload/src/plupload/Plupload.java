@@ -29,6 +29,7 @@ public class Plupload extends Applet2 {
 	@Override
 	public void init() {
 		super.init();
+		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {

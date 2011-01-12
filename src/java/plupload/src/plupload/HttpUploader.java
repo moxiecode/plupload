@@ -63,10 +63,8 @@ public class HttpUploader {
 	}
 
 	public Map<String, String> probe(URI uri) throws ClientProtocolException, IOException, ParseException{
-		System.out.println("probe uri: " + uri);
 		HttpGet get = new HttpGet(uri);
 		get.addHeader("Cookie", cookie);
-		System.out.println("cookie:" + cookie);
 
 		HttpResponse response = httpclient.execute(get);
 		String body = HttpUtil.toString(response.getEntity());

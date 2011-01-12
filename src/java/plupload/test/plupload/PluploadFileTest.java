@@ -26,5 +26,13 @@ public class PluploadFileTest {
 		file.prepare("http://localhost", 1024, 10, "");
 		assertEquals(file.getProbeUri().toString(), "http://localhost/?name=HashUtil.class");
 	}
+	
+	@Test
+	public void testFileName(){
+		PluploadFile f = new PluploadFile(0, new File("foo'bar"));
+		assertTrue(f.toString().contains("foo\\'"));
+		f = new PluploadFile(0, new File("foo\"bar"));
+		assertTrue(f.toString().contains("foo\\\""));
+	}
 
 }

@@ -47,7 +47,7 @@ public class PluploadFile /*extends Thread*/{
 	public PluploadFile(int id, File file) {
 		System.out.println("PluploadFile " + id + " " + file);
 		this.id = id;
-		this.name = file.getName();
+		this.name = file.getName().replace("\"", "\\\"").replace("'", "\\'");
 		this.size = file.length();
 		this.file = file;
 		
