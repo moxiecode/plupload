@@ -32,6 +32,7 @@
 	<taskdef name="moxiedoc" classname="com.moxiecode.ant.tasks.MoxieDocTask" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="tasks.classpath" loaderref="tasks.classpath.loader" />
 	<taskdef name="jslint" classname="com.googlecode.jslint4java.ant.JSLintTask" classpath="tools/ant/jslint4java.jar" />
+    <taskdef resource="proguard/ant/task.properties" classpath="tools/ant/proguard.jar" />
 
 	<!-- Generate JS documentation -->
 	<target name="moxiedoc" depends="" description="Generates HTML documentation out of js source">
@@ -176,12 +177,6 @@
 			</zipfileset>
 		</zip>
 	</target>
-
-    <!-- 
-         tried to apply proguard to remove all unused classed. 
-         commons-logging used by httpclient and httpcore fucks this up. 
-    -->
-  <taskdef resource="proguard/ant/task.properties" classpath="tools/ant/proguard.jar" />
 
   <target name="proguard">
     <proguard optimizationpasses="2">
