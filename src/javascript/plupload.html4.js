@@ -108,6 +108,10 @@
 						height : '100%',
 						opacity : 0
 					});
+					
+					plupload.extend(form.style, {
+						overflow: 'hidden'
+					});
 
 					// Show the container if shim_bgcolor is specified
 					bgcolor = up.settings.shim_bgcolor;
