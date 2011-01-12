@@ -237,7 +237,7 @@
 
 				// Insert the input inside the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
-											'style="width:100%;" type="file" accept="' + mimes.join(',') + '" ' +
+											'style="width:100%;height:100%;" type="file" accept="' + mimes.join(',') + '" ' +
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
 				
 				inputFile = document.getElementById(uploader.id + '_html5');
