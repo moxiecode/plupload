@@ -9,9 +9,10 @@
       <fileset dir="${dir.java}">
         <include name="libs/*.jar"/>
       </fileset>
-      <fileset dir="${env.JAVA_HOME}/jre/lib/">
-        <include name="plugin.jar"/>
-      </fileset>
+      <!-- is called something different on the mac, therefore included in libs -->
+      <!-- <fileset dir="${env.JAVA_HOME}/jre/lib/"> -->
+      <!--   <include name="plugin.jar"/> -->
+      <!-- </fileset> -->
   </path>
 
 	<!-- Setup classpath for js-build-tools ant tasks -->
@@ -84,6 +85,7 @@
       <fileset dir="${dir.java}">
         <include name="libs/*.jar"/>
         <exclude name="libs/junit-4.8.1.jar"/>
+        <exclude name="libs/plugin.jar"/>
       </fileset>
     </unjar>
     <delete dir="${dir.java}/bin/META-INF"/>
