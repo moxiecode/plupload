@@ -51,6 +51,11 @@ $(function() {
 			'</div>');
 		});
 	});
+	
+	uploader.bind('UploadFile', function(up, file) {
+		$('<input type="hidden" name="file-' + file.id + '" value="' + file.name + '" />')
+			.appendTo('#submit-form');
+	});
 
 	uploader.bind('UploadProgress', function(up, file) {
 		$('#' + file.id + " b").html(file.percent + "%");
@@ -68,7 +73,7 @@ $(function() {
 </head>
 <body>
 
-<form method="post" action="dump.php">
+<form id="submit-form" method="post" action="dump.php">
 	<h1>Custom example</h1>
 
 	<p>Shows you how to use the core plupload API.</p>
@@ -79,6 +84,8 @@ $(function() {
 		<a id="pickfiles" href="#">[Select files]</a> 
 		<a id="uploadfiles" href="#">[Upload files]</a>
 	</div>
+    
+    <input type="submit" />
 </form>
 
 </body>
