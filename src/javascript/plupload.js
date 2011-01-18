@@ -776,7 +776,6 @@
 					uploadNext.call(this);
 				}
 			} else {
-
 				if (fileIndex == files.length) {
 					this.trigger("UploadComplete", file);
 				}
@@ -1005,9 +1004,11 @@
 
 						// Upload next file but detach it from the error event
 						// since other custom listeners might want to stop the queue
-						delay(function() {
-							uploadNext.call(self);
-						}, 1);
+						if (up.state == plupload.STARTED) {
+							delay(function() {
+								uploadNext.call(self);
+							}, 1);
+						}
 					}
 				});
 
