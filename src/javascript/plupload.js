@@ -700,7 +700,7 @@
 		 * @param {Object} obj DOM element to remove event listeners from.
 		 */
 		removeAllEvents: function(obj) {
-			if (obj[uid] !== undef || !eventhash.hasOwnProperty(obj[uid])) {
+			if (obj[uid] === undef || !eventhash.hasOwnProperty(obj[uid])) {
 				return;
 			}
 			
@@ -1272,6 +1272,18 @@
 				plupload.each(events, function(list, name) {
 					self.unbind(name);
 				});
+			},
+			
+			/**
+			 * Destroys Plupload instance and cleans after itself.
+			 *
+			 * @method destroy
+			 */
+			destroy : function() {							
+				this.trigger('Destroy');
+				
+				// Clean-up after uploader itself
+				this.unbindAll();
 			}
 
 			/**
@@ -1382,6 +1394,13 @@
 			 * @event Error
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 * @param {Object} error Contains code, message and sometimes file and other details.
+			 */
+			 
+			 /**
+			 * Fires when destroy method is called.
+			 *
+			 * @event Destroy
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 */
 		});
 	};

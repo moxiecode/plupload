@@ -556,8 +556,11 @@ $.widget("ui.plupload", {
 	
 	
 	_enableDragAndDrop: function() {
-		this.uploader.settings.drop_element = this.options.drop_element = this.filelist.attr('id');
 		this.filelist.append('<tr><td class="plupload_droptext">' + _("Drag files here.") + '</td></tr>');
+		
+		this.filelist.parent().attr('id', this.id + '_dropbox');
+		
+		this.uploader.settings.drop_element = this.options.drop_element = this.id + '_dropbox';
 	},
 	
 	
@@ -645,16 +648,14 @@ $.widget("ui.plupload", {
 		// destroy sortable behavior
 		($.ui.sortable && this.options.sortable && $('tbody', this.filelist).sortable('destroy'));
 		
+		// destroy uploader instance
+		this.uploader.destroy();
+		
 		// restore the elements initial state
 		this.element
 			.empty()
 			.html(this.contents_bak);
 		this.contents_bak = '';
-		
-		// TODO: call runtime destroy method here
-		
-		// unbind all events from uploader instance
-		this.uploader.unbindAll();
 
 		$.Widget.prototype.destroy.apply(this);
 	}

@@ -11,7 +11,7 @@
 // JSLint defined globals
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false */
 
-(function(plupload) {
+(function(window, document, plupload, undef) {
 	var fakeSafariDragDrop, ExifParser;
 
 	function readFile(file, callback) {
@@ -144,7 +144,7 @@
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: win.mozInnerScreenX !== undefined || sliceSupport || fakeSafariDragDrop,
+				dragdrop: win.mozInnerScreenX !== undef || sliceSupport || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
@@ -306,29 +306,34 @@
 								dropInputElm.setAttribute('id', uploader.id + "_drop");
 								dropInputElm.setAttribute('multiple', 'multiple');
 
-								dropInputElm.onchange = function() {
+								plupload.addEvent(dropInputElm, 'change', function() {
 									// Add the selected files from file input
 									addSelectedFiles(this.files);
 
-									// Clearing the value enables the user to select the same file again if they want to
-									this.value = '';
-								};
+									// Remove input element
+									plupload.removeEvent(dropInputElm, 'change');
+									dropInputElm.parentNode.removeChild(dropInputElm);									
+								});
+								
+								dropElm.appendChild(dropInputElm);
 							}
 
 							dropPos = plupload.getPos(dropElm, document.getElementById(uploader.settings.container));
 							dropSize = plupload.getSize(dropElm);
+							
+							plupload.extend(dropElm.style, {
+								position : 'relative'
+							});
 
 							plupload.extend(dropInputElm.style, {
 								position : 'absolute',
 								display : 'block',
-								top : dropPos.y + 'px',
-								left : dropPos.x + 'px',
+								top : 0,
+								left : 0,
 								width : dropSize.w + 'px',
 								height : dropSize.h + 'px',
 								opacity : 0
-							});
-
-							dropElm.appendChild(dropInputElm);
+							});							
 						});
 
 						return;
@@ -597,6 +602,33 @@
 				} else {
 					sendBinaryBlob(nativeFile);
 				}
+			});
+			
+			
+			uploader.bind('Destroy', function(up) {
+				var name, element, container = document.body,
+					elements = {
+						inputContainer: up.id + '_html5_container', 
+						inputFile: 		up.id + '_html5', 			
+						browseButton:	up.settings.browse_button, 
+						dropElm:		up.settings.drop_element,	
+					};
+				
+				// Unbind event handlers
+				for (name in elements) {
+					element = document.getElementById(elements[name]);
+					if (element) {
+						plupload.removeAllEvents(element);
+					}
+				}
+				plupload.removeAllEvents(document.body);
+				
+				if (up.settings.container) {
+					container = document.getElementById(up.settings.container);
+				}
+				
+				// Remove mark-up
+				container.removeChild(document.getElementById(elements['inputContainer']));
 			});
 
 			callback({success : true});
@@ -1131,4 +1163,4 @@
 			}
 		};
 	};
-})(plupload);
+})(window, document, plupload);
