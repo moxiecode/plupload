@@ -283,6 +283,7 @@ package com.plupload {
 							file._size = file._imageData.length;
 						}
 
+
 						if (chunking) {
 							chunks = Math.ceil(file._size / chunkSize);
 
@@ -295,7 +296,11 @@ package com.plupload {
 								chunks = 4;
 							}
 						}
-
+						else 	{
+							chunkSize = file.size;
+							chunks = 1;
+						}
+						
 						// Start uploading the scaled down image
 						file._multipart = multipart;
 						file._fileDataName = fileDataName;
