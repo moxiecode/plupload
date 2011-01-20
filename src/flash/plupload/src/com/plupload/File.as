@@ -119,7 +119,7 @@ package com.plupload {
 
 		public function simpleUpload(url:String, settings:Object):void {
 			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String;
-
+			
 			file._postvars = settings["multipart_params"];
 			file._chunk = 0;
 			file._chunks = 1;
@@ -140,6 +140,9 @@ package com.plupload {
 			fileDataName = new String(settings["file_data_name"]);
 
 			file._fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
+				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, file._size, file._size);
+				dispatchEvent(pe);
+				
 				// Fake UPLOAD_COMPLETE_DATA event
 				var uploadChunkEvt:UploadChunkEvent = new UploadChunkEvent(
 					UploadChunkEvent.UPLOAD_CHUNK_COMPLETE_DATA,
@@ -149,12 +152,9 @@ package com.plupload {
 					file._chunk,
 					file._chunks
 				);
-
+				
 				file._chunk++;
 				dispatchEvent(uploadChunkEvt);
-
-				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, file._size, file._size);
-				dispatchEvent(pe);
 
 				dispatchEvent(e);
 			});
@@ -170,7 +170,7 @@ package com.plupload {
 			});
 
 			// Delegate progress
-			file._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {
+			file._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {				
 				dispatchEvent(e);
 			});
 

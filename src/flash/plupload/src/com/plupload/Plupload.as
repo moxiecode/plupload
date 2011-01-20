@@ -49,6 +49,7 @@ package com.plupload {
 		private var id:String;
 		private var fileFilters:Array;
 		private var multipleFiles:Boolean;
+		private var fileRefArray:Array = [];
 		private var fileRef:FileReference;
 
 		/**
@@ -80,9 +81,7 @@ package com.plupload {
 			this.fileRefList.addEventListener(Event.CANCEL, cancelEvent);
 			this.fileRefList.addEventListener(Event.SELECT, selectEvent);
 
-			this.fileRef = new FileReference();
-			this.fileRef.addEventListener(Event.CANCEL, cancelEvent);
-			this.fileRef.addEventListener(Event.SELECT, selectEvent);
+			initSingleFileReference();
 
 			this.files = new Dictionary();
 
@@ -120,6 +119,20 @@ package com.plupload {
 			ExternalInterface.addCallback('uploadNextChunk', this.uploadNextChunk);
 
 			this.fireEvent("Init");
+		}
+		
+		
+		/**
+		 * In case of multipleFiles=false FileReference needs to be reinitialized for every file select dialog
+		 */
+		private function initSingleFileReference() : void {
+			if (this.fileRef) {
+				this.fileRef = null;
+			}
+			
+			this.fileRef = new FileReference();
+			this.fileRef.addEventListener(Event.CANCEL, cancelEvent);
+			this.fileRef.addEventListener(Event.SELECT, selectEvent);
 		}
 
 		/**
@@ -201,16 +214,20 @@ package com.plupload {
 			}
 
 			if (this.multipleFiles) {
-				for (var i:Number = 0; i < this.fileRefList.fileList.length; i++)
+				for (var i:Number = 0; i < this.fileRefList.fileList.length; i++) {
 					processFile(new File("file_" + (this.idCounter++), this.fileRefList.fileList[i]));
-			} else
+				}
+			} else {
 				processFile(new File("file_" + (this.idCounter++), this.fileRef));
+				this.fileRefArray.push(this.fileRef);
+				initSingleFileReference();
+			}
 
 			this.fireEvent("SelectFiles", selectedFiles);
 		}
 
 		/**
-		 * Send out all stage events to page level JS inorder to fake click, hover etc.
+		 * Sefnd out all stage events to page level JS inorder to fake click, hover etc.
 		 *
 		 * @param e Event object.
 		 */
