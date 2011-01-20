@@ -21,7 +21,6 @@ body {background: #9A7C5F;}
 <script type="text/javascript" src="../src/javascript/plupload.browserplus.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
 <script type="text/javascript" src="../src/javascript/jquery.plupload.queue.js"></script>
-<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>
 <script>
 // Custom example logic
 $(function() {
@@ -31,8 +30,8 @@ $(function() {
 		max_file_size : '10mb',
 		url : 'upload.php',
 		resize : {width : 320, height : 240, quality : 90},
-		flash_swf_url : '/plupload/js/plupload.flash.swf',
-		silverlight_xap_url : '/plupload/js/plupload.silverlight.xap',
+		flash_swf_url : '../js/plupload.flash.swf',
+		silverlight_xap_url : '../js/plupload.silverlight.xap',
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
