@@ -11,7 +11,7 @@
 // JSLint defined globals
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false */
 
-(function(plupload) {
+(function(window, document, plupload, undef) {
 	var fakeSafariDragDrop, ExifParser;
 
 	function readFile(file, callback) {
@@ -102,6 +102,28 @@
 			var xhr, hasXhrSupport, hasProgress, dataAccessSupport, sliceSupport, win = window;
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
+			
+			/* Introduce sendAsBinary for cutting edge WebKit builds that have support for BlobBuilder and typed arrays:
+			credits: http://javascript0.org/wiki/Portable_sendAsBinary, 
+			more info: http://code.google.com/p/chromium/issues/detail?id=35705 
+			*/			
+			if (win.Uint8Array && win.ArrayBuffer && !!XMLHttpRequest.prototype.sendAsBinary) {
+				XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
+					var data, ui8a, bb, blob;
+					
+					data = new ArrayBuffer(datastr.length);
+					ui8a = new Uint8Array(data, 0);
+					
+					for (var i=0; i<datastr.length; i++) {
+						ui8a[i] = (datastr.charCodeAt(i) & 0xff);
+					}
+					
+					bb = new BlobBuilder();
+					bb.append(data);
+					blob = bb.getBlob();
+					this.send(blob);
+				}
+			}
 
 			if (win.XMLHttpRequest) {
 				xhr = new XMLHttpRequest();
@@ -111,23 +133,28 @@
 
 			// Check for support for various features
 			if (hasXhrSupport) {
-				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly
+				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly				
 				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || win.FileReader) && xhr.sendAsBinary);
 				sliceSupport = !!(File && File.prototype.slice);
 			}
 
 			// Sniff for Safari and fake drag/drop
-			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0;
+			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1;
 
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: win.mozInnerScreenX !== undefined || sliceSupport || fakeSafariDragDrop,
+				dragdrop: win.mozInnerScreenX !== undef || sliceSupport || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
 				progress: hasProgress,
-				chunking: sliceSupport || dataAccessSupport
+				chunking: sliceSupport || dataAccessSupport,
+				
+				/* IE and WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
+				sniff for them here... IE may eventually become html5 compliant :) probably not that good idea, 
+				but impossibillity of controlling cursor style  on top of add files button obviously feels even worse */
+				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1 || /*@cc_on!@*/false
 			};
 		},
 
@@ -170,7 +197,7 @@
 			}
 
 			uploader.bind("Init", function(up) {
-				var inputContainer, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body;
+				var inputContainer, browseButton, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body;
 
 				// Create input container and insert it at an absolute position within the browse button
 				inputContainer = document.createElement('div');
@@ -208,18 +235,56 @@
 
 				container.appendChild(inputContainer);
 
-				// Insert the input inide the input container
+				// Insert the input inside the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
-											'style="width:100%;" type="file" accept="' + mimes.join(',') + '" ' +
+											'style="width:100%;height:100%;" type="file" accept="' + mimes.join(',') + '" ' +
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
-
-				document.getElementById(uploader.id + '_html5').onchange = function() {
+				
+				inputFile = document.getElementById(uploader.id + '_html5');
+				inputFile.onchange = function() {
 					// Add the selected files from file input
 					addSelectedFiles(this.files);
 
 					// Clearing the value enables the user to select the same file again if they want to
 					this.value = '';
 				};
+				
+				/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
+				browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
+				with a special class
+				TODO: needs to be revised as things will change */
+				browseButton = document.getElementById(up.settings.browse_button);
+				if (browseButton) {				
+					var hoverClass = up.settings.browse_button_hover,
+						activeClass = up.settings.browse_button_active,
+						topElement = up.features.canOpenDialog ? browseButton : inputContainer;
+					
+					if (hoverClass) {
+						plupload.addEvent(topElement, 'mouseover', function() {
+							plupload.addClass(browseButton, hoverClass);	
+						});
+						plupload.addEvent(topElement, 'mouseout', function() {
+							plupload.removeClass(browseButton, hoverClass);	
+						});
+					}
+					
+					if (activeClass) {
+						plupload.addEvent(topElement, 'mousedown', function() {
+							plupload.addClass(browseButton, activeClass);	
+						});
+						plupload.addEvent(document.body, 'mouseup', function() {
+							plupload.removeClass(browseButton, activeClass);	
+						});
+					}
+
+					// Route click event to the input[type=file] element for supporting browsers
+					if (up.features.canOpenDialog) {
+						plupload.addEvent(browseButton, 'click', function(e) {
+							document.getElementById(up.id + '_html5').click();
+							e.preventDefault();
+						}); 
+					}
+				}
 			});
 
 			// Add drop handler
@@ -227,7 +292,7 @@
 				var dropElm = document.getElementById(uploader.settings.drop_element);
 
 				if (dropElm) {
-					// Lets fake drag/drop on Safari by moving a inpit type file in front of the mouse pointer when we drag into the drop zone
+					// Lets fake drag/drop on Safari by moving a input type file in front of the mouse pointer when we drag into the drop zone
 					// TODO: Remove this logic once Safari has official drag/drop support
 					if (fakeSafariDragDrop) {
 						plupload.addEvent(dropElm, 'dragenter', function(e) {
@@ -241,29 +306,34 @@
 								dropInputElm.setAttribute('id', uploader.id + "_drop");
 								dropInputElm.setAttribute('multiple', 'multiple');
 
-								dropInputElm.onchange = function() {
+								plupload.addEvent(dropInputElm, 'change', function() {
 									// Add the selected files from file input
 									addSelectedFiles(this.files);
 
-									// Clearing the value enables the user to select the same file again if they want to
-									this.value = '';
-								};
+									// Remove input element
+									plupload.removeEvent(dropInputElm, 'change');
+									dropInputElm.parentNode.removeChild(dropInputElm);									
+								});
+								
+								dropElm.appendChild(dropInputElm);
 							}
 
 							dropPos = plupload.getPos(dropElm, document.getElementById(uploader.settings.container));
 							dropSize = plupload.getSize(dropElm);
+							
+							plupload.extend(dropElm.style, {
+								position : 'relative'
+							});
 
 							plupload.extend(dropInputElm.style, {
 								position : 'absolute',
 								display : 'block',
-								top : dropPos.y + 'px',
-								left : dropPos.x + 'px',
+								top : 0,
+								left : 0,
 								width : dropSize.w + 'px',
 								height : dropSize.h + 'px',
 								opacity : 0
-							});
-
-							dropElm.appendChild(dropInputElm);
+							});							
 						});
 
 						return;
@@ -289,18 +359,38 @@
 			});
 
 			uploader.bind("Refresh", function(up) {
-				var browseButton, browsePos, browseSize;
-
+				var browseButton, browsePos, browseSize, inputContainer, pzIndex;
+					
 				browseButton = document.getElementById(uploader.settings.browse_button);
-				browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
-				browseSize = plupload.getSize(browseButton);
-
-				plupload.extend(document.getElementById(uploader.id + '_html5_container').style, {
-					top : browsePos.y + 'px',
-					left : browsePos.x + 'px',
-					width : browseSize.w + 'px',
-					height : browseSize.h + 'px'
-				});
+				if (browseButton) {
+					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
+					browseSize = plupload.getSize(browseButton);
+					inputContainer = document.getElementById(uploader.id + '_html5_container');
+	
+					plupload.extend(inputContainer.style, {
+						top : browsePos.y + 'px',
+						left : browsePos.x + 'px',
+						width : browseSize.w + 'px',
+						height : browseSize.h + 'px'
+					});
+					
+					// for IE and WebKit place input element underneath the browse button and route onclick event 
+					// TODO: revise when browser support for this feature will change
+					if (uploader.features.canOpenDialog) {
+						pzIndex = parseInt(browseButton.parentNode.style.zIndex);
+						if (isNaN(pzIndex))
+							pzIndex = 0;
+							
+						plupload.extend(browseButton.style, {
+							position : 'relative',
+							zIndex : pzIndex
+						});
+											
+						plupload.extend(inputContainer.style, {
+							zIndex : pzIndex - 1
+						});
+					}
+				}
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
@@ -380,7 +470,7 @@
 								if (httpStatus >= 400) {
 									up.trigger('Error', {
 										code : plupload.HTTP_ERROR,
-										message : 'HTTP Error.',
+										message : plupload.translate('HTTP Error.'),
 										file : file,
 										status : httpStatus
 									});
@@ -512,6 +602,33 @@
 				} else {
 					sendBinaryBlob(nativeFile);
 				}
+			});
+			
+			
+			uploader.bind('Destroy', function(up) {
+				var name, element, container = document.body,
+					elements = {
+						inputContainer: up.id + '_html5_container', 
+						inputFile: 		up.id + '_html5', 			
+						browseButton:	up.settings.browse_button, 
+						dropElm:		up.settings.drop_element	
+					};
+				
+				// Unbind event handlers
+				for (name in elements) {
+					element = document.getElementById(elements[name]);
+					if (element) {
+						plupload.removeAllEvents(element);
+					}
+				}
+				plupload.removeAllEvents(document.body);
+				
+				if (up.settings.container) {
+					container = document.getElementById(up.settings.container);
+				}
+				
+				// Remove mark-up
+				container.removeChild(document.getElementById(elements['inputContainer']));
 			});
 
 			callback({success : true});
@@ -1046,4 +1163,4 @@
 			}
 		};
 	};
-})(plupload);
+})(window, document, plupload);

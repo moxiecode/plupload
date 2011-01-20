@@ -1,3 +1,5 @@
+Version 1.3.x (2011-01-xx)
+	Fixed bug where upload would fail if an error was produced inside the FilesAdded event.
 Version 1.3.0 (2010-11-24)
 	Added new jQuery UI widget that supports jQuery UI themes.
 	Added new multiple_queues option that enables you to upload multiple times in the queue widgets.

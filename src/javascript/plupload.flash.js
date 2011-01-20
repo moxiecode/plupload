@@ -12,7 +12,7 @@
 /*global plupload:false, ActiveXObject:false, escape:false */
 
 (function(plupload) {
-	var uploadInstances = {};
+	var uploadInstances = {}, initialized = {};
 
 	function getFlashVersion() {
 		var version;
@@ -42,6 +42,7 @@
 		 * @param {Object} obj Parameters to be passed with event.
 		 */
 		trigger : function(id, name, obj) {
+					
 			// Detach the call so that error handling in the browser is presented correctly
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
@@ -61,6 +62,7 @@
 	 * @extends plupload.Runtime
 	 */
 	plupload.runtimes.Flash = plupload.addRuntime("flash", {
+		
 		/**
 		 * Returns a list of supported features for the runtime.
 		 *
@@ -84,13 +86,14 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var browseButton, flashContainer, flashVars, initialized, waitCount = 0, container = document.body;
+			var browseButton, flashContainer, flashVars, waitCount = 0, container = document.body;
 
 			if (getFlashVersion() < 10) {
 				callback({success : false});
 				return;
 			}
 
+			initialized[uploader.id] = false;
 			uploadInstances[uploader.id] = uploader;
 
 			// Find browse button and set to to be relative
@@ -132,13 +135,14 @@
 			}
 
 			function waitLoad() {
+								
 				// Wait for 5 sec
 				if (waitCount++ > 5000) {
 					callback({success : false});
 					return;
 				}
 
-				if (!initialized) {
+				if (!initialized[uploader.id]) {
 					setTimeout(waitLoad, 1);
 				}
 			}
@@ -150,10 +154,16 @@
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {
+								
 				var lookup = {}, i, resize = uploader.settings.resize || {};
-
-				initialized = true;
+				
 				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+				
+				// Prevent eventual reinitialization of the instance
+				if (initialized[uploader.id])
+					return;
+				
+				initialized[uploader.id] = true;
 
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings;
@@ -173,6 +183,7 @@
 						urlstream_upload : settings.urlstream_upload
 					});
 				});
+
 
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
 					var file = up.getFile(lookup[flash_file.id]);
@@ -235,7 +246,7 @@
 				uploader.bind("Flash:SecurityError", function(up, err) {
 					uploader.trigger('Error', {
 						code : plupload.SECURITY_ERROR,
-						message : 'Security error.',
+						message : plupload.translate('Security error.'),
 						details : err.message,
 						file : uploader.getFile(lookup[err.id])
 					});
@@ -244,7 +255,7 @@
 				uploader.bind("Flash:GenericError", function(up, err) {
 					uploader.trigger('Error', {
 						code : plupload.GENERIC_ERROR,
-						message : 'Generic error.',
+						message : plupload.translate('Generic error.'),
 						details : err.message,
 						file : uploader.getFile(lookup[err.id])
 					});
@@ -253,10 +264,59 @@
 				uploader.bind("Flash:IOError", function(up, err) {
 					uploader.trigger('Error', {
 						code : plupload.IO_ERROR,
-						message : 'IO error.',
+						message : plupload.translate('IO error.'),
 						details : err.message,
 						file : uploader.getFile(lookup[err.id])
 					});
+				});
+				
+				uploader.bind('Flash:StageEvent:rollOver', function(up) {
+					var browseButton, hoverClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					hoverClass = up.settings.browse_button_hover;
+					
+					if (browseButton && hoverClass) {
+						plupload.addClass(browseButton, hoverClass);
+					}
+				});
+				
+				uploader.bind('Flash:StageEvent:rollOut', function(up) {
+					var browseButton, hoverClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					hoverClass = up.settings.browse_button_hover;
+					
+					if (browseButton && hoverClass) {
+						plupload.removeClass(browseButton, hoverClass);
+					}
+				});
+				
+				uploader.bind('Flash:StageEvent:mouseDown', function(up) {
+					var browseButton, activeClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					activeClass = up.settings.browse_button_active;
+					
+					if (browseButton && activeClass) {
+						plupload.addClass(browseButton, activeClass);
+						
+						// Make sure that browse_button has active state removed from it
+						plupload.addEvent(document.body, 'mouseup', function() {
+							plupload.removeClass(browseButton, activeClass);	
+						});
+					}
+				});
+				
+				uploader.bind('Flash:StageEvent:mouseUp', function(up) {
+					var browseButton, activeClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					activeClass = up.settings.browse_button_active;
+					
+					if (browseButton && activeClass) {
+						plupload.removeClass(browseButton, activeClass);
+					}
 				});
 
 				uploader.bind("QueueChanged", function(up) {
@@ -292,7 +352,7 @@
 						height : browseSize.h + 'px'
 					});
 				});
-
+							
 				callback({success : true});
 			});
 		}

@@ -136,7 +136,7 @@ $(function() {
 
 			switch (code) {
 				case plupload.GENERIC_ERROR:
-					err.message = 'Generic error.';
+					err.message = plupload.translate('Generic error.');
 					err.file = file;
 					break;
 
@@ -145,19 +145,19 @@ $(function() {
 					return;
 
 				case plupload.IO_ERROR:
-					err.message = 'IO error.';
+					err.message = plupload.translate('IO error.');
 					err.file = file;
 					break;
 
 				case plupload.SECURITY_ERROR:
-					err.message = 'Security error.';
+					err.message = plupload.translate('Security error.');
 					err.file = file;
 					break;
 
 				case 101:
 					if (file == up.files[1]) {
 						err.code = plupload.GENERIC_ERROR;
-						err.message = 'Generic error.';
+						err.message = plupload.translate('Generic error.');
 						err.file = file;
 					} else
 						return;
@@ -166,7 +166,7 @@ $(function() {
 
 				case 102:
 					if (file == up.files[1] && response.chunk == 1) {
-						err.message = 'Fake chunk error.';
+						err.message = plupload.translate('Fake chunk error.');
 						err.file = file;
 					} else
 						return;
@@ -177,8 +177,8 @@ $(function() {
 					return;
 
 				default:
-					err.message = 'User specific error.';
-					err.details = 'Some custom data.';
+					err.message = plupload.translate('User specific error.');
+					err.details = plupload.translate('Some custom data.');
 					err.file = file;
 			}
 

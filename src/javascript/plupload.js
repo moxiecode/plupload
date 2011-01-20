@@ -14,7 +14,10 @@
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
-		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout;
+		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout,
+		// A place to store references to event handlers
+		eventhash = {},
+		uid;
 
 	// IE W3C like event funcs
 	function preventDefault() {
@@ -59,6 +62,8 @@
 		"text/rtf,rtf," +
 		"video/mpeg,mpeg mpg mpe," +
 		"video/quicktime,qt mov," +
+		"video/mp4,mp4," +
+		"video/x-m4v,m4v," +
 		"video/x-flv,flv," +
 		"video/vnd.rn-realvideo,rv," +
 		"text/plain,asc txt text diff log," +
@@ -226,7 +231,7 @@
 
 			// Replace diacritics
 			lookup = [
-				/[\300-\306]/g, 'A', /[\340-\346]/g, 'a',
+				/[\300-\306]/g, 'A', /[\340-\346]/g, 'a', 
 				/\307/g, 'C', /\347/g, 'c',
 				/[\310-\313]/g, 'E', /[\350-\353]/g, 'e',
 				/[\314-\317]/g, 'I', /[\354-\357]/g, 'i',
@@ -255,7 +260,7 @@
 		 * @param {String} name Runtime name for example flash.
 		 * @param {Object} obj Object containing init/destroy method.
 		 */
-		addRuntime : function(name, runtime) {
+		addRuntime : function(name, runtime) {			
 			runtime.name = name;
 			runtimes[name] = runtime;
 			runtimes.push(runtime);
@@ -517,17 +522,67 @@
 		translate : function(str) {
 			return i18n[str] || str;
 		},
+			
+		
+		/**
+		 * Checks if specified DOM element has specified class.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Class name
+		 */
+		hasClass : function(obj, name) {			
+			if (obj.className == '') return false;
+			
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+			return regExp.test(obj.className);
+		},
+		
+		/**
+		 * Adds specified className to specified DOM element.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Class name
+		 */
+		addClass : function(obj, name) {
+			if (!plupload.hasClass(obj, name)) {
+				obj.className = obj.className == '' ? name : obj.className.replace(/\s+$/, '')+' '+name;
+			}
+		},
+		
+		/**
+		 * Removes specified className from specified DOM element.
+		 *
+		 * @param {Object} obj DOM element like object to add handler to.
+		 * @param {String} name Class name
+		 */
+		removeClass : function(obj, name) {
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");			
+			obj.className = obj.className.replace(regExp, function($0, $1, $2) {
+				return $1 == ' ' && $2 == ' ' ? ' ' : '';
+			});
+		},
+		
 
 		/**
-		 * Adds an event handler to the specified object.
+		 * Adds an event handler to the specified object and store reference to the handler
+		 * in objects internal Plupload registry (@see removeEvent).
 		 *
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Name to add event listener to.
 		 * @param {function} callback Function to call when event occurs.
 		 */
 		addEvent : function(obj, name, callback) {
+			var func, events, types;
+			name = name.toLowerCase();
+			
+			// Initialize unique identifier if needed
+			if (uid === undef)
+				uid = 'Plupload_' + plupload.guid();
+			
+			// Add event listener
 			if (obj.attachEvent) {
-				obj.attachEvent('on' + name, function() {
+				
+				func = function() {
 					var evt = window.event;
 
 					if (!evt.target) {
@@ -538,12 +593,125 @@
 					evt.stopPropagation = stopPropagation;
 
 					callback(evt);
-				});
+				};
+				obj.attachEvent('on' + name, func);
+				
 			} else if (obj.addEventListener) {
-				obj.addEventListener(name, callback, false);
+				func = callback;
+				
+				obj.addEventListener(name, func, false);
 			}
+			
+			// Log event handler to objects internal Plupload registry
+			if (obj[uid] === undef) {
+				obj[uid] = plupload.guid();
+			}
+			
+			if (!eventhash.hasOwnProperty(obj[uid])) {
+				eventhash[obj[uid]] = {};
+			}
+			
+			events = eventhash[obj[uid]];
+			
+			if (!events.hasOwnProperty(name)) {
+				events[name] = [];
+			}
+					
+			events[name].push({
+				func: func,
+				orig: callback // store original callback for IE
+			});
+		},
+		
+		
+		/**
+		 * Remove event handler from the specified object. If third argument (callback)
+		 * is not specified remove all events with the specified name.
+		 *
+		 * @param {Object} obj DOM element to remove event listener(s) from.
+		 * @param {String} name Name of event listener to remove.
+		 * @param {function} callback (optional) Event handler.
+		 */
+		removeEvent: function(obj, name) {
+			var type, 
+				callback = arguments[2],
+				
+				// check if object is empty
+				isEmptyObj = function(obj) {
+					for (var prop in obj) {
+						return false;	
+					}
+					return true;
+				};
+			
+			name = name.toLowerCase();
+			
+			if (uid in obj && obj[uid] in eventhash && name in eventhash[obj[uid]]) {
+				type = eventhash[obj[uid]][name];
+			} else {
+				return;
+			}
+				
+			for (var i=type.length-1; i>=0; i--) {
+				if (callback === undef || type[i].orig == callback) {
+					if (obj.detachEvent) {
+						obj.detachEvent('on'+name, type[i].func);
+					} else if (obj.removeEventListener) {
+						obj.removeEventListener(name, type[i].func, false);		
+					}
+					
+					type[i].orig = null;
+					type[i].func = null;
+					
+					// If callback was passed we are done here, otherwise proceed
+					if (callback !== undef) {
+						type.splice(i, 1);
+						break;
+					}
+				}			
+			}	
+			
+			if (callback === undef) {
+				type = [];
+			}
+			
+			// If event array got empty, remove it
+			if (!type.length) {
+				delete eventhash[obj[uid]][name];
+			}
+			
+			// If Plupload registry has become empty, remove it
+			if (isEmptyObj(eventhash[obj[uid]])) {
+				delete eventhash[obj[uid]];
+				
+				// IE doesn't let you remove DOM object property with - delete
+				try {
+					delete obj[uid];
+				} catch(e) {
+					obj[uid] = undef;
+				}
+			}
+		},
+		
+		
+		/**
+		 * Remove all kind of events from the specified object
+		 *
+		 * @param {Object} obj DOM element to remove event listeners from.
+		 */
+		removeAllEvents: function(obj) {
+			if (obj[uid] === undef || !eventhash.hasOwnProperty(obj[uid])) {
+				return;
+			}
+			
+			plupload.each(eventhash[obj[uid]], function(events, name) {
+				plupload.removeEvent(obj, name);
+			});		
 		}
+		
+		
 	};
+	
 
 	/**
 	 * Uploader class, an instance of this class will be created for each upload field.
@@ -602,12 +770,16 @@
 
 				if (file.status == plupload.QUEUED) {
 					file.status = plupload.UPLOADING;
-					this.trigger('BeforeUpload', file);
+					this.trigger("BeforeUpload", file);
 					this.trigger("UploadFile", file);
 				} else {
 					uploadNext.call(this);
 				}
 			} else {
+				if (fileIndex == files.length) {
+					this.trigger("UploadComplete", file);
+				}
+
 				this.stop();
 			}
 		}
@@ -657,6 +829,14 @@
 			 * @type Number
 			 */
 			state : plupload.STOPPED,
+			
+			/**
+			 * Current runtime name.
+			 *
+			 * @property runtime
+			 * @type String
+			 */
+			runtime: '',
 
 			/**
 			 * Map of features that are available for the uploader runtime. Features will be filled
@@ -755,7 +935,7 @@
 						if (extensionsRegExp && !extensionsRegExp.test(file.name)) {
 							up.trigger('Error', {
 								code : plupload.FILE_EXTENSION_ERROR,
-								message : 'File extension error.',
+								message : plupload.translate('File extension error.'),
 								file : file
 							});
 
@@ -766,7 +946,7 @@
 						if (file.size !== undef && file.size > settings.max_file_size) {
 							up.trigger('Error', {
 								code : plupload.FILE_SIZE_ERROR,
-								message : 'File size error.',
+								message : plupload.translate('File size error.'),
 								file : file
 							});
 
@@ -783,7 +963,7 @@
 						delay(function() {
 							self.trigger("QueueChanged");
 							self.refresh();
-						});
+						}, 1);
 					} else {
 						return false; // Stop the FilesAdded event from immediate propagation
 					}
@@ -824,9 +1004,11 @@
 
 						// Upload next file but detach it from the error event
 						// since other custom listeners might want to stop the queue
-						delay(function() {
-							uploadNext.call(self);
-						});
+						if (up.state == plupload.STARTED) {
+							delay(function() {
+								uploadNext.call(self);
+							}, 1);
+						}
 					}
 				});
 
@@ -839,7 +1021,7 @@
 					// since other custom listeners might want to stop the queue
 					delay(function() {
 						uploadNext.call(self);
-					});
+					}, 1);
 				});
 
 				// Setup runtimeList
@@ -882,6 +1064,7 @@
 							if (res && res.success) {
 								// Successful initialization
 								self.features = features;
+								self.runtime = runtime.name;
 								self.trigger('Init', {runtime : runtime.name});
 								self.trigger('PostInit');
 								self.refresh();
@@ -893,7 +1076,7 @@
 						// Trigger an init error if we run out of runtimes
 						self.trigger('Error', {
 							code : plupload.INIT_ERROR,
-							message : 'Init error.'
+							message : plupload.translate('Init error.')
 						});
 					}
 				}
@@ -1054,16 +1237,53 @@
 			 * @param {String} name Name of event to remove.
 			 * @param {function} func Function to remove from listener.
 			 */
-			unbind : function(name, func) {
-				var list = events[name.toLowerCase()], i;
+			unbind : function(name) {
+				name = name.toLowerCase();
+
+				var list = events[name], i, func = arguments[1];
 
 				if (list) {
-					for (i = list.length - 1; i >= 0; i--) {
-						if (list[i].func === func) {
-							list.splice(i, 1);
+					if (func !== undef) {
+						for (i = list.length - 1; i >= 0; i--) {
+							if (list[i].func === func) {
+								list.splice(i, 1);
+									break;
+							}
 						}
+					} else {
+						list = [];
+					}
+
+					// delete event list if it has become empty
+					if (!list.length) {
+						delete events[name];
 					}
 				}
+			},
+
+			/**
+			 * Removes all event listeners.
+			 *
+			 * @method unbindAll
+			 */
+			unbindAll : function() {
+				var self = this;
+				
+				plupload.each(events, function(list, name) {
+					self.unbind(name);
+				});
+			},
+			
+			/**
+			 * Destroys Plupload instance and cleans after itself.
+			 *
+			 * @method destroy
+			 */
+			destroy : function() {							
+				this.trigger('Destroy');
+				
+				// Clean-up after uploader itself
+				this.unbindAll();
 			}
 
 			/**
@@ -1161,11 +1381,26 @@
 			 */
 
 			/**
+			 * Fires when all files in a queue are uploaded.
+			 *
+			 * @event UploadComplete
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+			 * @param {Array} files Array of file objects that was added to queue/selected by the user.
+			 */
+
+			/**
 			 * Fires when a error occurs.
 			 *
 			 * @event Error
 			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 * @param {Object} error Contains code, message and sometimes file and other details.
+			 */
+			 
+			 /**
+			 * Fires when destroy method is called.
+			 *
+			 * @event Destroy
+			 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 			 */
 		});
 	};

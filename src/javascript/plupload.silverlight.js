@@ -12,7 +12,7 @@
 /*global plupload:false, ActiveXObject:false, window:false */
 
 (function(plupload) {
-	var uploadInstances = {};
+	var uploadInstances = {}, initialized = {};
 
 	function jsonSerialize(obj) {
 		var value, type = typeof obj, undef, isArray, i, key;
@@ -186,7 +186,8 @@
 				callback({success : false});
 				return;
 			}
-
+			
+			initialized[uploader.id] = false;
 			uploadInstances[uploader.id] = uploader;
 
 			// Create silverlight container and insert it at an absolute position within the browse button
@@ -232,6 +233,12 @@
 
 			uploader.bind("Silverlight:Init", function() {
 				var selectedFiles, lookup = {};
+				
+				// Prevent eventual reinitialization of the instance
+				if (initialized[uploader.id])
+					return;
+					
+				initialized[uploader.id] = true;
 
 				uploader.bind("Silverlight:StartSelectFiles", function(up) {
 					selectedFiles = [];
