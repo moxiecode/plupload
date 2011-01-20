@@ -222,7 +222,8 @@ package com.plupload {
 						scale = Math.min(width / loadedBitmapData.width, height / loadedBitmapData.height);
 
 						// Do we need to scale
-						if (scale < 1) {
+						if (scale > 1) scale = 1;
+						if (scale <= 1) {
 							// Set rect and pt for filter area
 							var rect:Rectangle = new Rectangle(1, 1, loadedBitmapData.width, loadedBitmapData.height);
 							var pt:Point = new Point(1, 1);
@@ -243,13 +244,13 @@ package com.plupload {
 							}
 
 							// Create blurfilter with variable filterAmount of blur
-							var blurFilter:BlurFilter = new BlurFilter(filterAmount, filterAmount, BitmapFilterQuality.HIGH);
+							// var blurFilter:BlurFilter = new BlurFilter(filterAmount, filterAmount, BitmapFilterQuality.HIGH);
 
 							// Create working bitmap to apply filter to. Does not work if applying direct to loadedBitmap for some reason
 							var workingBitmapData:BitmapData = new BitmapData(loadedBitmapData.width, loadedBitmapData.height);
 
 							workingBitmapData.draw(loadedBitmapData, matrix, null, null, null, true);
-							workingBitmapData.applyFilter(workingBitmapData, rect, pt, blurFilter);
+							// workingBitmapData.applyFilter(workingBitmapData, rect, pt, blurFilter);
 
 							width = Math.round(loadedBitmapData.width * scale);
 							height = Math.round(loadedBitmapData.height * scale);
