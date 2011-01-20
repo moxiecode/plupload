@@ -281,7 +281,7 @@
 					if (up.features.canOpenDialog) {
 						plupload.addEvent(browseButton, 'click', function(e) {
 							document.getElementById(up.id + '_html5').click();
-							return false;
+							e.preventDefault();
 						}); 
 					}
 				}

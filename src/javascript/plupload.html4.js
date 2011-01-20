@@ -98,7 +98,7 @@
 					if (up.features.canOpenDialog && browseButton) {
 						plupload.addEvent(getById(up.settings.browse_button), 'click', function(e) {
 							input.click();
-							return false;
+							e.preventDefault();
 						});
 					}
 
