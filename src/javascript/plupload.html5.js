@@ -611,7 +611,7 @@
 						inputContainer: up.id + '_html5_container', 
 						inputFile: 		up.id + '_html5', 			
 						browseButton:	up.settings.browse_button, 
-						dropElm:		up.settings.drop_element,	
+						dropElm:		up.settings.drop_element	
 					};
 				
 				// Unbind event handlers
