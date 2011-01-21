@@ -200,13 +200,6 @@ package com.plupload {
 			chunking = chunkSize > 0;
 			postvars = settings["multipart_params"];
 			chunk = 0;
-			chunks = Math.ceil(this._fileRef.size / chunkSize);
-
-			// If chunking is disabled then upload file in one huge chunk
-			if (!chunking) {
-				chunkSize = this.size;
-				chunks = 1;
-			}
 
 			// When file is loaded start uploading
 			this._fileRef.addEventListener(Event.COMPLETE, function(e:Event):void {
@@ -293,6 +286,10 @@ package com.plupload {
 								chunkSize = Math.ceil(file._size / 4);
 								chunks = 4;
 							}
+						} else {
+							// If chunking is disabled then upload file in one huge chunk
+							chunkSize = file._size;
+							chunks = 1;
 						}
 
 						// Start uploading the scaled down image
@@ -320,6 +317,10 @@ package com.plupload {
 							chunkSize = Math.ceil(file._size / 4);
 							chunks = 4;
 						}
+					} else {
+						// If chunking is disabled then upload file in one huge chunk
+						chunkSize = file._size;
+						chunks = 1;
 					}
 
 					file._multipart = multipart;

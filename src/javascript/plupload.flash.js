@@ -11,7 +11,7 @@
 // JSLint defined globals
 /*global plupload:false, ActiveXObject:false, escape:false */
 
-(function(plupload) {
+(function(window, document, plupload, undef) {
 	var uploadInstances = {}, initialized = {};
 
 	function getFlashVersion() {
@@ -357,4 +357,4 @@
 			});
 		}
 	});
-})(plupload);
+})(window, document, plupload);
