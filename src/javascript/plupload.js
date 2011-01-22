@@ -569,12 +569,17 @@
 		 *
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Name to add event listener to.
-		 * @param {function} callback Function to call when event occurs.
+		 * @param {Function} callback Function to call when event occurs.
+		 * @param {String} (optional) key that might be used to add specifity to the event record.
 		 */
 		addEvent : function(obj, name, callback) {
-			var func, events, types;
-			name = name.toLowerCase();
+			var func, events, types, key;
 			
+			// if passed in, event will be locked with this key - one would need to provide it to removeEvent
+			key = arguments[3];
+						
+			name = name.toLowerCase();
+						
 			// Initialize unique identifier if needed
 			if (uid === undef)
 				uid = 'Plupload_' + plupload.guid();
@@ -619,7 +624,8 @@
 					
 			events[name].push({
 				func: func,
-				orig: callback // store original callback for IE
+				orig: callback, // store original callback for IE
+				key: key
 			});
 		},
 		
@@ -630,11 +636,10 @@
 		 *
 		 * @param {Object} obj DOM element to remove event listener(s) from.
 		 * @param {String} name Name of event listener to remove.
-		 * @param {function} callback (optional) Event handler.
+		 * @param {Function|String} (optional) might be a callback or unique key to match.
 		 */
 		removeEvent: function(obj, name) {
-			var type, 
-				callback = arguments[2],
+			var type, callback, key,
 				
 				// check if object is empty
 				isEmptyObj = function(obj) {
@@ -644,16 +649,26 @@
 					return true;
 				};
 			
+			// match the handler either by callback or by key	
+			if (typeof(arguments[2]) == "function") {
+				callback = arguments[2];
+			} else {
+				key = arguments[2];
+			}
+						
 			name = name.toLowerCase();
 			
-			if (uid in obj && obj[uid] in eventhash && name in eventhash[obj[uid]]) {
+			if (obj[uid] && eventhash[obj[uid]] && eventhash[obj[uid]][name]) {
 				type = eventhash[obj[uid]][name];
 			} else {
 				return;
 			}
+			
 				
 			for (var i=type.length-1; i>=0; i--) {
-				if (callback === undef || type[i].orig == callback) {
+				// undefined or not, key should match			
+				if (type[i].key === key || type[i].orig === callback) {
+										
 					if (obj.detachEvent) {
 						obj.detachEvent('on'+name, type[i].func);
 					} else if (obj.removeEventListener) {
@@ -663,17 +678,14 @@
 					type[i].orig = null;
 					type[i].func = null;
 					
+					type.splice(i, 1);
+					
 					// If callback was passed we are done here, otherwise proceed
 					if (callback !== undef) {
-						type.splice(i, 1);
 						break;
 					}
 				}			
 			}	
-			
-			if (callback === undef) {
-				type = [];
-			}
 			
 			// If event array got empty, remove it
 			if (!type.length) {
@@ -698,18 +710,19 @@
 		 * Remove all kind of events from the specified object
 		 *
 		 * @param {Object} obj DOM element to remove event listeners from.
+		 * @param {String} (optional) unique key to match, when removing events.
 		 */
 		removeAllEvents: function(obj) {
-			if (obj[uid] === undef || !eventhash.hasOwnProperty(obj[uid])) {
+			var key = arguments[1];
+			
+			if (obj[uid] === undef || !obj[uid]) {
 				return;
 			}
 			
 			plupload.each(eventhash[obj[uid]], function(events, name) {
-				plupload.removeEvent(obj, name);
+				plupload.removeEvent(obj, name, key);
 			});		
-		}
-		
-		
+		}		
 	};
 	
 
