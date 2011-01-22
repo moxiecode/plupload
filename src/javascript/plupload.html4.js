@@ -12,7 +12,7 @@
 // JSLint defined globals
 /*global plupload:false, window:false */
 
-(function(plupload) {
+(function(window, document, plupload, undef) {
 	function getById(id) {
 		return document.getElementById(id);
 	}
@@ -52,7 +52,7 @@
 		init : function(uploader, callback) {
 			uploader.bind("Init", function(up) {
 				var container = document.body, iframe, url = "javascript", currentFile,
-					input, currentFileId, IE = /MSIE/.test(navigator.userAgent), mimes = [],
+					input, currentFileId, fileIds = [], IE = /MSIE/.test(navigator.userAgent), mimes = [],
 					filters = up.settings.filters, i, ext, type, y;
 
 				// Convert extensions to mime types list
@@ -75,6 +75,9 @@
 
 					// Setup unique id for form
 					currentFileId = plupload.guid();
+					
+					// Save id for Destroy handler
+					fileIds.push(currentFileId);
 
 					// Create form
 					form = document.createElement('form');
@@ -106,7 +109,8 @@
 					plupload.extend(input.style, {
 						width : '100%',
 						height : '100%',
-						opacity : 0
+						opacity : 0,
+						fontSize: '2em' // force input element to be bigger then needed to occupy whole space
 					});
 					
 					plupload.extend(form.style, {
@@ -234,31 +238,36 @@
 
 						// Append multipart parameters
 						plupload.each(plupload.extend({name : file.target_name || file.name}, up.settings.multipart_params), function(value, name) {
-							var input = document.createElement('input');
+							var hidden = document.createElement('input');
 
-							plupload.extend(input, {
+							plupload.extend(hidden, {
 								type : 'hidden',
 								name : name,
 								value : value
 							});
 
-							form.insertBefore(input, form.firstChild);
+							form.insertBefore(hidden, form.firstChild);
 						});
 
 						currentFile = file;
 
 						// Hide the current form
 						getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
-
+						
 						form.submit();
 						form.parentNode.removeChild(form);
 					});
-				}
-
+				} // end createIframe
+				
+				
 				if (up.settings.container) {
 					container = getById(up.settings.container);
 					container.style.position = 'relative';
 				}
+				
+				uploader.bind('FileUploaded', function(up) {
+					up.refresh(); // just to get the form back on top of browse_button
+				});				
 
 				up.bind('StateChanged', function(up) {
 					if (up.state == plupload.STARTED) {
@@ -267,6 +276,7 @@
 
 					if (up.state == plupload.STOPPED) {
 						window.setTimeout(function() {
+							plupload.removeEvent(iframe, 'load');
 							iframe.parentNode.removeChild(iframe);
 						}, 0);
 					}
@@ -344,6 +354,35 @@
 						n.parentNode.removeChild(n);
 					}
 				});
+				
+				
+				// Completely destroy the runtime
+				uploader.bind("Destroy", function(up) {
+					var name, element, form,
+						elements = {
+							inputContainer: 'form_' + currentFileId, 
+							inputFile: 		'input_' + currentFileId, 			
+							browseButton:	up.settings.browse_button 
+						};
+					
+					// Unbind event handlers
+					for (name in elements) {
+						element = getById(elements[name]);
+						if (element) {
+							plupload.removeAllEvents(element);
+						}
+					}
+					plupload.removeAllEvents(document.body);
+					
+					// Remove mark-up
+					plupload.each(fileIds, function(id, i) {
+						form = getById('form_' + id);
+						if (form) {
+							container.removeChild(form);
+						}
+					});
+					
+				});
 
 				// Create initial form
 				createForm();
@@ -352,4 +391,4 @@
 			callback({success : true});
 		}
 	});
-})(plupload);
+})(window, document, plupload);
