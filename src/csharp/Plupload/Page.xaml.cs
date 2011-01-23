@@ -53,6 +53,10 @@ namespace Moxiecode.Plupload {
 
 			this.FireEvent("Init");
 			this.MouseLeftButtonUp += new MouseButtonEventHandler(OnClick);
+			
+			this.MouseLeftButtonDown += new MouseButtonEventHandler(OnMouseLeftButtonDown);
+			this.MouseEnter += new MouseEventHandler(OnMouseEnter);
+			this.MouseLeave += new MouseEventHandler(OnMouseLeave);
 		}
 
 		private void OnClick(object sender, MouseEventArgs e) {
@@ -102,6 +106,19 @@ namespace Moxiecode.Plupload {
 			} catch (Exception ex) {
 				this.FireEvent("SelectError", ex.Message);
 			}
+		}
+		
+		
+		﻿private void OnMouseLeftButtonDown(object sender, MouseEventArgs e) {
+			this.FireEvent("MouseLeftButtonDown");
+		}
+		
+		private void OnMouseEnter(object sender, MouseEventArgs e) {
+			this.FireEvent("MouseEnter");
+		}
+		
+		private void OnMouseLeave(object sender, MouseEventArgs e) {
+			this.FireEvent("MouseLeave");
 		}
 
 		/// <summary>

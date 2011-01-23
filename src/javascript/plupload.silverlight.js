@@ -135,7 +135,7 @@
 	plupload.silverlight = {
 		trigger : function(id, name) {
 			var uploader = uploadInstances[id], i, args;
-
+			
 			if (uploader) {
 				args = plupload.toArray(arguments).slice(1);
 				args[0] = 'Silverlight:' + name;
@@ -360,6 +360,56 @@
 							headers : settings.headers
 						})
 					);
+				});
+				
+				
+				uploader.bind('Silverlight:MouseEnter', function(up) {
+					var browseButton, hoverClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					hoverClass = up.settings.browse_button_hover;
+					
+					if (browseButton && hoverClass) {
+						plupload.addClass(browseButton, hoverClass);
+					}
+				});
+				
+				uploader.bind('Silverlight:MouseLeave', function(up) {
+					var browseButton, hoverClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					hoverClass = up.settings.browse_button_hover;
+					
+					if (browseButton && hoverClass) {
+						plupload.removeClass(browseButton, hoverClass);
+					}
+				});
+				
+				uploader.bind('Silverlight:MouseLeftButtonDown', function(up) {
+					var browseButton, activeClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					activeClass = up.settings.browse_button_active;
+					
+					if (browseButton && activeClass) {
+						plupload.addClass(browseButton, activeClass);
+						
+						// Make sure that browse_button has active state removed from it
+						plupload.addEvent(document.body, 'mouseup', function() {
+							plupload.removeClass(browseButton, activeClass);	
+						});
+					}
+				});
+				
+				uploader.bind('Sliverlight:StartSelectFiles', function(up) {
+					var browseButton, activeClass;
+						
+					browseButton = document.getElementById(uploader.settings.browse_button);
+					activeClass = up.settings.browse_button_active;
+					
+					if (browseButton && activeClass) {
+						plupload.removeClass(browseButton, activeClass);
+					}
 				});
 
 				callback({success : true});
