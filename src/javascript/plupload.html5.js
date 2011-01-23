@@ -169,11 +169,18 @@
 			var html5files = {}, features;
 
 			function addSelectedFiles(native_files) {
-				var file, i, files = [], id;
+				var file, i, files = [], id, fileNames = {};
 
 				// Add the selected files to the file queue
 				for (i = 0; i < native_files.length; i++) {
 					file = native_files[i];
+					
+					// Safari on Windows will add first file from fragged multiple times
+					// @see: https://bugs.webkit.org/show_bug.cgi?id=37957
+					if (fileNames[file.name]) {
+						continue;
+					}
+					fileNames[file.name] = true;
 
 					// Store away gears blob internally
 					id = plupload.guid();
@@ -309,7 +316,7 @@
 								plupload.addEvent(dropInputElm, 'change', function() {
 									// Add the selected files from file input
 									addSelectedFiles(this.files);
-
+									
 									// Remove input element
 									plupload.removeEvent(dropInputElm, 'change');
 									dropInputElm.parentNode.removeChild(dropInputElm);									
