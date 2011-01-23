@@ -151,10 +151,10 @@
 				progress: hasProgress,
 				chunking: sliceSupport || dataAccessSupport,
 				
-				/* IE and WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
-				sniff for them here... IE may eventually become html5 compliant :) probably not that good idea, 
-				but impossibillity of controlling cursor style  on top of add files button obviously feels even worse */
-				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1 || /*@cc_on!@*/false
+				/* WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
+				sniff for it here... probably not that good idea, but impossibillity of controlling cursor style  
+				on top of add files button obviously feels even worse */
+				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1
 			};
 		},
 

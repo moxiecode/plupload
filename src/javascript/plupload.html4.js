@@ -35,10 +35,10 @@
 			return {
 				multipart: true,
 				
-				/* IE and WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
-				sniff for them here... probably not that good idea, but impossibillity of controlling cursor style 
+				/* WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
+				sniff for it here... probably not that good idea, but impossibillity of controlling cursor style 
 				on top of add files button obviously feels even worse */
-				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1 || /*@cc_on!@*/false
+				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1
 			};
 		},
 
@@ -159,7 +159,6 @@
 							if (files.length) {
 								uploader.trigger("FilesAdded", files);
 							}							
-							
 						}
 					});
 
@@ -258,7 +257,6 @@
 						form.parentNode.removeChild(form);
 					});
 				} // end createIframe
-				
 				
 				if (up.settings.container) {
 					container = getById(up.settings.container);
