@@ -224,7 +224,7 @@
 				'<param name="background" value="Transparent"/>' +
 				'<param name="windowless" value="true"/>' +
 				'<param name="enablehtmlaccess" value="true"/>' +
-				'<param name="initParams" value="id=' + uploader.id + ',filter=' + filter + '"/>' +
+				'<param name="initParams" value="id=' + uploader.id + ',filter=' + filter + ',multiselect=' + uploader.settings.multi_selection + '"/>' +
 				'</object>';
 
 			function getSilverlightObj() {

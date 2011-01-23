@@ -34,6 +34,7 @@ namespace Moxiecode.Plupload {
 		private int idCount = 0;
 		private FileReference currentFile;
 		private string id, filter;
+		private bool multiselect;
 		#endregion
 
 		/// <summary>
@@ -48,6 +49,7 @@ namespace Moxiecode.Plupload {
 			this.files = new Dictionary<string, FileReference>();
 			this.id = init_params["id"];
 			this.filter = init_params["filter"];
+			this.multiselect = Convert.ToBoolean(init_params["multiselect"]);
 
 			this.FireEvent("Init");
 			this.MouseLeftButtonUp += new MouseButtonEventHandler(OnClick);
@@ -59,7 +61,7 @@ namespace Moxiecode.Plupload {
 			this.FireEvent("StartSelectFiles");
 
 			try {
-				dlg.Multiselect = true;
+				dlg.Multiselect = this.multiselect;
 				dlg.Filter = this.filter;
 
 				if ((bool) dlg.ShowDialog()) {
