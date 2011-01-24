@@ -304,7 +304,7 @@
 						// Make sure that browse_button has active state removed from it
 						plupload.addEvent(document.body, 'mouseup', function() {
 							plupload.removeClass(browseButton, activeClass);	
-						});
+						}, up.id);
 					}
 				});
 				
@@ -351,6 +351,20 @@
 						width : browseSize.w + 'px',
 						height : browseSize.h + 'px'
 					});
+				});
+				
+				uploader.bind("Destroy", function(up) {
+					var flashContainer;
+					
+					plupload.removeAllEvents(document.body, up.id);
+					
+					delete initialized[up.id];
+					delete uploadInstances[up.id];
+					
+					flashContainer = document.getElementById(up.id + '_flash_container');
+					if (flashContainer) {
+						container.removeChild(flashContainer);
+					}
 				});
 							
 				callback({success : true});
