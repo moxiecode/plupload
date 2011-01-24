@@ -20,7 +20,7 @@ function _(str) {
 }
 
 function renderUI(obj) {		
-	obj.prepend(
+	obj.html(
 		'<div class="plupload_wrapper">' +
 			'<div class="ui-widget-content plupload_container">' +
 				'<div class="plupload">' +
