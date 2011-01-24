@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Core API tests</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
+<script type="text/javascript" src="qunit/qunit.js"></script>
+<script type="text/javascript" src="qunit/runner.js"></script>
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="../js/plupload.full.min.js"></script>
+<script>
+module("Core API");
+
+test('cleanName', function() {
+	expect(1);
+
+	equals(plupload.cleanName('a\300\340\307\347\310-\313\350\314\317\354\321\361\322\362\331\371 b'), 'aAaCcE-EeIIiNnOoUu_b');
+});
+
+test('extend', function() {
+	expect(1);
+
+	deepEqual(plupload.extend({a:1}, {b:2}), {a:1, b:2});
+});
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">Core API tests</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+	<div id="content"></div>
+</body>
+</html>
