@@ -342,15 +342,17 @@
 					getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
 					browseButton = document.getElementById(up.settings.browse_button);
-					browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
-					browseSize = plupload.getSize(browseButton);
-
-					plupload.extend(document.getElementById(up.id + '_flash_container').style, {
-						top : browsePos.y + 'px',
-						left : browsePos.x + 'px',
-						width : browseSize.w + 'px',
-						height : browseSize.h + 'px'
-					});
+					if (browseButton) {
+						browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
+						browseSize = plupload.getSize(browseButton);
+	
+						plupload.extend(document.getElementById(up.id + '_flash_container').style, {
+							top : browsePos.y + 'px',
+							left : browsePos.x + 'px',
+							width : browseSize.w + 'px',
+							height : browseSize.h + 'px'
+						});
+					}
 				});
 				
 				uploader.bind("Destroy", function(up) {
