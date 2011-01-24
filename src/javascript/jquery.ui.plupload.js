@@ -342,6 +342,10 @@ $.widget("ui.plupload", {
 		this.uploader.splice();
 	},
 	
+	getUploader: function() {
+		return this.uploader;
+	},
+	
 	
 	_handleState: function() {
 		var self = this, uploader = this.uploader;
@@ -626,11 +630,6 @@ $.widget("ui.plupload", {
 				})
 				.end()
 			.appendTo('.plupload_header_content', this.container);
-	},
-	
-	
-	getUploader: function() {
-		return this.uploader;
 	},
 	
 

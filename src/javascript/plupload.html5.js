@@ -175,7 +175,7 @@
 				for (i = 0; i < native_files.length; i++) {
 					file = native_files[i];
 					
-					// Safari on Windows will add first file from fragged multiple times
+					// Safari on Windows will add first file from dragged set multiple times
 					// @see: https://bugs.webkit.org/show_bug.cgi?id=37957
 					if (fileNames[file.name]) {
 						continue;
@@ -269,19 +269,19 @@
 					if (hoverClass) {
 						plupload.addEvent(topElement, 'mouseover', function() {
 							plupload.addClass(browseButton, hoverClass);	
-						});
+						}, up.id);
 						plupload.addEvent(topElement, 'mouseout', function() {
 							plupload.removeClass(browseButton, hoverClass);	
-						});
+						}, up.id);
 					}
 					
 					if (activeClass) {
 						plupload.addEvent(topElement, 'mousedown', function() {
 							plupload.addClass(browseButton, activeClass);	
-						});
+						}, up.id);
 						plupload.addEvent(document.body, 'mouseup', function() {
 							plupload.removeClass(browseButton, activeClass);	
-						});
+						}, up.id);
 					}
 
 					// Route click event to the input[type=file] element for supporting browsers
@@ -289,7 +289,7 @@
 						plupload.addEvent(browseButton, 'click', function(e) {
 							document.getElementById(up.id + '_html5').click();
 							e.preventDefault();
-						}); 
+						}, up.id); 
 					}
 				}
 			});
@@ -318,9 +318,9 @@
 									addSelectedFiles(this.files);
 									
 									// Remove input element
-									plupload.removeEvent(dropInputElm, 'change');
+									plupload.removeEvent(dropInputElm, 'change', uploader.id);
 									dropInputElm.parentNode.removeChild(dropInputElm);									
-								});
+								}, uploader.id);
 								
 								dropElm.appendChild(dropInputElm);
 							}
@@ -341,7 +341,7 @@
 								height : dropSize.h + 'px',
 								opacity : 0
 							});							
-						});
+						}, uploader.id);
 
 						return;
 					}
@@ -349,7 +349,7 @@
 					// Block browser default drag over
 					plupload.addEvent(dropElm, 'dragover', function(e) {
 						e.preventDefault();
-					});
+					}, uploader.id);
 
 					// Attach drop handler and grab files
 					plupload.addEvent(dropElm, 'drop', function(e) {
@@ -361,7 +361,7 @@
 						}
 
 						e.preventDefault();
-					});
+					}, uploader.id);
 				}
 			});
 
@@ -625,10 +625,10 @@
 				for (name in elements) {
 					element = document.getElementById(elements[name]);
 					if (element) {
-						plupload.removeAllEvents(element);
+						plupload.removeAllEvents(element, up.id);
 					}
 				}
-				plupload.removeAllEvents(document.body);
+				plupload.removeAllEvents(document.body, up.id);
 				
 				if (up.settings.container) {
 					container = document.getElementById(up.settings.container);
