@@ -102,7 +102,7 @@
 						plupload.addEvent(getById(up.settings.browse_button), 'click', function(e) {
 							input.click();
 							e.preventDefault();
-						});
+						}, up.id);
 					}
 
 					// Set input styles
@@ -146,11 +146,11 @@
 							
 							// Clean-up events - they won't be needed anymore
 							if (!up.features.canOpenDialog) {
-								plupload.removeAllEvents(form);								
+								plupload.removeAllEvents(form, up.id);								
 							} else {
-								plupload.removeEvent(browseButton, 'click');	
+								plupload.removeEvent(browseButton, 'click', up.id);	
 							}
-							plupload.removeEvent(input, 'change');
+							plupload.removeEvent(input, 'change', up.id);
 
 							// Create and position next form
 							createForm();
@@ -160,7 +160,7 @@
 								uploader.trigger("FilesAdded", files);
 							}							
 						}
-					});
+					}, up.id);
 
 					// append to container
 					form.appendChild(input);
@@ -214,7 +214,7 @@
 								response : result
 							});
 						}
-					});
+					}, up.id);
 
 					// Upload file
 					up.bind("UploadFile", function(up, file) {
@@ -274,7 +274,7 @@
 
 					if (up.state == plupload.STOPPED) {
 						window.setTimeout(function() {
-							plupload.removeEvent(iframe, 'load');
+							plupload.removeEvent(iframe, 'load', up.id);
 							iframe.parentNode.removeChild(iframe);
 						}, 0);
 					}
@@ -326,19 +326,19 @@
 						if (hoverClass) {
 							plupload.addEvent(topElement, 'mouseover', function() {
 								plupload.addClass(browseButton, hoverClass);	
-							});
+							}, up.id);
 							plupload.addEvent(topElement, 'mouseout', function() {
 								plupload.removeClass(browseButton, hoverClass);
-							});
+							}, up.id);
 						}
 						
 						if (activeClass) {
 							plupload.addEvent(topElement, 'mousedown', function() {
 								plupload.addClass(browseButton, activeClass);	
-							});
+							}, up.id);
 							plupload.addEvent(document.body, 'mouseup', function() {
 								plupload.removeClass(browseButton, activeClass);	
-							});
+							}, up.id);
 						}
 					}
 				});
@@ -367,10 +367,10 @@
 					for (name in elements) {
 						element = getById(elements[name]);
 						if (element) {
-							plupload.removeAllEvents(element);
+							plupload.removeAllEvents(element, up.id);
 						}
 					}
-					plupload.removeAllEvents(document.body);
+					plupload.removeAllEvents(document.body, up.id);
 					
 					// Remove mark-up
 					plupload.each(fileIds, function(id, i) {
