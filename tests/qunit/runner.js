@@ -60,7 +60,8 @@
 
 					html += '</ol>';
 
-					this.tests = this.tests.concat(tests);
+					if (!suites[i].manual)
+						this.tests = this.tests.concat(tests);
 				}
 				html += '</div>';
 			}
