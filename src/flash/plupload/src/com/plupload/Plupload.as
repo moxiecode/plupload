@@ -171,7 +171,7 @@ package com.plupload {
 
 					fireEvent("IOError", {
 						id : file.id,
-						message : e.text
+						message : e.text.replace(/\\/g, "\\\\")
 					});
 				});
 
@@ -181,7 +181,7 @@ package com.plupload {
 
 					fireEvent("SecurityError", {
 						id : file.id,
-						message : e.text
+						message : e.text.replace(/\\/g, "\\\\")
 					});
 				});
 
@@ -191,7 +191,7 @@ package com.plupload {
 
 					fireEvent("UploadComplete", {
 						id : file.id,
-						text : e.text
+						text : e.text.replace(/\\/g, "\\\\")
 					});
 				});
 
@@ -201,7 +201,7 @@ package com.plupload {
 
 					fireEvent("UploadChunkComplete", {
 						id : file.id,
-						text : e.text,
+						text : e.text.replace(/\\/g, "\\\\"),
 						chunk : e.chunk,
 						chunks : e.chunks
 					});
