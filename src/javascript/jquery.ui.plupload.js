@@ -6,6 +6,15 @@
  *
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
+ *
+ * Depends:
+ *	jquery.ui.core.js
+ *	jquery.ui.widget.js
+ *	
+ * Optionally:
+ *	jquery.ui.button.js
+ *	jquery.ui.progressbar.js
+ *	jquery.ui.sortable.js
  */
 
 // JSLint defined globals
