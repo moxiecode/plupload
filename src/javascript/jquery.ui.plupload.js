@@ -9,11 +9,11 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, jQuery:false */
+/*global window:false, document:false, plupload:false, jQuery:false */
 
-(function($) {
+(function(window, document, plupload, $, undef) {
 	
-var uploaders = {}, undef;	
+var uploaders = {};	
 	
 function _(str) {
 	return plupload.translate(str) || str;
@@ -182,9 +182,13 @@ $.widget("ui.plupload", {
 		
 		
 		uploader.bind('Init', function(up, res) {			
-			(!self.options.unique_names && self.options.rename && self._enableRenaming());
+			if (!self.options.unique_names && self.options.rename) {
+				self._enableRenaming();	
+			}
 			
-			(uploader.features.dragdrop && self.options.dragdrop && self._enableDragAndDrop());
+			if (uploader.features.dragdrop && self.options.dragdrop) {
+				self._enableDragAndDrop();	
+			}
 			
 			self.container.attr('title', _('Using runtime: ') + (self.runtime = res.runtime));
 
@@ -438,7 +442,7 @@ $.widget("ui.plupload", {
 		);
 
 		// All files are uploaded
-		if (uploader.total.uploaded == uploader.files.length) {
+		if (uploader.total.uploaded === uploader.files.length) {
 			uploader.stop();
 		}
 	},
@@ -447,11 +451,13 @@ $.widget("ui.plupload", {
 	_updateFileList: function() {
 		var self = this, uploader = this.uploader, filelist = this.filelist, 
 			count = 0, 
-			prefix = this.id + '_',
+			id, prefix = this.id + '_',
 			fields;
 			
 		// destroy sortable if enabled
-		($.ui.sortable && this.options.sortable && $('tbody', filelist).sortable('destroy'));
+		if ($.ui.sortable && this.options.sortable) {
+			$('tbody', filelist).sortable('destroy');	
+		}
 		
 		filelist.empty();
 
@@ -459,12 +465,12 @@ $.widget("ui.plupload", {
 			fields = '';
 			id = prefix + count;
 
-			if (file.status == plupload.DONE) {
+			if (file.status === plupload.DONE) {
 				if (file.target_name) {
 					fields += '<input type="hidden" name="' + id + '_tmpname" value="'+plupload.xmlEncode(file.target_name)+'" />';
 				}
 				fields += '<input type="hidden" name="' + id + '_name" value="'+plupload.xmlEncode(file.name)+'" />';
-				fields += '<input type="hidden" name="' + id + '_status" value="' + (file.status == plupload.DONE ? 'done' : 'failed') + '" />';
+				fields += '<input type="hidden" name="' + id + '_status" value="' + (file.status === plupload.DONE ? 'done' : 'failed') + '" />';
 
 				count++;
 				self.counter.val(count);
@@ -500,7 +506,7 @@ $.widget("ui.plupload", {
 		}
 
 
-		if (uploader.files.length == (uploader.total.uploaded + uploader.total.failed)) {
+		if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
 			self.start_button.button('disable');
 		} else {
 			self.start_button.button('enable');
@@ -517,7 +523,9 @@ $.widget("ui.plupload", {
 			$('#' + id + '_filelist').append('<tr><td class="plupload_droptext">' + _("Drag files here.") + '</td></tr>');
 		} else {
 			// Otherwise re-initialize sortable
-			(self.options.sortable && $.ui.sortable && self._enableSortingList())	
+			if (self.options.sortable && $.ui.sortable) {
+				 self._enableSortingList();	
+			}
 		}
 	},
 	
@@ -548,7 +556,7 @@ $.widget("ui.plupload", {
 					e.preventDefault();
 
 					// Rename file and glue extension back on
-					if (e.keyCode == 13) {
+					if (e.keyCode === 13) {
 						file.name = targetInput.val() + ext;
 						targetSpan.text(file.name);
 					}
@@ -588,13 +596,13 @@ $.widget("ui.plupload", {
 			},
 			
 			stop: function(e, ui) {
-				var idx, files = [], idxStop = $('tr', this).index(ui.item);
+				var i, length, idx, files = [], idxStop = $('tr', this).index(ui.item);
 								
-				for (var i = 0, length = self.uploader.files.length; i < length; i++) {
+				for (i = 0, length = self.uploader.files.length; i < length; i++) {
 					
-					if (i == idxStop) {
+					if (i === idxStop) {
 						idx = idxStart;
-					} else if (i == idxStart) {
+					} else if (i === idxStart) {
 						idx = idxStop;
 					} else {
 						idx = i;
@@ -620,9 +628,9 @@ $.widget("ui.plupload", {
 		);
 					
 		popup
-			.addClass('ui-state-' + (type == 'error' ? 'error' : 'highlight'))
+			.addClass('ui-state-' + (type === 'error' ? 'error' : 'highlight'))
 			.find('p .ui-icon')
-				.addClass('ui-icon-' + (type == 'error' ? 'alert' : 'info'))
+				.addClass('ui-icon-' + (type === 'error' ? 'alert' : 'info'))
 				.end()
 			.find('.plupload_message_close')
 				.click(function() {
@@ -639,13 +647,20 @@ $.widget("ui.plupload", {
 		$('.plupload_button', this.element).unbind();
 		
 		// destroy buttons
-		($.ui.button && $('.plupload_add, .plupload_start, .plupload_stop', this.container).button('destroy'));
+		if ($.ui.button) {
+			$('.plupload_add, .plupload_start, .plupload_stop', this.container)
+				.button('destroy');
+		}
 		
 		// destroy progressbar
-		($.ui.progressbar && this.progressbar.progressbar('destroy'));
+		if ($.ui.progressbar) {
+			 this.progressbar.progressbar('destroy');	
+		}
 		
 		// destroy sortable behavior
-		($.ui.sortable && this.options.sortable && $('tbody', this.filelist).sortable('destroy'));
+		if ($.ui.sortable && this.options.sortable) {
+			$('tbody', this.filelist).sortable('destroy');
+		}
 		
 		// destroy uploader instance
 		this.uploader.destroy();
@@ -661,4 +676,4 @@ $.widget("ui.plupload", {
 });
 
 
-})(jQuery);
+} (window, document, plupload, jQuery));
