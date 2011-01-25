@@ -349,7 +349,9 @@
 
 					for (i = 0; i < files.length; i++) {
 						n = getById('form_' + files[i].id);
-						n.parentNode.removeChild(n);
+						if (n) {
+							n.parentNode.removeChild(n);
+						}
 					}
 				});
 				
