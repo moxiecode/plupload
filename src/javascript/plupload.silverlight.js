@@ -9,13 +9,13 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, ActiveXObject:false, window:false */
+/*global window:false, document:false, plupload:false, ActiveXObject:false, window:false */
 
-(function(plupload) {
+(function(window, document, plupload, undef) {
 	var uploadInstances = {}, initialized = {};
 
 	function jsonSerialize(obj) {
-		var value, type = typeof obj, undef, isArray, i, key;
+		var value, type = typeof obj, isArray, i, key;
 
 		// Encode strings
 		if (type === 'string') {
@@ -413,9 +413,23 @@
 						plupload.removeClass(browseButton, activeClass);
 					}
 				});
+				
+				uploader.bind("Destroy", function(up) {
+					var silverlightContainer;
+					
+					plupload.removeAllEvents(document.body, up.id);
+					
+					delete initialized[up.id];
+					delete uploadInstances[up.id];
+					
+					silverlightContainer = document.getElementById(up.id + '_silverlight_container');
+					if (silverlightContainer) {
+						container.removeChild(silverlightContainer);
+					}
+				});
 
 				callback({success : true});
 			});
 		}
 	});
-})(plupload);
+})(window, document, plupload);

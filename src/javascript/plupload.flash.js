@@ -9,7 +9,7 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, ActiveXObject:false, escape:false */
+/*global window:false, document:false, plupload:false, ActiveXObject:false, escape:false */
 
 (function(window, document, plupload, undef) {
 	var uploadInstances = {}, initialized = {};
