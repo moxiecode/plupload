@@ -9,9 +9,9 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, google:false, window:false */
+/*global window:false, document:false, plupload:false, google:false */
 
-(function(plupload) {
+(function(window, document, plupload, undef) {
 	var blobs = {};
 
 	function scaleImage(image_blob, width, height, quality, mime) {
@@ -108,7 +108,7 @@
 					plupload.addEvent(dropElm, 'dragover', function(e) {
 						desktop.setDropEffect(e, 'copy');
 						e.preventDefault();
-					});
+					}, uploader.id);
 
 					// Attach drop handler and grab files from Gears
 					plupload.addEvent(dropElm, 'drop', function(e) {
@@ -119,7 +119,7 @@
 						}
 
 						e.preventDefault();
-					});
+					}, uploader.id);
 
 					// Prevent IE leak
 					dropElm = 0;
@@ -140,7 +140,7 @@
 					}
 
 					desktop.openFiles(addSelectedFiles, {singleFile : !settings.multi_selection, filter : filters});
-				});
+				}, uploader.id);
 			});
 
 			uploader.bind("UploadFile", function(up, file) {
@@ -297,8 +297,25 @@
 				// Start uploading chunks
 				uploadNextChunk();
 			});
+			
+			uploader.bind("Destroy", function(up) {
+				var name, element,
+					elements = {		
+						browseButton:	up.settings.browse_button, 
+						dropElm:		up.settings.drop_element	
+					};
+				
+				// Unbind event handlers
+				for (name in elements) {
+					element = document.getElementById(elements[name]);
+					if (element) {
+						plupload.removeAllEvents(element, up.id);
+					}
+				}
+			});
+			
 
 			callback({success : true});
 		}
 	});
-})(plupload);
+})(window, document, plupload);
