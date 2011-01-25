@@ -54,6 +54,7 @@
 		"application/vnd.openxmlformats,docx pptx xlsx," +
 		"audio/mpeg,mpga mpega mp2 mp3," +
 		"audio/x-wav,wav," +
+		"audio/mp4,m4a," +
 		"image/bmp,bmp," +
 		"image/gif,gif," +
 		"image/jpeg,jpeg jpg jpe," +

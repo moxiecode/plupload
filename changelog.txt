@@ -7,8 +7,9 @@ Version 1.3.x (2011-01-xx)
 	Added support for translatable error messages.
 	Added two new options: browse_button_hover and browse_button_active, in order to support browse_button interactivity.	
 	Added support for 'multi_selection: false' to Silverlight runtime.
-	Added support for video/mp4, video/x-m4v and ... MIME Types. 
+	Added support for video/mp4, video/x-m4v and audio/mp4 MIME Types. 
 	Added artificial sendAsBinary method to XMLHttpRequest.prototype for browsers that have support for BlobBuilder and typed arrays.
+	Added version tracking variable into plupload object and version comment to the header of every file.
 	Fixed measurements of browse_button element in order to size and position input[type=file] element to fit it fully.
 	Fixed Flash runtime behavior for multiple_select=false and other simpleUpload usage cases: basically new FileReference has to be created for every select dialog. 
 	Fixed browser sniffer to match only Safari, for fakeSafariDragDrop (seems like Safari on Mac doesn't require it either).
