@@ -105,6 +105,16 @@
 		<propertyregex property="release_date" input="${changelog}" regexp="^Version [^\(]+\(([^\)]+)\)" select="\1" />
 		<propertyregex property="file_version" input="${version}" regexp="\." replace="_" />
 
+		<!-- Replace major version -->
+		<replaceregexp byline="true">
+			<regexp pattern="@@version@@" />
+			<substitution expression="${version}" />
+
+			<fileset dir="${tmp_dir}/plupload/js">
+				<include name="*/**" />
+			</fileset>
+		</replaceregexp>
+
 		<!-- Compress production package -->
 		<delete file="${tmp_dir}/plupload_${file_version}.zip" quiet="true" />
 		<zip destfile="${tmp_dir}/plupload_${file_version}.zip">
