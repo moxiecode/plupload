@@ -88,7 +88,7 @@
 						fwrite($out, $buff);
 				} else
 					die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
-
+				fclose($in);
 				fclose($out);
 				@unlink($_FILES['file']['tmp_name']);
 			} else
@@ -108,6 +108,7 @@
 			} else
 				die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
 
+			fclose($in);
 			fclose($out);
 		} else
 			die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
