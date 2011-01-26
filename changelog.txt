@@ -1,4 +1,4 @@
-Version 1.3.x (2011-01-xx)
+Version 1.4.0 (2011-01-26)
 	Added removeEvent and removeAllEvents methods and modified addEvent accordingly, in order to support dynamic unload.
 	Added unbindAll method.
 	Added UploadComplete event, which fires when internal iterator reaches the end of the queue.
