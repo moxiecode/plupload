@@ -26,6 +26,27 @@ test('extend', function() {
 });
 
 
+test('parseSize', function() {
+	expect(6);
+	
+	equals(plupload.parseSize(1024), 1024, 1024);
+	equals(plupload.parseSize('1024k'), 1048576, '"1024k"');
+	equals(plupload.parseSize('1024kb'), 1048576, '"1024kb"');
+	equals(plupload.parseSize('1024Kb'), 1048576, '"1024Kb"');
+	equals(plupload.parseSize('2mb'), 2097152, '"2mb"');
+	equals(plupload.parseSize('4gb'), 4294967296, '"4gb"');	
+});
+
+test('formatSize', function() {
+	var undef;
+	//expect(6);
+	
+	equals(plupload.formatSize(undef), 'N/A', 'undefined');
+	equals(plupload.formatSize('abcdefg'), 'N/A', '"abcdefg"');
+	equals(plupload.formatSize('4294967296'), '4 GB', '"4294967296"');
+		
+});
+
 test('addEvent, removeEvent, removeAllEvents', function() {
 	
 	expect(17);

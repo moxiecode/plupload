@@ -358,8 +358,13 @@
 		 * @return {String} Formatted size string.
 		 */
 		formatSize : function(size) {
-			if (size === undef) {
+			if (size === undef || /\D/.test(size)) {
 				return plupload.translate('N/A');
+			}
+			
+			// GB
+			if (size > 1073741824) {
+				return Math.round(size / 1073741824, 1) + " GB";
 			}
 
 			// MB
