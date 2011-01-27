@@ -773,7 +773,7 @@
 	 * @param {Object} settings Initialization settings, to be used by the uploader instance and runtimes.
 	 */
 	plupload.Uploader = function(settings) {
-		var events = {}, total, files = [], fileIndex, startTime;
+		var events = {}, total, files = [], startTime;
 
 		// Inital total state
 		total = new plupload.QueueProgress();
@@ -789,24 +789,26 @@
 
 		// Private methods
 		function uploadNext() {
-			var file;
+			var file, count = 0, i;
 
-			if (this.state == plupload.STARTED && fileIndex < files.length) {
-				file = files[fileIndex++];
-
-				if (file.status == plupload.QUEUED) {
-					file.status = plupload.UPLOADING;
-					this.trigger("BeforeUpload", file);
-					this.trigger("UploadFile", file);
-				} else {
-					uploadNext.call(this);
-				}
-			} else {
-				if (fileIndex == files.length) {
-					this.trigger("UploadComplete", file);
+			if (this.state == plupload.STARTED) {
+				// Find first QUEUED file
+				for (i = 0; i < files.length; i++) {
+					if (!file && files[i].status == plupload.QUEUED) {
+						file = files[i];
+						file.status = plupload.UPLOADING;
+						this.trigger("BeforeUpload", file);
+						this.trigger("UploadFile", file);
+					} else {
+						count++;
+					}
 				}
 
-				this.stop();
+				// All files are DONE or FAILED
+				if (count == files.length) {
+					this.trigger("UploadComplete", files);
+					this.stop();
+				}
 			}
 		}
 
@@ -1135,8 +1137,6 @@
 			 */
 			start : function() {
 				if (this.state != plupload.STARTED) {
-					fileIndex = 0;
-
 					this.state = plupload.STARTED;
 					this.trigger("StateChanged");
 
