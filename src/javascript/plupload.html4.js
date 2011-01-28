@@ -301,20 +301,22 @@
 						// for IE and WebKit place input element underneath the browse button and route onclick event 
 						// TODO: revise when browser support for this feature will change
 						if (up.features.canOpenDialog) {
-							pzIndex = parseInt(browseButton.parentNode.style.zIndex);
-							if (isNaN(pzIndex))
+							pzIndex = parseInt(browseButton.parentNode.style.zIndex, 10);
+
+							if (isNaN(pzIndex)) {
 								pzIndex = 0;
-								
+							}
+
 							plupload.extend(browseButton.style, {
 								position : 'relative',
 								zIndex : pzIndex
 							});
-												
+
 							plupload.extend(inputContainer.style, {
 								zIndex : pzIndex - 1
 							});
 						}
-						
+
 						/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
 						browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
 						with a special class
@@ -360,11 +362,11 @@
 				uploader.bind("Destroy", function(up) {
 					var name, element, form,
 						elements = {
-							inputContainer: 'form_' + currentFileId, 
-							inputFile: 		'input_' + currentFileId, 			
-							browseButton:	up.settings.browse_button 
+							inputContainer: 'form_' + currentFileId,
+							inputFile: 'input_' + currentFileId,	
+							browseButton: up.settings.browse_button
 						};
-					
+
 					// Unbind event handlers
 					for (name in elements) {
 						element = getById(elements[name]);

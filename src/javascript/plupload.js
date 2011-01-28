@@ -543,10 +543,15 @@
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		hasClass : function(obj, name) {			
-			if (obj.className == '') return false;
-			
-			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+		hasClass : function(obj, name) {
+			var regExp;
+		
+			if (obj.className == '') {
+				return false;
+			}
+
+			regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+
 			return regExp.test(obj.className);
 		},
 		
@@ -569,9 +574,10 @@
 		 * @param {String} name Class name
 		 */
 		removeClass : function(obj, name) {
-			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");			
+			var regExp = new RegExp("(^|\\s+)"+name+"(\\s+|$)");
+			
 			obj.className = obj.className.replace(regExp, function($0, $1, $2) {
-				return $1 == ' ' && $2 == ' ' ? ' ' : '';
+				return $1 === ' ' && $2 === ' ' ? ' ' : '';
 			});
 		},
 		
@@ -594,9 +600,10 @@
 			name = name.toLowerCase();
 						
 			// Initialize unique identifier if needed
-			if (uid === undef)
+			if (uid === undef) {
 				uid = 'Plupload_' + plupload.guid();
-			
+			}
+
 			// Add event listener
 			if (obj.attachEvent) {
 				

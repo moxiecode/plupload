@@ -9,7 +9,7 @@
  */
 
 // JSLint defined globals
-/*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false */
+/*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false, ArrayBuffer:false, Uint8Array:false, BlobBuilder:false, unescape:false */
 
 (function(window, document, plupload, undef) {
 	var fakeSafariDragDrop, ExifParser;
@@ -122,7 +122,7 @@
 					bb.append(data);
 					blob = bb.getBlob();
 					this.send(blob);
-				}
+				};
 			}
 
 			if (win.XMLHttpRequest) {
@@ -204,7 +204,7 @@
 			}
 
 			uploader.bind("Init", function(up) {
-				var inputContainer, browseButton, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body;
+				var inputContainer, browseButton, mimes = [], i, y, filters = up.settings.filters, ext, type, container = document.body, inputFile;
 
 				// Create input container and insert it at an absolute position within the browse button
 				inputContainer = document.createElement('div');
@@ -384,9 +384,11 @@
 					// for IE and WebKit place input element underneath the browse button and route onclick event 
 					// TODO: revise when browser support for this feature will change
 					if (uploader.features.canOpenDialog) {
-						pzIndex = parseInt(browseButton.parentNode.style.zIndex);
-						if (isNaN(pzIndex))
+						pzIndex = parseInt(browseButton.parentNode.style.zIndex, 10);
+	
+						if (isNaN(pzIndex)) {
 							pzIndex = 0;
+						}
 							
 						plupload.extend(browseButton.style, {
 							position : 'relative',
@@ -615,12 +617,12 @@
 			uploader.bind('Destroy', function(up) {
 				var name, element, container = document.body,
 					elements = {
-						inputContainer: up.id + '_html5_container', 
-						inputFile: 		up.id + '_html5', 			
-						browseButton:	up.settings.browse_button, 
-						dropElm:		up.settings.drop_element	
+						inputContainer: up.id + '_html5_container',
+						inputFile: up.id + '_html5',
+						browseButton: up.settings.browse_button,
+						dropElm: up.settings.drop_element
 					};
-				
+
 				// Unbind event handlers
 				for (name in elements) {
 					element = document.getElementById(elements[name]);
@@ -635,7 +637,7 @@
 				}
 				
 				// Remove mark-up
-				container.removeChild(document.getElementById(elements['inputContainer']));
+				container.removeChild(document.getElementById(elements.inputContainer));
 			});
 
 			callback({success : true});

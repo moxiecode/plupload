@@ -235,8 +235,9 @@
 				var selectedFiles, lookup = {};
 				
 				// Prevent eventual reinitialization of the instance
-				if (initialized[uploader.id])
+				if (initialized[uploader.id]) {
 					return;
+				}
 					
 				initialized[uploader.id] = true;
 

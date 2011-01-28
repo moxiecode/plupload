@@ -153,16 +153,16 @@
 			browseButton = flashContainer = null;
 
 			// Wait for Flash to send init event
-			uploader.bind("Flash:Init", function() {
-								
+			uploader.bind("Flash:Init", function() {	
 				var lookup = {}, i, resize = uploader.settings.resize || {};
-				
+
 				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
-				
+
 				// Prevent eventual reinitialization of the instance
-				if (initialized[uploader.id])
+				if (initialized[uploader.id]) {
 					return;
-				
+				}
+
 				initialized[uploader.id] = true;
 
 				uploader.bind("UploadFile", function(up, file) {
