@@ -107,7 +107,7 @@
 			credits: http://javascript0.org/wiki/Portable_sendAsBinary, 
 			more info: http://code.google.com/p/chromium/issues/detail?id=35705 
 			*/			
-			if (win.Uint8Array && win.ArrayBuffer && !!XMLHttpRequest.prototype.sendAsBinary) {
+			if (win.Uint8Array && win.ArrayBuffer && !XMLHttpRequest.prototype.sendAsBinary) {
 				XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
 					var data, ui8a, bb, blob;
 					
