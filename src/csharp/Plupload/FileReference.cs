@@ -35,15 +35,15 @@ namespace Moxiecode.Plupload {
 		private string name, uploadUrl, id, targetName, mimeType;
 		private FileInfo info;
 		private SynchronizationContext syncContext;
-		private int chunk, chunks, chunkSize;
+		private int chunks, chunkSize;
 		private bool multipart, chunking;
-		private long size;
+		private long size, chunk;
 		private Dictionary<string, object> multipartParams;
 		private Dictionary<string, object> headers;
 		private Stream imageStream;
 		#endregion
 
-		/// <summary>Upload compleate delegate.</summary>
+		/// <summary>Upload complete delegate.</summary>
 		public delegate void UploadCompleteHandler(object sender, UploadEventArgs e);
 
 		/// <summary>Upload chunk compleate delegate.</summary>
@@ -152,7 +152,7 @@ namespace Moxiecode.Plupload {
             this.UploadNextChunk();
 		}
 
-		private int ReadByteRange(byte[] buffer, int position, int offset, int count) {
+		private int ReadByteRange(byte[] buffer, long position, int offset, int count) {
 			Stream fileStream;
 			int bytes = -1;
 
@@ -245,7 +245,8 @@ namespace Moxiecode.Plupload {
 			string boundary = "----pluploadboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
 			Stream requestStream = null;
 			byte[] buffer = new byte[16384], strBuff;
-			int bytes, loaded = 0, end;
+			int bytes;
+			long loaded = 0, end = 0;
 			int percent, lastPercent = 0;
 
 			try {
@@ -293,7 +294,7 @@ namespace Moxiecode.Plupload {
 				if (end > this.Size)
 					end = (int) this.Size;
 
-				while (loaded < end && (bytes = ReadByteRange(buffer, loaded, 0, end - loaded < buffer.Length ? end - loaded : buffer.Length)) != 0) {
+				while (loaded < end && (bytes = ReadByteRange(buffer, loaded, 0, (int)(end - loaded < buffer.Length ? end - loaded : buffer.Length))) != 0) {
 					loaded += bytes;
 					percent = (int) Math.Round((double) loaded / (double) this.Size * 100.0);
 
@@ -498,7 +499,8 @@ namespace Moxiecode.Plupload {
 	public class UploadEventArgs : EventArgs {
 		#region private fields
 		private string response;
-		private int chunk, chunks;
+		private long chunk;
+		private int chunks;
 		#endregion
 
 		/// <summary>
@@ -514,7 +516,7 @@ namespace Moxiecode.Plupload {
 		/// <param name="response">Response contents as a string.</param>
 		/// <param name="chunk">Current chunk number.</param>
 		/// <param name="chunks">Total chunks.</param>
-		public UploadEventArgs(string response, int chunk, int chunks) {
+		public UploadEventArgs(string response, long chunk, int chunks) {
 			this.response = response;
 			this.chunk = chunk;
 			this.chunks = chunks;
@@ -526,7 +528,7 @@ namespace Moxiecode.Plupload {
 		}
 
 		/// <summary>Chunk number.</summary>
-		public int Chunk {
+		public long Chunk {
 			get { return chunk; }
 		}
 
@@ -542,7 +544,8 @@ namespace Moxiecode.Plupload {
 	public class ErrorEventArgs : EventArgs {
 		#region private fields
 		private string message;
-		private int chunk, chunks;
+		private long chunk;
+		private int chunks;
 		#endregion
 
 		/// <summary>
@@ -559,14 +562,14 @@ namespace Moxiecode.Plupload {
 		/// <param name="message">Error message.</param>
 		/// <param name="chunk">Current chunk number.</param>
 		/// <param name="chunks">Total chunks.</param>
-		public ErrorEventArgs(string message, int chunk, int chunks) {
+		public ErrorEventArgs(string message, long chunk, int chunks) {
 			this.message = message;
 			this.chunk = chunk;
 			this.chunks = chunks;
 		}
 
 		/// <summary>Chunk number.</summary>
-		public int Chunk {
+		public long Chunk {
 			get { return chunk; }
 		}
 
