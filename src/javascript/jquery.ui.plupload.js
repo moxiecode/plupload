@@ -102,6 +102,8 @@ $.widget("ui.plupload", {
 		browse_button_active: 'ui-state-active',
 		
 		// widget specific
+		multiple_queues: true, // re-use widget by default
+		
 		buttons: {
 			browse: true,
 			start: true,
