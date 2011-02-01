@@ -11,7 +11,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script>
 
 <!-- Thirdparty intialization scripts, needed for the Google Gears and BrowserPlus runtimes -->
-<script type="text/javascript" src=".../js/gears_init.js"></script>
+<script type="text/javascript" src="../js/gears_init.js"></script>
 <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
 <script type="text/javascript" src="../js/plupload.full.min.js"></script>
@@ -80,22 +80,15 @@ $(function() {
 </head>
 <body>
 
-<h1>ThemeRoller</h1>
+<h1>jQuery UI Widget</h1>
+
+<p>You can see this example with different themes on the <a href="http://plupload.com/example_jquery_ui.php">www.plupload.com</a> website.</p>
 
 <form  method="post" action="dump.php">
 	<div id="uploader">
 		<p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
 	</div>
 </form>
-
-<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
-<script type="text/javascript">
-	$.fn.themeswitcher && $('<div></div>').css({
-		position: "absolute",
-		right: 10,
-		top: 10
-	}).appendTo(document.body).themeswitcher();
-</script>
 
 </body>
 </html>

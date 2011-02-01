@@ -137,18 +137,7 @@ $(function() {
 		// Silverlight settings
 		silverlight_xap_url : '../js/plupload.silverlight.xap'
 	});
-	
-    
 });
-</script>
-
-<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
-<script type="text/javascript">
-	$.fn.themeswitcher && $('<div></div>').css({
-		position: "absolute",
-		right: 10,
-		top: 10
-	}).appendTo(document.body).themeswitcher();
 </script>
 
 </body>
