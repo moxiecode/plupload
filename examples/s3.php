@@ -76,7 +76,7 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 
 <!-- Thirdparty intialization scripts, needed for the Google Gears and BrowserPlus runtimes -->
-<script type="text/javascript" src=".../js/gears_init.js"></script>
+<script type="text/javascript" src="../js/gears_init.js"></script>
 <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
