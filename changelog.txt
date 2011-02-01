@@ -1,5 +1,7 @@
-Version 1.4.1 (2011-01-xx)
+Version 1.4.1 (2011-02-01)
+	Added an example on how to use Plupload with Amazon S3 written in PHP but can easily be ported to other languages.
 	Fixed bug where hidden input elements wasn't created when the multiple_queues option wasn't used.
+	Fixed bug where FF4 would produce an exception about missing BlobBuilder.
 Version 1.4.0 (2011-01-26)
 	Added removeEvent and removeAllEvents methods and modified addEvent accordingly, in order to support dynamic unload.
 	Added unbindAll method.
