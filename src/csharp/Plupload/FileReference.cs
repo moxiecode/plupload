@@ -38,6 +38,7 @@ namespace Moxiecode.Plupload {
 		private int chunk, chunks, chunkSize;
 		private bool multipart, chunking;
 		private long size;
+		private string fileDataName;
 		private Dictionary<string, object> multipartParams;
 		private Dictionary<string, object> headers;
 		private Stream imageStream;
@@ -112,6 +113,7 @@ namespace Moxiecode.Plupload {
 			imageWidth = Convert.ToInt32(settings["image_width"]);
 			imageHeight = Convert.ToInt32(settings["image_height"]);
 			imageQuality = Convert.ToInt32(settings["image_quality"]);
+			this.fileDataName = (string)settings["file_data_name"];
 			this.multipart = Convert.ToBoolean(settings["multipart"]);
 			this.multipartParams = (Dictionary<string, object>)settings["multipart_params"];
 			this.headers = (Dictionary<string, object>)settings["headers"];
@@ -275,9 +277,9 @@ namespace Moxiecode.Plupload {
 
 					// Append multipart file header
 					strBuff = this.StrToByteArray(
-						dashdash + boundary + crlf +
-						"Content-Disposition: form-data; name=\"file\"; filename=\"" + this.name + '"' + crlf +
-						"Content-Type: " + this.mimeType + crlf + crlf
+						dashdash + boundary + crlf + 
+						"Content-Disposition: form-data; name=\"" + this.fileDataName + "\"; filename=\"" + this.name + '"' +
+						crlf + "Content-Type: " + this.mimeType + crlf + crlf
 					);
 
 					requestStream.Write(strBuff, 0, strBuff.Length);
