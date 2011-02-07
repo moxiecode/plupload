@@ -129,8 +129,11 @@ package com.plupload {
 			file._postvars["name"] = settings["name"];
 
 			for (var key:String in file._postvars) {
-				postData[key] = file._postvars[key];
+				if (key != 'Filename') { // Flash will add it by itself, so we need to omit potential duplicate
+					postData[key] = file._postvars[key];
+				}
 			}
+			
 
 			request = new URLRequest();
 			request.method = URLRequestMethod.POST;
