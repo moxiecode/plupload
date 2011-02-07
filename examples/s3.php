@@ -59,8 +59,8 @@ $policy = base64_encode(json_encode(array(
 		array('success_action_status' => '201'),
 		// Plupload internally adds name field, so we need to mention it here
 		array('starts-with', '$name', ''), 	
-		// When not using 'urlstream_upload: true', you need to take into account just another field - 'Filename'
-		// which gets sent silently by Flash component
+		// One more field to take into account: Filename - gets silently sent by FileReference.upload() in Flash
+		// http://docs.amazonwebservices.com/AmazonS3/latest/dev/HTTPPOSTFlash.html
 		array('starts-with', '$Filename', ''), 
 	)
 )));
