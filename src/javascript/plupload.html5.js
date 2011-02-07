@@ -29,6 +29,21 @@
 		}
 	}
 
+	function readFileAsBinary(file, callback) {
+		var reader;
+
+		// Use FileReader if it's available
+		if ("FileReader" in window) {
+			reader = new FileReader();
+			reader.readAsBinaryString(file);
+			reader.onload = function() {
+				callback(reader.result);
+			};
+		} else {
+			return callback(file.getAsBinary());
+		}
+	}
+
 	function scaleImage(image_file, max_width, max_height, mime, callback) {
 		var canvas, context, img, scale;
 
@@ -602,11 +617,11 @@
 								file.size = res.data.length;
 								sendBinaryBlob(res.data);
 							} else {
-								sendBinaryBlob(nativeFile.getAsBinary());
+								readFileAsBinary(nativeFile, sendBinaryBlob);
 							}
 						});
 					} else {
-						sendBinaryBlob(nativeFile.getAsBinary());
+						readFileAsBinary(nativeFile, sendBinaryBlob);
 					}
 				} else {
 					sendBinaryBlob(nativeFile);
