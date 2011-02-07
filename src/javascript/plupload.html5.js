@@ -14,7 +14,7 @@
 (function(window, document, plupload, undef) {
 	var fakeSafariDragDrop, ExifParser;
 
-	function readFile(file, callback) {
+	function readFileAsDataURL(file, callback) {
 		var reader;
 
 		// Use FileReader if it's available
@@ -47,7 +47,7 @@
 	function scaleImage(image_file, max_width, max_height, mime, callback) {
 		var canvas, context, img, scale;
 
-		readFile(image_file, function(data) {
+		readFileAsDataURL(image_file, function(data) {
 			// Setup canvas and context
 			canvas = document.createElement("canvas");
 			canvas.style.display = 'none';
@@ -202,7 +202,7 @@
 					html5files[id] = file;
 
 					// Expose id, name and size
-					files.push(new plupload.File(id, file.fileName, file.fileSize));
+					files.push(new plupload.File(id, file.fileName, file.fileSize || file.size)); // File.fileSize depricated
 				}
 
 				// Trigger FilesAdded event if we added any
@@ -624,7 +624,7 @@
 						readFileAsBinary(nativeFile, sendBinaryBlob);
 					}
 				} else {
-					sendBinaryBlob(nativeFile);
+					sendBinaryBlob(nativeFile); // this works on older WebKits, but fails on fresh ones
 				}
 			});
 			
