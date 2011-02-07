@@ -9,8 +9,10 @@ crossdomain.xml can be as simple as this:
 <allow-access-from domain="*" secure="false" />
 </cross-domain-policy>
 
-In our tests SilverLight didn't require anything special and worked with this configuration just fine. If in need it
-can use the same crossdomain.xml as well.
+In our tests SilverLight didn't require anything special and worked with this configuration just fine. It may fail back
+to the same crossdomain.xml as last resort.
+
+!!!Important!!! Plupload UI Widget here, is used only for demo purposes and is not required for uploading to S3.
 */
 
 // important variables that will be used throughout this example
@@ -54,9 +56,12 @@ $policy = base64_encode(json_encode(array(
 		// To configure POST to return a response that does not have an empty body, set success_action_status to 201.
 		// When set, Amazon S3 returns an XML document with a 201 status code." 
 		// http://docs.amazonwebservices.com/AmazonS3/latest/dev/HTTPPOSTFlash.html
-		#array('success_action_status' => '201'),
+		array('success_action_status' => '201'),
 		// Plupload internally adds name field, so we need to mention it here
 		array('starts-with', '$name', ''), 	
+		// When not using 'urlstream_upload: true', you need to take into account just another field - 'Filename'
+		// which gets sent silently by Flash component
+		array('starts-with', '$Filename', ''), 
 	)
 )));
 
@@ -74,10 +79,6 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
 <script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
-
-<!-- Thirdparty intialization scripts, needed for the Google Gears and BrowserPlus runtimes -->
-<script type="text/javascript" src="../js/gears_init.js"></script>
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
 <link rel="stylesheet" href="css/jquery.ui.plupload.css" type="text/css" />
@@ -105,25 +106,23 @@ $(function() {
 		multipart: true,
 		multipart_params: {
 			'key': '${filename}', // use filename as a key
+			'Filename': '${filename}', // adding this to keep consistency across the runtimes
 			'acl': 'public-read',
 			'Content-Type': 'image/jpeg',
-			//'success_action_status': '201',
+			'success_action_status': '201',
 			'AWSAccessKeyId' : '<?php echo $accessKeyId; ?>',		
 			'policy': '<?php echo $policy; ?>',
 			'signature': '<?php echo $signature; ?>'
 		},
 		
-		// Resize images on clientside if we can
-		//resize : {width : 800, height : 600, quality : 60}, 
+		// !!!Important!!! 
+		// this is not recommended with S3, since it will force Flash runtime into the mode, with no progress indication
+		//resize : {width : 800, height : 600, quality : 60},  // Resize images on clientside, if possible 
 		
-		/* FileReference.upload() silently appends just another field - Filename, which might break S3 upload, if not 
-		taken into account, so we basically are getting rid of it at once here, by forcing Flash into URLStream mode. */
-		urlstream_upload: true,
-		
-		// optional, but better be specified implicitly
+		// optional, but better be specified directly
 		file_data_name: 'file',
 		
-		// re-use widget
+		// re-use widget (not related to S3, but to Plupload UI Widget)
 		multiple_queues: true,
 
 		// Specify what files to browse for
