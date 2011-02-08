@@ -11,6 +11,7 @@
 package com.plupload {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.IBitmapDrawable;
 	import flash.events.EventDispatcher;
 	import flash.geom.Matrix;
 	import flash.net.FileReference;
@@ -31,11 +32,8 @@ package com.plupload {
 	import flash.external.ExternalInterface;
 	import mx.graphics.codec.JPEGEncoder;
 	import mx.graphics.codec.PNGEncoder;
-	import flash.filters.BlurFilter;
-	import flash.filters.BitmapFilterQuality;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
-
+	
+	
 	/**
 	 * Container class for file references, this handles upload logic for individual files.
 	 */
@@ -213,8 +211,23 @@ package com.plupload {
 					loader = new flash.display.Loader();
 					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void {
 						var loadedBitmapData:BitmapData = Bitmap(e.target.content).bitmapData;
-						var matrix:Matrix = new Matrix(), scale:Number;
-
+						var scale:Number;
+						
+						var downScale:Function = function(input:BitmapData, width:Number, height:Number) : BitmapData {
+							var matrix:Matrix = new Matrix();
+							var output:BitmapData = new BitmapData(width, height);
+							var scale:Number;
+														
+							scale = Math.min(width / input.width, height / input.height);
+							
+							// Setup scale matrix
+							matrix.scale(scale, scale);
+							
+							output.draw(input, matrix, null, null, null, true);
+							input.dispose();
+							return output;
+						};
+						
 						scale = Math.min(width / loadedBitmapData.width, height / loadedBitmapData.height);
 
 						// Do we need to scale
@@ -223,19 +236,20 @@ package com.plupload {
 							width = Math.round(loadedBitmapData.width * scale);
 							height = Math.round(loadedBitmapData.height * scale);
 
-							// Setup scale matrix
-							matrix.scale(scale, scale);
-
-							// Draw workingbitmap into scaled down bitmap
-							var outputBitmapData:BitmapData = new BitmapData(width, height);
-							outputBitmapData.draw(loadedBitmapData, matrix, null, null, null, true);
-							loadedBitmapData.dispose();
-
+							var output:BitmapData = new BitmapData(loadedBitmapData.width, loadedBitmapData.height);
+							output.draw(loadedBitmapData, null, null, null, null, true);
+							
+							while (output.width/2 > width) {
+								output = downScale(output, output.width/2, output.height/2);
+							}
+							
+							output = downScale(output, width, height);	
+													
 							// Encode bitmap as JPEG
 							if (settings["format"] == "jpg")
-								file._imageData = new JPEGEncoder(quality).encode(outputBitmapData);
+								file._imageData = new JPEGEncoder(quality).encode(output);
 							else
-								file._imageData = new PNGEncoder().encode(outputBitmapData);
+								file._imageData = new PNGEncoder().encode(output);
 
 							// Update file size and buffer position
 							file._imageData.position = 0;
