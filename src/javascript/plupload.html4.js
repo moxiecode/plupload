@@ -215,47 +215,6 @@
 							});
 						}
 					}, up.id);
-
-					// Upload file
-					up.bind("UploadFile", function(up, file) {
-						var form, input;
-
-						// File upload finished
-						if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
-							return;
-						}
-
-						// Get the form and input elements
-						form = getById('form_' + file.id);
-						input = getById('input_' + file.id);
-
-						// Set input element name attribute which allows it to be submitted
-						input.setAttribute('name', up.settings.file_data_name);
-
-						// Store action
-						form.setAttribute("action", up.settings.url);
-
-						// Append multipart parameters
-						plupload.each(plupload.extend({name : file.target_name || file.name}, up.settings.multipart_params), function(value, name) {
-							var hidden = document.createElement('input');
-
-							plupload.extend(hidden, {
-								type : 'hidden',
-								name : name,
-								value : value
-							});
-
-							form.insertBefore(hidden, form.firstChild);
-						});
-
-						currentFile = file;
-
-						// Hide the current form
-						getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
-						
-						form.submit();
-						form.parentNode.removeChild(form);
-					});
 				} // end createIframe
 				
 				if (up.settings.container) {
@@ -263,7 +222,50 @@
 					container.style.position = 'relative';
 				}
 				
-				uploader.bind('FileUploaded', function(up) {
+				// Upload file
+				up.bind("UploadFile", function(up, file) {
+					var form, input;
+					
+					// File upload finished
+					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
+						return;
+					}
+
+					// Get the form and input elements
+					form = getById('form_' + file.id);
+					input = getById('input_' + file.id);
+
+					// Set input element name attribute which allows it to be submitted
+					input.setAttribute('name', up.settings.file_data_name);
+
+					// Store action
+					form.setAttribute("action", up.settings.url);
+
+					// Append multipart parameters
+					plupload.each(plupload.extend({name : file.target_name || file.name}, up.settings.multipart_params), function(value, name) {
+						var hidden = document.createElement('input');
+
+						plupload.extend(hidden, {
+							type : 'hidden',
+							name : name,
+							value : value
+						});
+
+						form.insertBefore(hidden, form.firstChild);
+					});
+
+					currentFile = file;
+
+					// Hide the current form
+					getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
+					
+					form.submit();
+					form.parentNode.removeChild(form);
+				});
+				
+				
+				
+				up.bind('FileUploaded', function(up) {
 					up.refresh(); // just to get the form back on top of browse_button
 				});				
 
@@ -274,7 +276,7 @@
 
 					if (up.state == plupload.STOPPED) {
 						window.setTimeout(function() {
-							plupload.removeEvent(iframe, 'load', up.id);
+							plupload.removeEvent(iframe, 'load');
 							iframe.parentNode.removeChild(iframe);
 						}, 0);
 					}
