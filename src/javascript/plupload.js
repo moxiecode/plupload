@@ -798,24 +798,22 @@
 		function uploadNext() {
 			var file, count = 0, i;
 
-			if (this.state == plupload.STARTED) {
-				// Find first QUEUED file
-				for (i = 0; i < files.length; i++) {
-					if (!file && files[i].status == plupload.QUEUED) {
-						file = files[i];
-						file.status = plupload.UPLOADING;
-						this.trigger("BeforeUpload", file);
-						this.trigger("UploadFile", file);
-					} else {
-						count++;
-					}
+			// Find first QUEUED file
+			for (i = 0; i < files.length; i++) {
+				if (!file && files[i].status == plupload.QUEUED) {
+					file = files[i];
+					file.status = plupload.UPLOADING;
+					this.trigger("BeforeUpload", file);
+					this.trigger("UploadFile", file);
+				} else {
+					count++;
 				}
+			}
 
-				// All files are DONE or FAILED
-				if (count == files.length) {
-					this.trigger("UploadComplete", files);
-					this.stop();
-				}
+			// All files are DONE or FAILED
+			if (count == files.length) {
+				this.trigger("UploadComplete", files);
+				this.stop();
 			}
 		}
 
