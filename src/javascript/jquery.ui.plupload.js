@@ -391,9 +391,9 @@ $.widget("ui.plupload", {
 				$(self.start_button).button('enable');
 						
 				$('.plupload_header_content', self.element).removeClass('plupload_header_content_bw');
-					
-				self._updateFileList();
 			}
+
+			self._updateFileList();
 		}
 	},
 	
