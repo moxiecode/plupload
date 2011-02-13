@@ -196,7 +196,32 @@
 		 * @property FILE_EXTENSION_ERROR
 		 * @final
 		 */
-		FILE_EXTENSION_ERROR : -700,
+		FILE_EXTENSION_ERROR : -601,
+		
+		/**
+		 * Runtime will try to detect if image is proper one. Otherwise will throw this error.
+		 *
+		 * @property IMAGE_FORMAT_ERROR
+		 * @final
+		 */
+		IMAGE_FORMAT_ERROR : -700,
+		
+		/**
+		 * While working on the image runtime will try to detect if the operation may potentially run out of memeory and will throw this error.
+		 *
+		 * @property IMAGE_MEMORY_ERROR
+		 * @final
+		 */
+		IMAGE_MEMORY_ERROR : -701,
+		
+		/**
+		 * Each runtime has an upper limit on a dimension of the image it can handle. If bigger, will throw this error.
+		 *
+		 * @property IMAGE_DIMENSIONS_ERROR
+		 * @final
+		 */
+		IMAGE_DIMENSIONS_ERROR : -702,
+		
 
 		/**
 		 * Mime type lookup table.

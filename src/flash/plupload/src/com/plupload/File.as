@@ -1,4 +1,4 @@
-﻿﻿/**
+﻿/**
  * File.as
  *
  * Copyright 2009, Moxiecode Systems AB
@@ -9,6 +9,8 @@
  */
 
 package com.plupload {
+	import com.formatlos.BitmapDataUnlimited;
+	import com.formatlos.events.BitmapDataUnlimitedEvent;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
@@ -30,8 +32,9 @@ package com.plupload {
 	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
 	import flash.external.ExternalInterface;
-	import mx.graphics.codec.JPEGEncoder;
-	import mx.graphics.codec.PNGEncoder;
+	
+	import com.mxi.image.Image;
+	import com.mxi.image.events.ImageEvent;
 	
 	
 	/**
@@ -204,89 +207,9 @@ package com.plupload {
 
 			// When file is loaded start uploading
 			this._fileRef.addEventListener(Event.COMPLETE, function(e:Event):void {
-				var loader:flash.display.Loader;
-
-				// Load JPEG file and scale it down if needed
-				if (/\.(jpeg|jpg|png)$/i.test(file._fileName) && (width || height)) {
-					loader = new flash.display.Loader();
-					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e:Event):void {
-						var loadedBitmapData:BitmapData = Bitmap(e.target.content).bitmapData;
-						var scale:Number;
-						
-						var downScale:Function = function(input:BitmapData, width:Number, height:Number) : BitmapData {
-							var matrix:Matrix = new Matrix();
-							var output:BitmapData = new BitmapData(width, height);
-							var scale:Number;
-														
-							scale = Math.min(width / input.width, height / input.height);
-							
-							// Setup scale matrix
-							matrix.scale(scale, scale);
-							
-							output.draw(input, matrix, null, null, null, true);
-							input.dispose();
-							return output;
-						};
-						
-						scale = Math.min(width / loadedBitmapData.width, height / loadedBitmapData.height);
-
-						// Do we need to scale
-						if (scale < 1) {
-
-							width = Math.round(loadedBitmapData.width * scale);
-							height = Math.round(loadedBitmapData.height * scale);
-
-							var output:BitmapData = new BitmapData(loadedBitmapData.width, loadedBitmapData.height);
-							output.draw(loadedBitmapData, null, null, null, null, true);
-							
-							while (output.width/2 > width) {
-								output = downScale(output, output.width/2, output.height/2);
-							}
-							
-							output = downScale(output, width, height);	
-													
-							// Encode bitmap as JPEG
-							if (settings["format"] == "jpg")
-								file._imageData = new JPEGEncoder(quality).encode(output);
-							else
-								file._imageData = new PNGEncoder().encode(output);
-
-							// Update file size and buffer position
-							file._imageData.position = 0;
-							file._size = file._imageData.length;
-						}
-
-						if (chunking) {
-							chunks = Math.ceil(file._size / chunkSize);
-
-							// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
-							// doesn't have a upload progress event and we can't use FileReference.upload since it
-							// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
-							// side image resizing will not be possible.
-							if (chunks < 4 && file._size > 1024 * 32) {
-								chunkSize = Math.ceil(file._size / 4);
-								chunks = 4;
-							}
-						} else {
-							// If chunking is disabled then upload file in one huge chunk
-							chunkSize = file._size;
-							chunks = 1;
-						}
-
-						// Start uploading the scaled down image
-						file._multipart = multipart;
-						file._fileDataName = fileDataName;
-						file._chunking = chunking;
-						file._chunk = chunk;
-						file._chunks = chunks;
-						file._chunkSize = chunkSize;
-						file._postvars = postvars;
-
-						file.uploadNextChunk();
-					});
-
-					loader.loadBytes(file._fileRef.data);
-				} else {
+				
+				var startUpload:Function = function() : void
+				{
 					if (chunking) {
 						chunks = Math.ceil(file._size / chunkSize);
 
@@ -304,6 +227,7 @@ package com.plupload {
 						chunks = 1;
 					}
 
+					// Start uploading the scaled down image
 					file._multipart = multipart;
 					file._fileDataName = fileDataName;
 					file._chunking = chunking;
@@ -313,6 +237,26 @@ package com.plupload {
 					file._postvars = postvars;
 
 					file.uploadNextChunk();
+				}
+				
+				if (/\.(jpeg|jpg|png)$/i.test(file._fileName) && (width || height)) {
+					var image:Image = new Image(file._fileRef.data);
+					image.addEventListener(ImageEvent.COMPLETE, function(e:ImageEvent) : void 
+					{
+						if (image.imageData) {
+							file._imageData = image.imageData;
+							file._imageData.position = 0;
+							file._size = image.imageData.length;
+						}
+						startUpload();
+					});
+					image.addEventListener(ImageEvent.ERROR, function(e:ImageEvent) : void
+					{
+						file.dispatchEvent(e);
+					});
+					image.scale(width, height, quality);
+				} else {
+					startUpload();
 				}
 			});
 

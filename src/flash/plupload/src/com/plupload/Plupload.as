@@ -35,6 +35,7 @@ package com.plupload {
 	import flash.utils.Dictionary;
 	import flash.errors.IllegalOperationError;
 	import flash.system.Security;
+	import com.mxi.image.events.ImageEvent;
 
 	/**
 	 * This is the main class of the Plupload package.
@@ -185,6 +186,17 @@ package com.plupload {
 					});
 				});
 
+				file.addEventListener(ImageEvent.ERROR, function(e:ImageEvent) : void {
+					var file:File = e.target as File;
+					
+					fireEvent("ImageError", {
+						id : file.id,
+						code: e.code
+					});
+							
+				});
+				
+				
 				// Add response listener
 				file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
 					var file:File = e.target as File;
