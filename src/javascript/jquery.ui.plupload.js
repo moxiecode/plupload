@@ -361,6 +361,10 @@ $.widget("ui.plupload", {
 		return this.uploader;
 	},
 	
+	refresh: function() {
+		this.uploader.refresh();
+	},
+	
 	
 	_handleState: function() {
 		var self = this, uploader = this.uploader;
@@ -505,6 +509,8 @@ $.widget("ui.plupload", {
 	
 					e.preventDefault();
 				});
+				
+			self._trigger('updatelist', null, filelist);
 		});
 		
 
