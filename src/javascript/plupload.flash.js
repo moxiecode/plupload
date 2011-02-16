@@ -72,6 +72,8 @@
 			return {
 				jpgresize: true,
 				pngresize: true,
+				maxWidth: 8091,
+				maxHeight: 8091,
 				chunks: true,
 				progress: true,
 				multipart: true
@@ -266,6 +268,14 @@
 						code : plupload.IO_ERROR,
 						message : plupload.translate('IO error.'),
 						details : err.message,
+						file : uploader.getFile(lookup[err.id])
+					});
+				});
+				
+				uploader.bind("Flash:ImageError", function(up, err) {
+					uploader.trigger('Error', {
+						code : parseInt(err.code),
+						message : plupload.translate('Image error.'),
 						file : uploader.getFile(lookup[err.id])
 					});
 				});

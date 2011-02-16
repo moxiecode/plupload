@@ -193,7 +193,6 @@ package com.plupload {
 						id : file.id,
 						code: e.code
 					});
-							
 				});
 				
 				
