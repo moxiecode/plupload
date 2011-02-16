@@ -115,7 +115,10 @@
 						actionClass = 'plupload_uploading';
 					}
 
-					$('#' + file.id).attr('class', actionClass).find('a').css('display', 'block');
+					var icon = $('#' + file.id).attr('class', actionClass).find('a').css('display', 'block');
+					if (file['hint']) {
+						icon.attr('title', file['hint']);	
+					}
 				}
 
 				function updateTotalProgress() {
@@ -274,7 +277,8 @@
 						if (err.code == plupload.FILE_EXTENSION_ERROR) {
 							alert(_("Error: Invalid file extension: ") + file.name);
 						}
-
+						
+						file['hint'] = message;
 						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
 				});
