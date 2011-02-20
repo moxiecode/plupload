@@ -97,11 +97,11 @@ $.widget("ui.plupload", {
 	runtime: null,
 	
 	options: {
-		dragdrop : true,
 		browse_button_hover: 'ui-state-hover',
 		browse_button_active: 'ui-state-active',
 		
 		// widget specific
+		dragdrop : true, 
 		multiple_queues: true, // re-use widget by default
 		
 		buttons: {
@@ -340,6 +340,35 @@ $.widget("ui.plupload", {
 				self._notify('error', message);
 			}
 		});
+	},
+	
+	_setOption: function(key, value) {
+				
+		if (key == 'buttons' && typeof(value) == 'object') {	
+			value = $.extend(this.options.buttons, value);
+			
+			if (!value.browse) {
+				this.browse_button.button('disable').hide();
+				$('#' + this.id + self.runtime + '_container').hide();
+			} else {
+				this.browse_button.button('enable').show();
+				$('#' + this.id + self.runtime + '_container').show();
+			}
+			
+			if (!value.start) {
+				this.start_button.button('disable').hide();
+			} else {
+				this.start_button.button('enable').show();
+			}
+			
+			if (!value.stop) {
+				this.stop_button.button('disable').hide();
+			} else {
+				this.start_button.button('enable').show();	
+			}
+		}
+		
+		this.uploader.settings[key] = value;	
 	},
 	
 	
