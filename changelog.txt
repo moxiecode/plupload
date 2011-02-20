@@ -1,3 +1,14 @@
+Version 1.4.2 (2011-02-20)
+	Added Brazilian Portuguese, German, Russian and Spanish translations.
+	Added support for file_data_name option to SilverLight runtime.
+	Added support for better quality image resizing to Flash runtime.
+	Added support for properly handling images with dimensions up to 8191x8191 pixels to Flash runtime.
+	Added 'updatelist' event to UI Widget, which will be triggered every time file list will get redrawn. 
+	Added support for dynamically changing options to UI Widget.
+	Fixed HTML4 runtime bug, when UploadFile handler was attached twice. 
+	Fixed HTML5 to use FileReader.readAsBinaryString() instead of File.getAsBinary() on newer WebKit browsers (like Chrome 9).
+	Fixed Flash runtime from sending duplicate Filename param, when using FileReference.upload(). 
+	Updated S3 example to illustrate support for a proper progress indication. 
 Version 1.4.1 (2011-02-01)
 	Added an example on how to use Plupload with Amazon S3 written in PHP but can easily be ported to other languages.
 	Fixed bug where hidden input elements wasn't created when the multiple_queues option wasn't used.

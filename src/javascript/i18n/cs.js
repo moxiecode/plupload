@@ -5,10 +5,10 @@ plupload.addI18n({
 	'Filename' : 'Název souboru',
 	'Status' : 'Status',
 	'Size' : 'Velikost',
-	'Add files' : 'Přidat soubory',
+	'Add Files' : 'Přidat soubory',
 	'Stop current upload' : 'Zastavit nahrávání',
 	'Start uploading queue' : 'Spustit frontu nahrávání',
 	'Drag files here.' : 'Sem přetáhněte soubory.',
-	'Start upload': 'Spustit nahrávání',
+	'Start Upload': 'Spustit nahrávání',
 	'Uploaded %d/%d files': 'Nahráno %d/%d souborů'
 });
