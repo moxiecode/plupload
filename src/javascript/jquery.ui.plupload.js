@@ -338,6 +338,7 @@ $.widget("ui.plupload", {
 				}
 				
 				self._notify('error', message);
+				self._trigger('error', null, { up: up, file: file, error: message } );
 			}
 		});
 	},

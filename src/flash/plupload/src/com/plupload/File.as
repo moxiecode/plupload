@@ -144,6 +144,8 @@ package com.plupload {
 			fileDataName = new String(settings["file_data_name"]);
 
 			file._fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, function(e:DataEvent):void {
+				file._fileRef.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, arguments.callee);
+				
 				var pe:ProgressEvent = new ProgressEvent(ProgressEvent.PROGRESS, false, false, file._size, file._size);
 				dispatchEvent(pe);
 				
@@ -158,6 +160,8 @@ package com.plupload {
 				);
 				
 				file._chunk++;
+				file._fileRef.data.clear();
+				
 				dispatchEvent(uploadChunkEvt);
 
 				dispatchEvent(e);
@@ -165,19 +169,24 @@ package com.plupload {
 
 			// Delegate upload IO errors
 			file._fileRef.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+				file._fileRef.removeEventListener(IOErrorEvent.IO_ERROR, arguments.callee);
 				dispatchEvent(e);
 			});
 
 			// Delegate secuirty errors
 			file._fileRef.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
+				file._fileRef.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, arguments.callee);
+				file._fileRef.data.clear();
 				dispatchEvent(e);
 			});
 
 			// Delegate progress
-			file._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {				
+			file._fileRef.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent):void {		
+				file._fileRef.removeEventListener(ProgressEvent.PROGRESS, arguments.callee);
+				file._fileRef.data.clear();
 				dispatchEvent(e);
 			});
-
+			
 			file._fileRef.upload(request, fileDataName, false);
 		}
 
@@ -207,6 +216,7 @@ package com.plupload {
 
 			// When file is loaded start uploading
 			this._fileRef.addEventListener(Event.COMPLETE, function(e:Event):void {
+				file._fileRef.removeEventListener(Event.COMPLETE, arguments.callee);
 				
 				var startUpload:Function = function() : void
 				{
@@ -238,11 +248,12 @@ package com.plupload {
 
 					file.uploadNextChunk();
 				}
-				
+								
 				if (/\.(jpeg|jpg|png)$/i.test(file._fileName) && (width || height)) {
 					var image:Image = new Image(file._fileRef.data);
 					image.addEventListener(ImageEvent.COMPLETE, function(e:ImageEvent) : void 
 					{
+						image.removeEventListener(ImageEvent.COMPLETE, arguments.callee);
 						if (image.imageData) {
 							file._imageData = image.imageData;
 							file._imageData.position = 0;
@@ -252,16 +263,18 @@ package com.plupload {
 					});
 					image.addEventListener(ImageEvent.ERROR, function(e:ImageEvent) : void
 					{
+						image.removeEventListener(ImageEvent.ERROR, arguments.callee);
 						file.dispatchEvent(e);
 					});
 					image.scale(width, height, quality);
 				} else {
 					startUpload();
-				}
+				}					
 			});
 
 			// File load IO error
 			this._fileRef.addEventListener(IOErrorEvent.IO_ERROR, function(e:Event):void {
+				file._fileRef.removeEventListener(IOErrorEvent.IO_ERROR, arguments.callee);
 				this.dispatchEvent(e);
 			});
 
@@ -332,13 +345,11 @@ package com.plupload {
 
 			// Delegate upload IO errors
 			urlStream.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
-				file._chunk = file._chunks; // Cancel upload of all remaining chunks
 				dispatchEvent(e);
 			});
 
 			// Delegate secuirty errors
 			urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
-				file._chunk = file._chunks; // Cancel upload of all remaining chunks
 				dispatchEvent(e);
 			});
 
