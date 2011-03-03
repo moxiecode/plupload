@@ -10,20 +10,19 @@ package com.mxi.image
 {
 	import com.formatlos.BitmapDataUnlimited;
 	import com.formatlos.events.BitmapDataUnlimitedEvent;
+	import com.mxi.CleanEventDispatcher;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
 	import mx.graphics.codec.JPEGEncoder;
 	import mx.graphics.codec.PNGEncoder;
-	import flash.external.ExternalInterface;
 	import com.mxi.image.events.ImageEvent;
 	import flash.system.System;
 	
-	public class Image extends EventDispatcher
+	public class Image extends CleanEventDispatcher
 	{
 		private var _source:ByteArray;
 		
@@ -36,6 +35,8 @@ package com.mxi.image
 		public static const MAX_WIDTH:uint = 8191;
 		public static const MAX_HEIGHT:uint = 8191;
 		
+		private var _loader:Loader;
+		
 		public var imageData:ByteArray;
 	
 		
@@ -47,7 +48,7 @@ package com.mxi.image
 		
 		public function scale(width:Number, height:Number, quality:Number = 90) : void
 		{
-			var loader:Loader, info:Object, scale:Number;
+			var info:Object, scale:Number;
 			
 			info = _getImageInfo();
 			if (!info) {
@@ -72,9 +73,9 @@ package com.mxi.image
 			_quality = quality;
 
 			// scale
-			loader = new Loader;
-			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onBitmapDataReady);
-			loader.loadBytes(_source);				
+			_loader = new Loader;
+			_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onBitmapDataReady);
+			_loader.loadBytes(_source);				
 		}
 		
 		
@@ -103,6 +104,8 @@ package com.mxi.image
 		protected function onBitmapDataReady(e:Event) : void
 		{
 			var bitmapSource:IBitmapDrawable, output:BitmapData, width:Number, height:Number, scale:Number;
+			
+			_loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, onBitmapDataReady);
 			
 			bitmapSource = e.target.content as IBitmapDrawable;
 			
