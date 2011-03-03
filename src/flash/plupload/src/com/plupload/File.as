@@ -310,7 +310,6 @@ package com.plupload {
 				if(this._fileRef.data) {
 					this._fileRef.data.clear();
 				}
-				this._fileRef = null;
 				this._imageData = null;
 
 				return false;

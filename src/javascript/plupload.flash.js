@@ -156,7 +156,7 @@
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {	
-				var lookup = {}, i, resize = uploader.settings.resize || {};
+				var lookup = {}, i;
 
 				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
@@ -164,11 +164,10 @@
 				if (initialized[uploader.id]) {
 					return;
 				}
-
 				initialized[uploader.id] = true;
 
 				uploader.bind("UploadFile", function(up, file) {
-					var settings = up.settings;
+					var settings = up.settings, resize = uploader.settings.resize || {};
 
 					getFlashObj().uploadFile(lookup[file.id], settings.url, {
 						name : file.target_name || file.name,
