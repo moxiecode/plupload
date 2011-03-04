@@ -157,7 +157,7 @@
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
 				progress: hasProgress,
-				chunking: sliceSupport || dataAccessSupport,
+				chunks: sliceSupport || dataAccessSupport,
 				
 				/* WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
 				sniff for it here... probably not that good idea, but impossibillity of controlling cursor style  
@@ -430,7 +430,7 @@
 						args = {name : file.target_name || file.name};
 
 						// Only add chunking args if needed
-						if (settings.chunk_size && features.chunking) {
+						if (settings.chunk_size && features.chunks) {
 							chunkSize = settings.chunk_size;
 							chunks = Math.ceil(file.size / chunkSize);
 							curChunkSize = Math.min(chunkSize, file.size - (chunk * chunkSize));
