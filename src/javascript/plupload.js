@@ -1051,6 +1051,16 @@
 					if (up.state == plupload.STARTED) {
 						// Get start time to calculate bps
 						startTime = (+new Date());
+						
+						uploadNext.call(this);
+					} else if (up.state == plupload.STOPPED) {
+						// Reset currently uploading files
+						for (i = up.files.length - 1; i >= 0; i--) {
+							if (up.files[i].status == plupload.UPLOADING) {
+								up.files[i].status = plupload.QUEUED;
+								calc();
+							}
+						}
 					}
 				});
 
@@ -1170,9 +1180,7 @@
 			start : function() {
 				if (this.state != plupload.STARTED) {
 					this.state = plupload.STARTED;
-					this.trigger("StateChanged");
-
-					uploadNext.call(this);
+					this.trigger("StateChanged");					
 				}
 			},
 
@@ -1183,7 +1191,7 @@
 			 */
 			stop : function() {
 				if (this.state != plupload.STOPPED) {
-					this.state = plupload.STOPPED;
+					this.state = plupload.STOPPED;					
 					this.trigger("StateChanged");
 				}
 			},
