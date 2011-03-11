@@ -570,7 +570,7 @@
 								multipartBlob += unescape(encodeURIComponent(value)) + crlf;
 							});
 
-							mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream';
+							mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream';
 
 							// Build RFC2388 blob
 							multipartBlob += dashdash + boundary + crlf +
