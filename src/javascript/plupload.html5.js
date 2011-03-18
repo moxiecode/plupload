@@ -544,7 +544,8 @@
 						// Build multipart request
 						if (up.settings.multipart && features.multipart) {
 							// Has FormData support like Chrome 6+, Safari 5+, Firefox 4
-							if (!xhr.sendAsBinary) {
+							if (!xhr.sendAsBinary ||
+								(!!window.FormData && !up.settings.resize)) { // Both FormData and FileReader are available, use FormData if there's no need to resize
 								formData = new FormData();
 
 								// Add multipart params
