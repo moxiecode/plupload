@@ -601,7 +601,7 @@
 				nativeFile = html5files[file.id];
 				resize = up.settings.resize;
 
-				if (features.jpgresize) {
+				if (features.jpgresize && (resize || !window.FormData)) {
 					// Resize image if it's a supported format and resize is enabled
 					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
 						scaleImage(nativeFile, resize.width, resize.height, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
