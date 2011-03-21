@@ -5,17 +5,14 @@
 <title>Plupload - Queue widget example</title>
 <!-- Load Queue widget CSS and jQuery -->
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
-<link rel="stylesheet" href="css/jquery.ui.plupload.css" type="text/css" />
+<link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script>
-
-<!-- Thirdparty intialization scripts, needed for the Google Gears and BrowserPlus runtimes -->
-<script type="text/javascript" src="../js/gears_init.js"></script>
 <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
-<script type="text/javascript" src="../js/plupload.full.min.js"></script>
-<script type="text/javascript" src="../js/jquery.ui.plupload.min.js"></script>
+<script type="text/javascript" src="../../js/plupload.full.js"></script>
+<script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 <!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 
 <script type="text/javascript">
@@ -47,10 +44,10 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../js/plupload.flash.swf',
+		flash_swf_url : '../../js/plupload.flash.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../js/plupload.silverlight.xap'
+		silverlight_xap_url : '../../js/plupload.silverlight.xap'
 	});
 
 	// Client side form validation

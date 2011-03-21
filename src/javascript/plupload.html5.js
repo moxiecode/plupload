@@ -25,7 +25,7 @@
 				ui8a[i] = (datastr.charCodeAt(i) & 0xff);
 			}
 			this.send(ui8a.buffer);
-		}
+		};
 	}
 	
 

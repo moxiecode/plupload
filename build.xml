@@ -32,7 +32,6 @@
 		<moxiedoc outdir="docs/api" templatedir="tools/templates" msintellisense="docs/api/plupload.vsdoc.js" title="Plupload API">
 			<fileset dir="src">
 				<exclude name="jquery.*" />
-				<exclude name="gears_init.js" />
 				<include name="javascript/**/*.js" /> 
 			</fileset>
 		</moxiedoc>
@@ -42,7 +41,7 @@
 		<jslint options="browser,undef,forin">
 			<formatter type="plain" />
 			<formatter type="xml" destfile="jslint.xml" />
-			<fileset dir="src/javascript" includes="*.js" excludes="gears_init.js" />
+			<fileset dir="src/javascript" includes="*.js" />
 		</jslint>
 	</target>
 
@@ -56,7 +55,33 @@
 		</exec>
 	</target>
 
-	<target name="build">
+	<target name="clean">
+		<delete quiet="true">
+			<fileset dir="js" includes="**/*"/>
+		</delete>
+	</target>
+
+	<target name="build-jquery-widgets">
+		<!-- Copy all jquery.plupload.queue resources -->
+		<copy todir="js/jquery.plupload.queue">
+			<fileset dir="src/javascript/jquery.plupload.queue">
+				<include name="**"/>
+			</fileset>
+		</copy>
+
+		<!-- Copy all jquery.ui.plupload resources -->
+		<copy todir="js/jquery.ui.plupload">
+			<fileset dir="src/javascript/jquery.ui.plupload">
+				<include name="**"/>
+			</fileset>
+		</copy>
+
+		<!-- Minify the scripts -->
+		<yuicompress infile="src/javascript/jquery.plupload.queue/jquery.plupload.queue.js" outfile="js/jquery.plupload.queue/jquery.plupload.queue.js" />
+		<yuicompress infile="src/javascript/jquery.ui.plupload/jquery.ui.plupload.js" outfile="js/jquery.ui.plupload/jquery.ui.plupload.js" />
+	</target>
+
+	<target name="build" depends="clean,build-jquery-widgets">
 		<!-- Concat multuple JS files together -->
 		<concat destfile="js/plupload.full.tmp.js">
 			<fileset dir="src/javascript" includes="plupload.js" />
@@ -69,19 +94,16 @@
 		</concat>
 
 		<!-- Compress Plupload full and base using the YUI Compressor -->
-		<yuicompress infile="js/plupload.full.tmp.js" outfile="js/plupload.full.min.js" />
-		<yuicompress infile="src/javascript/jquery.plupload.queue.js" outfile="js/jquery.plupload.queue.min.js" />
-		<yuicompress infile="src/javascript/jquery.ui.plupload.js" outfile="js/jquery.ui.plupload.min.js" />
-		<yuicompress infile="src/javascript/plupload.js" outfile="js/plupload.min.js" />
-		<yuicompress infile="src/javascript/plupload.gears.js" outfile="js/plupload.gears.min.js" />
-		<yuicompress infile="src/javascript/plupload.silverlight.js" outfile="js/plupload.silverlight.min.js" />
-		<yuicompress infile="src/javascript/plupload.flash.js" outfile="js/plupload.flash.min.js" />
-		<yuicompress infile="src/javascript/plupload.browserplus.js" outfile="js/plupload.browserplus.min.js" />
-		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.min.js" />
-		<yuicompress infile="src/javascript/plupload.html4.js" outfile="js/plupload.html4.min.js" />
+		<yuicompress infile="js/plupload.full.tmp.js" outfile="js/plupload.full.js" />
+		<yuicompress infile="src/javascript/plupload.js" outfile="js/plupload.js" />
+		<yuicompress infile="src/javascript/plupload.gears.js" outfile="js/plupload.gears.js" />
+		<yuicompress infile="src/javascript/plupload.silverlight.js" outfile="js/plupload.silverlight.js" />
+		<yuicompress infile="src/javascript/plupload.flash.js" outfile="js/plupload.flash.js" />
+		<yuicompress infile="src/javascript/plupload.browserplus.js" outfile="js/plupload.browserplus.js" />
+		<yuicompress infile="src/javascript/plupload.html5.js" outfile="js/plupload.html5.js" />
+		<yuicompress infile="src/javascript/plupload.html4.js" outfile="js/plupload.html4.js" />
 
 		<delete file="js/plupload.full.tmp.js" quiet="true" />
-		<copy file="src/javascript/gears_init.js" todir="js" />
 	</target>
 
 	<target name="release" depends="build">
@@ -115,11 +137,27 @@
 			</fileset>
 		</replaceregexp>
 
-		<!-- Compress production package -->
-		<delete file="${tmp_dir}/plupload_${file_version}.zip" quiet="true" />
-		<zip destfile="${tmp_dir}/plupload_${file_version}.zip">
+		<!-- Compress core package -->
+		<delete file="${tmp_dir}/plupload_${file_version}_core.zip" quiet="true" />
+		<zip destfile="${tmp_dir}/plupload_${file_version}_core.zip">
 			<zipfileset dir="${tmp_dir}/plupload" prefix="plupload">
 				<include name="*/**" />
+				<exclude name="examples/jquery/**" />
+				<exclude name="src/**" />
+				<exclude name="js/jquery*/**" />
+				<exclude name="tools/**" />
+				<exclude name="build.xml" />
+				<exclude name="build.bat" />
+				<exclude name="tests/**" />
+			</zipfileset>
+		</zip>
+
+		<!-- Compress jQuery package -->
+		<delete file="${tmp_dir}/plupload_${file_version}_jquery.zip" quiet="true" />
+		<zip destfile="${tmp_dir}/plupload_${file_version}_jquery.zip">
+			<zipfileset dir="${tmp_dir}/plupload" prefix="plupload">
+				<include name="*/**" />
+				<exclude name="src/**" />
 				<exclude name="tools/**" />
 				<exclude name="build.xml" />
 				<exclude name="build.bat" />

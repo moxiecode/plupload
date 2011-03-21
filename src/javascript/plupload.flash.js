@@ -273,7 +273,7 @@
 				
 				uploader.bind("Flash:ImageError", function(up, err) {
 					uploader.trigger('Error', {
-						code : parseInt(err.code),
+						code : parseInt(err.code, 10),
 						message : plupload.translate('Image error.'),
 						file : uploader.getFile(lookup[err.id])
 					});

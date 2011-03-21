@@ -116,8 +116,8 @@
 					}
 
 					var icon = $('#' + file.id).attr('class', actionClass).find('a').css('display', 'block');
-					if (file['hint']) {
-						icon.attr('title', file['hint']);	
+					if (file.hint) {
+						icon.attr('title', file.hint);	
 					}
 				}
 
@@ -278,7 +278,7 @@
 							alert(_("Error: Invalid file extension: ") + file.name);
 						}
 						
-						file['hint'] = message;
+						file.hint = message;
 						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
 				});
