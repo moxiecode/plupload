@@ -72,7 +72,7 @@
 			// Load image
 			img = new Image();
 			img.onload = function() {
-				var width, height, percentage, APP1, parser;
+				var width, height, percentage, APP1, APP2, parser;
 
 				scale = Math.min(max_width / img.width, max_height / img.height);
 
@@ -89,16 +89,22 @@
 					parser = new ExifParser();
 					parser.init(atob(data.substring(data.indexOf('base64,') + 7)));
 					APP1 = parser.APP1({width: width, height: height});
+					APP2 = parser.APP2();
 
 					// Remove data prefix information and grab the base64 encoded data and decode it
 					data = canvas.toDataURL(mime);
 					data = data.substring(data.indexOf('base64,') + 7);
 					data = atob(data);
 
-					// Restore EXIF info to scaled image
-					if (APP1) {
+					// Restore EXIF and ICC info to scaled image
+					if (APP1 || APP2) {
 						parser.init(data);
-						parser.setAPP1(APP1);
+						if (APP1) {
+							parser.setAPP1(APP1);
+						}
+						if (APP2) {
+							parser.setAPP2(APP2);
+						}
 						data = parser.getBinary();
 					}
 
@@ -656,7 +662,7 @@
 		// Private ExifParser fields
 		var Tiff, Exif, GPS, app0, app0_offset, app0_length, app1, app1_offset, data,
 			app1_length, exifIFD_offset, gpsIFD_offset, IFD0_offset, TIFFHeader_offset, undef,
-			tiffTags, exifTags, gpsTags, tagDescs;
+			tiffTags, exifTags, gpsTags, tagDescs, app2;
 
 		/**
 		 * @constructor
@@ -1094,6 +1100,7 @@
 				// Reset internal data
 				TIFFHeader_offset = 10;
 				Tiff = Exif = GPS = app0 = app0_offset = app0_length = app1 = app1_offset = app1_length = undef;
+				app2 = [];
 
 				data.init(jpegData);
 
@@ -1102,32 +1109,45 @@
 					return false;
 				}
 
-				switch (data.SHORT(2)) {
-					// app0
-					case 0xFFE0:
-						app0_offset = 2;
-						app0_length = data.SHORT(4) + 2;
-
-						// check if app1 follows
-						if (data.SHORT(app0_length) == 0xFFE1) {
-							app1_offset = app0_length;
-							app1_length = data.SHORT(app0_length + 2) + 2;
-						}
+				for (var idx = 2, len = 0; idx + 2 < jpegData.length; idx += len) {
+					var marker = data.SHORT(idx); 
+					if (marker < 0xFFE0 || marker > 0xFFEF) {
+						// not a segment marker
 						break;
+					}
 
-					// app1
-					case 0xFFE1:
-						app1_offset = 2;
-						app1_length = data.SHORT(4) + 2;
-						break;
-
-					default:
-						return false;
+					var len = data.SHORT(idx + 2) + 2;
+					switch (marker) {
+						// app0
+						case 0xFFE0:
+							if (app0_offset === undef) {
+								app0_offset = idx;
+								app0_length = len;
+							}
+							break;
+						// app1
+						case 0xFFE1:
+							if (app1_offset === undef &&
+								len > 4 + 4 &&
+								data.STRING(idx + 4, 5).toUpperCase() === "EXIF\0") {
+								app1_offset = idx;
+								app1_length = len;
+							}
+							break;
+						// app2
+						case 0xFFE2:
+							if (len > 4 + 11 &&
+								data.STRING(idx + 4, 12).toUpperCase() === "ICC_PROFILE\0") {
+								// the profile may span multiple segments
+								app2.push( { offset:idx, length:len } );
+							}
+							break;
+					}
 				}
 
 				if (app1_length !== undef) {
 					getIFDOffsets();
-				}
+				}				
 			},
 
 			APP1: function(args) {
@@ -1143,6 +1163,18 @@
 				}
 
 				return app1;
+			},
+
+			APP2: function(args) {
+				if (app2.length === 0) {
+					return;
+				}
+				
+				var data_app2 = [];
+				for (var i = 0; i < app2.length; i++) {
+					data_app2.push(data.SEGMENT(app2[i].offset, app2[i].length));
+				}
+				return data_app2;
 			},
 
 			EXIF: function() {
@@ -1173,6 +1205,20 @@
 				}
 
 				data.SEGMENT((app0_offset ? app0_offset + app0_length : 2), data_app1);
+			},
+
+			setAPP2: function(data_app2) {
+				if (app2.length !== 0) {
+					return false;
+				}
+				
+				var idx = (app1_offset ? app1_offset + app1_length :
+						  (app0_offset ? app0_offset + app0_length : 2));
+
+				for (var i = 0; i < data_app2.length; i++) {
+					data.SEGMENT(idx, data_app2[i]);
+					idx += data_app2[i].length;
+				}
 			},
 
 			getBinary: function() {
