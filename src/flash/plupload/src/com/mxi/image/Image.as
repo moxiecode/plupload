@@ -86,6 +86,14 @@ package com.mxi.image
 			if (JPEG.test(_source)) {
 				var jpeg:JPEG = new JPEG(_source);
 				_info = jpeg.info();
+				
+				// if jpeg info failed then try extract data from exif headers
+				if (!_info)
+				{
+					var exif:Exif = new Exif(_source);
+					_info = exif.info();
+				}
+				
 				if (_info) {
 					_info['type'] = 'JPEG';
 				}			
