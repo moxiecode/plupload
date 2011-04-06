@@ -56,10 +56,18 @@
 					filters = up.settings.filters, i, ext, type, y;
 
 				// Convert extensions to mime types list
+				no_type_restriction:
 				for (i = 0; i < filters.length; i++) {
 					ext = filters[i].extensions.split(/,/);
 
 					for (y = 0; y < ext.length; y++) {
+						
+						// If there's an asterisk in the list, then accept attribute is not required
+						if (ext[y] === '*') {
+							mimes = [];
+							break no_type_restriction;
+						}
+						
 						type = plupload.mimeTypes[ext[y]];
 
 						if (type) {
@@ -67,8 +75,6 @@
 						}
 					}
 				}
-
-				mimes = mimes.join(',');
 
 				function createForm() {
 					var form, input, bgcolor, browseButton;
