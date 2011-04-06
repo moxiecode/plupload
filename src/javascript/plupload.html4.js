@@ -219,7 +219,9 @@
 				
 				if (up.settings.container) {
 					container = getById(up.settings.container);
-					container.style.position = 'relative';
+					if (plupload.getStyle(container, 'position') === 'static') {
+						container.style.position = 'relative';
+					}
 				}
 				
 				// Upload file
@@ -310,9 +312,14 @@
 							}
 
 							plupload.extend(browseButton.style, {
-								position : 'relative',
 								zIndex : pzIndex
 							});
+				
+							if (plupload.getStyle(browseButton, 'position') === 'static') {
+								plupload.extend(browseButton.style, {
+									position : 'relative'
+								});
+							}
 
 							plupload.extend(inputContainer.style, {
 								zIndex : pzIndex - 1

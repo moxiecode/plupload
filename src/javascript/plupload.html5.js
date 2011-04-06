@@ -245,9 +245,9 @@
 
 				if (uploader.settings.container) {
 					container = document.getElementById(uploader.settings.container);
-          if (plupload.getComputedStyle(container, 'position') === 'static') {
-            container.style.position = 'relative';
-          }
+					if (plupload.getStyle(container, 'position') === 'static') {
+						container.style.position = 'relative';
+					}
 				}
 
 				container.appendChild(inputContainer);
@@ -338,11 +338,11 @@
 							dropPos = plupload.getPos(dropElm, document.getElementById(uploader.settings.container));
 							dropSize = plupload.getSize(dropElm);
 							
-              if (plupload.getComputedStyle(dropElm, 'position') === 'static') {
-                plupload.extend(dropElm.style, {
-                  position : 'relative'
-                });
-              }
+							if (plupload.getStyle(dropElm, 'position') === 'static') {
+								plupload.extend(dropElm.style, {
+									position : 'relative'
+								});
+							}
               
 							plupload.extend(dropInputElm.style, {
 								position : 'absolute',
@@ -393,7 +393,7 @@
 						height : browseSize.h + 'px'
 					});
 					
-					// for IE and WebKit place input element underneath the browse button and route onclick event 
+					// for WebKit place input element underneath the browse button and route onclick event 
 					// TODO: revise when browser support for this feature will change
 					if (uploader.features.canOpenDialog) {
 						pzIndex = parseInt(browseButton.parentNode.style.zIndex, 10);
@@ -406,11 +406,11 @@
 							zIndex : pzIndex
 						});
             
-            if (plupload.getComputedStyle(browseButton, 'position') === 'static') {
-              plupload.extend(browseButton.style, {
-                position : 'relative'
-              });
-            }
+						if (plupload.getStyle(browseButton, 'position') === 'static') {
+							plupload.extend(browseButton.style, {
+								position : 'relative'
+							});
+						}
 											
 						plupload.extend(inputContainer.style, {
 							zIndex : pzIndex - 1
