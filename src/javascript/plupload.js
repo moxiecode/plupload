@@ -978,10 +978,14 @@
 						
 						plupload.each(filters, function(filter) {
 							plupload.each(filter.extensions.split(/,/), function(ext) {
-								extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
+								if (/^\s*\*\s*$/.test(ext)) {
+									extensionsRegExp.push('\\.*');
+								} else {
+									extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
+								}
 							});
 						});
-
+						
 						extensionsRegExp = new RegExp(extensionsRegExp.join('|') + '$', 'i');
 					}
 
