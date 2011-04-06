@@ -245,7 +245,9 @@
 
 				if (uploader.settings.container) {
 					container = document.getElementById(uploader.settings.container);
-					container.style.position = 'relative';
+          if (plupload.getComputedStyle(container, 'position') === 'static') {
+            container.style.position = 'relative';
+          }
 				}
 
 				container.appendChild(inputContainer);
@@ -336,10 +338,12 @@
 							dropPos = plupload.getPos(dropElm, document.getElementById(uploader.settings.container));
 							dropSize = plupload.getSize(dropElm);
 							
-							plupload.extend(dropElm.style, {
-								position : 'relative'
-							});
-
+              if (plupload.getComputedStyle(dropElm, 'position') === 'static') {
+                plupload.extend(dropElm.style, {
+                  position : 'relative'
+                });
+              }
+              
 							plupload.extend(dropInputElm.style, {
 								position : 'absolute',
 								display : 'block',
@@ -399,9 +403,14 @@
 						}
 							
 						plupload.extend(browseButton.style, {
-							position : 'relative',
 							zIndex : pzIndex
 						});
+            
+            if (plupload.getComputedStyle(browseButton, 'position') === 'static') {
+              plupload.extend(browseButton.style, {
+                position : 'relative'
+              });
+            }
 											
 						plupload.extend(inputContainer.style, {
 							zIndex : pzIndex - 1

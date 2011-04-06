@@ -605,7 +605,20 @@
 				return $1 === ' ' && $2 === ' ' ? ' ' : '';
 			});
 		},
-		
+    
+    /**
+		 * Returns a given computed style of a DOM element.
+		 *
+		 * @param {Object} obj DOM element like object.
+		 * @param {String} name Style you want to get from the DOM element
+		 */
+		getComputedStyle : function(obj, name) {
+      if (obj.currentStyle) {
+        return obj.currentStyle[name];
+      } else if (window.getComputedStyle) {
+        return window.getComputedStyle(obj, null)[name];
+      }
+		},
 
 		/**
 		 * Adds an event handler to the specified object and store reference to the handler
