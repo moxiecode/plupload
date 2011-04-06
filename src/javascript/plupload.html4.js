@@ -75,6 +75,8 @@
 						}
 					}
 				}
+				
+				mimes = mimes.join(',');
 
 				function createForm() {
 					var form, input, bgcolor, browseButton;
