@@ -1128,10 +1128,10 @@
 						app0_length = data.SHORT(4) + 2;
 
 						// check if app1 follows
-						if (data.SHORT(app0_length) == 0xFFE1) {
-							app1_offset = app0_length;
-							app1_length = data.SHORT(app0_length + 2) + 2;
-						}
+						if (data.SHORT(app0_length + 2) == 0xFFE1) {
+							app1_offset = app0_length + 2;
+							app1_length = data.SHORT(app1_offset + 2) + 2;
+						}					
 						break;
 
 					// app1
