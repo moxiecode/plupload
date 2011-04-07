@@ -71,6 +71,10 @@
 
 			// Load image
 			img = new Image();
+			img.onerror = img.onabort = function() {
+				// Failed to load, the image may be invalid
+				callback({success : false});
+			};
 			img.onload = function() {
 				var width, height, percentage, APP1, APP2, parser;
 
