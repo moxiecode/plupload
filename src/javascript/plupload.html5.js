@@ -12,7 +12,7 @@
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false, ArrayBuffer:false, Uint8Array:false, BlobBuilder:false, unescape:false */
 
 (function(window, document, plupload, undef) {
-	var fakeSafariDragDrop, ExifParser;
+	var fakeSafariDragDrop;
 	
 	/* Introduce sendAsBinary for latest WebKits having support for BlobBuilder and typed arrays:
 	credits: http://javascript0.org/wiki/Portable_sendAsBinary, 
@@ -76,7 +76,7 @@
 				callback({success : false});
 			};
 			img.onload = function() {
-				var width, height, percentage, APP1, APP2, parser;
+				var width, height, percentage, APP1, APP2, jpegHeaders, exifParser;
 
 				scale = Math.min(max_width / img.width, max_height / img.height);
 
@@ -89,27 +89,32 @@
 					canvas.height = height;
 					context.drawImage(img, 0, 0, width, height);
 
-					// Get original EXIF info
-					parser = new ExifParser();
-					parser.init(atob(data.substring(data.indexOf('base64,') + 7)));
-					APP1 = parser.APP1({width: width, height: height});
-					APP2 = parser.APP2();
+					// Preserve JPEG headers
+					if (mime === 'image/jpeg') {
+						jpegHeaders = new JPEG_Headers(atob(data.substring(data.indexOf('base64,') + 7)));
+						if (jpegHeaders['headers'] && jpegHeaders['headers'].length) {
+							exifParser = new ExifParser();			
+											
+							if (exifParser.init(jpegHeaders.get('exif')[0])) {
+								// Set new width and height
+								exifParser.setExif('PixelXDimension', width);
+								exifParser.setExif('PixelYDimension', height);
+															
+								// Update EXIF header
+								jpegHeaders.set('exif', exifParser.getBinary());
+							}
+						}
+					}
 
 					// Remove data prefix information and grab the base64 encoded data and decode it
 					data = canvas.toDataURL(mime);
 					data = data.substring(data.indexOf('base64,') + 7);
 					data = atob(data);
 
-					// Restore EXIF and ICC info to scaled image
-					if (APP1 || APP2) {
-						parser.init(data);
-						if (APP1) {
-							parser.setAPP1(APP1);
-						}
-						if (APP2) {
-							parser.setAPP2(APP2);
-						}
-						data = parser.getBinary();
+					// Restore JPEG headers
+					if (jpegHeaders['headers'] && jpegHeaders['headers'].length) {
+						data = jpegHeaders.restore(data);
+						jpegHeaders.purge(); // free memory
 					}
 
 					// Remove canvas and execute callback with decoded image data
@@ -680,155 +685,274 @@
 			callback({success : true});
 		}
 	});
+	
+	function BinaryReader() {
+		var II = false, bin;
 
-	ExifParser = function() {
-		// Private ExifParser fields
-		var Tiff, Exif, GPS, app0, app0_offset, app0_length, app1, app1_offset, data,
-			app1_length, exifIFD_offset, gpsIFD_offset, IFD0_offset, TIFFHeader_offset, undef,
-			tiffTags, exifTags, gpsTags, tagDescs, app2;
+		// Private functions
+		function read(idx, size) {
+			var mv = II ? 0 : -8 * (size - 1), sum = 0, i;
 
-		/**
-		 * @constructor
-		 */
-		function BinaryReader() {
-			var II = false, bin;
-
-			// Private functions
-			function read(idx, size) {
-				var mv = II ? 0 : -8 * (size - 1), sum = 0, i;
-
-				for (i = 0; i < size; i++) {
-					sum |= (bin.charCodeAt(idx + i) << Math.abs(mv + i*8));
-				}
-
-				return sum;
+			for (i = 0; i < size; i++) {
+				sum |= (bin.charCodeAt(idx + i) << Math.abs(mv + i*8));
 			}
 
-			function putstr(idx, segment, replace) {
-				bin = bin.substr(0, idx) + segment + bin.substr((replace === true ? segment.length : 0) + idx);
-			}
-
-			function write(idx, num, size) {
-				var str = '', mv = II ? 0 : -8 * (size - 1), i;
-
-				for (i = 0; i < size; i++) {
-					str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
-				}
-
-				putstr(idx, str, true);
-			}
-
-			// Public functions
-			return {
-				II: function(order) {
-					if (order === undef) {
-						return II;
-					} else {
-						II = order;
-					}
-				},
-
-				init: function(binData) {
-					II = false;
-					bin = binData;
-				},
-
-				SEGMENT: function(idx, segment, replace) {
-					if (!arguments.length) {
-						return bin;
-					}
-
-					if (typeof segment == 'number') {
-						return bin.substr(parseInt(idx, 10), segment);
-					}
-
-					putstr(idx, segment, replace);
-				},
-
-				BYTE: function(idx) {
-					return read(idx, 1);
-				},
-
-				SHORT: function(idx) {
-					return read(idx, 2);
-				},
-
-				LONG: function(idx, num) {
-					if (num === undef) {
-						return read(idx, 4);
-					} else {
-						write(idx, num, 4);
-					}
-				},
-
-				SLONG: function(idx) { // 2's complement notation
-					var num = read(idx, 4);
-
-					return (num > 2147483647 ? num - 4294967296 : num);
-				},
-
-				STRING: function(idx, size) {
-					var str = '';
-
-					for (size += idx; idx < size; idx++) {
-						str += String.fromCharCode(read(idx, 1));
-					}
-
-					return str;
-				}
-			};
+			return sum;
 		}
+
+		function putstr(idx, segment, replace) {
+			bin = bin.substr(0, idx) + segment + bin.substr((replace === true ? segment.length : 0) + idx);
+		}
+
+		function write(idx, num, size) {
+			var str = '', mv = II ? 0 : -8 * (size - 1), i;
+
+			for (i = 0; i < size; i++) {
+				str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
+			}
+
+			putstr(idx, str, true);
+		}
+
+		// Public functions
+		return {
+			II: function(order) {
+				if (order === undef) {
+					return II;
+				} else {
+					II = order;
+				}
+			},
+
+			init: function(binData) {
+				II = false;
+				bin = binData;
+			},
+
+			SEGMENT: function(idx, segment, replace) {
+				if (!arguments.length) {
+					return bin;
+				}
+
+				if (typeof segment == 'number') {
+					return bin.substr(parseInt(idx, 10), segment);
+				}
+
+				putstr(idx, segment, replace);
+			},
+
+			BYTE: function(idx) {
+				return read(idx, 1);
+			},
+
+			SHORT: function(idx) {
+				return read(idx, 2);
+			},
+
+			LONG: function(idx, num) {
+				if (num === undef) {
+					return read(idx, 4);
+				} else {
+					write(idx, num, 4);
+				}
+			},
+
+			SLONG: function(idx) { // 2's complement notation
+				var num = read(idx, 4);
+
+				return (num > 2147483647 ? num - 4294967296 : num);
+			},
+
+			STRING: function(idx, size) {
+				var str = '';
+
+				for (size += idx; idx < size; idx++) {
+					str += String.fromCharCode(read(idx, 1));
+				}
+
+				return str;
+			}
+		};
+	}
+	
+	function JPEG_Headers(data) {
+		
+		var markers = {
+				0xFFE1: {
+					app: 'EXIF',
+					name: 'APP1',
+					signature: "Exif\0" 
+				},
+				0xFFE2: {
+					app: 'ICC',
+					name: 'APP2',
+					signature: "ICC_PROFILE\0" 
+				},
+				0xFFED: {
+					app: 'IPTC',
+					name: 'APP13',
+					signature: "Photoshop 3.0\0" 
+				}
+			},
+			headers = [], read, idx, marker = undef, length = 0, limit;
+			
+		
+		read = new BinaryReader();
+		read.init(data);
+				
+		// Check if data is jpeg
+		if (read.SHORT(0) !== 0xFFD8) {
+			return;
+		}
+		
+		idx = 2;
+		limit = Math.min(1048576, data.length);	
+			
+		while (idx <= limit) {
+			marker = read.SHORT(idx);
+			
+			// omit RST (restart) markers
+			if (marker >= 0xFFD0 && marker <= 0xFFD7) {
+				idx += 2;
+				continue;
+			}
+			
+			// no headers allowed after SOS marker
+			if (marker === 0xFFDA || marker === 0xFFD9) {
+				break;	
+			}	
+			
+			length = read.SHORT(idx + 2) + 2;	
+			
+			if (markers[marker] && 
+				read.STRING(idx + 4, markers[marker].signature.length) === markers[marker].signature) {
+				headers.push({ 
+					hex: marker,
+					app: markers[marker].app.toUpperCase(),
+					name: markers[marker].name.toUpperCase(),
+					start: idx,
+					length: length,
+					segment: read.SEGMENT(idx, length)
+				});
+			}
+			idx += length;			
+		}
+					
+		read.init(null); // free memory
+						
+		return {
+			
+			headers: headers,
+			
+			restore: function(data) {
+				read.init(data);
+				
+				// Check if data is jpeg
+				if (read.SHORT(0) !== 0xFFD8) {
+					return false;
+				}	
+				
+				idx =  2;
+								
+				for (var i = 0, max = headers.length; i < max; i++) {
+					read.SEGMENT(idx, headers[i].segment);	
+					idx += headers[i].length;
+				}
+				
+				return read.SEGMENT();
+			},
+			
+			get: function(app) {
+				var array = [];
+				for (var i = 0, max = headers.length; i < max; i++) {
+					if (headers[i].app === app.toUpperCase()) {
+						array.push(headers[i].segment);
+					}
+				}
+				return array;
+			},
+			
+			set: function(app, segment) {
+				var array = [];
+				
+				if (typeof(segment) === 'string') {
+					array.push(segment);	
+				} else {
+					array = segment;	
+				}
+				
+				for (var i = ii = 0, max = headers.length; i < max; i++) {
+					if (headers[i].app === app.toUpperCase()) {
+						headers[i].segment = array[ii];
+						headers[i].length = array[ii].length;
+						ii++;
+					}
+					if (ii >= array.length) break;
+				}
+			},
+			
+			purge: function() {
+				headers = [];
+				read.init(null);
+			}
+		};		
+	}
+	
+	
+	function ExifParser() {
+		// Private ExifParser fields
+		var data, tags, offsets = {}, tagDescs;
 
 		data = new BinaryReader();
 
-		tiffTags = {
-			/*
-			The image orientation viewed in terms of rows and columns.
-
-			1 - The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
-			2 - The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
-			3 - The 0th row is at the visual top of the image, and the 0th column is the visual right-hand side.
-			4 - The 0th row is at the visual bottom of the image, and the 0th column is the visual right-hand side.
-			5 - The 0th row is at the visual bottom of the image, and the 0th column is the visual left-hand side.
-			6 - The 0th row is the visual left-hand side of the image, and the 0th column is the visual top.
-			7 - The 0th row is the visual right-hand side of the image, and the 0th column is the visual top.
-			8 - The 0th row is the visual right-hand side of the image, and the 0th column is the visual bottom.
-			9 - The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
-			*/
-			0x0112: 'Orientation',
-			0x8769: 'ExifIFDPointer',
-			0x8825:	'GPSInfoIFDPointer'
-		};
-
-		exifTags = {
-			0x9000: 'ExifVersion',
-			0xA001: 'ColorSpace',
-			0xA002: 'PixelXDimension',
-			0xA003: 'PixelYDimension',
-			0x9003: 'DateTimeOriginal',
-			0x829A: 'ExposureTime',
-			0x829D: 'FNumber',
-			0x8827: 'ISOSpeedRatings',
-			0x9201: 'ShutterSpeedValue',
-			0x9202: 'ApertureValue'	,
-			0x9207: 'MeteringMode',
-			0x9208: 'LightSource',
-			0x9209: 'Flash',
-			0xA402: 'ExposureMode',
-			0xA403: 'WhiteBalance',
-			0xA406: 'SceneCaptureType',
-			0xA404: 'DigitalZoomRatio',
-			0xA408: 'Contrast',
-			0xA409: 'Saturation',
-			0xA40A: 'Sharpness'
-		};
-
-		gpsTags = {
-			0x0000: 'GPSVersionID',
-			0x0001: 'GPSLatitudeRef',
-			0x0002: 'GPSLatitude',
-			0x0003: 'GPSLongitudeRef',
-			0x0004: 'GPSLongitude'
+		tags = {
+			tiff : {
+				/*
+				The image orientation viewed in terms of rows and columns.
+	
+				1 - The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
+				2 - The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
+				3 - The 0th row is at the visual top of the image, and the 0th column is the visual right-hand side.
+				4 - The 0th row is at the visual bottom of the image, and the 0th column is the visual right-hand side.
+				5 - The 0th row is at the visual bottom of the image, and the 0th column is the visual left-hand side.
+				6 - The 0th row is the visual left-hand side of the image, and the 0th column is the visual top.
+				7 - The 0th row is the visual right-hand side of the image, and the 0th column is the visual top.
+				8 - The 0th row is the visual right-hand side of the image, and the 0th column is the visual bottom.
+				9 - The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
+				*/
+				0x0112: 'Orientation',
+				0x8769: 'ExifIFDPointer',
+				0x8825:	'GPSInfoIFDPointer'
+			},
+			exif : {
+				0x9000: 'ExifVersion',
+				0xA001: 'ColorSpace',
+				0xA002: 'PixelXDimension',
+				0xA003: 'PixelYDimension',
+				0x9003: 'DateTimeOriginal',
+				0x829A: 'ExposureTime',
+				0x829D: 'FNumber',
+				0x8827: 'ISOSpeedRatings',
+				0x9201: 'ShutterSpeedValue',
+				0x9202: 'ApertureValue'	,
+				0x9207: 'MeteringMode',
+				0x9208: 'LightSource',
+				0x9209: 'Flash',
+				0xA402: 'ExposureMode',
+				0xA403: 'WhiteBalance',
+				0xA406: 'SceneCaptureType',
+				0xA404: 'DigitalZoomRatio',
+				0xA408: 'Contrast',
+				0xA409: 'Saturation',
+				0xA40A: 'Sharpness'
+			},
+			gps : {
+				0x0000: 'GPSVersionID',
+				0x0001: 'GPSLatitudeRef',
+				0x0002: 'GPSLatitude',
+				0x0003: 'GPSLongitudeRef',
+				0x0004: 'GPSLongitude'
+			}
 		};
 
 		tagDescs = {
@@ -946,7 +1070,7 @@
 
 		function extractTags(IFD_offset, tags2extract) {
 			var length = data.SHORT(IFD_offset), i, ii,
-				tag, type, count, tagOffset, offset, value, values = [], tags = {};
+				tag, type, count, tagOffset, offset, value, values = [], hash = {};
 
 			for (i = 0; i < length; i++) {
 				// Set binary reader pointer to beginning of the next tag
@@ -968,7 +1092,7 @@
 					case 1: // BYTE
 					case 7: // UNDEFINED
 						if (count > 4) {
-							offset = data.LONG(offset) + TIFFHeader_offset;
+							offset = data.LONG(offset) + offsets.tiffHeader;
 						}
 
 						for (ii = 0; ii < count; ii++) {
@@ -979,16 +1103,16 @@
 
 					case 2: // STRING
 						if (count > 4) {
-							offset = data.LONG(offset) + TIFFHeader_offset;
+							offset = data.LONG(offset) + offsets.tiffHeader;
 						}
 
-						tags[tag] = data.STRING(offset, count - 1);
+						hash[tag] = data.STRING(offset, count - 1);
 
 						continue;
 
 					case 3: // SHORT
 						if (count > 2) {
-							offset = data.LONG(offset) + TIFFHeader_offset;
+							offset = data.LONG(offset) + offsets.tiffHeader;
 						}
 
 						for (ii = 0; ii < count; ii++) {
@@ -999,7 +1123,7 @@
 
 					case 4: // LONG
 						if (count > 1) {
-							offset = data.LONG(offset) + TIFFHeader_offset;
+							offset = data.LONG(offset) + offsets.tiffHeader;
 						}
 
 						for (ii = 0; ii < count; ii++) {
@@ -1009,7 +1133,7 @@
 						break;
 
 					case 5: // RATIONAL
-						offset = data.LONG(offset) + TIFFHeader_offset;
+						offset = data.LONG(offset) + offsets.tiffHeader;
 
 						for (ii = 0; ii < count; ii++) {
 							values[ii] = data.LONG(offset + ii*4) / data.LONG(offset + ii*4 + 4);
@@ -1018,7 +1142,7 @@
 						break;
 
 					case 9: // SLONG
-						offset = data.LONG(offset) + TIFFHeader_offset;
+						offset = data.LONG(offset) + offsets.tiffHeader;
 
 						for (ii = 0; ii < count; ii++) {
 							values[ii] = data.SLONG(offset + ii*4);
@@ -1027,7 +1151,7 @@
 						break;
 
 					case 10: // SRATIONAL
-						offset = data.LONG(offset) + TIFFHeader_offset;
+						offset = data.LONG(offset) + offsets.tiffHeader;
 
 						for (ii = 0; ii < count; ii++) {
 							values[ii] = data.SLONG(offset + ii*4) / data.SLONG(offset + ii*4 + 4);
@@ -1042,169 +1166,95 @@
 				value = (count == 1 ? values[0] : values);
 
 				if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
-					tags[tag] = tagDescs[tag][value];
+					hash[tag] = tagDescs[tag][value];
 				} else {
-					tags[tag] = value;
+					hash[tag] = value;
 				}
 			}
 
-			return tags;
+			return hash;
 		}
 
 		function getIFDOffsets() {
-			var idx = app1_offset + 4;
-
-			// Fix TIFF header offset
-			TIFFHeader_offset += app1_offset;
-
-			// Check if that's EXIF we are reading
-			if (data.STRING(idx, 4).toUpperCase() !== 'EXIF' || data.SHORT(idx+=4) !== 0) {
-				return;
-			}
+			var Tiff = undef, idx = offsets.tiffHeader;
 
 			// Set read order of multi-byte data
-			data.II(data.SHORT(idx+=2) == 0x4949);
+			data.II(data.SHORT(idx) == 0x4949);
 
 			// Check if always present bytes are indeed present
 			if (data.SHORT(idx+=2) !== 0x002A) {
-				return;
+				return false;
 			}
+		
+			offsets['IFD0'] = offsets.tiffHeader + data.LONG(idx += 2);
+			Tiff = extractTags(offsets['IFD0'], tags.tiff);
 
-			IFD0_offset = TIFFHeader_offset + data.LONG(idx += 2);
-			Tiff = extractTags(IFD0_offset, tiffTags);
-
-			exifIFD_offset = ('ExifIFDPointer' in Tiff ? TIFFHeader_offset + Tiff.ExifIFDPointer : undef);
-			gpsIFD_offset = ('GPSInfoIFDPointer' in Tiff ? TIFFHeader_offset + Tiff.GPSInfoIFDPointer : undef);
+			offsets['exifIFD'] = ('ExifIFDPointer' in Tiff ? offsets.tiffHeader + Tiff.ExifIFDPointer : undef);
+			offsets['gpsIFD'] = ('GPSInfoIFDPointer' in Tiff ? offsets.tiffHeader + Tiff.GPSInfoIFDPointer : undef);
 
 			return true;
 		}
-
-		function findTagValueOffset(data_app1, tegHex, offset) {
-			var length = data_app1.SHORT(offset), tagOffset, i;
-
+		
+		// At the moment only setting of simple (LONG) values, that do not require offset recalculation, is supported
+		function setTag(ifd, tag, value) {
+			var offset, length, tagOffset, valueOffset = 0;
+			
+			// If tag name passed translate into hex key
+			if (typeof(tag) === 'string') {
+				var tmpTags = tags[ifd.toLowerCase()];
+				for (hex in tmpTags) {
+					if (tmpTags[hex] === tag) {
+						tag = hex;
+						break;	
+					}
+				}
+			}
+			offset = offsets[ifd.toLowerCase() + 'IFD'];
+			length = data.SHORT(offset);
+						
 			for (i = 0; i < length; i++) {
 				tagOffset = offset + 12 * i + 2;
 
-				if (data_app1.SHORT(tagOffset) == tegHex) {
-					return tagOffset + 8;
+				if (data.SHORT(tagOffset) == tag) {
+					valueOffset = tagOffset + 8;
+					break;
 				}
 			}
+			
+			if (!valueOffset) return false;
+			
+			data.LONG(valueOffset, value);
+			return true;
 		}
-
-		function setNewWxH(width, height) {
-			var w_offset, h_offset,
-				offset = exifIFD_offset != undef ? exifIFD_offset - app1_offset : undef,
-				data_app1 = new BinaryReader();
-
-			data_app1.init(app1);
-			data_app1.II(data.II());
-
-			if (offset === undef) {
-				return;
-			}
-
-			// Find offset for PixelXDimension tag
-			w_offset = findTagValueOffset(data_app1, 0xA002, offset);
-			if (w_offset !== undef) {
-				data_app1.LONG(w_offset, width);
-			}
-
-			// Find offset for PixelYDimension tag
-			h_offset = findTagValueOffset(data_app1, 0xA003, offset);
-			if (h_offset !== undef) {
-				data_app1.LONG(h_offset, height);
-			}
-
-			app1 = data_app1.SEGMENT();
-		}
+		
 
 		// Public functions
 		return {
-			init: function(jpegData) {
+			init: function(segment) {
 				// Reset internal data
-				TIFFHeader_offset = 10;
-				Tiff = Exif = GPS = app0 = app0_offset = app0_length = app1 = app1_offset = app1_length = undef;
-				app2 = [];
-
-				data.init(jpegData);
-
-				// Check if data is jpeg
-				if (data.SHORT(0) !== 0xFFD8) {
+				offsets = {
+					tiffHeader: 10
+				};
+				
+				if (segment === undef || !segment.length) {
 					return false;
 				}
 
+				data.init(segment);
 
-				for (var idx = 2, len = 0; idx + 2 < jpegData.length; idx += len) {
-					var marker = data.SHORT(idx); 
-					if (marker < 0xFFE0 || marker > 0xFFEF) {
-						// not a segment marker
-						break;
-					}
-
-					var len = data.SHORT(idx + 2) + 2;
-					switch (marker) {
-						// app0
-						case 0xFFE0:
-							if (app0_offset === undef) {
-								app0_offset = idx;
-								app0_length = len;
-							}
-							break;
-						// app1
-						case 0xFFE1:
-							if (app1_offset === undef &&
-								len > 4 + 4 &&
-								data.STRING(idx + 4, 5).toUpperCase() === "EXIF\0") {
-								app1_offset = idx;
-								app1_length = len;
-							}
-							break;
-						// app2
-						case 0xFFE2:
-							if (len > 4 + 11 &&
-								data.STRING(idx + 4, 12).toUpperCase() === "ICC_PROFILE\0") {
-								// the profile may span multiple segments
-								app2.push( { offset:idx, length:len } );
-							}
-							break;
-					}
+				// Check if that's APP1 and that it has EXIF
+				if (data.SHORT(0) === 0xFFE1 && data.STRING(4, 5).toUpperCase() === "EXIF\0") {
+					return getIFDOffsets();
 				}
-
-				if (app1_length !== undef) {
-					getIFDOffsets();
-				}				
+				return false;
 			},
 
-			APP1: function(args) {
-				if (app1_offset === undef && app1_length === undef) {
-					return;
-				}
-
-				app1 = app1 || (app1 = data.SEGMENT(app1_offset, app1_length));
-
-				// If requested alter width/height tags in app1
-				if (args !== undef && 'width' in args && 'height' in args) {
-					setNewWxH(args.width, args.height);
-				}
-
-				return app1;
-			},
-
-			APP2: function(args) {
-				if (app2.length === 0) {
-					return;
-				}
-				
-				var data_app2 = [];
-				for (var i = 0; i < app2.length; i++) {
-					data_app2.push(data.SEGMENT(app2[i].offset, app2[i].length));
-				}
-				return data_app2;
-			},
 
 			EXIF: function() {
+				var Exif;
+				
 				// Populate EXIF hash
-				Exif = extractTags(exifIFD_offset, exifTags);
+				Exif = extractTags(offsets.exifIFD, tags.exif);
 
 				// Fix formatting of some tags
 				Exif.ExifVersion = String.fromCharCode(
@@ -1218,33 +1268,21 @@
 			},
 
 			GPS: function() {
-				GPS = extractTags(gpsIFD_offset, gpsTags);
+				var GPS;
+				
+				GPS = extractTags(offsets.gpsIFD, tags.gps);
 				GPS.GPSVersionID = GPS.GPSVersionID.join('.');
 
 				return GPS;
 			},
-
-			setAPP1: function(data_app1) {
-				if (app1_offset !== undef) {
-					return false;
-				}
-
-				data.SEGMENT((app0_offset ? app0_offset + app0_length : 2), data_app1);
-			},
-
-			setAPP2: function(data_app2) {
-				if (app2.length !== 0) {
-					return false;
-				}
+			
+			setExif: function(tag, value) {
+				// Right now only setting of width/height is possible
+				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') return false;
 				
-				var idx = (app1_offset ? app1_offset + app1_length :
-						  (app0_offset ? app0_offset + app0_length : 2));
-
-				for (var i = 0; i < data_app2.length; i++) {
-					data.SEGMENT(idx, data_app2[i]);
-					idx += data_app2[i].length;
-				}
+				return setTag('exif', tag, value);
 			},
+
 
 			getBinary: function() {
 				return data.SEGMENT();

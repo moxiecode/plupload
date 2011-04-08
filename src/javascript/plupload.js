@@ -555,12 +555,26 @@
 		 * Translates the specified string by checking for the english string in the language pack lookup.
 		 *
 		 * @param {String} str String to look for.
-		 * @reutrn {String} Translated string or the input string if it wasn't found.
+		 * @return {String} Translated string or the input string if it wasn't found.
 		 */
 		translate : function(str) {
 			return i18n[str] || str;
 		},
+		
+		/**
+		 * Checks if object is empty.
+		 *
+		 * @param {Object} obj Object to check.
+		 * @return {Boolean}
+		 */
+		isEmptyObj : function(obj) {
+			if (obj === undef) return true;
 			
+			for (var prop in obj) {
+				return false;	
+			}
+			return true;
+		},
 		
 		/**
 		 * Checks if specified DOM element has specified class.
@@ -697,15 +711,7 @@
 		 * @param {Function|String} (optional) might be a callback or unique key to match.
 		 */
 		removeEvent: function(obj, name) {
-			var type, callback, key,
-				
-				// check if object is empty
-				isEmptyObj = function(obj) {
-					for (var prop in obj) {
-						return false;	
-					}
-					return true;
-				};
+			var type, callback, key;
 			
 			// match the handler either by callback or by key	
 			if (typeof(arguments[2]) == "function") {
