@@ -17,10 +17,12 @@ package com.mxi.image
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 	import mx.graphics.codec.JPEGEncoder;
 	import mx.graphics.codec.PNGEncoder;
 	import com.mxi.image.events.ImageEvent;
 	import flash.system.System;
+	import flash.external.ExternalInterface;
 	
 	public class Image extends CleanEventDispatcher
 	{
@@ -36,6 +38,7 @@ package com.mxi.image
 		public static const MAX_HEIGHT:uint = 8191;
 		
 		private var _loader:Loader;
+		private var _image:*;
 		
 		public var imageData:ByteArray;
 	
@@ -81,22 +84,21 @@ package com.mxi.image
 		
 		protected function _getImageInfo() : Object
 		{
+			var type:String;
+			
 			if (_info) return _info;
 			
 			if (JPEG.test(_source)) {
-				var jpeg:JPEG = new JPEG(_source);
-				_info = jpeg.info();
-				if (_info) {
-					_info['type'] = 'JPEG';
-				}			
+				_image = new JPEG(_source);		
 			}
 			else if (PNG.test(_source)) {
-				var png:PNG = new PNG(_source);
-				_info = png.info();
-				if (_info) {
-					_info['type'] = 'PNG';
-				}
+				_image = new PNG(_source);
 			}
+			
+			_info = _image.info();
+			if (_info) {
+				_info['type'] = getQualifiedClassName(_image).replace(/^.*::/, '');
+			}				
 			return _info;
 		}
 		
@@ -162,10 +164,32 @@ package com.mxi.image
 				outputScale(_width, _height);
 				
 				// encode
-				if (_info.type == "JPEG")
+				if (_info.type == "JPEG") {
+					var headers:Array, exifParser:ExifParser;
+					
 					imageData = new JPEGEncoder(_quality).encode(output);
-				else
+					
+					// transfer headers
+					_image.extractHeaders();
+					
+					headers = _image.getHeaders('exif');
+					if (headers.length) {
+						exifParser = new ExifParser;
+						if (exifParser.init(headers[0])) {						
+							
+							exifParser.setExif('PixelXDimension', _width);
+							exifParser.setExif('PixelYDimension', _height);
+							
+							_image.setHeaders('exif', exifParser.getBinary());
+														
+							try {
+								imageData  = _image.insertHeaders(imageData);
+							} catch (e:Error) {}							
+						}
+					}					
+				} else {
 					imageData = new PNGEncoder().encode(output);
+				}
 				
 				dispatchEvent(new ImageEvent(ImageEvent.COMPLETE));
 			});

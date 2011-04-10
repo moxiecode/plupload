@@ -15,6 +15,7 @@ package com.mxi {
 		
 		public function init(binData:ByteArray):void {
 			clear();
+			endian = Endian.BIG_ENDIAN;
 			writeBytes(binData);
 		}
 		
