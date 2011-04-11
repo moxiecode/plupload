@@ -59,7 +59,7 @@
 		}
 	}
 
-	function scaleImage(image_file, max_width, max_height, mime, callback) {
+	function scaleImage(image_file, resize, mime, callback) {
 		var canvas, context, img, scale;
 
 		readFileAsDataURL(image_file, function(data) {
@@ -77,10 +77,18 @@
 			};
 			img.onload = function() {
 				var width, height, percentage, jpegHeaders, exifParser;
+				
+				if (!resize['width']) {
+					resize['width'] = img.width;
+				}
+				
+				if (!resize['height']) {
+					resize['height'] = img.height;	
+				}
+				
+				scale = Math.min(resize.width / img.width, resize.height / img.height);
 
-				scale = Math.min(max_width / img.width, max_height / img.height);
-
-				if (scale < 1) {
+				if (scale < 1 || (scale === 1 && mime === 'image/jpeg')) {
 					width = Math.round(img.width * scale);
 					height = Math.round(img.height * scale);
 
@@ -88,7 +96,7 @@
 					canvas.width = width;
 					canvas.height = height;
 					context.drawImage(img, 0, 0, width, height);
-
+					
 					// Preserve JPEG headers
 					if (mime === 'image/jpeg') {
 						jpegHeaders = new JPEG_Headers(atob(data.substring(data.indexOf('base64,') + 7)));
@@ -104,10 +112,22 @@
 								jpegHeaders.set('exif', exifParser.getBinary());
 							}
 						}
+						
+						if (resize['quality']) {
+							resize['quality'] /= 100;	
+							
+							// Try quality property first
+							try {
+								data = canvas.toDataURL(mime, resize['quality']);	
+							} catch (e) {
+								data = canvas.toDataURL(mime);	
+							}
+						}
+					} else {
+						data = canvas.toDataURL(mime);
 					}
 
 					// Remove data prefix information and grab the base64 encoded data and decode it
-					data = canvas.toDataURL(mime);
 					data = data.substring(data.indexOf('base64,') + 7);
 					data = atob(data);
 
@@ -637,7 +657,7 @@
 				if (features.jpgresize) {
 					// Resize image if it's a supported format and resize is enabled
 					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-						scaleImage(nativeFile, resize.width, resize.height, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
+						scaleImage(nativeFile, resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
 							// If it was scaled send the scaled image if it failed then
 							// send the raw image and let the server do the scaling
 							if (res.success) {
@@ -1226,6 +1246,7 @@
 			}
 			
 			if (!valueOffset) return false;
+
 			
 			data.LONG(valueOffset, value);
 			return true;

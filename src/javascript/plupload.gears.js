@@ -100,19 +100,32 @@
 (function(window, document, plupload, undef) {
 	var blobs = {};
 
-	function scaleImage(image_blob, width, height, quality, mime) {
+	function scaleImage(image_blob, resize, mime) {
 		var percentage, canvas, context, scale;
 
 		// Setup canvas and scale
 		canvas = google.gears.factory.create('beta.canvas');
 		try {
 			canvas.decode(image_blob);
+			
+			if (!resize['width']) {
+				resize['width'] = canvas.width;
+			}
+			
+			if (!resize['height']) {
+				resize['height'] = canvas.height;	
+			}
+			
 			scale = Math.min(width / canvas.width, height / canvas.height);
 
-			if (scale < 1) {
+			if (scale < 1 || (scale === 1 && mime === 'image/jpeg')) {
 				canvas.resize(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
+				
+				if (resize['quality']) {
+					return canvas.encode(mime, {quality : resize.quality / 100});
+				}
 
-				return canvas.encode(mime, {quality : quality / 100});
+				return canvas.encode(mime);
 			}
 		} catch (e) {
 			// Ignore for example when a user uploads a file that can't be decoded
@@ -234,7 +247,7 @@
 
 				// If file is png or jpeg and resize is configured then resize it
 				if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-					blobs[file.id] = scaleImage(blobs[file.id], resize.width, resize.height, resize.quality || 90, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
+					blobs[file.id] = scaleImage(blobs[file.id], resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg');
 				}
 
 				file.size = blobs[file.id].length;

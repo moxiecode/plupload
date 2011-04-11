@@ -177,7 +177,7 @@
 						chunk_size : settings.chunk_size,
 						width : resize.width,
 						height : resize.height,
-						quality : resize.quality || 90,
+						quality : resize.quality,
 						multipart : settings.multipart,
 						multipart_params : settings.multipart_params || {},
 						file_data_name : settings.file_data_name,

@@ -49,7 +49,7 @@ package com.mxi.image
 			super();
 		}
 		
-		public function scale(width:Number, height:Number, quality:Number = 90) : void
+		public function scale(width:* = null, height:* = null, quality:* = null) : void
 		{
 			var info:Object, scale:Number;
 			
@@ -64,17 +64,17 @@ package com.mxi.image
 				return;
 			}
 			
+			_width = width || info.width;
+			_height = height || info.height;
+			_quality = quality || 90;
+						
 			// we might not need to scale 
-			scale = Math.min(width / info.width, height / info.height);							
-			if (scale >= 1) {
+			scale = Math.min(_width / info.width, _height / info.height);							
+			if (scale > 1 || (scale == 1 && info.type !== "JPEG")) {
 				dispatchEvent(new ImageEvent(ImageEvent.COMPLETE));
 				return;
 			}
 			
-			_width = width;
-			_height = height;
-			_quality = quality;
-
 			// scale
 			_loader = new Loader;
 			_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onBitmapDataReady);

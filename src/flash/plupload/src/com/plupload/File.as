@@ -111,7 +111,7 @@ package com.plupload {
 
 		public function canUseSimpleUpload(settings:Object):Boolean {
 			var multipart:Boolean = new Boolean(settings["multipart"]);
-			var resize:Boolean = (settings["width"] || settings["height"]);
+			var resize:Boolean = (settings["width"] || settings["height"] || settings["quality"]);
 			var chunking:Boolean = (settings["chunk_size"] > 0);
 
 			// Check if it's not an image, chunking is disabled, multipart enabled and the ref_upload setting isn't forced
@@ -213,13 +213,6 @@ package com.plupload {
 			this._headers = settings.headers;
 			this._mimeType = settings.mime;
 
-			// Handle image resizing settings
-			if (settings["width"] || settings["height"]) {
-				width = settings["width"];
-				height = settings["height"];
-				quality = settings["quality"];
-			}
-
 			multipart = new Boolean(settings["multipart"]);
 			fileDataName = new String(settings["file_data_name"]);
 			chunkSize = settings["chunk_size"];
@@ -262,7 +255,7 @@ package com.plupload {
 					file.uploadNextChunk();
 				}
 								
-				if (/\.(jpeg|jpg|png)$/i.test(file._fileName) && (width || height)) {
+				if (/\.(jpeg|jpg|png)$/i.test(file._fileName) && (settings["width"] || settings["height"] || settings["quality"])) {
 					var image:Image = new Image(file._fileRef.data);
 					image.addEventListener(ImageEvent.COMPLETE, function(e:ImageEvent) : void 
 					{
@@ -279,7 +272,7 @@ package com.plupload {
 						image.removeAllEventListeners();
 						file.dispatchEvent(e);
 					});
-					image.scale(width, height, quality);
+					image.scale(settings["width"], settings["height"], settings["quality"]);
 				} else {
 					startUpload();
 				}					
