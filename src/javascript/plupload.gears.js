@@ -284,7 +284,7 @@
 								builder.append(value + crlf);
 							});
 
-							mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream';
+							mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream';
 
 							// Add file header
 							builder.append(

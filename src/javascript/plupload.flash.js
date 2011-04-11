@@ -173,7 +173,7 @@
 
 					getFlashObj().uploadFile(lookup[file.id], settings.url, {
 						name : file.target_name || file.name,
-						mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream',
+						mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream',
 						chunk_size : settings.chunk_size,
 						width : resize.width,
 						height : resize.height,
