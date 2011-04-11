@@ -169,9 +169,10 @@ package com.mxi.image
 			}	
 			
 			if (headers.length) {
-				idx =  2;
+				idx = br.SHORT(2) == 0xFFE0 ? 4 + br.SHORT(4) : 2;
+				
 				for (var i:uint = 0, max:uint = headers.length; i < max; i++) {
-					br.SEGMENT(idx, headers[i].segment);	
+					br.SEGMENT(idx, 0, headers[i].segment);	
 					idx += headers[i].length;
 				}
 			}

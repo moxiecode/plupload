@@ -76,7 +76,7 @@
 				callback({success : false});
 			};
 			img.onload = function() {
-				var width, height, percentage, APP1, APP2, jpegHeaders, exifParser;
+				var width, height, percentage, jpegHeaders, exifParser;
 
 				scale = Math.min(max_width / img.width, max_height / img.height);
 
@@ -855,8 +855,7 @@
 					return false;
 				}	
 				
-				idx = 4 + read.SHORT(4);
-				length = 0;
+				idx = read.SHORT(2) == 0xFFE0 ? 4 + read.SHORT(4) : 2;
 								
 				for (var i = 0, max = headers.length; i < max; i++) {
 					read.SEGMENT(idx, 0, headers[i].segment);						
