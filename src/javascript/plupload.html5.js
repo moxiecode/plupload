@@ -700,8 +700,10 @@
 			return sum;
 		}
 
-		function putstr(idx, segment, replace) {
-			bin = bin.substr(0, idx) + segment + bin.substr((replace === true ? segment.length : 0) + idx);
+		function putstr(segment, idx, length) {
+			var length = arguments.length === 3 ? length : bin.length - idx - 1;
+			
+			bin = bin.substr(0, idx) + segment + bin.substr(length + idx);
 		}
 
 		function write(idx, num, size) {
@@ -711,7 +713,7 @@
 				str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
 			}
 
-			putstr(idx, str, true);
+			putstr(str, idx, size);
 		}
 
 		// Public functions
@@ -729,16 +731,17 @@
 				bin = binData;
 			},
 
-			SEGMENT: function(idx, segment, replace) {
-				if (!arguments.length) {
-					return bin;
+			SEGMENT: function(idx, length, segment) {				
+				switch (arguments.length) {
+					case 1: 
+						return bin.substr(idx, bin.length - idx - 1);
+					case 2: 
+						return bin.substr(idx, length);
+					case 3: 
+						putstr(segment, idx, length);
+						break;
+					default: return bin;	
 				}
-
-				if (typeof segment == 'number') {
-					return bin.substr(parseInt(idx, 10), segment);
-				}
-
-				putstr(idx, segment, replace);
 			},
 
 			BYTE: function(idx) {
@@ -852,10 +855,11 @@
 					return false;
 				}	
 				
-				idx =  2;
+				idx = 4 + read.SHORT(4);
+				length = 0;
 								
 				for (var i = 0, max = headers.length; i < max; i++) {
-					read.SEGMENT(idx, headers[i].segment);	
+					read.SEGMENT(idx, 0, headers[i].segment);						
 					idx += headers[i].length;
 				}
 				
@@ -864,6 +868,7 @@
 			
 			get: function(app) {
 				var array = [];
+								
 				for (var i = 0, max = headers.length; i < max; i++) {
 					if (headers[i].app === app.toUpperCase()) {
 						array.push(headers[i].segment);
