@@ -64,7 +64,7 @@
 	<target name="build-jquery-widgets">
 		<!-- Copy all jquery.plupload.queue resources -->
 		<copy todir="js/jquery.plupload.queue">
-			<fileset dir="src/javascript/jquery.plupload.queue">
+			<fileset dir="src/javascript/jquery.ui.plupload">
 				<include name="**"/>
 			</fileset>
 		</copy>
@@ -118,6 +118,13 @@
 				<exclude name="**/obj/**"/>
 				<exclude name="**/tmp/**"/>
 				<exclude name="**/jslint.xml"/>
+			</fileset>
+		</copy>
+		
+		<copy todir="${tmp_dir}/plupload/js">
+			<fileset dir="bin/">
+				<include name="plupload.flash.swf"/>
+				<include name="plupload.silverlight.xap"/>
 			</fileset>
 		</copy>
 
