@@ -371,7 +371,7 @@ package com.mxi.image {
 		
 		// At the moment only setting of simple (LONG) values, that do not require offset recalculation, is supported
 		private function setTag(ifd:String, tag:*, value:*) : Boolean {
-			var offset:uint, length:uint, tagOffset:uint, valueOffset:uint = 0, hex:*;
+			var offset:*, length:uint, tagOffset:uint, valueOffset:uint = 0, hex:*;
 			
 			// If tag name passed translate into hex key
 			if (tag is String) {
@@ -384,6 +384,10 @@ package com.mxi.image {
 				}
 			}
 			offset = offsets[ifd.toLowerCase() + 'IFD'];
+			if (offset === null) {
+				return false;
+			}
+			
 			length = data.SHORT(offset);
 						
 			for (var i:uint = 0; i < length; i++) {
