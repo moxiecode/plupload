@@ -504,11 +504,6 @@ $.widget("ui.plupload", {
 		$('.plupload_upload_status', this.element).text(
 			_('Uploaded %d/%d files').replace('%d/%d', uploader.total.uploaded+'/'+uploader.files.length)
 		);
-
-		// All files are uploaded
-		if (uploader.total.uploaded === uploader.files.length) {
-			uploader.stop();
-		}
 	},
 	
 	
