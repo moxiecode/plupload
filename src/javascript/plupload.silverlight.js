@@ -209,7 +209,9 @@
 
 			if (uploader.settings.container) {
 				container = document.getElementById(uploader.settings.container);
-				container.style.position = 'relative';
+				if (plupload.getStyle(container, 'position') === 'static') {
+					container.style.position = 'relative';
+				}
 			}
 
 			container.appendChild(silverlightContainer);
@@ -353,7 +355,7 @@
 						up.settings.url,
 						jsonSerialize({
 							name : file.target_name || file.name,
-							mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream',
+							mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream',
 							chunk_size : settings.chunk_size,
 							image_width : resize.width,
 							image_height : resize.height,

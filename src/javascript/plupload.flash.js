@@ -118,7 +118,9 @@
 
 			if (uploader.settings.container) {
 				container = document.getElementById(uploader.settings.container);
-				container.style.position = 'relative';
+				if (plupload.getStyle(container, 'position') === 'static') {
+					container.style.position = 'relative';
+				}
 			}
 
 			container.appendChild(flashContainer);
@@ -171,11 +173,11 @@
 
 					getFlashObj().uploadFile(lookup[file.id], settings.url, {
 						name : file.target_name || file.name,
-						mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1')] || 'application/octet-stream',
+						mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream',
 						chunk_size : settings.chunk_size,
 						width : resize.width,
 						height : resize.height,
-						quality : resize.quality || 90,
+						quality : resize.quality,
 						multipart : settings.multipart,
 						multipart_params : settings.multipart_params || {},
 						file_data_name : settings.file_data_name,
@@ -273,7 +275,7 @@
 				
 				uploader.bind("Flash:ImageError", function(up, err) {
 					uploader.trigger('Error', {
-						code : parseInt(err.code),
+						code : parseInt(err.code, 10),
 						message : plupload.translate('Image error.'),
 						file : uploader.getFile(lookup[err.id])
 					});

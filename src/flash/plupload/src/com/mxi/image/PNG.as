@@ -44,8 +44,8 @@ package com.mxi.image
 			if (chunk.type == 'IHDR') {
 				idx = chunk.start;
 				return {
-					width: _br.LONG(idx += 4),
-					height: _br.LONG(idx)
+					width: _br.LONG(idx),
+					height: _br.LONG(idx += 4)
 				};
 			}
 				

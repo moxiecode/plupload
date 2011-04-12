@@ -15,6 +15,7 @@ package com.mxi {
 		
 		public function init(binData:ByteArray):void {
 			clear();
+			endian = Endian.BIG_ENDIAN;
 			writeBytes(binData);
 		}
 		
@@ -28,24 +29,31 @@ package com.mxi {
 		public function SEGMENT(... args):ByteArray {
 			var seg:ByteArray = new ByteArray();
 			
-			if (!args.length) {
-				position = 0;
-				readBytes(seg, 0, length);			
-			} else if (typeof(args[1]) == 'number') {
-				position = args[0];
-				readBytes(seg, 0, args[1]);
-			} else {
+			switch (args.length) {
 				
-				position = args[0];
-				if (args[2] === true) {
-					writeBytes(args[1]);
-				} else {
+				case 1: 
+					position = args[0];
+					readBytes(seg, 0);
+					break;
+				
+				case 2:
+					position = args[0];
+					readBytes(seg, 0, args[1]);
+					break;
+					
+				case 3:
+					position = args[0] + args[1];
 					readBytes(seg);
 					position = args[0];
-					writeBytes(args[1]);
+					writeBytes(args[2]);
 					writeBytes(seg);
-				}
+					break;
+				
+				default:
+					position = 0;
+					readBytes(seg, 0, length);
 			}
+			
 			return seg;
 		}
 		

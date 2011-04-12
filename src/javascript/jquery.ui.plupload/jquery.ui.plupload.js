@@ -344,32 +344,33 @@ $.widget("ui.plupload", {
 	},
 	
 	_setOption: function(key, value) {
-				
+		var self = this;
+
 		if (key == 'buttons' && typeof(value) == 'object') {	
-			value = $.extend(this.options.buttons, value);
+			value = $.extend(self.options.buttons, value);
 			
 			if (!value.browse) {
-				this.browse_button.button('disable').hide();
-				$('#' + this.id + self.runtime + '_container').hide();
+				self.browse_button.button('disable').hide();
+				$('#' + self.id + self.runtime + '_container').hide();
 			} else {
-				this.browse_button.button('enable').show();
-				$('#' + this.id + self.runtime + '_container').show();
+				self.browse_button.button('enable').show();
+				$('#' + self.id + self.runtime + '_container').show();
 			}
 			
 			if (!value.start) {
-				this.start_button.button('disable').hide();
+				self.start_button.button('disable').hide();
 			} else {
-				this.start_button.button('enable').show();
+				self.start_button.button('enable').show();
 			}
 			
 			if (!value.stop) {
-				this.stop_button.button('disable').hide();
+				self.stop_button.button('disable').hide();
 			} else {
-				this.start_button.button('enable').show();	
+				self.start_button.button('enable').show();	
 			}
 		}
 		
-		this.uploader.settings[key] = value;	
+		self.uploader.settings[key] = value;	
 	},
 	
 	

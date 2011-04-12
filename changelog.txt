@@ -1,3 +1,20 @@
+Version 1.4.3 (2011-04-11)
+	Added Latvian language pack and updated French.
+	Fixed bug in Flash runtime when JPEG header was not investigated deep enough to reach SOFn marker in large images.
+	Fixed bug, when PNGs were cropped to width in Flash runtimes, rather then resized. 
+	Fixed Flash to allow multiple uploading of the same file, with different settings.
+	Fixed Flash runtime to clean anonymous listeners properly. 
+	Fixed HTML5 runtime to resolve to mimeType in case-insensitive way.
+	Fixed HTML5/Flash/SilverLight/Gears runtimes for inconsistency in naming of chunks feature, comparing to other runtimes.
+	Fixed HTML4/HTML5 runtimes for input[type=file] to outsize contaner effectively enough to fill the whole click area.
+	Fixed all runtimes to preserve position (relative/absolute) rule on containers that already have it.
+	Fixed SilverLight runtime to support large files (over 2GB).
+	Restructured the examples, src and build scripts to make it more clear that jQuery is optional.
+	Added support for *.* filter.
+	Added support for preserving ICC and IPTC headers when resizing JPEGs.
+	Added Image.onerror/onabort handlers to HTML5 in order to gracefully bypass faulty images.
+	Added ability to drop image size (by lowering quality), while preserving original dimension (HTML5/Flash/Gears).
+	Ported EXIF, ICC, IPTC preservation code to Flash runtime. 
 Version 1.4.2 (2011-02-20)
 	Added Brazilian Portuguese, German, Russian and Spanish translations.
 	Added support for file_data_name option to SilverLight runtime.

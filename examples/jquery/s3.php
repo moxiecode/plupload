@@ -81,9 +81,9 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
-<link rel="stylesheet" href="css/jquery.ui.plupload.css" type="text/css" />
-<script type="text/javascript" src="../js/plupload.full.min.js"></script>
-<script type="text/javascript" src="../js/jquery.ui.plupload.min.js"></script>
+<link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+<script type="text/javascript" src="../../js/plupload.full.js"></script>
+<script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 <!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 
 </head>
@@ -131,10 +131,10 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../js/plupload.flash.swf',
+		flash_swf_url : '../../js/plupload.flash.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../js/plupload.silverlight.xap'
+		silverlight_xap_url : '../../js/plupload.silverlight.xap'
 	});
 });
 </script>
