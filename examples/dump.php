@@ -5,7 +5,12 @@
 <link rel="stylesheet" href="css/plupload.css" type="text/css" media="screen" />
 <title>Plupload - Form dump</title>
 <style type="text/css">
-body {background: #9A7C5F;}
+	body {
+		font-family:Verdana, Geneva, sans-serif;
+		font-size:13px;
+		color:#333;
+		background:url(bg.jpg);
+	}
 </style>
 </head>
 <body>

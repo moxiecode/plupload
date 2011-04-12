@@ -75,14 +75,29 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 <title>Plupload to Amazon S3 Example</title>
 
-<!-- jQuery and jQuery UI -->
+<style type="text/css">
+	body {
+		font-family:Verdana, Geneva, sans-serif;
+		font-size:13px;
+		color:#333;
+		background:url(../bg.jpg);
+	}
+</style>
+
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
 <script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
 <link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
-<script type="text/javascript" src="../../js/plupload.full.js"></script>
+
+<script type="text/javascript" src="../../src/javascript/plupload.js"></script>
+<script type="text/javascript" src="../../src/javascript/plupload.gears.js"></script>
+<script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
+<script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
+<script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
+<script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
+<script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 <!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 

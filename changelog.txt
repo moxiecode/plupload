@@ -1,3 +1,7 @@
+Version 1.4.3.1 (2011-04-12)
+	Fixed build script, mistakenly populating jquery.plupload.queue directory from jquery.ui.plupload sources.
+	
+
 Version 1.4.3 (2011-04-11)
 	Added Latvian language pack and updated French.
 	Fixed bug in Flash runtime when JPEG header was not investigated deep enough to reach SOFn marker in large images.
