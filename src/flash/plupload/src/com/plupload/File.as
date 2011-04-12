@@ -167,7 +167,6 @@ package com.plupload {
 				);
 				
 				file._chunk++;
-				file._fileRef.data.clear();
 				
 				dispatchEvent(uploadChunkEvt);
 
