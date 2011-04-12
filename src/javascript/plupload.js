@@ -757,7 +757,7 @@
 			}
 			
 			// If Plupload registry has become empty, remove it
-			if (isEmptyObj(eventhash[obj[uid]])) {
+			if (plupload.isEmptyObj(eventhash[obj[uid]])) {
 				delete eventhash[obj[uid]];
 				
 				// IE doesn't let you remove DOM object property with - delete
@@ -1075,7 +1075,6 @@
 						// Get start time to calculate bps
 						startTime = (+new Date());
 						
-						uploadNext.call(this);
 					} else if (up.state == plupload.STOPPED) {
 						// Reset currently uploading files
 						for (i = up.files.length - 1; i >= 0; i--) {
@@ -1203,7 +1202,9 @@
 			start : function() {
 				if (this.state != plupload.STARTED) {
 					this.state = plupload.STARTED;
-					this.trigger("StateChanged");					
+					this.trigger("StateChanged");	
+					
+					uploadNext.call(this);				
 				}
 			},
 
