@@ -1,7 +1,8 @@
 Version 1.4.3.1 (2011-04-12)
 	Fixed build script, mistakenly populating jquery.plupload.queue directory from jquery.ui.plupload sources.
-	
-
+	Fixed script urls in all examples, build script now will alter them automatically from dev to release when needed.
+	Fixed isEmptyObj undefined error in HTML4 runtime.
+	Fixed bug in UI Widget preventing UploadComplete from triggering.
 Version 1.4.3 (2011-04-11)
 	Added Latvian language pack and updated French.
 	Fixed bug in Flash runtime when JPEG header was not investigated deep enough to reach SOFn marker in large images.
