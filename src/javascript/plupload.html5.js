@@ -869,9 +869,18 @@
 				read.init(data);
 				
 				// Check if data is jpeg
-				if (read.SHORT(0) !== 0xFFD8) {
+				var jpegHeaders = new JPEG_Headers(data);
+				
+				if (!jpegHeaders['headers']) {
 					return false;
 				}	
+				
+				// Delete any existing headers that need to be replaced
+				for (var i = jpegHeaders['headers'].length; i > 0; i--) {
+					var hdr = jpegHeaders['headers'][i - 1];
+					read.SEGMENT(hdr.start, hdr.length, '')
+				}
+				jpegHeaders.purge();
 				
 				idx = read.SHORT(2) == 0xFFE0 ? 4 + read.SHORT(4) : 2;
 								
