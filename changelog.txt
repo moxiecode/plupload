@@ -1,3 +1,5 @@
+Version 1.4.3.2 (2011-04-13)
+	Fixed bug in HTML5 runtime, when was reduced by a factor of 100 after every upload.
 Version 1.4.3.1 (2011-04-12)
 	Fixed build script, mistakenly populating jquery.plupload.queue directory from jquery.ui.plupload sources.
 	Fixed script urls in all examples, build script now will alter them automatically from dev to release when needed.
