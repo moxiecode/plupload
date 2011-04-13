@@ -113,12 +113,10 @@
 							}
 						}
 						
-						if (resize['quality']) {
-							resize['quality'] /= 100;	
-							
+						if (resize['quality']) {							
 							// Try quality property first
 							try {
-								data = canvas.toDataURL(mime, resize['quality']);	
+								data = canvas.toDataURL(mime, resize['quality'] / 100);	
 							} catch (e) {
 								data = canvas.toDataURL(mime);	
 							}
