@@ -95,10 +95,12 @@ package com.mxi.image
 				_image = new PNG(_source);
 			}
 			
-			_info = _image.info();
-			if (_info) {
-				_info['type'] = getQualifiedClassName(_image).replace(/^.*::/, '');
-			}				
+			if (_image) {
+				_info = _image.info();
+				if (_info) {
+					_info['type'] = getQualifiedClassName(_image).replace(/^.*::/, '');
+				}	
+			}
 			return _info;
 		}
 		
