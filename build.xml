@@ -105,6 +105,7 @@
   </target>
 
   <target name="deploy-jar" depends="clean-java, build-java, jar, proguard, sign-jar, build">
+    <copy file="bin/plupload.java.jar" todir="examples" />
   </target>
 
           
