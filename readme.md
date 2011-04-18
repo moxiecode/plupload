@@ -57,6 +57,8 @@ Combines the three steps above.
 
 Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: http://localhost:8080/queue.html
 
+A running example of the Java runtime is available at http://jdams.org/plupload
+
 How to build Silverlight runtime
 ---------------------------------
 The Silverlight runtime uses a .xap file that can be built using the Silverlight SDK or Visual Studio. [http://silverlight.net/getstarted/](http://silverlight.net/getstarted/)
