@@ -11,7 +11,6 @@
 
 import hashlib
 import os
-import re
 
 from wsgiref.handlers import CGIHandler
 
@@ -20,7 +19,6 @@ from werkzeug import Response
 from werkzeug import secure_filename
 from werkzeug.exceptions import BadRequest
 from werkzeug.exceptions import HTTPException
-from werkzeug.exceptions import NotFound
 
 if(os.environ['SERVER_SOFTWARE'] == 'development'):
     os.environ['REMOTE_USER'] = 'defaultuser'
@@ -29,44 +27,15 @@ USER = os.environ['REMOTE_USER']
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_DIR = None
 
-class Routes(object):
-    
-    def __init__(self):
-        self.routes = []
-
-    def add(self, regexp, handler):
-        self.routes.append({'regexp': regexp,
-                            'handler': handler})
-        
-    def dispatch(self, request):
-        for r in self.routes:
-            m = re.match(r['regexp'], request.path) 
-            if m:
-                args = m.groupdict()
-                if args:
-                    return r['handler'](request, **args)
-                else:
-                    return r['handler'](request)
-        else:
-            raise NotFound()
-
-def expose(url_reg_exp):
-    # remember: decorate(regexp)(function)
-    def decorate(handler):
-        routes.add(url_reg_exp, handler)
-        return handler
-    return decorate
-
-routes = Routes()
+URLENCODED = 'application/x-www-form-urlencoded'
 
 def write_meta_information_to_file(meta_file, md5sum, chunk, chunks):
     """Writes meta info about the upload, i.d., md5sum, chunk number ...
 
-    Args:
-       meta_file: file to write to
-       md5sum: checksum of all uploaded chunks
-       chunk: chunk number
-       chunks: total chunk number
+    :param meta_file: file to write to
+    :param md5sum: checksum of all uploaded chunks
+    :param chunk: chunk number
+    :param chunks: total chunk number
     """
     if chunk < (chunks - 1):
         upload_meta_data = "status=uploading&chunk=%s&chunks=%s&md5=%s" % (chunk,chunks,md5sum)
@@ -93,25 +62,23 @@ def get_or_create_file(chunk, dst):
         f = file(dst, 'ab')
     return f
 
-@expose('^/$')
-def upload(request):
-    if request.method != "POST":
-        return probe(request)
-    filename = clean_filename(request.args['name'])
-    md5chunk = request.args['md5chunk']
-    md5total = request.args['md5total']
-    chunk = int(request.args['chunk'])
-    buf_len = int(request.args['chunk_size'])
-    chunks = int(request.args['chunks'])
+def upload_with_checksum(request, dst, md5chunk, md5total, chunk, chunks):
+    """Save application/octet-stream request to file.
 
+    :param dst: the destination filepath
+    :param chunk: the chunk number
+    :param chunks: the total number of chunks
+    :param md5chunk: md5sum of chunk
+    :param md5total: md5sum of all currently sent chunks
+    """
+    buf_len = int(request.args['chunk_size'])
     buf = request.stream.read(buf_len)
+
     md5 = hashlib.md5()
     md5.update(buf)
     if md5.hexdigest() != md5chunk:
-        print "Checksum error"
         raise BadRequest("Checksum error")
 
-    dst = os.path.join(UPLOAD_DIR,filename)
     f = get_or_create_file(chunk, dst)
 
     f.write(buf)
@@ -120,18 +87,42 @@ def upload(request):
     f_meta = file(dst + '.meta', 'w') 
     write_meta_information_to_file(f_meta, md5total, chunk, chunks)
 
-    print md5total
-    return Response('uploaded')
+def upload_simple(request, dst, chunk=0):
+    f = get_or_create_file(chunk, dst)
 
-@expose('^/simple/$')
-def simple_upload(request):
+    file = request.files['file']
+    for b in file:
+        f.write(b)
+    f.close()
+    
+def upload(request):
+    """Handle uploads from the different runtimes.
+    
+    HTTP query args:
+    :param name: the filename 
+    :param chunk: the chunk number
+    :param chunks: the total number of chunks
+    :param md5chunk: md5sum of chunk (optional)
+    :param md5total: md5sum of all currently sent chunks (optional)
+    """
     if request.method != "POST":
         return probe(request)
-    file = request.files['file']
-    filename = clean_filename(request.args.get('name', file.filename))
-    # file.save(os.path.join(UPLOAD_DIR,filename))
-    # file.close()
-    return Response('Uploaded %s' % filename)
+
+    filename = clean_filename(request.args['name'])
+    dst = os.path.join(UPLOAD_DIR,filename)
+
+    md5chunk = request.args.get('md5chunk', False)
+    md5total = request.args.get('md5total', False)
+
+    chunk = int(request.args.get('chunk', 0))
+    chunks = int(request.args.get('chunks', 0))
+
+    if md5chunk and md5total:
+        upload_with_checksum(request, dst, md5chunk, md5total, chunk, chunks)
+    else:
+        upload_simple(request, dst, chunk)
+
+    return Response('uploaded')
 
 def probe(request):
     filename = clean_filename(request.args['name'])
@@ -143,21 +134,20 @@ def probe(request):
             f_meta = file(f_meta_dst, 'r')
             try:
                 data = f_meta.read()
-                return Response(data, content_type="application/x-www-form-urlencoded")
+                return Response(data, content_type=URLENCODED)
             finally:
                 f_meta.close()
         else:
             # meta file deleted
-            return Response("status=finished", content_type="application/x-www-form-urlencoded")
+            return Response("status=finished", content_type=URLENCODED)
     else:
-        return Response("status=unknown", content_type="application/x-www-form-urlencoded")
+        return Response("status=unknown", content_type=URLENCODED)
     
 @Request.application
 def app(request):
     try:
-        return routes.dispatch(request)
+        return upload(request)
     except HTTPException, e:
-        print e
         return e
 
 if __name__ == '__main__':
@@ -171,10 +161,3 @@ else:
     UPLOAD_DIR = os.path.join(ROOT_PATH, 'uploads')
     if not os.path.exists(UPLOAD_DIR):
         os.mkdir(UPLOAD_DIR)
-    from werkzeug import SharedDataMiddleware
-    app = SharedDataMiddleware(app, {
-            '/js_dev':  os.path.join(ROOT_PATH, 'src/javascript'),
-            '/js':  os.path.join(ROOT_PATH, 'js'),
-            '/applet': os.path.join(ROOT_PATH, 'bin'),
-            '/': os.path.join(ROOT_PATH, 'examples')
-    })

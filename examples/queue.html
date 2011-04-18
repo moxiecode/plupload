@@ -17,27 +17,23 @@ body {background: #9A7C5F;}
 <script src="/js/jquery.plupload.queue.min.js"></script>
 <script>
 $(function() {
-    $("#java_uploader").pluploadQueue({
-		runtimes : 'java',
-		url : '/',
-		chunk_size : '1mb',
-        java_applet_url: '/applet/plupload.java.jar'
-    });
+  $("#java_uploader").pluploadQueue({
+	  runtimes : 'java',
+	  url : '/',
+	  chunk_size : '5mb',
+    java_applet_url: '/plupload.java.jar'
+  });
 
-	// Setup flash version
 	$("#flash_uploader").pluploadQueue({
-		// General settings
 		runtimes : 'flash',
-		url : '/simple/',
+		url : '/',
 		chunk_size : '1mb',
 		flash_swf_url : '/js/plupload.flash.swf'
 	});
 
-	// Setup gears version
 	$("#gears_uploader").pluploadQueue({
-		// General settings
 		runtimes : 'gears',
-		url : '/simple/',
+		url : '/',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
@@ -50,11 +46,9 @@ $(function() {
 		resize : {width : 320, height : 240, quality : 90}
 	});
 
-	// Setup silverlight version
 	$("#silverlight_uploader").pluploadQueue({
-		// General settings
 		runtimes : 'silverlight',
-		url : '/simple/',
+		url : '/',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
@@ -70,28 +64,17 @@ $(function() {
 		silverlight_xap_url : '../js/plupload.silverlight.xap'
 	});
 
-	// Setup html5 version
 	$("#html5_uploader").pluploadQueue({
-		// General settings
 		runtimes : 'html5',
-		url : '/simple/',
-//		max_file_size : '10mb',
+		url : '/',
+		max_file_size : '10mb',
 		chunk_size : '1mb',
-		unique_names : true
-//		filters : [
-//			{title : "Image files", extensions : "jpg,gif,png"},
-//			{title : "Zip files", extensions : "zip"}
-//		]
-
-		// Resize images on clientside if we can
-//		resize : {width : 320, height : 240, quality : 90}
+		unique_names : false
 	});
 
-	// Setup browserplus version
 	$("#browserplus_uploader").pluploadQueue({
-		// General settings
 		runtimes : 'browserplus',
-		url : '/simple/',
+		url : '/',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
@@ -99,21 +82,13 @@ $(function() {
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}
 		],
-
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90}
 	});
 
-	// Setup html4 version
 	$("#html4_uploader").pluploadQueue({
-		// General settings
 		runtimes : 'html4',
-		url : '/simple/'
-//		unique_names : true,
-//		filters : [
-//			{title : "Image files", extensions : "jpg,gif,png"},
-//			{title : "Zip files", extensions : "zip"}
-//		]
+		url : '/'
 	});
 });
 </script>
