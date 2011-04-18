@@ -1,7 +1,6 @@
 package plupload;
 import netscape.javascript.JSObject;
 
-
 public class Applet2 extends java.applet.Applet{
 	
 	private JSObject js;
@@ -13,28 +12,24 @@ public class Applet2 extends java.applet.Applet{
 	}
 	
 	protected String getParameter(String name, String default_value){
-		try{
-			return getParameter(name);
-		}
-		catch(NullPointerException e){
+		String value = getParameter(name);
+		if(value == null){
 			return default_value;
+		}
+		else{
+			return value;
 		}
 	}
 
 	protected String getRequiredParameter(String name){
-		String value = null;
-		try{
-			value = getParameter(name);
-		}
-		catch(NullPointerException e){}
-		
+		String value = getParameter(name);
 		if(value == null){
-			throw new RuntimeException("Missing required parameter: " + name);
+			throw new RuntimeException("Missing required parameter: " + name);			
 		}
 		return value;
 	}
 	
-	protected void publishEvent(String event, Object ... args){
+	protected void publishEvent(Object event, Object ... args){
 		String js_args = "'" + event + "'";
 		for(Object a : args){
 			js_args += ", '" + a.toString() + "'"; 
