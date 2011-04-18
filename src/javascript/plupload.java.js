@@ -1,22 +1,10 @@
 /*global plupload:false, escape:false, alert:false */
 /*jslint evil: true */
 
-(function(plupload){
+(function($, plupload){
 
   var uploadInstances = {};
-   
-  function getObjectHTML(args) {
-      return [
-        '<object id="' + args.id + '" type="application/x-java-applet" width="1" height="1">',
-        '  <param name="archive" value="' + args.archive + '" />',
-        // '  <param name="archive" value="' + args.archive + '?v=' + new Date().getTime() + '" />',
-        '  <param name="id" value="' + escape(args.id) + '" />',
-        '  <param name="mayscript" value="true" />',
-        '  <param name="code" value="plupload.Plupload" />',
-        '  <param name="callback" value="plupload.applet.pluploadjavatrigger" />',
-        '</object>'].join('\n');
-  }
-   
+      
   plupload.applet = {
 
     pluploadjavatrigger : function(eventname, id, fileobjstring) {
@@ -39,15 +27,17 @@
      * 
      * @return {Object} Name/value object with supported features.
      */                                                   
+
     getFeatures : function() {
       return {
-        java: java.isEnabled(),
+        java: javaplugin.present,
         chunks: true,
         progress: true
       };
     },    
     
     init : function(uploader, callback) {
+      
       var applet,
           appletContainer, 
           appletVars, 
@@ -86,7 +76,6 @@
       appletContainer.id = uploader.id + '_applet_container';
       appletContainer.className = 'plupload applet';
 
-      
       plupload.extend(appletContainer.style, {
         // move the 1x1 pixel out of the way. 
         position : 'absolute',
@@ -111,11 +100,13 @@
 
       document.body.appendChild(appletContainer);
 
-      appletContainer.innerHTML = getObjectHTML({
+      $.applet.inject(appletContainer, {
         archive: url, 
-        id: uploader.id
+        id: escape(uploader.id),
+        code: 'plupload.Plupload',
+        callback: 'plupload.applet.pluploadjavatrigger'
       });
-      
+
       uploader.bind("UploadFile", function(up, file) {
           var settings = up.settings,
               abs_url = location.protocol + '//' + location.host;
@@ -203,4 +194,4 @@
 
     }// end object arg
   });// end add runtime
-})(plupload);
+})(window, plupload);

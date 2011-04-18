@@ -11,7 +11,8 @@
     <script>
 	  google.load("dojo", "1.5");
     </script>
-    <script src="/js_dev/checkJava.js"></script>
+    <script src="/js_dev/applet.js"></script>
+    <script src="/js_dev/check.js"></script>
     <script src="/js_dev/plupload.js"></script>
     <script src="/js_dev/plupload.java.js"></script>
     <script src="/js_dev/dojo.plupload.queue.js"></script>
@@ -25,6 +26,11 @@ $.ready(function() {
     java_applet_url: '/plupload.java.jar',
     loader_url: '/img/loader.gif'
 	});
+
+  if(!javaplugin.present){
+    var style = "background-color: #FDD;font-weight:bold;position:fixed;top:0px;width:100%;text-align:center;z-index:1000;left:0px;height:20px;";
+    var warning = dojo.create('div', { style:style, innerHTML: 'Java is not present, please enable or download <a href="' + java.java_url + '">here</a>'}, dojo.body());
+  }
 });
     </script>  
   </head>

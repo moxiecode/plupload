@@ -119,7 +119,8 @@
 			<fileset dir="src/javascript" includes="plupload.browserplus.js" />
 			<fileset dir="src/javascript" includes="plupload.html5.js" />
 			<fileset dir="src/javascript" includes="plupload.html4.js" />
-			<fileset dir="src/javascript" includes="checkJava.js" />
+			<fileset dir="src/javascript" includes="check.js" />
+			<fileset dir="src/javascript" includes="applet.js" />
 			<fileset dir="src/javascript" includes="plupload.java.js" />
 		</concat>
 
