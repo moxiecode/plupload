@@ -55,9 +55,9 @@ Combines the three steps above.
 
 `dev_server.py`
 
-Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: [http://localhost:8080/queue.html]
+Runs the upload Python backend for the Java applet (precondition: python-werkzeug is installed). Point browser to: [http://localhost:8080/queue.html](http://localhost:8080/queue.html)
 
-A running example of the Java runtime is available at [http://jdams.org/plupload]
+A running example of the Java runtime is available at [http://jdams.org/plupload](http://jdams.org/plupload)
 
 How to build Silverlight runtime
 ---------------------------------
