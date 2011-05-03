@@ -13,6 +13,7 @@
 
 (function(window, document, plupload, undef) {
 	var fakeSafariDragDrop;
+	var fakeChromeDragDrop;
 	
 	/* Introduce sendAsBinary for latest WebKits having support for BlobBuilder and typed arrays:
 	credits: http://javascript0.org/wiki/Portable_sendAsBinary, 
@@ -181,11 +182,12 @@
 
 			// Sniff for Safari and fake drag/drop
 			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1;
+			chromeDragDrop = navigator.userAgent.indexOf('Chrome') > 0;
 
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: win.mozInnerScreenX !== undef || sliceSupport || fakeSafariDragDrop,
+				dragdrop: win.mozInnerScreenX !== undef || sliceSupport || chromeDragDrop || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
