@@ -13,7 +13,11 @@
 
 (function(window, document, plupload, undef) {
 	var uploadInstances = {}, initialized = {};
-
+	
+	function getElement(element){
+		 return typeof(element) == "object" ? element : document.getElementById(element);
+	}
+	
 	function jsonSerialize(obj) {
 		var value, type = typeof obj, isArray, i, key;
 
@@ -208,7 +212,7 @@
 			silverlightContainer.className = 'plupload silverlight';
 
 			if (uploader.settings.container) {
-				container = document.getElementById(uploader.settings.container);
+				container = getElement(uploader.settings.container);
 				if (plupload.getStyle(container, 'position') === 'static') {
 					container.style.position = 'relative';
 				}
@@ -230,7 +234,7 @@
 				'</object>';
 
 			function getSilverlightObj() {
-				return document.getElementById(uploader.id + '_silverlight').content.Upload;
+				return getElement(uploader.id + '_silverlight').content.Upload;
 			}
 
 			uploader.bind("Silverlight:Init", function() {
@@ -289,12 +293,12 @@
 				uploader.bind("Refresh", function(up) {
 					var browseButton, browsePos, browseSize;
 
-					browseButton = document.getElementById(up.settings.browse_button);
+					browseButton = getElement(up.settings.browse_button);
 					if (browseButton) {
-						browsePos = plupload.getPos(browseButton, document.getElementById(up.settings.container));
+						browsePos = plupload.getPos(browseButton, getElement(up.settings.container));
 						browseSize = plupload.getSize(browseButton);
 	
-						plupload.extend(document.getElementById(up.id + '_silverlight_container').style, {
+						plupload.extend(getElement(up.id + '_silverlight_container').style, {
 							top : browsePos.y + 'px',
 							left : browsePos.x + 'px',
 							width : browseSize.w + 'px',
@@ -372,7 +376,7 @@
 				uploader.bind('Silverlight:MouseEnter', function(up) {
 					var browseButton, hoverClass;
 						
-					browseButton = document.getElementById(uploader.settings.browse_button);
+					browseButton = getElement(uploader.settings.browse_button);
 					hoverClass = up.settings.browse_button_hover;
 					
 					if (browseButton && hoverClass) {
@@ -383,7 +387,7 @@
 				uploader.bind('Silverlight:MouseLeave', function(up) {
 					var browseButton, hoverClass;
 						
-					browseButton = document.getElementById(uploader.settings.browse_button);
+					browseButton = getElement(uploader.settings.browse_button);
 					hoverClass = up.settings.browse_button_hover;
 					
 					if (browseButton && hoverClass) {
@@ -394,7 +398,7 @@
 				uploader.bind('Silverlight:MouseLeftButtonDown', function(up) {
 					var browseButton, activeClass;
 						
-					browseButton = document.getElementById(uploader.settings.browse_button);
+					browseButton = getElement(uploader.settings.browse_button);
 					activeClass = up.settings.browse_button_active;
 					
 					if (browseButton && activeClass) {
@@ -410,7 +414,7 @@
 				uploader.bind('Sliverlight:StartSelectFiles', function(up) {
 					var browseButton, activeClass;
 						
-					browseButton = document.getElementById(uploader.settings.browse_button);
+					browseButton = getElement(uploader.settings.browse_button);
 					activeClass = up.settings.browse_button_active;
 					
 					if (browseButton && activeClass) {
@@ -426,7 +430,7 @@
 					delete initialized[up.id];
 					delete uploadInstances[up.id];
 					
-					silverlightContainer = document.getElementById(up.id + '_silverlight_container');
+					silverlightContainer = getElement(up.id + '_silverlight_container');
 					if (silverlightContainer) {
 						container.removeChild(silverlightContainer);
 					}
