@@ -129,8 +129,8 @@
 					data = data.substring(data.indexOf('base64,') + 7);
 					data = atob(data);
 
-					// Restore JPEG headers
-					if (jpegHeaders['headers'] && jpegHeaders['headers'].length) {
+					// Restore JPEG headers if applicable
+					if (jpegHeaders && jpegHeaders['headers'] && jpegHeaders['headers'].length) {
 						data = jpegHeaders.restore(data);
 						jpegHeaders.purge(); // free memory
 					}
