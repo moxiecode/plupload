@@ -229,11 +229,17 @@
 					var filters = [], i, a, ext;
 
 					e.preventDefault();
-
+					
+					no_type_restriction:
 					for (i = 0; i < settings.filters.length; i++) {
 						ext = settings.filters[i].extensions.split(',');
 
 						for (a = 0; a < ext.length; a++) {
+							if (ext[a] === '*') {
+								filters = [];
+								break no_type_restriction;
+							}
+							
 							filters.push('.' + ext[a]);
 						}
 					}
