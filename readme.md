@@ -1,6 +1,24 @@
 Plupload - Cross browser and platform uploader API
 ===================================================
 
+I modified all files to be able to pass in objects instead of just ids. This way, you can reference plupload browse_button using jquery or prototype elements. Makes it a little more Object Oriented and allows for multiple upload forms per page.
+
+Example:
+
+    var uploader = new plupload.Uploader({
+    	runtimes : 'html5,gears,flash,silverlight,browserplus',
+    	browse_button : $('.attachment_file')[0],
+    	container : $('.attachment_container')[0],
+    	max_file_size : '10mb',
+    	chunk_size : '1mb',
+    	url : '/attachments',
+    	flash_swf_url : '/javascripts/plupload/plupload.flash.swf',
+    	silverlight_xap_url : '/javascripts/plupload/plupload.silverlight.xap',
+    	resize : {width : 1024, height : 1024, quality : 120},
+      multipart : true,
+      headers : {'X-CSRF-Token' : $('meta[name="csrf-token"]').attr('content') }
+    });
+
 What is Plupload
 -----------------
 Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering,

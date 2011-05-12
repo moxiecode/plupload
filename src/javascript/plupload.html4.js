@@ -14,7 +14,7 @@
 
 (function(window, document, plupload, undef) {
 	function getById(id) {
-		return document.getElementById(id);
+		return typeof(id) == "object" ? id : document.getElementById(id);
 	}
 
 	/**
