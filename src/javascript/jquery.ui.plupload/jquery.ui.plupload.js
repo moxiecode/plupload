@@ -337,7 +337,7 @@ $.widget("ui.plupload", {
 					message += " <br /><i>" + details + "</i>";
 				}
 				
-				self._notify('error', message);
+				self.notify('error', message);
 				self._trigger('error', null, { up: up, file: file, error: message } );
 			}
 		});
@@ -680,7 +680,7 @@ $.widget("ui.plupload", {
 		});		
 	},
 	
-	_notify: function(type, message) {
+	notify: function(type, message) {
 		var popup = $(
 			'<div class="plupload_message">' + 
 				'<span class="plupload_message_close ui-icon ui-icon-circle-close" title="'+_('Close')+'"></span>' +
