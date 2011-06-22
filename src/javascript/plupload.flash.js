@@ -348,9 +348,12 @@
 
 				uploader.bind("Refresh", function(up) {
 					var browseButton, browsePos, browseSize;
+          var flash = getFlashObj();
 
 					// Set file filters incase it has been changed dynamically
-					getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+          if (flash && flash.setFileFilters) {
+					  flash.setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+          }
 
 					browseButton = document.getElementById(up.settings.browse_button);
 					if (browseButton) {
