@@ -989,7 +989,7 @@
 
 				// Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
-					var i, file, count = 0, extensionsRegExp, filters = settings.filters;
+					var i, file, count = 0, extensionsRegExp, filters = settings.filters, curFileNames = {};
 
 					// Convert extensions to regexp
 					if (filters && filters.length) {
@@ -1006,6 +1006,17 @@
 						});
 						
 						extensionsRegExp = new RegExp(extensionsRegExp.join('|') + '$', 'i');
+					}
+
+					// Create object with all current filenames to prevent duplicates
+					if(settings.prevent_duplicates) {
+
+						//Iterate over all files and add filename to object
+						for(i = 0; i < files.length; i++) {
+							curFileNames[files[i].name] = 1;
+						}
+
+						i = 0;
 					}
 
 					for (i = 0; i < selected_files.length; i++) {
@@ -1032,6 +1043,12 @@
 								message : plupload.translate('File size error.'),
 								file : file
 							});
+
+							continue;
+						}
+
+						// Duplicate
+						if (settings.prevent_duplicates && curFileNames[file.name] === 1) {
 
 							continue;
 						}
