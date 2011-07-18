@@ -813,10 +813,10 @@
 					}
 					if ( element.setAttribute && element.removeAttribute ) {
 						element.setAttribute(eventName, '');
-						isSupported = is(element[eventName], 'function');
+						isSupported = 'function' === typeof element[eventName];
 
 						// If property was created, "remove it" (by setting value to `undefined`)
-						if ( !is(element[eventName], undefined) ) {
+						if ( 'undefined' !== typeof element[eventName] ) {
 							element[eventName] = undefined;
 						}
 						element.removeAttribute(eventName);
