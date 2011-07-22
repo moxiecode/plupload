@@ -33,7 +33,7 @@
 
 <p>Shows you how to use the core plupload API.</p>
 
-<div>
+<div id="container">
     <div id="filelist">No runtime found.</div>
     <br />
     <a id="pickfiles" href="javascript:;">[Select files]</a> 
@@ -51,6 +51,7 @@ function $(id) {
 var uploader = new plupload.Uploader({
 	runtimes : 'gears,html5,flash,silverlight,browserplus',
 	browse_button : 'pickfiles',
+	container: 'container',
 	max_file_size : '10mb',
 	url : 'upload.php',
 	resize : {width : 320, height : 240, quality : 90},
@@ -70,10 +71,6 @@ uploader.bind('FilesAdded', function(up, files) {
 	for (var i in files) {
 		$('filelist').innerHTML += '<div id="' + files[i].id + '">' + files[i].name + ' (' + plupload.formatSize(files[i].size) + ') <b></b></div>';
 	}
-});
-
-uploader.bind('UploadFile', function(up, file) {
-	$('submit-form').innerHTML += '<input type="hidden" name="file-' + file.id + '" value="' + file.name + '" />';
 });
 
 uploader.bind('UploadProgress', function(up, file) {
