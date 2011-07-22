@@ -69,6 +69,7 @@
 		"video/x-m4v,m4v," +
 		"video/x-flv,flv," +
 		"video/vnd.rn-realvideo,rv," +
+		"text/csv,csv," +
 		"text/plain,asc txt text diff log," +
 		"application/octet-stream,exe"
 	);
