@@ -596,7 +596,8 @@
 						// Build multipart request
 						if (up.settings.multipart && features.multipart) {
 							// Has FormData support like Chrome 6+, Safari 5+, Firefox 4
-							if (!xhr.sendAsBinary) {
+							if (!xhr.sendAsBinary ||
+								(!!window.FormData && !up.settings.resize)) { // Both FormData and FileReader are available, use FormData if there's no need to resize
 								formData = new FormData();
 
 								// Add multipart params
@@ -652,7 +653,7 @@
 				nativeFile = html5files[file.id];
 				resize = up.settings.resize;
 
-				if (features.jpgresize) {
+				if (features.jpgresize && (resize || !window.FormData)) {
 					// Resize image if it's a supported format and resize is enabled
 					if (resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
 						scaleImage(nativeFile, resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
