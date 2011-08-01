@@ -187,7 +187,14 @@
 					container.appendChild(iframe);
 
 					// Add IFrame onload event
-					plupload.addEvent(iframe, 'load', function(e) {
+					//plupload.addEvent(iframe, 'load', function(e) {
+					iframe.onload = function(e) {
+						if (!e) {
+							e = window.event;
+							if (!e.target) {
+								e.target = e.srcElement;
+							}
+						}
 						var n = e.target, el, result;
 
 						// Ignore load event if there is no file
@@ -222,7 +229,8 @@
 								response : result
 							});
 						}
-					}, up.id);
+					};
+					//}, up.id);
 				} // end createIframe
 				
 				if (up.settings.container) {
