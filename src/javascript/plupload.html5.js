@@ -584,7 +584,7 @@
 						// Build multipart request
 						if (up.settings.multipart && features.multipart) {
 							// Has FormData support like Chrome 6+, Safari 5+, Firefox 4
-							if (!features.sendBinary) {
+							if (!features.sendBinary || !features.jpgresize) {
 								formData = new FormData();
 
 								// Add multipart params
@@ -625,17 +625,16 @@
 							// Binary stream header
 							xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 						}
-
-						if (features.sendBinary && features.jpgresize) { 
-							if (xhr.sendAsBinary) { // Gecko
-								xhr.sendAsBinary(chunkBlob);
-							} else if (window.Uint8Array && window.ArrayBuffer) { // Chrome with FileReader support
-								var ui8a = new Uint8Array(chunkBlob.length);
-								for (var i = 0; i < chunkBlob.length; i++) {
-									ui8a[i] = (chunkBlob.charCodeAt(i) & 0xff);
-								}
-								xhr.send(ui8a.buffer);
+						
+						
+						if (xhr.sendAsBinary) { // Gecko
+							xhr.sendAsBinary(chunkBlob);
+						} else if (features.sendBinary && features.jpgresize && up.settings.resize) { 
+							var ui8a = new Uint8Array(chunkBlob.length);
+							for (var i = 0; i < chunkBlob.length; i++) {
+								ui8a[i] = (chunkBlob.charCodeAt(i) & 0xff);
 							}
+							xhr.send(ui8a.buffer);
 						} else {
 							xhr.send(chunkBlob); // WebKit
 						}
