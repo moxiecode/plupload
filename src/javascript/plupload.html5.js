@@ -13,21 +13,6 @@
 
 (function(window, document, plupload, undef) {
 	var fakeSafariDragDrop;
-	
-	/* Introduce sendAsBinary for latest WebKits having support for BlobBuilder and typed arrays:
-	credits: http://javascript0.org/wiki/Portable_sendAsBinary, 
-	more info: http://code.google.com/p/chromium/issues/detail?id=35705 
-	*/			
-	if (window.Uint8Array && window.ArrayBuffer && !XMLHttpRequest.prototype.sendAsBinary) {
-		XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
-			var ui8a = new Uint8Array(datastr.length);
-			for (var i = 0; i < datastr.length; i++) {
-				ui8a[i] = (datastr.charCodeAt(i) & 0xff);
-			}
-			this.send(ui8a.buffer);
-		};
-	}
-	
 
 	function readFileAsDataURL(file, callback) {
 		var reader;
@@ -162,7 +147,7 @@
 		 * @return {Object} Name/value object with supported features.
 		 */
 		getFeatures : function() {
-			var xhr, hasXhrSupport, hasProgress, dataAccessSupport, sliceSupport, win = window;
+			var xhr, hasXhrSupport, hasProgress, sendBinary, dataAccessSupport, sliceSupport, win = window;
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
 			
@@ -174,8 +159,10 @@
 
 			// Check for support for various features
 			if (hasXhrSupport) {
+				sendBinary = xhr.sendAsBinary || (window.Uint8Array && window.ArrayBuffer);
+				
 				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly				
-				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || win.FileReader) && xhr.sendAsBinary);
+				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || win.FileReader) && sendBinary);
 				sliceSupport = !!(File && File.prototype.slice);
 			}
 
@@ -189,13 +176,14 @@
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
+				sendBinary: sendBinary,
 				progress: hasProgress,
 				chunks: sliceSupport || dataAccessSupport,
 				
 				/* WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
 				sniff for it here... probably not that good idea, but impossibillity of controlling cursor style  
 				on top of add files button obviously feels even worse */
-				canOpenDialog: navigator.userAgent.indexOf('WebKit') !== -1
+				triggerDialog: navigator.userAgent.indexOf('WebKit') !== -1
 			};
 		},
 
@@ -317,7 +305,7 @@
 				if (browseButton) {				
 					var hoverClass = up.settings.browse_button_hover,
 						activeClass = up.settings.browse_button_active,
-						topElement = up.features.canOpenDialog ? browseButton : inputContainer;
+						topElement = up.features.triggerDialog ? browseButton : inputContainer;
 					
 					if (hoverClass) {
 						plupload.addEvent(topElement, 'mouseover', function() {
@@ -338,7 +326,7 @@
 					}
 
 					// Route click event to the input[type=file] element for supporting browsers
-					if (up.features.canOpenDialog) {
+					if (up.features.triggerDialog) {
 						plupload.addEvent(browseButton, 'click', function(e) {
 							document.getElementById(up.id + '_html5').click();
 							e.preventDefault();
@@ -438,7 +426,7 @@
 					
 					// for WebKit place input element underneath the browse button and route onclick event 
 					// TODO: revise when browser support for this feature will change
-					if (uploader.features.canOpenDialog) {
+					if (uploader.features.triggerDialog) {
 						pzIndex = parseInt(browseButton.parentNode.style.zIndex, 10);
 	
 						if (isNaN(pzIndex)) {
@@ -596,7 +584,7 @@
 						// Build multipart request
 						if (up.settings.multipart && features.multipart) {
 							// Has FormData support like Chrome 6+, Safari 5+, Firefox 4
-							if (!xhr.sendAsBinary) {
+							if (!features.sendBinary) {
 								formData = new FormData();
 
 								// Add multipart params
@@ -638,8 +626,16 @@
 							xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 						}
 
-						if (xhr.sendAsBinary) {
-							xhr.sendAsBinary(chunkBlob); // Gecko
+						if (features.sendBinary && features.jpgresize) { 
+							if (xhr.sendAsBinary) { // Gecko
+								xhr.sendAsBinary(chunkBlob);
+							} else if (window.Uint8Array && window.ArrayBuffer) { // Chrome with FileReader support
+								var ui8a = new Uint8Array(chunkBlob.length);
+								for (var i = 0; i < chunkBlob.length; i++) {
+									ui8a[i] = (chunkBlob.charCodeAt(i) & 0xff);
+								}
+								xhr.send(ui8a.buffer);
+							}
 						} else {
 							xhr.send(chunkBlob); // WebKit
 						}
