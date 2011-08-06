@@ -658,7 +658,11 @@
 			}
 
 			// Add event listener
-			if (obj.attachEvent) {
+			if (obj.addEventListener) {
+				func = callback;
+				
+				obj.addEventListener(name, func, false);
+			} else if (obj.attachEvent) {
 				
 				func = function() {
 					var evt = window.event;
@@ -674,10 +678,6 @@
 				};
 				obj.attachEvent('on' + name, func);
 				
-			} else if (obj.addEventListener) {
-				func = callback;
-				
-				obj.addEventListener(name, func, false);
 			}
 			
 			// Log event handler to objects internal Plupload registry
