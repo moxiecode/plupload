@@ -13,12 +13,14 @@
 
 (function($) {
 	var uploaders = {};
-
+	var texts = {};
+	
 	function _(str) {
-		return plupload.translate(str) || str;
+		return texts[str] ||  plupload.translate(str) || str;
 	}
 
-	function renderUI(id, target) {
+	function renderUI(id, target, settings) {
+		if (settings.texts) texts = settings.texts;
 		// Remove all existing non plupload items
 		target.contents().each(function(i, node) {
 			node = $(node);
