@@ -185,7 +185,7 @@
 		INIT_ERROR : -500,
 
 		/**
-		 * File size error. If the user selects a file that is to large it will be blocked and an error of this type will be triggered.
+		 * File size error. If the user selects a file that is too large it will be blocked and an error of this type will be triggered.
 		 *
 		 * @property FILE_SIZE_ERROR
 		 * @final

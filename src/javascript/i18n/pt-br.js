@@ -30,6 +30,6 @@ plupload.addI18n({
    'File: %f, size: %s, max file size: %m': 'Arquivo: %f, tamanho: %s, máximo: %m',
    'Upload element accepts only %d file(s) at a time. Extra files were stripped.': 'Só são aceitos %d arquivos por vez. O que passou disso foi descartado.',
    'Upload URL might be wrong or doesn\'t exist': 'URL de envio está errada ou não existe',
-   'Error: File to large: ': 'Erro: Arquivo muito grande: ',
+   'Error: File too large: ': 'Erro: Arquivo muito grande: ',
    'Error: Invalid file extension: ': 'Erro: Tipo de arquivo não permitido: '
 });

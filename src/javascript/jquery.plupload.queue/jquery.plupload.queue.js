@@ -271,7 +271,7 @@
 						}
 
 						if (err.code == plupload.FILE_SIZE_ERROR) {
-							alert(_("Error: File to large: ") + file.name);
+							alert(_("Error: File too large: ") + file.name);
 						}
 
 						if (err.code == plupload.FILE_EXTENSION_ERROR) {

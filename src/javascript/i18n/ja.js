@@ -32,6 +32,6 @@ plupload.addI18n({
    'File: %f, size: %s, max file size: %m': 'ファイル: %f, サイズ: %s, 最大ファイルサイズ: %m',
    'Upload element accepts only %d file(s) at a time. Extra files were stripped.': 'アップロード可能なファイル数は %d です。余分なファイルは削除されました',
    'Upload URL might be wrong or doesn\'t exist': 'アップロード先の URL が存在しません',
-   'Error: File to large: ': 'エラー: サイズが大きすぎます: ',
+   'Error: File too large: ': 'エラー: サイズが大きすぎます: ',
    'Error: Invalid file extension: ': 'エラー: 拡張子が許可されていません: '
 });
