@@ -648,15 +648,16 @@
 								multipartDeltaSize = multipartBlob.length - chunkBlob.length;
 								chunkBlob = multipartBlob;
 							
-						
-								if (xhr.sendAsBinary) { // Gecko
-									xhr.sendAsBinary(chunkBlob);
-								} else if (features.canSendBinary) { // WebKit with typed arrays support
+						                // WebKit with typed arrays support
+								if (features.canSendBinary) {
 									var ui8a = new Uint8Array(chunkBlob.length);
 									for (var i = 0; i < chunkBlob.length; i++) {
 										ui8a[i] = (chunkBlob.charCodeAt(i) & 0xff);
 									}
 									xhr.send(ui8a.buffer);
+								}
+								else if (xhr.sendAsBinary) { // Gecko
+									xhr.sendAsBinary(chunkBlob);
 								}
 								return; // will return from here only if shouldn't send binary
 							} 							
