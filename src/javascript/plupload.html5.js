@@ -698,7 +698,12 @@
 				} else if (features.cantSendBlobInFormData && up.settings.chunk_size) {
 					readFileAsBinary(nativeFile, sendBinaryBlob); // preload in memory first
 				} else {
-					sendBinaryBlob(nativeFile); 
+					if ("FileReader" in window || nativeFile.getAsBinary) {
+						readFileAsBinary(nativeFile, sendBinaryBlob); // preload in memory first
+					} else {
+						// Apparently this works in older webkit browsers (?)
+						sendBinaryBlob(nativeFile); 
+					}
 				}
 			});
 			
