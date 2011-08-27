@@ -45,7 +45,8 @@
 	}
 
 	function scaleImage(image_file, resize, mime, callback) {
-		var canvas, context, img, scale;
+		var canvas, context, img, scale,
+			up = this;
 
 		readFileAsDataURL(image_file, function(data) {
 			// Setup canvas and context
@@ -92,9 +93,12 @@
 								// Set new width and height
 								exifParser.setExif('PixelXDimension', width);
 								exifParser.setExif('PixelYDimension', height);
-															
+																							
 								// Update EXIF header
 								jpegHeaders.set('exif', exifParser.getBinary());
+								
+								up.trigger('ExifData', exifParser.EXIF());
+								up.trigger('GpsData', exifParser.GPS());
 							}
 						}
 						
@@ -703,7 +707,7 @@
 								
 				// Resize image if it's a supported format and resize is enabled
 				if (features.jpgresize && up.settings.resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-					scaleImage(nativeFile, up.settings.resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
+					scaleImage.call(up, nativeFile, up.settings.resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
 						// If it was scaled send the scaled image if it failed then
 						// send the raw image and let the server do the scaling
 						if (res.success) {
