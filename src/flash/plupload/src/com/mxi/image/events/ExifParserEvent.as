@@ -11,16 +11,19 @@ package com.mxi.image.events {
 
 	public class ExifParserEvent extends Event {
 		
-		public var exif:Object;
-		
-		public var gps:Object;
-		
-		public static const EXIF_PARSER_DATA:String = 'exifparserdata';
+		public var data:Object;
+				
+		public static const EXIF_DATA:String = 'exifdata';
+		public static const GPS_DATA:String = 'gpsdata';
 
 		function ExifParserEvent(type:String, data:Object) {
+			this.data = data;
 			super(type);
-			this.exif = data.exif;
-			this.gps = data.gps;
+		}
+		
+		override public function clone() : Event 
+		{ 
+			return new ExifParserEvent(type, data); 
 		}
 	}
 }

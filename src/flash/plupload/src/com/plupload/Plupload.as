@@ -36,6 +36,7 @@ package com.plupload {
 	import flash.errors.IllegalOperationError;
 	import flash.system.Security;
 	import com.mxi.image.events.ImageEvent;
+	import com.mxi.image.events.ExifParserEvent;
 
 	/**
 	 * This is the main class of the Plupload package.
@@ -185,6 +186,27 @@ package com.plupload {
 						message : e.text.replace(/\\/g, "\\\\")
 					});
 				});
+				
+				file.addEventListener(ExifParserEvent.EXIF_DATA, function(e:ExifParserEvent) : void {
+					var file:File = e.target as File;
+
+					fireEvent("ExifData", {
+						id : file.id,
+						data : e.data
+					});
+				});
+				
+				
+				file.addEventListener(ExifParserEvent.GPS_DATA, function(e:ExifParserEvent) : void
+				{
+					var file:File = e.target as File;
+
+					fireEvent("GpsData", {
+						id : file.id,
+						data : e.data
+					});
+				});
+				
 
 				file.addEventListener(ImageEvent.ERROR, function(e:ImageEvent) : void {
 					var file:File = e.target as File;
