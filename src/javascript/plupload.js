@@ -69,6 +69,8 @@
 		"video/mp4,mp4," +
 		"video/x-m4v,m4v," +
 		"video/x-flv,flv," +
+		"video/x-ms-wmv,wmv," +
+		"video/avi,avi," +
 		"video/vnd.rn-realvideo,rv," +
 		"text/csv,csv," +
 		"text/plain,asc txt text diff log," +
