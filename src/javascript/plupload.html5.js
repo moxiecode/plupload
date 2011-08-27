@@ -476,12 +476,180 @@
 
 				function sendBinaryBlob(blob) {
 					var chunk = 0, loaded = 0,
-						shouldSendBinary = features.jpgresize && up.settings.resize || typeof(blob) === 'string';
+						fr = new FileReader, xhr = new XMLHttpRequest, upload = xhr.upload,
+						
+						// if file was preloaded as binary string, we should send it accordingly
+						shouldSendBinary = typeof(blob) === 'string';
+						
 
 					function uploadNextChunk() {
-						var chunkBlob, br, chunks, args, chunkSize, curChunkSize, mimeType, url = up.settings.url,
-							xhr, upload, multipartDeltaSize = 0,
-							boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = '';													
+						var chunkBlob, br, chunks, args, chunkSize, curChunkSize, mimeType, url = up.settings.url;													
+
+						
+						function prepareAndSend(bin) {
+							var multipartDeltaSize = 0,
+								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = ''
+								
+							// Do we have upload progress support
+							if (upload) {
+								upload.onprogress = function(e) {
+									file.loaded = Math.min(file.size, loaded + e.loaded - multipartDeltaSize); // Loaded can be larger than file size due to multipart encoding
+									up.trigger('UploadProgress', file);
+								};
+							}
+	
+							xhr.onreadystatechange = function() {
+								var httpStatus, chunkArgs;
+	
+								if (xhr.readyState == 4) {
+									// Getting the HTTP status might fail on some Gecko versions
+									try {
+										httpStatus = xhr.status;
+									} catch (ex) {
+										httpStatus = 0;
+									}
+	
+									// Is error status
+									if (httpStatus >= 400) {
+										up.trigger('Error', {
+											code : plupload.HTTP_ERROR,
+											message : plupload.translate('HTTP Error.'),
+											file : file,
+											status : httpStatus
+										});
+									} else {
+										// Handle chunk response
+										if (chunks) {
+											chunkArgs = {
+												chunk : chunk,
+												chunks : chunks,
+												response : xhr.responseText,
+												status : httpStatus
+											};
+	
+											up.trigger('ChunkUploaded', file, chunkArgs);
+											loaded += curChunkSize;
+	
+											// Stop upload
+											if (chunkArgs.cancelled) {
+												file.status = plupload.FAILED;
+												return;
+											}
+	
+											file.loaded = Math.min(file.size, (chunk + 1) * chunkSize);
+										} else {
+											file.loaded = file.size;
+										}
+	
+										up.trigger('UploadProgress', file);
+										
+										bin = chunkBlob = formData = multipartBlob = null; // Free memory
+										
+										// Check if file is uploaded
+										if (!chunks || ++chunk >= chunks) {
+											file.status = plupload.DONE;
+																						
+											up.trigger('FileUploaded', file, {
+												response : xhr.responseText,
+												status : httpStatus
+											});										
+										} else {										
+											// Still chunks left
+											uploadNextChunk();
+										}
+									}	
+									
+									xhr = null;
+																
+								}
+							};
+							
+	
+							// Build multipart request
+							if (up.settings.multipart && features.multipart) {
+								
+								args.name = file.target_name || file.name;
+								
+								xhr.open("post", url, true);
+								
+								// Set custom headers
+								plupload.each(up.settings.headers, function(value, name) {
+									xhr.setRequestHeader(name, value);
+								});
+								
+								
+								// if has FormData support like Chrome 6+, Safari 5+, Firefox 4, use it
+								if (!shouldSendBinary && !!window.FormData) {
+									formData = new FormData();
+	
+									// Add multipart params
+									plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
+										formData.append(name, value);
+									});
+	
+									// Add file and send it
+									formData.append(up.settings.file_data_name, bin);								
+									xhr.send(formData);
+	
+									return;
+								}  // if no FormData we can still try to send it directly as last resort (see below)
+								
+								
+								if (shouldSendBinary) {
+									// Trying to send the whole thing as binary...
+		
+									// multipart request
+									xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+		
+									// append multipart parameters
+									plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
+										multipartBlob += dashdash + boundary + crlf +
+											'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf;
+		
+										multipartBlob += unescape(encodeURIComponent(value)) + crlf;
+									});
+		
+									mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream';
+		
+									// Build RFC2388 blob
+									multipartBlob += dashdash + boundary + crlf +
+										'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + unescape(encodeURIComponent(file.name)) + '"' + crlf +
+										'Content-Type: ' + mimeType + crlf + crlf +
+										bin + crlf +
+										dashdash + boundary + dashdash + crlf;
+		
+									multipartDeltaSize = multipartBlob.length - bin.length;
+									bin = multipartBlob;
+								
+							
+									if (xhr.sendAsBinary) { // Gecko
+										xhr.sendAsBinary(bin);
+									} else if (features.canSendBinary) { // WebKit with typed arrays support
+										var ui8a = new Uint8Array(bin.length);
+										for (var i = 0; i < bin.length; i++) {
+											ui8a[i] = (bin.charCodeAt(i) & 0xff);
+										}
+										xhr.send(ui8a.buffer);
+									}
+									return; // will return from here only if shouldn't send binary
+								} 							
+							}
+							
+							// if no multipart, or last resort, send as binary stream
+							url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
+							
+							xhr.open("post", url, true);
+							
+							xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+								
+							// Set custom headers
+							plupload.each(up.settings.headers, function(value, name) {
+								xhr.setRequestHeader(name, value);
+							});
+												
+							xhr.send(bin); 
+						} // prepareAndSend
+
 
 						// File upload finished
 						if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
@@ -513,168 +681,18 @@
 							curChunkSize = file.size;
 							chunkBlob = blob;
 						}
-							
-						// Setup XHR object
-						xhr = new XMLHttpRequest();
-						upload = xhr.upload;
-
-						// Do we have upload progress support
-						if (upload) {
-							upload.onprogress = function(e) {
-								file.loaded = Math.min(file.size, loaded + e.loaded - multipartDeltaSize); // Loaded can be larger than file size due to multipart encoding
-								up.trigger('UploadProgress', file);
-							};
-						}
-
-						xhr.onreadystatechange = function() {
-							var httpStatus, chunkArgs;
-
-							if (xhr.readyState == 4) {
-								// Getting the HTTP status might fail on some Gecko versions
-								try {
-									httpStatus = xhr.status;
-								} catch (ex) {
-									httpStatus = 0;
-								}
-
-								// Is error status
-								if (httpStatus >= 400) {
-									up.trigger('Error', {
-										code : plupload.HTTP_ERROR,
-										message : plupload.translate('HTTP Error.'),
-										file : file,
-										status : httpStatus
-									});
-								} else {
-									// Handle chunk response
-									if (chunks) {
-										chunkArgs = {
-											chunk : chunk,
-											chunks : chunks,
-											response : xhr.responseText,
-											status : httpStatus
-										};
-
-										up.trigger('ChunkUploaded', file, chunkArgs);
-										loaded += curChunkSize;
-
-										// Stop upload
-										if (chunkArgs.cancelled) {
-											file.status = plupload.FAILED;
-											return;
-										}
-
-										file.loaded = Math.min(file.size, (chunk + 1) * chunkSize);
-									} else {
-										file.loaded = file.size;
-									}
-
-									up.trigger('UploadProgress', file);
-									
-									// Check if file is uploaded
-									if (!chunks || ++chunk >= chunks) {
-										file.status = plupload.DONE;
-										
-										blob = null; // Free memory
-										
-										up.trigger('FileUploaded', file, {
-											response : xhr.responseText,
-											status : httpStatus
-										});										
-									} else {										
-										// Still chunks left
-										uploadNextChunk();
-									}
-								}	
-								
-								xhr = chunkBlob = formData = multipartBlob = null; // Free memory							
+						
+						// workaround Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
+						if (features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) { // basically if Gecko 2,5,6
+							fr.onload = function() {
+								shouldSendBinary = true;
+								prepareAndSend(fr.result);
 							}
-						};
-						
-
-						// Build multipart request
-						if (up.settings.multipart && features.multipart) {
-							
-							args.name = file.target_name || file.name;
-							
-							xhr.open("post", url, true);
-							
-							// Set custom headers
-							plupload.each(up.settings.headers, function(value, name) {
-								xhr.setRequestHeader(name, value);
-							});
-							
-							
-							// if has FormData support like Chrome 6+, Safari 5+, Firefox 4, use it
-							if (!shouldSendBinary && !!window.FormData) {
-								formData = new FormData();
-
-								// Add multipart params
-								plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
-									formData.append(name, value);
-								});
-
-								// Add file and send it
-								formData.append(up.settings.file_data_name, chunkBlob);								
-								xhr.send(formData);
-
-								return;
-							}  // if no FormData we can still try to send it directly as last resort (see below)
-							
-							
-							if (shouldSendBinary) {
-								// Trying to send the whole thing as binary...
-	
-								// multipart request
-								xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
-	
-								// append multipart parameters
-								plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
-									multipartBlob += dashdash + boundary + crlf +
-										'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf;
-	
-									multipartBlob += unescape(encodeURIComponent(value)) + crlf;
-								});
-	
-								mimeType = plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream';
-	
-								// Build RFC2388 blob
-								multipartBlob += dashdash + boundary + crlf +
-									'Content-Disposition: form-data; name="' + up.settings.file_data_name + '"; filename="' + unescape(encodeURIComponent(file.name)) + '"' + crlf +
-									'Content-Type: ' + mimeType + crlf + crlf +
-									chunkBlob + crlf +
-									dashdash + boundary + dashdash + crlf;
-	
-								multipartDeltaSize = multipartBlob.length - chunkBlob.length;
-								chunkBlob = multipartBlob;
-							
-						
-								if (xhr.sendAsBinary) { // Gecko
-									xhr.sendAsBinary(chunkBlob);
-								} else if (features.canSendBinary) { // WebKit with typed arrays support
-									var ui8a = new Uint8Array(chunkBlob.length);
-									for (var i = 0; i < chunkBlob.length; i++) {
-										ui8a[i] = (chunkBlob.charCodeAt(i) & 0xff);
-									}
-									xhr.send(ui8a.buffer);
-								}
-								return; // will return from here only if shouldn't send binary
-							} 							
+							fr.readAsBinaryString(chunkBlob);
+						} else {
+							prepareAndSend(chunkBlob);
 						}
-						
-						// if no multipart, or last resort, send as binary stream
-						url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
-						
-						xhr.open("post", url, true);
-						
-						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
 							
-						// Set custom headers
-						plupload.each(up.settings.headers, function(value, name) {
-							xhr.setRequestHeader(name, value);
-						});
-											
-						xhr.send(chunkBlob); 
 					}
 
 					// Start uploading chunks
@@ -692,11 +710,9 @@
 							file.size = res.data.length;
 							sendBinaryBlob(res.data);
 						} else {
-							readFileAsBinary(nativeFile, sendBinaryBlob);
+							sendBinaryBlob(nativeFile); 
 						}
 					});
-				} else if (features.cantSendBlobInFormData && up.settings.chunk_size) {
-					readFileAsBinary(nativeFile, sendBinaryBlob); // preload in memory first
 				} else {
 					sendBinaryBlob(nativeFile); 
 				}
