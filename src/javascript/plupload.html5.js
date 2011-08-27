@@ -717,6 +717,9 @@
 							sendBinaryBlob(nativeFile); 
 						}
 					});
+				// if there's no way to slice file without preloading it in memory, preload it
+				} else if (!features.chunks && features.jpgresize) { 
+					readFileAsBinary(nativeFile, sendBinaryBlob); 
 				} else {
 					sendBinaryBlob(nativeFile); 
 				}
