@@ -495,7 +495,7 @@
 			var mul;
 
 			if (typeof(size) == 'string') {
-				size = /^([0-9]+)([mgk]+)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
+				size = /^([0-9]+)([mgk]?)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
 				mul = size[2];
 				size = +size[1];
 
