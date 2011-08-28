@@ -1332,8 +1332,7 @@
 				}
 				return false;
 			},
-
-
+			
 			EXIF: function() {
 				var Exif;
 				
@@ -1341,12 +1340,14 @@
 				Exif = extractTags(offsets.exifIFD, tags.exif);
 
 				// Fix formatting of some tags
-				Exif.ExifVersion = String.fromCharCode(
-					Exif.ExifVersion[0],
-					Exif.ExifVersion[1],
-					Exif.ExifVersion[2],
-					Exif.ExifVersion[3]
-				);
+				if (Exif.ExifVersion) {
+					Exif.ExifVersion = String.fromCharCode(
+						Exif.ExifVersion[0],
+						Exif.ExifVersion[1],
+						Exif.ExifVersion[2],
+						Exif.ExifVersion[3]
+					);
+				}
 
 				return Exif;
 			},
@@ -1355,7 +1356,11 @@
 				var GPS;
 				
 				GPS = extractTags(offsets.gpsIFD, tags.gps);
-				GPS.GPSVersionID = GPS.GPSVersionID.join('.');
+				
+				// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
+				if (GPS.GPSVersionID) { 
+					GPS.GPSVersionID = GPS.GPSVersionID.join('.');
+				}
 
 				return GPS;
 			},
