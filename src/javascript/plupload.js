@@ -851,8 +851,9 @@
 					if (!file && files[i].status == plupload.QUEUED) {
 						file = files[i];
 						file.status = plupload.UPLOADING;
-						this.trigger("BeforeUpload", file);
-						this.trigger("UploadFile", file);
+						if (this.trigger("BeforeUpload", file)) {
+							this.trigger("UploadFile", file);
+						}
 					} else {
 						count++;
 					}
