@@ -332,12 +332,12 @@
 				
 				
 				uploader.bind('Flash:ExifData', function(up, obj) {
-					uploader.trigger('ExifData', obj.data);
+					uploader.trigger('ExifData', uploader.getFile(lookup[obj.id]), obj.data);
 				});
 				
 				
 				uploader.bind('Flash:GpsData', function(up, obj) {
-					uploader.trigger('GpsData', obj.data);
+					uploader.trigger('GpsData', uploader.getFile(lookup[obj.id]), obj.data);
 				});
 				
 

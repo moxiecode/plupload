@@ -12,7 +12,8 @@
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false, ArrayBuffer:false, Uint8Array:false, BlobBuilder:false, unescape:false */
 
 (function(window, document, plupload, undef) {
-	var fakeSafariDragDrop;
+	var html5files = {}, // queue of original File objects
+		fakeSafariDragDrop;
 
 	function readFileAsDataURL(file, callback) {
 		var reader;
@@ -44,11 +45,11 @@
 		}
 	}
 
-	function scaleImage(image_file, resize, mime, callback) {
+	function scaleImage(file, resize, mime, callback) {
 		var canvas, context, img, scale,
 			up = this;
-
-		readFileAsDataURL(image_file, function(data) {
+			
+		readFileAsDataURL(html5files[file.id], function(data) {
 			// Setup canvas and context
 			canvas = document.createElement("canvas");
 			canvas.style.display = 'none';
@@ -97,8 +98,14 @@
 								// Update EXIF header
 								jpegHeaders.set('exif', exifParser.getBinary());
 								
-								up.trigger('ExifData', exifParser.EXIF());
-								up.trigger('GpsData', exifParser.GPS());
+								// trigger Exif events only if someone listens to them
+								if (up.hasEventListener('ExifData')) {
+									up.trigger('ExifData', file, exifParser.EXIF());
+								}
+								
+								if (up.hasEventListener('GpsData')) {
+									up.trigger('GpsData', file, exifParser.GPS());
+								}
 							}
 						}
 						
@@ -201,7 +208,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var html5files = {}, features;
+			var features;
 
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id, fileNames = {};
@@ -707,7 +714,7 @@
 								
 				// Resize image if it's a supported format and resize is enabled
 				if (features.jpgresize && up.settings.resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
-					scaleImage.call(up, nativeFile, up.settings.resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
+					scaleImage.call(up, file, up.settings.resize, /\.png$/i.test(file.name) ? 'image/png' : 'image/jpeg', function(res) {
 						// If it was scaled send the scaled image if it failed then
 						// send the raw image and let the server do the scaling
 						if (res.success) {
