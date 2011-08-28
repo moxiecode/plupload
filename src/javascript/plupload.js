@@ -1306,6 +1306,16 @@
 
 				return true;
 			},
+			
+			/**
+			 * Check whether uploader has any listeners to the specified event.
+			 *
+			 * @method hasEventListener
+			 * @param {String} name Event name to check for.
+			 */
+			hasEventListener : function(name) {
+				return !!events[name.toLowerCase()];
+			},
 
 			/**
 			 * Adds an event listener by name.
