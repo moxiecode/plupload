@@ -487,7 +487,7 @@
 
 				function sendBinaryBlob(blob) {
 					var chunk = 0, loaded = 0,
-						fr = new FileReader, xhr = new XMLHttpRequest, upload = xhr.upload,
+						fr = (!!window.FileReader && new FileReader), xhr = new XMLHttpRequest, upload = xhr.upload,
 						
 						// if file was preloaded as binary string, we should send it accordingly
 						shouldSendBinary = typeof(blob) === 'string';
@@ -694,7 +694,7 @@
 						}
 						
 						// workaround Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
-						if (features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) { // basically if Gecko 2,5,6
+						if (features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size && fr) { // basically if Gecko 2,5,6
 							fr.onload = function() {
 								shouldSendBinary = true;
 								prepareAndSend(fr.result);
