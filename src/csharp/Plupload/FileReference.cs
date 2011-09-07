@@ -294,7 +294,7 @@ namespace Moxiecode.Plupload {
 				// Find end
 				end = (this.chunk + 1) * this.chunkSize;
 				if (end > this.Size)
-					end = (int) this.Size;
+					end = this.Size;
 
 				while (loaded < end && (bytes = ReadByteRange(buffer, loaded, 0, (int)(end - loaded < buffer.Length ? end - loaded : buffer.Length))) != 0) {
 					loaded += bytes;
