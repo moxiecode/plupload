@@ -55,12 +55,12 @@ package com.mxi.image
 		
 		public function info() : Object 
 		{
-			var idx:uint = 0, marker:uint, length:uint, limit:uint;
+			var idx:uint = 0, marker:uint, length:uint;
 			
-			limit = Math.min(1048576, _br.length);
-									
-			while (idx <= limit) { // make sure we examine just enough data
+			// examine all through the end, since some images might have very large APP segments
+			while (idx <= _br.length) {
 				marker = _br.SHORT(idx += 2);
+				
 				if (marker >= 0xFFC0 && marker <= 0xFFC3) { // SOFn
 					idx += 5; // marker (2 bytes) + length (2 bytes) + Sample precision (1 byte)
 					return {
@@ -77,12 +77,11 @@ package com.mxi.image
 	
 		public function extractHeaders() : Array
 		{
-			var idx:uint, limit:uint, marker:uint, length:uint;
+			var idx:uint, marker:uint, length:uint;
 			
 			idx = 2;
-			limit = Math.min(1048576, _br.length);	
 				
-			while (idx <= limit) {
+			while (idx <= _br.length) {
 				marker = _br.SHORT(idx);
 				
 				// omit RST (restart) markers

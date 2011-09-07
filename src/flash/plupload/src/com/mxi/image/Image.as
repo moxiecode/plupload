@@ -11,6 +11,7 @@ package com.mxi.image
 	import com.formatlos.BitmapDataUnlimited;
 	import com.formatlos.events.BitmapDataUnlimitedEvent;
 	import com.mxi.CleanEventDispatcher;
+	import com.mxi.image.events.ExifParserEvent;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
@@ -181,6 +182,9 @@ package com.mxi.image
 							
 							exifParser.setExif('PixelXDimension', _width);
 							exifParser.setExif('PixelYDimension', _height);
+							
+							dispatchEvent(new ExifParserEvent(ExifParserEvent.EXIF_DATA, exifParser.EXIF()));
+							dispatchEvent(new ExifParserEvent(ExifParserEvent.GPS_DATA, exifParser.GPS()));
 							
 							_image.setHeaders('exif', exifParser.getBinary());
 														

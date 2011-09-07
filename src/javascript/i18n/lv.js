@@ -20,7 +20,7 @@ plupload.addI18n({
     'File: %f, size: %s, max file size: %m': 'Fails: %f, izmērs: %s, maksimālais faila izmērs: %m',
     'Upload element accepts only %d file(s) at a time. Extra files were stripped.': 'Iespējams ielādēt tikai %d failus vienā reizē. Atlikušie faili netika pievienoti',
     'Upload URL might be wrong or doesn\'t exist': 'Augšupielādes URL varētu būt nepareizs vai neeksistē',
-    'Error: File to large: ': 'Kļūda: Fails pārāk liels: ',
+    'Error: File too large: ': 'Kļūda: Fails pārāk liels: ',
     'Error: Invalid file extension: ': 'Kļūda: Nekorekts faila paplašinājums:',
     'File extension error.': 'Faila paplašinājuma kļūda.',
     'File size error.': 'Faila izmēra kļūda.',

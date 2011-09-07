@@ -58,6 +58,7 @@
 		"image/bmp,bmp," +
 		"image/gif,gif," +
 		"image/jpeg,jpeg jpg jpe," +
+		"image/photoshop,psd," +
 		"image/png,png," +
 		"image/svg+xml,svg svgz," +
 		"image/tiff,tiff tif," +
@@ -68,7 +69,10 @@
 		"video/mp4,mp4," +
 		"video/x-m4v,m4v," +
 		"video/x-flv,flv," +
+		"video/x-ms-wmv,wmv," +
+		"video/avi,avi," +
 		"video/vnd.rn-realvideo,rv," +
+		"text/csv,csv," +
 		"text/plain,asc txt text diff log," +
 		"application/octet-stream,exe"
 	);
@@ -183,7 +187,7 @@
 		INIT_ERROR : -500,
 
 		/**
-		 * File size error. If the user selects a file that is to large it will be blocked and an error of this type will be triggered.
+		 * File size error. If the user selects a file that is too large it will be blocked and an error of this type will be triggered.
 		 *
 		 * @property FILE_SIZE_ERROR
 		 * @final
@@ -491,7 +495,7 @@
 			var mul;
 
 			if (typeof(size) == 'string') {
-				size = /^([0-9]+)([mgk]+)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
+				size = /^([0-9]+)([mgk]?)$/.exec(size.toLowerCase().replace(/[^0-9mkg]/g, ''));
 				mul = size[2];
 				size = +size[1];
 
@@ -657,7 +661,11 @@
 			}
 
 			// Add event listener
-			if (obj.attachEvent) {
+			if (obj.addEventListener) {
+				func = callback;
+				
+				obj.addEventListener(name, func, false);
+			} else if (obj.attachEvent) {
 				
 				func = function() {
 					var evt = window.event;
@@ -672,12 +680,7 @@
 					callback(evt);
 				};
 				obj.attachEvent('on' + name, func);
-				
-			} else if (obj.addEventListener) {
-				func = callback;
-				
-				obj.addEventListener(name, func, false);
-			}
+			} 
 			
 			// Log event handler to objects internal Plupload registry
 			if (obj[uid] === undef) {
@@ -848,8 +851,9 @@
 					if (!file && files[i].status == plupload.QUEUED) {
 						file = files[i];
 						file.status = plupload.UPLOADING;
-						this.trigger("BeforeUpload", file);
-						this.trigger("UploadFile", file);
+						if (this.trigger("BeforeUpload", file)) {
+							this.trigger("UploadFile", file);
+						}
 					} else {
 						count++;
 					}
@@ -1301,6 +1305,16 @@
 				}
 
 				return true;
+			},
+			
+			/**
+			 * Check whether uploader has any listeners to the specified event.
+			 *
+			 * @method hasEventListener
+			 * @param {String} name Event name to check for.
+			 */
+			hasEventListener : function(name) {
+				return !!events[name.toLowerCase()];
 			},
 
 			/**

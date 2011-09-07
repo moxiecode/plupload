@@ -32,6 +32,7 @@ package com.plupload {
 	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
 	import flash.external.ExternalInterface;
+	import com.mxi.image.events.ExifParserEvent;
 	
 	import com.mxi.image.Image;
 	import com.mxi.image.events.ImageEvent;
@@ -269,6 +270,14 @@ package com.plupload {
 					image.addEventListener(ImageEvent.ERROR, function(e:ImageEvent) : void
 					{
 						image.removeAllEventListeners();
+						file.dispatchEvent(e);
+					});
+					image.addEventListener(ExifParserEvent.EXIF_DATA, function(e:ExifParserEvent) : void
+					{
+						file.dispatchEvent(e);
+					});
+					image.addEventListener(ExifParserEvent.GPS_DATA, function(e:ExifParserEvent) : void
+					{
 						file.dispatchEvent(e);
 					});
 					image.scale(settings["width"], settings["height"], settings["quality"]);
