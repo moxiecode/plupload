@@ -183,7 +183,7 @@
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: win.mozInnerScreenX !== undef || sliceSupport || fakeSafariDragDrop,
+				dragdrop: (plupload.isEventSupported('dragstart') && plupload.isEventSupported('drop') && !!win.FileReader) || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
