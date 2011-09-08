@@ -219,6 +219,11 @@ namespace Moxiecode.Plupload {
 		#region protected methods
 
 		protected virtual void OnUploadComplete(UploadEventArgs e) {
+			if (imageStream != null) {
+				imageStream.Dispose();
+				imageStream = null;
+			}
+			
 			if (UploadComplete != null)
 				UploadComplete(this, e);
 		}
@@ -229,6 +234,11 @@ namespace Moxiecode.Plupload {
 		}
 
 		protected virtual void OnIOError(ErrorEventArgs e) {
+			if (imageStream != null) {
+				imageStream.Dispose();
+				imageStream = null;
+			}
+			
 			if (Error != null)
 				Error(this, e);
 		}
