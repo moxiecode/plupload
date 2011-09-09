@@ -223,6 +223,11 @@ namespace Moxiecode.Plupload {
 				fileStream = null;
 			}
 			
+			if (imageStream != null) {
+				imageStream.Dispose();
+				imageStream = null;
+			}
+			
 			if (UploadComplete != null)
 				UploadComplete(this, e);
 		}
@@ -236,6 +241,11 @@ namespace Moxiecode.Plupload {
 			if (fileStream != null) {
 				fileStream.Dispose();
 				fileStream = null;
+			}
+			
+			if (imageStream != null) {
+				imageStream.Dispose();
+				imageStream = null;
 			}
 			
 			if (Error != null)
@@ -255,7 +265,7 @@ namespace Moxiecode.Plupload {
 			HttpWebRequest request = (HttpWebRequest) ar.AsyncState;
 			string boundary = "----pluploadboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
 			Stream requestStream = null;
-            byte[] buffer = new byte[1048576], strBuff;
+			byte[] buffer = new byte[1048576], strBuff;
 			int bytes;
 			long loaded = 0, end = 0;
 			int percent, lastPercent = 0;
