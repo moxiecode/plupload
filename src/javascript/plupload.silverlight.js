@@ -17,6 +17,11 @@
 	function jsonSerialize(obj) {
 		var value, type = typeof obj, isArray, i, key;
 
+		// Treat undefined as null
+		if (obj === undef || obj === null) {
+			return 'null';
+		}
+
 		// Encode strings
 		if (type === 'string') {
 			value = '\bb\tt\nn\ff\rr\""\'\'\\\\';
@@ -64,11 +69,6 @@
 			}
 
 			return value;
-		}
-
-		// Treat undefined as null
-		if (obj === undef) {
-			return 'null';
 		}
 
 		// Convert all other types to string
