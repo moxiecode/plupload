@@ -488,8 +488,6 @@
 				function sendBinaryBlob(blob) {
 					var chunk = 0, loaded = 0,
 						fr = ("FileReader" in window) ? new FileReader : null,
-						xhr = new XMLHttpRequest,
-						upload = xhr.upload
 						
 						// if file was preloaded as binary string, we should send it accordingly
 						shouldSendBinary = typeof(blob) === 'string';
@@ -501,6 +499,8 @@
 						
 						function prepareAndSend(bin) {
 							var multipartDeltaSize = 0,
+								xhr = new XMLHttpRequest,
+								upload = xhr.upload,	
 								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = ''
 								
 							// Do we have upload progress support
