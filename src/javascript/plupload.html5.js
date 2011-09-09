@@ -261,7 +261,6 @@
 					zIndex : 99999,
 					opacity : uploader.settings.shim_bgcolor ? '' : 0 // Force transparent if bgcolor is undefined
 				});
-
 				inputContainer.className = 'plupload html5';
 
 				if (uploader.settings.container) {
@@ -297,10 +296,11 @@
 
 				// Insert the input inside the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
-											'style="width:100%;height:100%;font-size:99px" type="file" accept="' + 
+											'style="float:right;font-size:999px" type="file" accept="' + 
 											mimes.join(',') + '" ' +
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
-				
+
+				inputContainer.scrollTop = 100;
 				inputFile = document.getElementById(uploader.id + '_html5');
 				inputFile.onchange = function() {
 					// Add the selected files from file input
