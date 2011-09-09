@@ -41,6 +41,7 @@ namespace Moxiecode.Plupload {
 		private string fileDataName;
 		private Dictionary<string, object> multipartParams;
 		private Dictionary<string, object> headers;
+		private Stream fileStream;
 		private Stream imageStream;
 		#endregion
 
@@ -155,7 +156,6 @@ namespace Moxiecode.Plupload {
 		}
 
 		private int ReadByteRange(byte[] buffer, long position, int offset, int count) {
-			Stream fileStream;
 			int bytes = -1;
 
 			// Read from image memory stream if it's defined
@@ -165,12 +165,11 @@ namespace Moxiecode.Plupload {
 			}
 
 			// Open the file and read the specified part of it
-			fileStream = this.info.OpenRead();
-			using (fileStream) {
-				fileStream.Seek(position, SeekOrigin.Begin);
-				bytes = fileStream.Read(buffer, offset, count);
-				fileStream.Close();
+			if (this.fileStream == null) {
+				this.fileStream = this.info.OpenRead();
 			}
+
+            bytes = this.fileStream.Read(buffer, offset, count);
 
 			return bytes;
 		}
@@ -219,6 +218,16 @@ namespace Moxiecode.Plupload {
 		#region protected methods
 
 		protected virtual void OnUploadComplete(UploadEventArgs e) {
+			if (fileStream != null) {
+				fileStream.Dispose();
+				fileStream = null;
+			}
+			
+			if (imageStream != null) {
+				imageStream.Dispose();
+				imageStream = null;
+			}
+			
 			if (UploadComplete != null)
 				UploadComplete(this, e);
 		}
@@ -229,6 +238,16 @@ namespace Moxiecode.Plupload {
 		}
 
 		protected virtual void OnIOError(ErrorEventArgs e) {
+			if (fileStream != null) {
+				fileStream.Dispose();
+				fileStream = null;
+			}
+			
+			if (imageStream != null) {
+				imageStream.Dispose();
+				imageStream = null;
+			}
+			
 			if (Error != null)
 				Error(this, e);
 		}
@@ -246,7 +265,7 @@ namespace Moxiecode.Plupload {
 			HttpWebRequest request = (HttpWebRequest) ar.AsyncState;
 			string boundary = "----pluploadboundary" + DateTime.Now.Ticks, dashdash = "--", crlf = "\r\n";
 			Stream requestStream = null;
-			byte[] buffer = new byte[16384], strBuff;
+			byte[] buffer = new byte[1048576], strBuff;
 			int bytes;
 			long loaded = 0, end = 0;
 			int percent, lastPercent = 0;
@@ -294,7 +313,7 @@ namespace Moxiecode.Plupload {
 				// Find end
 				end = (this.chunk + 1) * this.chunkSize;
 				if (end > this.Size)
-					end = (int) this.Size;
+					end = this.Size;
 
 				while (loaded < end && (bytes = ReadByteRange(buffer, loaded, 0, (int)(end - loaded < buffer.Length ? end - loaded : buffer.Length))) != 0) {
 					loaded += bytes;
