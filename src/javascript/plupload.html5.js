@@ -158,11 +158,26 @@
 		 * @return {Object} Name/value object with supported features.
 		 */
 		getFeatures : function() {
-			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport, win = window;
+			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport, ua;
+			
+			// in some cases sniffing is the only way around (@see triggerDialog feature), sorry
+			ua = (function getEnv() {
+					var nav = navigator, userAgent = nav.userAgent, webkit, opera;
+					
+					webkit = /WebKit/.test(userAgent);
+					opera = window.opera && opera.buildNumber;
+					
+					return {
+						ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
+						webkit: webkit,
+						gecko: !webkit && /Gecko/.test(userAgent),
+						opera: !!opera
+					};
+				}());
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
 			
-			if (win.XMLHttpRequest) {
+			if (window.XMLHttpRequest) {
 				xhr = new XMLHttpRequest();
 				hasProgress = !!xhr.upload;
 				hasXhrSupport = !!(xhr.sendAsBinary || xhr.upload);
@@ -173,7 +188,7 @@
 				canSendBinary = !!(xhr.sendAsBinary || (window.Uint8Array && window.ArrayBuffer));
 				
 				// Set dataAccessSupport only for Gecko since BlobBuilder and XHR doesn't handle binary data correctly				
-				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || win.FileReader) && canSendBinary);
+				dataAccessSupport = !!(File && (File.prototype.getAsDataURL || window.FileReader) && canSendBinary);
 				sliceSupport = !!(File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)); 
 			}
 
@@ -183,20 +198,17 @@
 			return {
 				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: (plupload.isEventSupported('dragstart') && plupload.isEventSupported('drop') && !!win.FileReader) || fakeSafariDragDrop,
+				dragdrop: (plupload.isEventSupported('dragstart') && plupload.isEventSupported('drop') && !!window.FileReader) || fakeSafariDragDrop,
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
-				multipart: dataAccessSupport || !!win.FileReader || !!win.FormData,
+				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
 				canSendBinary: canSendBinary,
 				// gecko 2/5/6 can't send blob with FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150 
-				cantSendBlobInFormData: !!(xhr && xhr.sendAsBinary && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
+				cantSendBlobInFormData: !!(ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
 				progress: hasProgress,
 				chunks: sliceSupport,
-								
-				/* WebKit let you trigger file dialog programmatically while FF and Opera - do not, so we
-				sniff for it here... probably not that good idea, but impossibillity of controlling cursor style  
-				on top of add files button obviously feels even worse */
-				triggerDialog: navigator.userAgent.indexOf('WebKit') !== -1
+				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
+				triggerDialog: (ua.gecko && window.FormData || ua.webkit) 
 			};
 		},
 
@@ -295,13 +307,27 @@
 
 
 				// Insert the input inside the input container
-				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' +
-											'style="float:right;font-size:999px" type="file" accept="' + 
-											mimes.join(',') + '" ' +
+				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' + ' style="font-size:999px"' +
+											' type="file" accept="' + mimes.join(',') + '" ' +
 											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
 
 				inputContainer.scrollTop = 100;
 				inputFile = document.getElementById(uploader.id + '_html5');
+				
+				if (up.features.triggerDialog) {
+					plupload.extend(inputFile.style, {
+						position: 'absolute',
+						width: '100%',
+						height: '100%'
+					});
+				} else {
+					// shows arrow cursor instead of the text one, bit more logical
+					plupload.extend(inputFile.style, {
+						cssFloat: 'right', 
+						styleFloat: 'right'
+					});
+				}
+				
 				inputFile.onchange = function() {
 					// Add the selected files from file input
 					addSelectedFiles(this.files);
@@ -312,7 +338,7 @@
 				
 				/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
 				browse_button loses interactivity, here we try to neutralize this issue highlighting browse_button
-				with a special class
+				with a special classes
 				TODO: needs to be revised as things will change */
 				browseButton = document.getElementById(up.settings.browse_button);
 				if (browseButton) {				
@@ -422,7 +448,7 @@
 			});
 
 			uploader.bind("Refresh", function(up) {
-				var browseButton, browsePos, browseSize, inputContainer, pzIndex;
+				var browseButton, browsePos, browseSize, inputContainer, zIndex;
 					
 				browseButton = document.getElementById(uploader.settings.browse_button);
 				if (browseButton) {
@@ -440,24 +466,23 @@
 					// for WebKit place input element underneath the browse button and route onclick event 
 					// TODO: revise when browser support for this feature will change
 					if (uploader.features.triggerDialog) {
-						pzIndex = parseInt(browseButton.parentNode.style.zIndex, 10);
-	
-						if (isNaN(pzIndex)) {
-							pzIndex = 0;
-						}
-							
-						plupload.extend(browseButton.style, {
-							zIndex : pzIndex
-						});
-            
 						if (plupload.getStyle(browseButton, 'position') === 'static') {
 							plupload.extend(browseButton.style, {
 								position : 'relative'
 							});
 						}
+						
+						zIndex = parseInt(plupload.getStyle(browseButton, 'z-index'), 10);
+						if (isNaN(zIndex)) {
+							zIndex = 0;
+						}						
+							
+						plupload.extend(browseButton.style, {
+							zIndex : zIndex
+						});						
 											
 						plupload.extend(inputContainer.style, {
-							zIndex : pzIndex - 1
+							zIndex : zIndex - 1
 						});
 					}
 				}
