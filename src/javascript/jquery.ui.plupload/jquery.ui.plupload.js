@@ -657,24 +657,12 @@ $.widget("ui.plupload", {
 				return el.clone(true).find('td:not(.plupload_file_name)').remove().end().css('width', '100%');
 			},
 			
-			start: function(e, ui) {
-				idxStart = $('tr', this).index(ui.item);
-			},
-			
 			stop: function(e, ui) {
-				var i, length, idx, files = [], idxStop = $('tr', this).index(ui.item);
-								
-				for (i = 0, length = self.uploader.files.length; i < length; i++) {
-					
-					if (i === idxStop) {
-						idx = idxStart;
-					} else if (i === idxStart) {
-						idx = idxStop;
-					} else {
-						idx = i;
-					}
-					files[files.length] = self.uploader.files[idx];					
-				}
+				var i, length, idx, files = [];
+				
+				$.each($(this).sortable('toArray'), function(i, id) {
+					files[files.length] = self.uploader.getFile(id);
+				});				
 				
 				files.unshift(files.length);
 				files.unshift(0);

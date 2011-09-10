@@ -52,6 +52,11 @@ div.plupload div.plupload_header {border-width: 0 0 1px 0; position: relative;}
 	border-right: none;
 }
 
+.plupload .ui-sortable-helper,
+.plupload .ui-sortable .plupload_file {
+	cursor:move;	
+}
+
 .plupload_scroll {
 	max-height: 180px;
 	min-height: 168px;
