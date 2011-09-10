@@ -219,11 +219,12 @@ $.widget("ui.plupload", {
 		
 		// check if file count doesn't exceed the limit
 		if (self.options.max_file_count) {
-			uploader.bind('FilesAdded', function(up, files) {
-				var length = files.length, removed = [];
+			uploader.bind('FilesAdded', function(up, selectedFiles) {
+				var removed = [], selectedCount = selectedFiles.length;
+				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
 				
-				if (length > self.options.max_file_count) {
-					removed = files.splice(self.options.max_file_count);
+				if (extraCount > 0) {
+					removed = selectedFiles.splice(selectedCount - extraCount, extraCount);
 					
 					up.trigger('Error', {
 						code : self.FILE_COUNT_ERROR,
