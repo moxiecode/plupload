@@ -135,7 +135,11 @@ $.widget("ui.plupload", {
 		this.container = $('.plupload_container', this.element).attr('id', id + '_container');	
 		
 		// list of files, may become sortable
-		this.filelist = $('.plupload_filelist_content', this.container).attr('id', id + '_filelist');
+		this.filelist = $('.plupload_filelist_content', this.container)
+			.attr({
+				id: id + '_filelist',
+				unselectable: 'on'
+			});
 		
 		// buttons
 		this.browse_button = $('.plupload_add', this.container).attr('id', id + '_browse');
