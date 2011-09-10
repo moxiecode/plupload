@@ -697,8 +697,9 @@ $.widget("ui.plupload", {
 				.click(function() {
 					popup.remove();	
 				})
-				.end()
-			.appendTo('.plupload_header_content', this.container);
+				.end();
+		
+		$('.plupload_header_content', this.container).append(popup);
 	},
 	
 
