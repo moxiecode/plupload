@@ -789,7 +789,48 @@
 			plupload.each(eventhash[obj[uid]], function(events, name) {
 				plupload.removeEvent(obj, name, key);
 			});		
-		}		
+		},
+
+		/**
+		  * isEventSupported determines if a given element supports the given event
+		  * function from http://yura.thinkweb2.com/isEventSupported/
+		  */
+		isEventSupported: (function() {
+			var TAGNAMES = {
+				'select': 'input', 'change': 'input',
+				'submit': 'form', 'reset': 'form',
+				'error': 'img', 'load': 'img', 'abort': 'img'
+			};
+
+			function isEventSupported( eventName, element ) {
+				element = element || document.createElement(TAGNAMES[eventName] || 'div');
+				eventName = 'on' + eventName;
+
+				// When using `setAttribute`, IE skips "unload", WebKit skips "unload" and "resize", whereas `in` "catches" those
+				var isSupported = eventName in element;
+
+				if ( !isSupported ) {
+					// If it has no `setAttribute` (i.e. doesn't implement Node interface), try generic element
+					if ( !element.setAttribute ) {
+						element = document.createElement('div');
+					}
+					if ( element.setAttribute && element.removeAttribute ) {
+						element.setAttribute(eventName, '');
+						isSupported = 'function' === typeof element[eventName];
+
+						// If property was created, "remove it" (by setting value to `undefined`)
+						if ( 'undefined' !== typeof element[eventName] ) {
+							element[eventName] = undefined;
+						}
+						element.removeAttribute(eventName);
+					}
+				}
+
+				element = null;
+				return isSupported;
+			}
+			return isEventSupported;
+		})()
 	};
 	
 
