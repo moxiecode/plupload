@@ -162,15 +162,18 @@
 			
 			// in some cases sniffing is the only way around (@see triggerDialog feature), sorry
 			ua = (function getEnv() {
-					var nav = navigator, userAgent = nav.userAgent, webkit, opera;
+					var nav = navigator, userAgent = nav.userAgent, vendor = nav.vendor, webkit, opera, safari;
 					
 					webkit = /WebKit/.test(userAgent);
+					safari = webkit && vendor.indexOf('Apple') !== -1;
 					opera = window.opera && opera.buildNumber;
 					
 					return {
 						ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
 						webkit: webkit,
 						gecko: !webkit && /Gecko/.test(userAgent),
+						safari: safari,
+						safariwin: safari && navigator.platform.indexOf('Win') !== -1,
 						opera: !!opera
 					};
 				}());
@@ -192,13 +195,16 @@
 				sliceSupport = !!(File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)); 
 			}
 
-			// Sniff for Safari and fake drag/drop
-			fakeSafariDragDrop = navigator.userAgent.indexOf('Safari') > 0 && navigator.vendor.indexOf('Apple') !== -1;
+			// sniff out Safari for Windows and fake drag/drop
+			fakeSafariDragDrop = ua.safariwin;
 
 			return {
-				// Detect drag/drop file support by sniffing, will try to find a better way
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
-				dragdrop: (plupload.isEventSupported('dragstart') && plupload.isEventSupported('drop') && !!window.FileReader) || fakeSafariDragDrop,
+				dragdrop: (function() {
+					// this comes directly from Modernizr: http://www.modernizr.com/
+					var div = document.createElement('div');
+					return ('draggable' in div) || ('ondragstart' in div && 'ondrop' in div);
+				}()),
 				jpgresize: dataAccessSupport,
 				pngresize: dataAccessSupport,
 				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
