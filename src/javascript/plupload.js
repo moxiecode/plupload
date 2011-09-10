@@ -71,6 +71,7 @@
 		"video/x-flv,flv," +
 		"video/x-ms-wmv,wmv," +
 		"video/avi,avi," +
+		"video/webm,webm," +
 		"video/vnd.rn-realvideo,rv," +
 		"text/csv,csv," +
 		"text/plain,asc txt text diff log," +
