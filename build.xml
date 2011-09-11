@@ -85,13 +85,6 @@
 	</target>
 
 	<target name="build" depends="clean,build-jquery-widgets">
-		<!-- Copy languages -->
-		<copy todir="${tmp_dir}/plupload/js/i18n">
-			<fileset dir="src/javascript/i18n">
-				<include name="**"/>
-			</fileset>
-		</copy>
-	
 		<!-- Concat multuple JS files together -->
 		<concat destfile="js/plupload.full.tmp.js">
 			<fileset dir="src/javascript" includes="plupload.js" />
@@ -135,6 +128,13 @@
 			<fileset dir="js/">
 				<include name="plupload.flash.swf"/>
 				<include name="plupload.silverlight.xap"/>
+			</fileset>
+		</copy>
+		
+		<!-- Copy languages -->
+		<copy todir="${tmp_dir}/plupload/js/i18n">
+			<fileset dir="src/javascript/i18n">
+				<include name="**"/>
 			</fileset>
 		</copy>
 
