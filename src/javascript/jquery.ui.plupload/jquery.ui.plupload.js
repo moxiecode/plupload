@@ -135,7 +135,11 @@ $.widget("ui.plupload", {
 		this.container = $('.plupload_container', this.element).attr('id', id + '_container');	
 		
 		// list of files, may become sortable
-		this.filelist = $('.plupload_filelist_content', this.container).attr('id', id + '_filelist');
+		this.filelist = $('.plupload_filelist_content', this.container)
+			.attr({
+				id: id + '_filelist',
+				unselectable: 'on'
+			});
 		
 		// buttons
 		this.browse_button = $('.plupload_add', this.container).attr('id', id + '_browse');
@@ -219,11 +223,12 @@ $.widget("ui.plupload", {
 		
 		// check if file count doesn't exceed the limit
 		if (self.options.max_file_count) {
-			uploader.bind('FilesAdded', function(up, files) {
-				var length = files.length, removed = [];
+			uploader.bind('FilesAdded', function(up, selectedFiles) {
+				var removed = [], selectedCount = selectedFiles.length;
+				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
 				
-				if (length > self.options.max_file_count) {
-					removed = files.splice(self.options.max_file_count);
+				if (extraCount > 0) {
+					removed = selectedFiles.splice(selectedCount - extraCount, extraCount);
 					
 					up.trigger('Error', {
 						code : self.FILE_COUNT_ERROR,
@@ -652,24 +657,12 @@ $.widget("ui.plupload", {
 				return el.clone(true).find('td:not(.plupload_file_name)').remove().end().css('width', '100%');
 			},
 			
-			start: function(e, ui) {
-				idxStart = $('tr', this).index(ui.item);
-			},
-			
 			stop: function(e, ui) {
-				var i, length, idx, files = [], idxStop = $('tr', this).index(ui.item);
-								
-				for (i = 0, length = self.uploader.files.length; i < length; i++) {
-					
-					if (i === idxStop) {
-						idx = idxStart;
-					} else if (i === idxStart) {
-						idx = idxStop;
-					} else {
-						idx = i;
-					}
-					files[files.length] = self.uploader.files[idx];					
-				}
+				var i, length, idx, files = [];
+				
+				$.each($(this).sortable('toArray'), function(i, id) {
+					files[files.length] = self.uploader.getFile(id);
+				});				
 				
 				files.unshift(files.length);
 				files.unshift(0);
@@ -697,8 +690,9 @@ $.widget("ui.plupload", {
 				.click(function() {
 					popup.remove();	
 				})
-				.end()
-			.appendTo('.plupload_header_content', this.container);
+				.end();
+		
+		$('.plupload_header_content', this.container).append(popup);
 	},
 	
 

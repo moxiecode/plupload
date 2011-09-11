@@ -27,7 +27,7 @@ test('extend', function() {
 
 
 test('parseSize', function() {
-	expect(6);
+	expect(7);
 	
 	equals(plupload.parseSize(1024), 1024, 1024);
 	equals(plupload.parseSize('1024k'), 1048576, '"1024k"');
@@ -35,6 +35,7 @@ test('parseSize', function() {
 	equals(plupload.parseSize('1024Kb'), 1048576, '"1024Kb"');
 	equals(plupload.parseSize('2mb'), 2097152, '"2mb"');
 	equals(plupload.parseSize('4gb'), 4294967296, '"4gb"');	
+  equals(plupload.parseSize('4b'), 4, 4);
 });
 
 test('formatSize', function() {

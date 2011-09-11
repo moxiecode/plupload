@@ -130,6 +130,13 @@
 				<include name="plupload.silverlight.xap"/>
 			</fileset>
 		</copy>
+		
+		<!-- Copy languages -->
+		<copy todir="${tmp_dir}/plupload/js/i18n">
+			<fileset dir="src/javascript/i18n">
+				<include name="**"/>
+			</fileset>
+		</copy>
 
 		<!-- Parse minor version, major version and release date from changelog -->
 		<loadfile property="changelog" srcFile="${tmp_dir}/plupload/changelog.txt" />

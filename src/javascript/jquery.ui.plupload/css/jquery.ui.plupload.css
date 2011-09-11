@@ -40,6 +40,9 @@ div.plupload div.plupload_header {border-width: 0 0 1px 0; position: relative;}
 	margin: 0;
 	padding: 0;
 	width: 100%;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+	user-select:none;
 }
 
 .plupload_cell {padding: 8px 6px;}
@@ -47,6 +50,11 @@ div.plupload div.plupload_header {border-width: 0 0 1px 0; position: relative;}
 .plupload_file {
 	border-left: none;
 	border-right: none;
+}
+
+.plupload .ui-sortable-helper,
+.plupload .ui-sortable .plupload_file {
+	cursor:move;	
 }
 
 .plupload_scroll {

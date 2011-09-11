@@ -42,7 +42,7 @@
 		 * @param {Object} obj Parameters to be passed with event.
 		 */
 		trigger : function(id, name, obj) {
-					
+								
 			// Detach the call so that error handling in the browser is presented correctly
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
@@ -328,6 +328,17 @@
 						plupload.removeClass(browseButton, activeClass);
 					}
 				});
+				
+				
+				uploader.bind('Flash:ExifData', function(up, obj) {
+					uploader.trigger('ExifData', uploader.getFile(lookup[obj.id]), obj.data);
+				});
+				
+				
+				uploader.bind('Flash:GpsData', function(up, obj) {
+					uploader.trigger('GpsData', uploader.getFile(lookup[obj.id]), obj.data);
+				});
+				
 
 				uploader.bind("QueueChanged", function(up) {
 					uploader.refresh();
