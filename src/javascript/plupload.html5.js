@@ -161,12 +161,12 @@
 			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport, ua;
 			
 			// in some cases sniffing is the only way around (@see triggerDialog feature), sorry
-			ua = (function getEnv() {
+			ua = (function() {
 					var nav = navigator, userAgent = nav.userAgent, vendor = nav.vendor, webkit, opera, safari;
 					
 					webkit = /WebKit/.test(userAgent);
 					safari = webkit && vendor.indexOf('Apple') !== -1;
-					opera = window.opera && opera.buildNumber;
+					opera = window.opera && window.opera.buildNumber;
 					
 					return {
 						ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
