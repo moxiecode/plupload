@@ -206,8 +206,13 @@ namespace Moxiecode.Plupload {
 
 			// Add custom headers
 			if (this.headers != null) {
-				foreach (string key in this.headers.Keys)
-					req.Headers[key] = (string)this.headers[key];
+				foreach (string key in this.headers.Keys) {
+					if (key.Equals("accept", StringComparison.InvariantCultureIgnoreCase)) {
+						req.Accept = (string)this.headers[key];
+					} else if (this.headers[key] != null) {
+						req.Headers[key] = (string)this.headers[key];
+					}
+				}
 			}
 
 			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
