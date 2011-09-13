@@ -213,6 +213,8 @@
 				cantSendBlobInFormData: !!(ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
 				progress: hasProgress,
 				chunks: sliceSupport,
+				// Safari on Windows has problems when selecting multiple files
+				multi_selection: !ua.safariwin,
 				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
 				triggerDialog: (ua.gecko && window.FormData || ua.webkit) 
 			};
@@ -315,7 +317,7 @@
 				// Insert the input inside the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' + ' style="font-size:999px"' +
 											' type="file" accept="' + mimes.join(',') + '" ' +
-											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
+											(uploader.settings.multi_selection && uploader.features.multi_selection ? 'multiple="multiple"' : '') + ' />';
 
 				inputContainer.scrollTop = 100;
 				inputFile = document.getElementById(uploader.id + '_html5');
