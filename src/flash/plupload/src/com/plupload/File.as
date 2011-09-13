@@ -116,7 +116,7 @@ package com.plupload {
 			var chunking:Boolean = (settings["chunk_size"] > 0);
 
 			// Check if it's not an image, chunking is disabled, multipart enabled and the ref_upload setting isn't forced
-			return (!(/\.(jpeg|jpg|png)$/i.test(this._fileName)) || !resize) && multipart && !chunking && !settings.urlstream_upload;
+			return (!(/\.(jpeg|jpg|png)$/i.test(this._fileName)) || !resize) && multipart && !chunking && !settings.urlstream_upload && !settings.headers;
 		}
 
 		public function simpleUpload(url:String, settings:Object):void {
