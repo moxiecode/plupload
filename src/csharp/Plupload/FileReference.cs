@@ -206,8 +206,44 @@ namespace Moxiecode.Plupload {
 
 			// Add custom headers
 			if (this.headers != null) {
-				foreach (string key in this.headers.Keys)
-					req.Headers[key] = (string)this.headers[key];
+				foreach (string key in this.headers.Keys) {
+          if (this.headers[key] == null)
+            continue;
+
+          switch (key.ToLower())
+          {
+            // in silverlight 3, these are set by the web browser that hosts the Silverlight application.
+            // http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest%28v=vs.95%29.aspx
+            case "connection":
+            case "content-length":
+            case "expect":
+            case "if-modified-since":
+            case "referer":
+            case "transfer-encoding":
+            case "user-agent":
+              break;
+
+            // in silverlight this isn't supported, can not find reference to why not
+            case "range":
+              break;
+
+            // in .NET Framework 3.5 and below, these are set by the system.
+            // http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest%28v=VS.90%29.aspx
+            case "date":
+            case "host":
+              break;
+
+            case "accept":
+              req.Accept = (string)this.headers[key];
+              break;
+            case "content-type":
+              req.ContentType = (string)this.headers[key];
+              break;
+            default:
+              req.Headers[key] = (string)this.headers[key];
+              break;
+          }
+				}
 			}
 
 			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
