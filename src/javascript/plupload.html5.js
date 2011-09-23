@@ -158,25 +158,7 @@
 		 * @return {Object} Name/value object with supported features.
 		 */
 		getFeatures : function() {
-			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport, ua;
-			
-			// in some cases sniffing is the only way around (@see triggerDialog feature), sorry
-			ua = (function() {
-					var nav = navigator, userAgent = nav.userAgent, vendor = nav.vendor, webkit, opera, safari;
-					
-					webkit = /WebKit/.test(userAgent);
-					safari = webkit && vendor.indexOf('Apple') !== -1;
-					opera = window.opera && window.opera.buildNumber;
-					
-					return {
-						ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
-						webkit: webkit,
-						gecko: !webkit && /Gecko/.test(userAgent),
-						safari: safari,
-						safariwin: safari && navigator.platform.indexOf('Win') !== -1,
-						opera: !!opera
-					};
-				}());
+			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport;
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
 			
@@ -196,7 +178,7 @@
 			}
 
 			// sniff out Safari for Windows and fake drag/drop
-			fakeSafariDragDrop = ua.safariwin;
+			fakeSafariDragDrop = plupload.ua.safariwin;
 
 			return {
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
@@ -210,13 +192,13 @@
 				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
 				canSendBinary: canSendBinary,
 				// gecko 2/5/6 can't send blob with FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150 
-				cantSendBlobInFormData: !!(ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
+				cantSendBlobInFormData: !!(plupload.ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
 				progress: hasProgress,
 				chunks: sliceSupport,
 				// Safari on Windows has problems when selecting multiple files
-				multi_selection: !ua.safariwin,
+				multi_selection: !plupload.ua.safariwin,
 				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
-				triggerDialog: (ua.gecko && window.FormData || ua.webkit) 
+				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit) 
 			};
 		},
 
