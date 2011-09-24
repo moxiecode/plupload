@@ -207,8 +207,8 @@
 						}
 
 						// Get result
-						result = el.documentElement.innerText || el.documentElement.textContent;
-
+						result = el.body.innerHTML;
+						
 						// Assume no error
 						if (result) {
 							currentFile.status = plupload.DONE;
