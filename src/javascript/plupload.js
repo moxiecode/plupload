@@ -882,8 +882,8 @@
 
 				// All files are DONE or FAILED
 				if (count == files.length) {
-					this.trigger("UploadComplete", files);
 					this.stop();
+					this.trigger("UploadComplete", files);
 				}
 			}
 		}
