@@ -285,7 +285,9 @@
 					if (up.state == plupload.STOPPED) {
 						window.setTimeout(function() {
 							plupload.removeEvent(iframe, 'load', up.id);
-							iframe.parentNode.removeChild(iframe);
+							if (iframe.parentNode) { // #382
+								iframe.parentNode.removeChild(iframe);
+							}
 						}, 0);
 					}
 				});
