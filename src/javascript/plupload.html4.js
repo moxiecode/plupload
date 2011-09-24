@@ -30,32 +30,13 @@
 		 *
 		 * @return {Object} Name/value object with supported features.
 		 */
-		getFeatures : function() {
-			// in some cases sniffing is the only way around (@see triggerDialog feature), sorry
-			var ua = (function() {
-					var nav = navigator, userAgent = nav.userAgent, vendor = nav.vendor, webkit, opera, safari;
-					
-					webkit = /WebKit/.test(userAgent);
-					safari = webkit && vendor.indexOf('Apple') !== -1;
-					opera = window.opera && window.opera.buildNumber;
-					
-					return {
-						ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
-						webkit: webkit,
-						gecko: !webkit && /Gecko/.test(userAgent),
-						safari: safari,
-						safariwin: safari && navigator.platform.indexOf('Win') !== -1,
-						opera: !!opera
-					};
-				}());
-			
-			
+		getFeatures : function() {			
 			// Only multipart feature
 			return {
 				multipart: true,
 				
 				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
-				triggerDialog: (ua.gecko && window.FormData || ua.webkit) 
+				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit) 
 			};
 		},
 
