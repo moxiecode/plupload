@@ -178,7 +178,7 @@
 			}
 
 			// sniff out Safari for Windows and fake drag/drop
-			fakeSafariDragDrop = plupload.ua.safariwin;
+			fakeSafariDragDrop = !(plupload.ua.safari && plupload.ua.windows);
 
 			return {
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
@@ -196,7 +196,7 @@
 				progress: hasProgress,
 				chunks: sliceSupport,
 				// Safari on Windows has problems when selecting multiple files
-				multi_selection: !plupload.ua.safariwin,
+				multi_selection: !(plupload.ua.safari && plupload.ua.windows),
 				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
 				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit) 
 			};

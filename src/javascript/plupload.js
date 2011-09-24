@@ -248,11 +248,11 @@
 			opera = window.opera && window.opera.buildNumber;
 			
 			return {
-				ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
+				windows: navigator.platform.indexOf('Win') !== -1,
+				ie: !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
 				webkit: webkit,
 				gecko: !webkit && /Gecko/.test(userAgent),
 				safari: safari,
-				safariwin: safari && navigator.platform.indexOf('Win') !== -1,
 				opera: !!opera
 			};
 		}()),
