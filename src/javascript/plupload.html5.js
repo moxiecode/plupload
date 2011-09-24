@@ -502,10 +502,7 @@
 
 				function sendBinaryBlob(blob) {
 					var chunk = 0, loaded = 0,
-						fr = ("FileReader" in window) ? new FileReader : null,
-						
-						// if file was preloaded as binary string, we should send it accordingly
-						shouldSendBinary = typeof(blob) === 'string';
+						fr = ("FileReader" in window) ? new FileReader : null;
 						
 
 					function uploadNextChunk() {
@@ -607,7 +604,7 @@
 								
 								
 								// if has FormData support like Chrome 6+, Safari 5+, Firefox 4, use it
-								if (!shouldSendBinary && !!window.FormData) {
+								if (typeof(bin) !== 'string' && !!window.FormData) {
 									formData = new FormData();
 	
 									// Add multipart params
@@ -623,7 +620,7 @@
 								}  // if no FormData we can still try to send it directly as last resort (see below)
 								
 								
-								if (shouldSendBinary) {
+								if (typeof(bin) === 'string') {
 									// Trying to send the whole thing as binary...
 		
 									// multipart request
@@ -711,9 +708,8 @@
 						}
 						
 						// workaround Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
-						if (fr && features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) { // basically if Gecko 2,5,6
+						if (typeof(chunkBlob) !== 'string' && fr && features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) {// Gecko 2,5,6
 							fr.onload = function() {
-								shouldSendBinary = true;
 								prepareAndSend(fr.result);
 							}
 							fr.readAsBinaryString(chunkBlob);
