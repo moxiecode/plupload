@@ -32,7 +32,8 @@
 				pngresize : true,
 				chunks : true,
 				progress: true,
-				multipart: true
+				multipart: true,
+				multi_selection: true
 			};
 		},
 

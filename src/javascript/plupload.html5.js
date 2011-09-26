@@ -158,25 +158,7 @@
 		 * @return {Object} Name/value object with supported features.
 		 */
 		getFeatures : function() {
-			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport, ua;
-			
-			// in some cases sniffing is the only way around (@see triggerDialog feature), sorry
-			ua = (function() {
-					var nav = navigator, userAgent = nav.userAgent, vendor = nav.vendor, webkit, opera, safari;
-					
-					webkit = /WebKit/.test(userAgent);
-					safari = webkit && vendor.indexOf('Apple') !== -1;
-					opera = window.opera && window.opera.buildNumber;
-					
-					return {
-						ie : !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
-						webkit: webkit,
-						gecko: !webkit && /Gecko/.test(userAgent),
-						safari: safari,
-						safariwin: safari && navigator.platform.indexOf('Win') !== -1,
-						opera: !!opera
-					};
-				}());
+			var xhr, hasXhrSupport, hasProgress, canSendBinary, dataAccessSupport, sliceSupport;
 
 			hasXhrSupport = hasProgress = dataAccessSupport = sliceSupport = false;
 			
@@ -196,7 +178,7 @@
 			}
 
 			// sniff out Safari for Windows and fake drag/drop
-			fakeSafariDragDrop = ua.safariwin;
+			fakeSafariDragDrop = !(plupload.ua.safari && plupload.ua.windows);
 
 			return {
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
@@ -210,11 +192,13 @@
 				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
 				canSendBinary: canSendBinary,
 				// gecko 2/5/6 can't send blob with FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150 
-				cantSendBlobInFormData: !!(ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
+				cantSendBlobInFormData: !!(plupload.ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
 				progress: hasProgress,
 				chunks: sliceSupport,
+				// Safari on Windows has problems when selecting multiple files
+				multi_selection: !(plupload.ua.safari && plupload.ua.windows),
 				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
-				triggerDialog: (ua.gecko && window.FormData || ua.webkit) 
+				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit) 
 			};
 		},
 
@@ -315,7 +299,7 @@
 				// Insert the input inside the input container
 				inputContainer.innerHTML = '<input id="' + uploader.id + '_html5" ' + ' style="font-size:999px"' +
 											' type="file" accept="' + mimes.join(',') + '" ' +
-											(uploader.settings.multi_selection ? 'multiple="multiple"' : '') + ' />';
+											(uploader.settings.multi_selection && uploader.features.multi_selection ? 'multiple="multiple"' : '') + ' />';
 
 				inputContainer.scrollTop = 100;
 				inputFile = document.getElementById(uploader.id + '_html5');
@@ -518,10 +502,7 @@
 
 				function sendBinaryBlob(blob) {
 					var chunk = 0, loaded = 0,
-						fr = ("FileReader" in window) ? new FileReader : null,
-						
-						// if file was preloaded as binary string, we should send it accordingly
-						shouldSendBinary = typeof(blob) === 'string';
+						fr = ("FileReader" in window) ? new FileReader : null;
 						
 
 					function uploadNextChunk() {
@@ -623,7 +604,7 @@
 								
 								
 								// if has FormData support like Chrome 6+, Safari 5+, Firefox 4, use it
-								if (!shouldSendBinary && !!window.FormData) {
+								if (typeof(bin) !== 'string' && !!window.FormData) {
 									formData = new FormData();
 	
 									// Add multipart params
@@ -639,7 +620,7 @@
 								}  // if no FormData we can still try to send it directly as last resort (see below)
 								
 								
-								if (shouldSendBinary) {
+								if (typeof(bin) === 'string') {
 									// Trying to send the whole thing as binary...
 		
 									// multipart request
@@ -727,9 +708,8 @@
 						}
 						
 						// workaround Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
-						if (fr && features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) { // basically if Gecko 2,5,6
+						if (typeof(chunkBlob) !== 'string' && fr && features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) {// Gecko 2,5,6
 							fr.onload = function() {
-								shouldSendBinary = true;
 								prepareAndSend(fr.result);
 							}
 							fr.readAsBinaryString(chunkBlob);
