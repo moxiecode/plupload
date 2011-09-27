@@ -1,3 +1,5 @@
+Version 1.5.1.1 (2011-09-27)
+	HTML5: Fix mechanical typo, that successfully broke drag and drop, wherever could.
 Version 1.5.1 (2011-09-26)
 	HTML4: Add support for server responses in HTML format.
 	HTML5: Disable multiple file selection in Safari 5.x for Windows (see #363).
