@@ -178,7 +178,7 @@
 			}
 
 			// sniff out Safari for Windows and fake drag/drop
-			fakeSafariDragDrop = !(plupload.ua.safari && plupload.ua.windows);
+			fakeSafariDragDrop = plupload.ua.safari && plupload.ua.windows;
 
 			return {
 				html5: hasXhrSupport, // This is a special one that we check inside the init call
