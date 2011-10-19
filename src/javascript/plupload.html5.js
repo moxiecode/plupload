@@ -677,7 +677,7 @@
 
 
 						// File upload finished
-						if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
+						if (file.status == plupload.DONE || file.status == plupload.FAILED) {
 							return;
 						}
 
