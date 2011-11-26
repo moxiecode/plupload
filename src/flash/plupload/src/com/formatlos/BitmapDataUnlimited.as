@@ -31,7 +31,6 @@ package com.formatlos
 	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -86,12 +85,11 @@ package com.formatlos
 	 * </div>
 	 * 
 	 */
-	public class BitmapDataUnlimited implements IEventDispatcher
+	public class BitmapDataUnlimited extends EventDispatcher
 	{
 		// basically this value is 4096, but take 4000 to have some buffer
 		static private const DRAW_LIMIT : uint = 4000;
 		
-		protected var _eventDispatcher : EventDispatcher;
 		private var _loader : Loader;
 		private var _gif : Gif;
 		private var _fillColor : uint;
@@ -111,14 +109,6 @@ package com.formatlos
 			return _bitmapData;
 		}
 		
-		
-		/**
-		 * Creates a new BitmapDataUnlimited object.
-		 */	
-		public function BitmapDataUnlimited()
-		{
-			_eventDispatcher = new EventDispatcher(this);
-		}
 		
 		/**
 		 * Creates a huge BitmapData object.
@@ -259,33 +249,6 @@ package com.formatlos
 		{
 			dispatchEvent(new BitmapDataUnlimitedEvent(BitmapDataUnlimitedEvent.COMPLETE));
 		}
-
-		
-		public function addEventListener(type : String, listener : Function, useCapture : Boolean = false, priority : int = 0, useWeakReference : Boolean = true) : void 
-		{
-			_eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-
-		public function dispatchEvent(event : Event) : Boolean 
-		{
-			return _eventDispatcher.dispatchEvent(event);
-		}
-
-		public function hasEventListener(type : String) : Boolean 
-		{
-			return _eventDispatcher.hasEventListener(type);
-		}
-
-		public function removeEventListener(type : String, listener : Function, useCapture : Boolean = false) : void 
-		{
-			_eventDispatcher.removeEventListener(type, listener, useCapture);
-		}
-
-		public function willTrigger(type : String) : Boolean 
-		{
-			return _eventDispatcher.willTrigger(type);
-		}
-		
 		
 	}
 }
