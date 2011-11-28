@@ -193,13 +193,11 @@ package com.mxi.image {
 			Exif = extractTags(offsets['exifIFD'], tags.exif);
 			
 			// fix formatting of some tags
-			if (Exif.hasOwnProperty('ExifVersion')) {
-				Exif.ExifVersion = String.fromCharCode(
-					Exif.ExifVersion[0], 
-					Exif.ExifVersion[1], 
-					Exif.ExifVersion[2], 
-					Exif.ExifVersion[3]
-				);
+			if (Exif.hasOwnProperty('ExifVersion') && Exif.ExifVersion is Array) {
+				for (var i:uint = 0, exifVersion:String = ''; i < Exif.ExifVersion.length; i++) {
+					exifVersion += String.fromCharCode(Exif.ExifVersion[i]);	
+				}
+				Exif.ExifVersion = exifVersion;
 			}
 				
 			return Exif;	 
