@@ -1360,13 +1360,11 @@
 				Exif = extractTags(offsets.exifIFD, tags.exif);
 
 				// Fix formatting of some tags
-				if (Exif.ExifVersion) {
-					Exif.ExifVersion = String.fromCharCode(
-						Exif.ExifVersion[0],
-						Exif.ExifVersion[1],
-						Exif.ExifVersion[2],
-						Exif.ExifVersion[3]
-					);
+				if (Exif.ExifVersion && plupload.typeOf(Exif.ExifVersion) === 'array') {
+					for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
+						exifVersion += String.fromCharCode(Exif.ExifVersion[i]);	
+					}
+					Exif.ExifVersion = exifVersion;
 				}
 
 				return Exif;

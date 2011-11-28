@@ -256,6 +256,17 @@
 				opera: !!opera
 			};
 		}()),
+		
+		/**
+		 * Gets the true type of the built-in object (better version of typeof).
+		 * @credits Angus Croll (http://javascriptweblog.wordpress.com/)
+		 *
+		 * @param {Object} o Object to check.
+		 * @return {String} Object [[Class]]
+		 */
+		typeOf: function(o) {
+			return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
+		},
 
 		/**
 		 * Extends the specified object with another object.
