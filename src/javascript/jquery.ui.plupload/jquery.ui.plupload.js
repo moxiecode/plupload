@@ -246,7 +246,10 @@ $.widget("ui.plupload", {
 			self._trigger('selected', null, { up: up, files: files } );
 			
 			if (self.options.autostart) {
-				self.start();
+				// set a little delay to make sure that QueueChanged triggered by the core has time to complete
+				setTimeout(function() {
+					self.start();
+				}, 10);
 			}
 		});
 		
@@ -458,6 +461,11 @@ $.widget("ui.plupload", {
 	
 	_handleFileStatus: function(file) {
 		var actionClass, iconClass;
+		
+		// since this method might be called asynchronously, file row might not yet be rendered
+		if (!$('#' + file.id).length) {
+			return;	
+		}
 
 		switch (file.status) {
 			case plupload.DONE: 
