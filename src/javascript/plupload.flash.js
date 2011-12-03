@@ -133,7 +133,7 @@
 				html = '<object id="' + uploader.id + '_flash" type="application/x-shockwave-flash" data="' + uploader.settings.flash_swf_url + '" ';
 				
 				if (plupload.ua.ie) {
-					html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" '
+					html += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ';
 				}
 
 				html += 'width="100%" height="100%" style="outline:0">'  +
