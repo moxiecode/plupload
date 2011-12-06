@@ -206,7 +206,6 @@
 					});
 				});
 
-
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
 					var file = up.getFile(lookup[flash_file.id]);
 
@@ -409,7 +408,16 @@
 						container.removeChild(flashContainer);
 					}
 				});
-							
+
+				/**
+                                 * Stop file upload in flash.
+                                 * 
+                                 * @author Malinowski <rafal@malinowski.be>
+                                 */
+				uploader.bind("CancelUpload", function(up, file) {
+					getFlashObj().stopUpload(lookup[file.id]);
+				});
+				
 				callback({success : true});
 			});
 		}

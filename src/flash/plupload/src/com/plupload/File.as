@@ -78,6 +78,15 @@ package com.plupload {
 		}
 
 		/**
+		 * FileReference property.
+		 *
+		 * @author Malinowski <rafal@malinowski.be>
+		 */
+		public function get fileRef():FileReference {
+			return this._fileRef;
+		}
+
+		/**
 		 * Constructs a new file object.
 		 *
 		 * @param id Unique indentifier for the file.
@@ -196,6 +205,16 @@ package com.plupload {
 			file._fileRef.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			
 			file._fileRef.upload(request, fileDataName, false);
+		}
+
+		/**
+		 *
+		 *
+		 * @author Malinowski <rafal@malinowski.be>
+		 */
+		public function stopUpload(id:String):void {
+			var file:File = this;
+			file._fileRef.cancel();
 		}
 
 		public function advancedUpload(url:String, settings:Object):void {

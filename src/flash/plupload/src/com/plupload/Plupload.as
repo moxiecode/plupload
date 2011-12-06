@@ -119,6 +119,13 @@ package com.plupload {
 			ExternalInterface.addCallback('clearQueue', this.clearFiles);
 			ExternalInterface.addCallback('setFileFilters', this.setFileFilters);
 			ExternalInterface.addCallback('uploadNextChunk', this.uploadNextChunk);
+			
+			/**
+			 * Add flash callback to stop current upload
+			 *
+			 * @author Malinowski <rafal@malinowski.be>
+			 */
+			ExternalInterface.addCallback("stopUpload", this.stopUpload);
 
 			this.fireEvent("Init");
 		}
@@ -352,6 +359,19 @@ package com.plupload {
 		 */
 		private function clearFiles():void {
 			this.files = new Dictionary();
+		}
+
+		/**
+		* Stop uploading current file.
+		* @param id File id to stop upload
+		* @author Malinowski <rafal@malinowski.be>
+		*/
+		private function stopUpload(id:String):void {
+			var file:File = this.files[id] as File;
+			if (file) {
+				this.currentFile = file;
+				file.stopUpload(id);
+			}
 		}
 
 		/**
