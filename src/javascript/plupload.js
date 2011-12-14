@@ -1246,14 +1246,23 @@
 
 			/**
 			 * Stops the upload of the queued files.
+			 * For any file which is uploaded Flash CancelUpload event is triggered
+			 * No bind for this event in other upload interfaces means no event is triggered
 			 *
 			 * @method stop
 			 */
 			stop : function() {
 				if (this.state != plupload.STOPPED) {
-					this.state = plupload.STOPPED;					
+					for(var i = 0; i < this.files.length; ++i) {
+						if(this.files[i].status == plupload.UPLOADING) {
+							this.trigger("StopUpload", this.files[i]);
+						}
+					}
+
+					this.state = plupload.STOPPED;
 					this.trigger("StateChanged");
 				}
+
 			},
 
 			/**
