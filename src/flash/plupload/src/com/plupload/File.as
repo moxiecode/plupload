@@ -1,4 +1,4 @@
-﻿/**
+/**
  * File.as
  *
  * Copyright 2009, Moxiecode Systems AB
@@ -75,6 +75,13 @@ package com.plupload {
 		 */
 		public function get size():Number {
 			return this._size;
+		}
+		
+		/**
+		 * FileReference property.
+		 */
+		public function get fileRef():FileReference {
+			return this._fileRef;
 		}
 
 		/**
@@ -196,6 +203,14 @@ package com.plupload {
 			file._fileRef.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			
 			file._fileRef.upload(request, fileDataName, false);
+		}
+		
+		/**
+		 * The real stop upload for current uploaded file.
+		 */
+		public function stopUpload(id:String):void {
+			var file:File = this;
+			file._fileRef.cancel();
 		}
 
 		public function advancedUpload(url:String, settings:Object):void {

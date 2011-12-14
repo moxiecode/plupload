@@ -409,6 +409,13 @@
 						container.removeChild(flashContainer);
 					}
 				});
+				
+				/**
+				 * Stop uploading current file upload in flash.
+				 */
+				uploader.bind("StopUpload", function(up, file) {
+					getFlashObj().stopUpload(lookup[file.id]);
+				});
 							
 				callback({success : true});
 			});
