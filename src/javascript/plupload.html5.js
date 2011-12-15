@@ -211,7 +211,19 @@
 		 */
 		init : function(uploader, callback) {
 			var features;
-
+			
+			function hasFiles(dataTransfer) {
+				if (!dataTransfer || !dataTransfer.files) {
+					return false;
+				}
+				
+				var types = plupload.toArray(dataTransfer.types || []);
+				return types.indexOf("public.file-url") !== -1 || // Safari < 5
+					types.indexOf("application/x-moz-file") !== -1 || // Gecko < 1.9.2 (< Firefox 3.6)
+					types.indexOf("Files") !== -1 ||
+					types.length === 0; // Standard
+			}
+			
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id, fileNames = {};
 
@@ -377,7 +389,7 @@
 
 							// Get or create drop zone
 							dropInputElm = document.getElementById(uploader.id + "_drop");
-							if (!dropInputElm) {
+							if (!dropInputElm && hasFiles(e.dataTransfer)) {
 								dropInputElm = document.createElement("input");
 								dropInputElm.setAttribute('type', "file");
 								dropInputElm.setAttribute('id', uploader.id + "_drop");
@@ -420,17 +432,21 @@
 
 					// Block browser default drag over
 					plupload.addEvent(dropElm, 'dragover', function(e) {
-						e.preventDefault();
+						if (hasFiles(e.dataTransfer)) {
+							e.preventDefault();
+						}
 					}, uploader.id);
 
 					// Attach drop handler and grab files
 					plupload.addEvent(dropElm, 'drop', function(e) {
 						var dataTransfer = e.dataTransfer;
+						
+						if (!hasFiles(dataTransfer)) {
+							return;
+						}
 
 						// Add dropped files
-						if (dataTransfer && dataTransfer.files) {
-							addSelectedFiles(dataTransfer.files);
-						}
+						addSelectedFiles(dataTransfer.files);
 
 						e.preventDefault();
 					}, uploader.id);
