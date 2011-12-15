@@ -213,7 +213,7 @@
 			var features;
 			
 			function hasFiles(dataTransfer) {
-				if (!dataTransfer || !dataTransfer.files) {
+				if (!dataTransfer || typeof(dataTransfer.files) === "undefined") {
 					return false;
 				}
 				
