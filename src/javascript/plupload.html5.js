@@ -220,8 +220,8 @@
 				var types = plupload.toArray(dataTransfer.types || []);
 				return types.indexOf("public.file-url") !== -1 || // Safari < 5
 					types.indexOf("application/x-moz-file") !== -1 || // Gecko < 1.9.2 (< Firefox 3.6)
-					types.indexOf("Files") !== -1 ||
-					types.length === 0; // Standard
+					types.indexOf("Files") !== -1 || // Standard
+					types.length === 0;
 			}
 			
 			function addSelectedFiles(native_files) {
