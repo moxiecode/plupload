@@ -116,6 +116,7 @@ package com.plupload {
 			// Add external callbacks
 			ExternalInterface.addCallback('uploadFile', this.uploadFile);
 			ExternalInterface.addCallback('removeFile', this.removeFile);
+			ExternalInterface.addCallback('cancelUpload', this.cancelUpload);
 			ExternalInterface.addCallback('clearQueue', this.clearFiles);
 			ExternalInterface.addCallback('setFileFilters', this.setFileFilters);
 			ExternalInterface.addCallback('uploadNextChunk', this.uploadNextChunk);
@@ -343,6 +344,15 @@ package com.plupload {
 		private function removeFile(id:String):void {
 			if (this.files[id] != null)
 				delete this.files[id];
+		}
+		
+		/**
+		 * Cancel upload.
+		 */
+		private function cancelUpload(): void {
+			if (this.currentFile) {
+				this.currentFile.cancelUpload();
+			}
 		}
 
 		/**

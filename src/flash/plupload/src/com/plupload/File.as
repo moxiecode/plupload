@@ -43,7 +43,7 @@ package com.plupload {
 	 */
 	public class File extends EventDispatcher {
 		// Private fields
-		private var _fileRef:FileReference, _cancelled:Boolean;
+		private var _fileRef:FileReference, _urlStream:URLStream, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String, _mimeType:String;
 		private var _id:String, _fileName:String, _size:Number, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
@@ -88,6 +88,18 @@ package com.plupload {
 			this._fileRef = file_ref;
 			this._size = file_ref.size;
 			this._fileName = file_ref.name;
+		}
+		
+		/**
+		 * Cancel current upload.
+		 */
+		public function cancelUpload(): void
+		{
+			if (this.canUseSimpleUpload(this._settings)) {
+				this._fileRef.cancel();
+			} else if (this._urlStream.connected) {
+				this._urlStream.close();
+			}
 		}
 
 		/**
@@ -303,7 +315,7 @@ package com.plupload {
 		 */
 		public function uploadNextChunk():Boolean {
 			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
-			var urlStream:URLStream, url:String, file:File = this;
+			var url:String, file:File = this;
 
 			// All chunks uploaded?
 			if (this._chunk >= this._chunks) {
@@ -328,14 +340,14 @@ package com.plupload {
 			fileData.readBytes(chunkData, 0, fileData.position + this._chunkSize > fileData.length ? fileData.length - fileData.position : this._chunkSize);
 
 			// Setup URL stream
-			urlStream = new URLStream();
+			file._urlStream = new URLStream();
 
 			// Wait for response and dispatch it
-			urlStream.addEventListener(Event.COMPLETE, function(e:Event):void {
-				var response:String;
-
-				response = urlStream.readUTFBytes(urlStream.bytesAvailable);
-
+			file._urlStream.addEventListener(Event.COMPLETE, function(e:Event):void {
+				file._urlStream.removeEventListener(Event.COMPLETE, arguments.callee);
+				
+				var response:String = file._urlStream.readUTFBytes(file._urlStream.bytesAvailable);
+				
 				// Fake UPLOAD_COMPLETE_DATA event
 				var uploadChunkEvt:UploadChunkEvent = new UploadChunkEvent(
 					UploadChunkEvent.UPLOAD_CHUNK_COMPLETE_DATA,
@@ -354,17 +366,19 @@ package com.plupload {
 				dispatchEvent(pe);
 
 				// Clean up memory
-				urlStream.close();
+				file._urlStream.close();
 				chunkData.clear();
 			});
 
 			// Delegate upload IO errors
-			urlStream.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+			file._urlStream.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+				file._urlStream.removeEventListener(IOErrorEvent.IO_ERROR, arguments.callee);
 				dispatchEvent(e);
 			});
 
 			// Delegate secuirty errors
-			urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
+			file._urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
+				file._urlStream.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, arguments.callee);
 				dispatchEvent(e);
 			});
 
@@ -439,7 +453,7 @@ package com.plupload {
 			}
 
 			// Make request
-			urlStream.load(req);
+			file._urlStream.load(req);
 
 			return true;
 		}

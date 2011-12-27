@@ -205,6 +205,10 @@
 						urlstream_upload : settings.urlstream_upload
 					});
 				});
+				
+				uploader.bind("CancelUpload", function() {
+					getFlashObj().cancelUpload();
+				});
 
 
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
@@ -230,7 +234,7 @@
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is maked as failed
-					if (file.status != plupload.FAILED) {
+					if (file.status !== plupload.FAILED && up.state !== plupload.STOPPED) {
 						getFlashObj().uploadNextChunk();
 					}
 

@@ -210,7 +210,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var features;
+			var features, xhr;
 
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id, fileNames = {};
@@ -477,6 +477,12 @@
 					}
 				}
 			});
+			
+			uploader.bind("CancelUpload", function() {
+				if (xhr.abort) {
+					xhr.abort();	
+				}
+			});
 
 			uploader.bind("UploadFile", function(up, file) {
 				var settings = up.settings, nativeFile, resize;
@@ -511,13 +517,13 @@
 						
 						function prepareAndSend(bin) {
 							var multipartDeltaSize = 0,
-								xhr = new XMLHttpRequest,
-								upload = xhr.upload,	
-								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = ''
+								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = '';
 								
+							xhr = new XMLHttpRequest;
+															
 							// Do we have upload progress support
-							if (upload) {
-								upload.onprogress = function(e) {
+							if (xhr.upload) {
+								xhr.upload.onprogress = function(e) {
 									file.loaded = Math.min(file.size, loaded + e.loaded - multipartDeltaSize); // Loaded can be larger than file size due to multipart encoding
 									up.trigger('UploadProgress', file);
 								};
@@ -525,7 +531,7 @@
 	
 							xhr.onreadystatechange = function() {
 								var httpStatus, chunkArgs;
-	
+									
 								if (xhr.readyState == 4) {
 									// Getting the HTTP status might fail on some Gecko versions
 									try {
@@ -582,10 +588,7 @@
 											// Still chunks left
 											uploadNextChunk();
 										}
-									}	
-									
-									xhr = null;
-																
+									}																	
 								}
 							};
 							

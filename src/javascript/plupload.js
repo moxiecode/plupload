@@ -1111,7 +1111,7 @@
 						// Get start time to calculate bps
 						startTime = (+new Date());
 						
-					} else if (up.state == plupload.STOPPED) {
+					} else if (up.state == plupload.STOPPED) {						
 						// Reset currently uploading files
 						for (i = up.files.length - 1; i >= 0; i--) {
 							if (up.files[i].status == plupload.UPLOADING) {
@@ -1251,7 +1251,8 @@
 			 */
 			stop : function() {
 				if (this.state != plupload.STOPPED) {
-					this.state = plupload.STOPPED;					
+					this.state = plupload.STOPPED;	
+					this.trigger("CancelUpload");				
 					this.trigger("StateChanged");
 				}
 			},
