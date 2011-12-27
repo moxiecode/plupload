@@ -167,7 +167,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var desktop;
+			var desktop, req;
 
 			// Check for gears support
 			if (!window.google || !google.gears) {
@@ -248,6 +248,14 @@
 					desktop.openFiles(addSelectedFiles, {singleFile : !settings.multi_selection, filter : filters});
 				}, uploader.id);
 			});
+			
+			
+			uploader.bind("CancelUpload", function() {
+				if (req.abort) {
+					req.abort();	
+				}
+			});
+			
 
 			uploader.bind("UploadFile", function(up, file) {
 				var chunk = 0, chunks, chunkSize, loaded = 0, resize = up.settings.resize, chunking;
@@ -270,7 +278,7 @@
 				}
 
 				function uploadNextChunk() {
-					var req, curChunkSize, multipart = up.settings.multipart, multipartLength = 0, reqArgs = {name : file.target_name || file.name}, url = up.settings.url;
+					var curChunkSize, multipart = up.settings.multipart, multipartLength = 0, reqArgs = {name : file.target_name || file.name}, url = up.settings.url;
 
 					// Sends the binary blob multipart encoded or raw depending on config
 					function sendBinaryBlob(blob) {
