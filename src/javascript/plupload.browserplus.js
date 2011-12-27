@@ -171,6 +171,10 @@
 					// Prevent IE leaks
 					dropElm = dropTargetElm = null;
 				});
+				
+				uploader.bind("CancelUpload", function() {
+					browserPlus.Uploader.cancel();
+				});
 
 				uploader.bind("UploadFile", function(up, file) {
 					var nativeFile = browserPlusFiles[file.id], reqParams = {},
