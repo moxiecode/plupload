@@ -375,7 +375,10 @@
 					);
 				});
 				
-				
+				uploader.bind("CancelUpload", function() {
+					getSilverlightObj().CancelUpload();
+				});
+
 				uploader.bind('Silverlight:MouseEnter', function(up) {
 					var browseButton, hoverClass;
 						

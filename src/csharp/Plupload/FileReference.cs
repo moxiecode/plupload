@@ -36,7 +36,7 @@ namespace Moxiecode.Plupload {
 		private FileInfo info;
 		private SynchronizationContext syncContext;
 		private int chunks, chunkSize;
-		private bool multipart, chunking;
+		private bool multipart, chunking, stopped;
 		private long size, chunk;
 		private string fileDataName;
 		private Dictionary<string, object> multipartParams;
@@ -77,6 +77,7 @@ namespace Moxiecode.Plupload {
 		public FileReference(string id, FileInfo info) {
 			this.id = id;
 			this.name = info.Name;
+            this.stopped = true;
 			this.info = info;
             this.size = info.Length;
 		}
@@ -123,6 +124,7 @@ namespace Moxiecode.Plupload {
 
             this.chunk = 0;
 			this.chunking = chunkSize > 0;
+            this.stopped = false;
 
 
 			this.uploadUrl = upload_url;
@@ -182,7 +184,7 @@ namespace Moxiecode.Plupload {
 			string url = this.uploadUrl;
 
 			// Is there more chunks
-			if (this.chunk >= this.chunks)
+			if (this.chunk >= this.chunks || this.stopped)
 				return false;
 
 			this.syncContext = SynchronizationContext.Current;
@@ -250,6 +252,13 @@ namespace Moxiecode.Plupload {
 
 			return true;
 		}
+
+        /// <summary>
+        /// Cancels uploading the current file.
+        /// </summary>
+        public void CancelUpload() {
+            this.stopped = true;
+        }
 
 		#region protected methods
 
