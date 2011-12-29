@@ -260,12 +260,6 @@
 					selectedFiles.push(new plupload.File(id, name, size));
 				});
 
-        uploader.bind("Silverlight:ForceFiles", function(up, file) {
-          var id = plupload.guid();
-          lookup[id] = file.id;
-          lookup[file.id] = id;
-        });
-
 				uploader.bind("Silverlight:SelectSuccessful", function() {
 					// Trigger FilesAdded event if we added any
 					if (selectedFiles.length) {
