@@ -196,14 +196,14 @@ namespace Moxiecode.Plupload {
 			return false;
 		}
 
-        [ScriptableMember]
-        /// <summary>
-        /// Stops uploading the current file.
-        /// </summary>
-        public void CancelUpload() {
-        if (this.currentFile != null)
-            this.currentFile.CancelUpload();
-        }
+    [ScriptableMember]
+    /// <summary>
+    /// Stops uploading the current file.
+    /// </summary>
+    public void CancelUpload() {
+    if (this.currentFile != null)
+        this.currentFile.CancelUpload();
+    }
 
 		/// <summary>
 		///  Send debug message to firebug console.
