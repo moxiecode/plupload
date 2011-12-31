@@ -43,6 +43,7 @@ namespace Moxiecode.Plupload {
 		private Dictionary<string, object> headers;
 		private Stream fileStream;
 		private Stream imageStream;
+        private HttpWebRequest req;
 		#endregion
 
 		/// <summary>Upload complete delegate.</summary>
@@ -203,8 +204,8 @@ namespace Moxiecode.Plupload {
 				}
 			}
 
-			HttpWebRequest req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
-			req.Method = "POST";
+			this.req = WebRequest.Create(new Uri(HtmlPage.Document.DocumentUri, url)) as HttpWebRequest;
+			this.req.Method = "POST";
 
 			// Add custom headers
 			if (this.headers != null) {
@@ -236,19 +237,19 @@ namespace Moxiecode.Plupload {
               break;
 
             case "accept":
-              req.Accept = (string)this.headers[key];
+              this.req.Accept = (string)this.headers[key];
               break;
             case "content-type":
-              req.ContentType = (string)this.headers[key];
+              this.req.ContentType = (string)this.headers[key];
               break;
             default:
-              req.Headers[key] = (string)this.headers[key];
+              this.req.Headers[key] = (string)this.headers[key];
               break;
           }
 				}
 			}
 
-			IAsyncResult asyncResult = req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), req);
+			IAsyncResult asyncResult = this.req.BeginGetRequestStream(new AsyncCallback(RequestStreamCallback), this.req);
 
 			return true;
 		}
@@ -257,7 +258,10 @@ namespace Moxiecode.Plupload {
         /// Cancels uploading the current file.
         /// </summary>
         public void CancelUpload() {
-            this.stopped = true;
+            if (!this.stopped) {
+                this.stopped = true;
+                req.Abort();
+            }
         }
 
 		#region protected methods
