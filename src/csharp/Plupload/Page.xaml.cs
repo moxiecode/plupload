@@ -35,6 +35,7 @@ namespace Moxiecode.Plupload {
 		private FileReference currentFile;
 		private string id, filter;
 		private bool multiselect;
+		private bool disabled = false;
 		#endregion
 
 		/// <summary>
@@ -60,6 +61,10 @@ namespace Moxiecode.Plupload {
 		}
 
 		private void OnClick(object sender, MouseEventArgs e) {
+			if (this.disabled) {
+				return;
+			}
+
 			OpenFileDialog dlg = new OpenFileDialog();
 
 			this.FireEvent("StartSelectFiles");
@@ -204,6 +209,15 @@ namespace Moxiecode.Plupload {
             if (this.currentFile != null)
                 this.currentFile.CancelUpload();
         }
+
+		[ScriptableMember]
+		/// <summary>
+		/// Disable dialog trigger.
+		/// </summary>
+		public void DisableBrowse(bool disabled = true)
+		{
+			this.disabled = disabled;
+		}
 
 		/// <summary>
 		///  Send debug message to firebug console.

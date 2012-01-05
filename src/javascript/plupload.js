@@ -859,7 +859,7 @@
 	 * @param {Object} settings Initialization settings, to be used by the uploader instance and runtimes.
 	 */
 	plupload.Uploader = function(settings) {
-		var events = {}, total, files = [], startTime;
+		var events = {}, total, files = [], startTime, disabled = false;
 
 		// Inital total state
 		total = new plupload.QueueProgress();
@@ -1255,6 +1255,17 @@
 					this.trigger("CancelUpload");				
 					this.trigger("StateChanged");
 				}
+			},
+			
+			/** 
+			 * Disables/enables browse button on request.
+			 *
+			 * @method disableBrowse
+			 * @param {Boolean} disable Whether to disable or enable (default: true)
+			 */
+			disableBrowse : function() {
+				disabled = arguments[0] !== undef ? arguments[0] : true;
+				this.trigger("DisableBrowse", disabled);
 			},
 
 			/**

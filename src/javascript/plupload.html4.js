@@ -106,7 +106,9 @@
 					// Route click event to input element programmatically, if possible
 					if (up.features.triggerDialog && browseButton) {
 						plupload.addEvent(getById(up.settings.browse_button), 'click', function(e) {
-							input.click();
+							if (!input.disabled) {
+								input.click();
+							}
 							e.preventDefault();
 						}, up.id);
 					}
@@ -371,6 +373,13 @@
 						if (n) {
 							n.parentNode.removeChild(n);
 						}
+					}
+				});
+				
+				uploader.bind("DisableBrowse", function(up, disabled) {
+					var input = document.getElementById('input_' + currentFileId);
+					if (input) {
+						input.disabled = disabled;	
 					}
 				});
 				

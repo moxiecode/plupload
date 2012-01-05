@@ -357,7 +357,10 @@
 					// Route click event to the input[type=file] element for supporting browsers
 					if (up.features.triggerDialog) {
 						plupload.addEvent(browseButton, 'click', function(e) {
-							document.getElementById(up.id + '_html5').click();
+							var input = document.getElementById(up.id + '_html5');
+							if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
+								input.click();
+							}
 							e.preventDefault();
 						}, up.id); 
 					}
@@ -474,7 +477,14 @@
 						plupload.extend(inputContainer.style, {
 							zIndex : zIndex - 1
 						});
-					}
+					}				
+				}
+			});
+			
+			uploader.bind("DisableBrowse", function(up, disabled) {
+				var input = document.getElementById(up.id + '_html5');
+				if (input) {
+					input.disabled = disabled;	
 				}
 			});
 			

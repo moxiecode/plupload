@@ -422,6 +422,10 @@
 					}
 				});
 				
+				uploader.bind("DisableBrowse", function(up, disabled) {
+					getSilverlightObj().DisableBrowse(disabled);
+				});
+		
 				uploader.bind("Destroy", function(up) {
 					var silverlightContainer;
 					

@@ -167,7 +167,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var desktop, req;
+			var desktop, req, disabled = false;
 
 			// Check for gears support
 			if (!window.google || !google.gears) {
@@ -230,6 +230,10 @@
 					var filters = [], i, a, ext;
 
 					e.preventDefault();
+					
+					if (disabled) {
+						return;	
+					}
 					
 					no_type_restriction:
 					for (i = 0; i < settings.filters.length; i++) {
@@ -411,6 +415,11 @@
 				// Start uploading chunks
 				uploadNextChunk();
 			});
+			
+			uploader.bind("DisableBrowse", function(up, state) {
+				disabled = state;
+			});
+			
 			
 			uploader.bind("Destroy", function(up) {
 				var name, element,

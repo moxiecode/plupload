@@ -67,6 +67,8 @@
 
 			// Setup event listeners if browserplus was initialized
 			function setup() {
+				var disabled = false;
+				
 				// Add drop handler
 				uploader.bind("PostInit", function() {
 					var dropTargetElm, dropElmId = settings.drop_element,
@@ -144,6 +146,10 @@
 						var mimeTypes = [], i, a, filters = settings.filters, ext;
 
 						e.preventDefault();
+						
+						if (disabled) {
+							return;	
+						}
 
 						// Convert extensions to mimetypes
 						no_type_restriction:
@@ -174,6 +180,10 @@
 				
 				uploader.bind("CancelUpload", function() {
 					browserPlus.Uploader.cancel();
+				});
+				
+				uploader.bind("DisableBrowse", function(up, state) {
+					disabled = state;
 				});
 
 				uploader.bind("UploadFile", function(up, file) {

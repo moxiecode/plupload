@@ -400,6 +400,11 @@
 					}
 				});
 				
+				uploader.bind("DisableBrowse", function(up, disabled) {
+					getFlashObj().disableBrowse(disabled);
+				});
+			
+				
 				uploader.bind("Destroy", function(up) {
 					var flashContainer;
 					
