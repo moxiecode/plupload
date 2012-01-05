@@ -36,7 +36,7 @@ namespace Moxiecode.Plupload {
 		private FileInfo info;
 		private SynchronizationContext syncContext;
 		private int chunks, chunkSize;
-		private bool multipart, chunking, stopped;
+		private bool multipart, chunking;
 		private long size, chunk;
 		private string fileDataName;
 		private Dictionary<string, object> multipartParams;
@@ -78,7 +78,6 @@ namespace Moxiecode.Plupload {
 		public FileReference(string id, FileInfo info) {
 			this.id = id;
 			this.name = info.Name;
-			this.stopped = true;
 			this.info = info;
 			this.size = info.Length;
 		}
@@ -125,8 +124,6 @@ namespace Moxiecode.Plupload {
 
             this.chunk = 0;
 			this.chunking = chunkSize > 0;
-			this.stopped = false;
-
 
 			this.uploadUrl = upload_url;
 
@@ -185,7 +182,7 @@ namespace Moxiecode.Plupload {
 			string url = this.uploadUrl;
 
 			// Is there more chunks
-			if (this.chunk >= this.chunks || this.stopped)
+			if (this.chunk >= this.chunks)
 				return false;
 
 			this.syncContext = SynchronizationContext.Current;
@@ -210,42 +207,43 @@ namespace Moxiecode.Plupload {
 			// Add custom headers
 			if (this.headers != null) {
 				foreach (string key in this.headers.Keys) {
-          if (this.headers[key] == null)
-            continue;
+                    if (this.headers[key] == null)
+                        continue;
 
-          switch (key.ToLower())
-          {
-            // in silverlight 3, these are set by the web browser that hosts the Silverlight application.
-            // http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest%28v=vs.95%29.aspx
-            case "connection":
-            case "content-length":
-            case "expect":
-            case "if-modified-since":
-            case "referer":
-            case "transfer-encoding":
-            case "user-agent":
-              break;
+                    switch (key.ToLower())
+                    {
+                        // in silverlight 3, these are set by the web browser that hosts the Silverlight application.
+                        // http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest%28v=vs.95%29.aspx
+                        case "connection":
+                        case "content-length":
+                        case "expect":
+                        case "if-modified-since":
+                        case "referer":
+                        case "transfer-encoding":
+                        case "user-agent":
+                            break;
 
-            // in silverlight this isn't supported, can not find reference to why not
-            case "range":
-              break;
+                        // in silverlight this isn't supported, can not find reference to why not
+                        case "range":
+                            break;
 
-            // in .NET Framework 3.5 and below, these are set by the system.
-            // http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest%28v=VS.90%29.aspx
-            case "date":
-            case "host":
-              break;
+                        // in .NET Framework 3.5 and below, these are set by the system.
+                        // http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest%28v=VS.90%29.aspx
+                        case "date":
+                        case "host":
+                            break;
 
-            case "accept":
-              this.req.Accept = (string)this.headers[key];
-              break;
-            case "content-type":
-              this.req.ContentType = (string)this.headers[key];
-              break;
-            default:
-              this.req.Headers[key] = (string)this.headers[key];
-              break;
-          }
+                        case "accept":
+                            this.req.Accept = (string)this.headers[key];
+                            break;
+                        
+                        case "content-type":
+                            this.req.ContentType = (string)this.headers[key];
+                            break;
+                        default:
+                            this.req.Headers[key] = (string)this.headers[key];
+                            break;
+                    }
 				}
 			}
 
@@ -258,34 +256,17 @@ namespace Moxiecode.Plupload {
 		/// Cancels uploading the current file.
 		/// </summary>
 		public void CancelUpload() {
-		    if (!this.stopped) {
-		        this.stopped = true;
-		        req.Abort();
-
-                if (fileStream != null) {
-                    fileStream.Dispose();
-                    fileStream = null;
-                }
-                
-                if (imageStream != null) {
-                    imageStream.Dispose();
-                    imageStream = null;
-                }
+		    if (this.req != null) {
+		        this.req.Abort();
+                this.req = null;
+                DisposeStreams();
 		    }
 		}
 
 		#region protected methods
 
 		protected virtual void OnUploadComplete(UploadEventArgs e) {
-			if (fileStream != null) {
-				fileStream.Dispose();
-				fileStream = null;
-			}
-			
-			if (imageStream != null) {
-				imageStream.Dispose();
-				imageStream = null;
-			}
+            DisposeStreams();
 			
 			if (UploadComplete != null)
 				UploadComplete(this, e);
@@ -297,15 +278,7 @@ namespace Moxiecode.Plupload {
 		}
 
 		protected virtual void OnIOError(ErrorEventArgs e) {
-			if (fileStream != null) {
-				fileStream.Dispose();
-				fileStream = null;
-			}
-			
-			if (imageStream != null) {
-				imageStream.Dispose();
-				imageStream = null;
-			}
+            DisposeStreams();
 			
 			if (Error != null)
 				Error(this, e);
@@ -416,7 +389,16 @@ namespace Moxiecode.Plupload {
 
 			try {
 				request.BeginGetResponse(new AsyncCallback(ResponseCallback), request);
-			} catch (Exception ex) {
+			}
+            catch (WebException ex)
+            {
+                if (ex.Status != WebExceptionStatus.RequestCanceled) {
+                    syncContext.Send(delegate {
+                        this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
+                    }, this);
+                }
+            }
+            catch (Exception ex) {
 				syncContext.Send(delegate {
 					this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
 				}, this);
@@ -484,6 +466,18 @@ namespace Moxiecode.Plupload {
 				response.Close();
 			}
 		}
+
+        private void DisposeStreams() {
+            if (fileStream != null) {
+                fileStream.Dispose();
+                fileStream = null;
+            }
+
+            if (imageStream != null) {
+                imageStream.Dispose();
+                imageStream = null;
+            }
+        }
 
 		private void Debug(string msg) {
 			((ScriptObject) HtmlPage.Window.Eval("console")).Invoke("log", new string[] {msg});

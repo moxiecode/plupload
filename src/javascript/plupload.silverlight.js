@@ -316,7 +316,7 @@
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
 					// Stop upload if file is maked as failed
-					if (file.status != plupload.FAILED) {
+					if (file.status != plupload.FAILED && up.state !== plupload.STOPPED) {
 						getSilverlightObj().UploadNextChunk();
 					}
 
