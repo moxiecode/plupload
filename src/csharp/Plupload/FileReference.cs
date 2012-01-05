@@ -261,6 +261,16 @@ namespace Moxiecode.Plupload {
 		    if (!this.stopped) {
 		        this.stopped = true;
 		        req.Abort();
+
+                if (fileStream != null) {
+                    fileStream.Dispose();
+                    fileStream = null;
+                }
+                
+                if (imageStream != null) {
+                    imageStream.Dispose();
+                    imageStream = null;
+                }
 		    }
 		}
 
@@ -414,17 +424,26 @@ namespace Moxiecode.Plupload {
 		}
 
 		private void ResponseCallback(IAsyncResult ar) {
-			try {
-				HttpWebRequest request = ar.AsyncState as HttpWebRequest;
+            try
+            {
+                HttpWebRequest request = ar.AsyncState as HttpWebRequest;
 
-				WebResponse response = request.EndGetResponse(ar);
+                WebResponse response = request.EndGetResponse(ar);
 
-				syncContext.Post(ExtractResponse, response);
-			} catch (Exception ex) {
-				syncContext.Send(delegate {
-					this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
-				}, this);
-			}
+                syncContext.Post(ExtractResponse, response);
+            }
+            catch (WebException ex) {
+                if (ex.Status != WebExceptionStatus.RequestCanceled) {
+                    syncContext.Send(delegate {
+                        this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
+                    }, this);
+                }
+            }
+            catch (Exception ex) {
+                syncContext.Send(delegate {
+                    this.OnIOError(new ErrorEventArgs(ex.Message, this.chunk, this.chunks));
+                }, this);
+            }
 		}
 
 		private void ExtractResponse(object state) {
