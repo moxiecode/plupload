@@ -69,9 +69,11 @@
 		"image/png,png," +
 		"image/svg+xml,svg svgz," +
 		"image/tiff,tiff tif," +
+		"text/plain,asc txt text diff log," +
 		"text/html,htm html xhtml," +
-		"text/rtf,rtf," +
 		"text/css,css," +
+		"text/csv,csv," +
+		"text/rtf,rtf," +
 		"video/mpeg,mpeg mpg mpe," +
 		"video/quicktime,qt mov," +
 		"video/mp4,mp4," +
@@ -81,9 +83,8 @@
 		"video/avi,avi," +
 		"video/webm,webm," +
 		"video/vnd.rn-realvideo,rv," +
-		"text/csv,csv," +
-		"text/plain,asc txt text diff log," +
-		"application/octet-stream,exe eot otf ttf ttc woff"
+		"application/vnd.oasis.opendocument.formula-template,otf," +
+		"application/octet-stream,exe"
 	);
 
 	/**
