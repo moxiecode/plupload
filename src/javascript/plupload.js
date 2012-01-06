@@ -1432,7 +1432,8 @@
 			 *
 			 * @method destroy
 			 */
-			destroy : function() {							
+			destroy : function() {	
+				this.stop();						
 				this.trigger('Destroy');
 				
 				// Clean-up after uploader itself
