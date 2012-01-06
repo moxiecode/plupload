@@ -188,13 +188,19 @@ $.widget("ui.plupload", {
 				id: id + '_count',
 				name: id + '_count'
 			});
-		
+					
 		// initialize uploader instance
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend({ 
 			container: id ,
 			browse_button: id + '_browse'
 		}, this.options));
 		
+		// do not show UI if no runtime can be initialized
+		uploader.bind('Error', function(up, err) {
+			if (err.code === plupload.INIT_ERROR) {
+				self.destroy();
+			}
+		});
 		
 		uploader.bind('Init', function(up, res) {			
 			if (!self.options.unique_names && self.options.rename) {
