@@ -283,7 +283,12 @@ $.widget("ui.plupload", {
 		
 		uploader.bind('UploadProgress', function(up, file) {
 			// Set file specific progress
-			$('#' + file.id + ' .plupload_file_status', self.element).html(file.percent + '%');
+			$('#' + file.id)
+				.find('.plupload_file_status')
+					.html(file.percent + '%')
+					.end()
+				.find('.plupload_file_size')
+					.html(plupload.formatSize(file.size));	
 
 			self._handleFileStatus(file);
 			self._updateTotalProgress();
@@ -518,11 +523,15 @@ $.widget("ui.plupload", {
 		
 		this.progressbar.progressbar('value', up.total.percent);
 		
-		$('.plupload_total_status', this.element).html(up.total.percent + '%');
-		
-		$('.plupload_upload_status', this.element).text(
-			_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length)
-		);
+		this.element
+			.find('.plupload_total_status')
+				.html(up.total.percent + '%')
+				.end()
+			.find('.plupload_total_file_size')
+				.html(plupload.formatSize(up.total.size))
+				.end()
+			.find('.plupload_upload_status')
+				.text(_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length));
 	},
 	
 	
@@ -575,9 +584,6 @@ $.widget("ui.plupload", {
 				
 			self._trigger('updatelist', null, filelist);
 		});
-		
-
-		$('.plupload_total_file_size', self.element).html(plupload.formatSize(up.total.size));
 
 		if (up.total.queued === 0) {
 			$('.ui-button-text', self.browse_button).text(_('Add Files'));
