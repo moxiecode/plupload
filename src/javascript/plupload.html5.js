@@ -746,8 +746,10 @@
 						if (res.success) {
 							file.size = res.data.length;
 							sendBinaryBlob(res.data);
-						} else {
+						} else if (features.chunks) {
 							sendBinaryBlob(nativeFile); 
+						} else {
+							readFileAsBinary(nativeFile, sendBinaryBlob); // for browsers not supporting File.slice (e.g. FF3.6)
 						}
 					});
 				// if there's no way to slice file without preloading it in memory, preload it
