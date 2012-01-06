@@ -441,7 +441,7 @@ $.widget("ui.plupload", {
 				.add('.plupload_started')
 					.removeClass('plupload_hidden');
 							
-			$('.plupload_upload_status', self.element).text(
+			$('.plupload_upload_status', self.element).html(
 				_('Uploaded %d/%d files').replace('%d/%d', uploader.total.uploaded+'/'+uploader.files.length)
 			);
 			
@@ -520,7 +520,7 @@ $.widget("ui.plupload", {
 		
 		$('.plupload_total_status', this.element).html(uploader.total.percent + '%');
 		
-		$('.plupload_upload_status', this.element).text(
+		$('.plupload_upload_status', this.element).html(
 			_('Uploaded %d/%d files').replace('%d/%d', uploader.total.uploaded+'/'+uploader.files.length)
 		);
 	},
@@ -580,9 +580,9 @@ $.widget("ui.plupload", {
 		$('.plupload_total_file_size', self.element).html(plupload.formatSize(uploader.total.size));
 
 		if (uploader.total.queued === 0) {
-			$('.ui-button-text', self.browse_button).text(_('Add Files'));
+			$('.ui-button-text', self.browse_button).html(_('Add Files'));
 		} else {
-			$('.ui-button-text', self.browse_button).text(_('%d files queued').replace('%d', uploader.total.queued));
+			$('.ui-button-text', self.browse_button).html(_('%d files queued').replace('%d', uploader.total.queued));
 		}
 
 
