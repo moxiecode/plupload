@@ -366,7 +366,7 @@
 					req.onreadystatechange = function() {
 						var chunkArgs;
 
-						if (req.readyState == 4) {
+						if (req.readyState == 4 && up.state !== plupload.STOPPED) {
 							if (req.status == 200) {
 								chunkArgs = {
 									chunk : chunk,
