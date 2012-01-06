@@ -118,7 +118,7 @@
 						width : '100%',
 						height : '100%',
 						opacity : 0,
-						fontSize: '999px' // force input element to be bigger then needed to occupy whole space
+						fontSize: '99px' // force input element to be bigger then needed to occupy whole space
 					});
 					
 					plupload.extend(form.style, {
