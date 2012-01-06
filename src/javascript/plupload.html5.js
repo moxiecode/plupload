@@ -541,8 +541,8 @@
 	
 							xhr.onreadystatechange = function() {
 								var httpStatus, chunkArgs;
-									
-								if (xhr.readyState == 4) {
+																	
+								if (xhr.readyState == 4 && up.state !== plupload.STOPPED) {
 									// Getting the HTTP status might fail on some Gecko versions
 									try {
 										httpStatus = xhr.status;
