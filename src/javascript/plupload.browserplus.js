@@ -143,7 +143,7 @@
 					}
 
 					plupload.addEvent(document.getElementById(settings.browse_button), 'click', function(e) {
-						var mimeTypes = [], i, a, filters = settings.filters, ext;
+						var mimes = [], i, a, filters = settings.filters, ext, type;
 
 						e.preventDefault();
 						
@@ -158,15 +158,19 @@
 
 							for (a = 0; a < ext.length; a++) {
 								if (ext[a] === '*') {
-									mimeTypes = [];
+									mimes = [];
 									break no_type_restriction;
 								}
-								mimeTypes.push(plupload.mimeTypes[ext[a]]);
+								type = plupload.mimeTypes[ext[a]];
+								
+								if (type && plupload.inArray(type, mimes) === -1) {
+									mimes.push(plupload.mimes[ext[a]]);
+								}
 							}
 						}
 
 						browserPlus.FileBrowse.OpenBrowseDialog({
-							mimeTypes : mimeTypes
+							mimeTypes : mimes
 						}, function(res) {
 							if (res.success) {
 								addSelectedFiles(res.value);

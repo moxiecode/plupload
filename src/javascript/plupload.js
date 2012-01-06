@@ -57,6 +57,8 @@
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation,pptx," + 
 		"application/vnd.openxmlformats-officedocument.presentationml.template,potx," +
 		"application/vnd.openxmlformats-officedocument.presentationml.slideshow,ppsx," +
+		"application/x-javascript,js," +
+		"application/json,json," +
 		"audio/mpeg,mpga mpega mp2 mp3," +
 		"audio/x-wav,wav," +
 		"audio/mp4,m4a," +
@@ -69,6 +71,7 @@
 		"image/tiff,tiff tif," +
 		"text/html,htm html xhtml," +
 		"text/rtf,rtf," +
+		"text/css,css," +
 		"video/mpeg,mpeg mpg mpe," +
 		"video/quicktime,qt mov," +
 		"video/mp4,mp4," +
@@ -80,7 +83,7 @@
 		"video/vnd.rn-realvideo,rv," +
 		"text/csv,csv," +
 		"text/plain,asc txt text diff log," +
-		"application/octet-stream,exe"
+		"application/octet-stream,exe eot otf ttf ttc woff"
 	);
 
 	/**
@@ -580,6 +583,29 @@
 			}
 
 			return arr;
+		},
+		
+		/**
+		 * Find an element in array and return it's index if present, otherwise return -1.
+		 *
+		 * @method inArray
+		 * @param {mixed} needle Element to find
+		 * @param {Array} array
+		 * @return {Int} Index of the element, or -1 if not found
+		 */
+		inArray : function(needle, array) {			
+			if (array) {
+				if (Array.prototype.indexOf) {
+					return Array.prototype.indexOf.call(array, needle);
+				}
+			
+				for (var i = 0, length = array.length; i < length; i++) {
+					if (array[i] === needle) {
+						return i;
+					}
+				}
+			}
+			return -1;
 		},
 
 		/**

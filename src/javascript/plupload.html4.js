@@ -68,7 +68,7 @@
 						
 						type = plupload.mimeTypes[ext[y]];
 
-						if (type) {
+						if (type && plupload.inArray(type, mimes) === -1) {
 							mimes.push(type);
 						}
 					}
