@@ -97,7 +97,7 @@ package com.plupload {
 		{
 			if (this.canUseSimpleUpload(this._settings)) {
 				this._fileRef.cancel();
-			} else if (this._urlStream.connected) {
+			} else if (this._urlStream && this._urlStream.connected) {
 				this._urlStream.close();
 			}
 		}
