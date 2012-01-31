@@ -1,6 +1,6 @@
 plupload.addI18n({
 'Select files' : 'Wybierz pliki:',
-'Add files to the upload queue and click the start button.' : 'Dodaj pliki i kliknij \'Wyślij\'.',
+'Add files to the upload queue and click the start button.' : 'Dodaj pliki i kliknij \'Rozpocznij transfer\'.',
 'Filename' : 'Nazwa pliku',
 'Status' : 'Status',
 'Size' : 'Rozmiar',
