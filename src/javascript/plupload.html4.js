@@ -9,7 +9,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-// JSLint defined globals
+//JSLint defined globals
 /*global plupload:false, window:false */
 
 (function(window, document, plupload, undef) {
@@ -31,11 +31,11 @@
 		 * @return {Object} Name/value object with supported features.
 		 */
 		getFeatures : function() {			
-			// Only multipart feature
+			//Only multipart feature
 			return {
 				multipart: true,
 				
-				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
+				//WebKit and Gecko 2+ can trigger file dialog progrmmatically
 				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit) 
 			};
 		},
@@ -53,14 +53,14 @@
 					input, currentFileId, fileIds = [], IE = /MSIE/.test(navigator.userAgent), mimes = [],
 					filters = up.settings.filters, i, ext, type, y;
 
-				// Convert extensions to mime types list
+				//Convert extensions to mime types list
 				no_type_restriction:
 				for (i = 0; i < filters.length; i++) {
 					ext = filters[i].extensions.split(/,/);
 
 					for (y = 0; y < ext.length; y++) {
 						
-						// If there's an asterisk in the list, then accept attribute is not required
+						//If there's an asterisk in the list, then accept attribute is not required
 						if (ext[y] === '*') {
 							mimes = [];
 							break no_type_restriction;
@@ -79,13 +79,13 @@
 				function createForm() {
 					var form, input, bgcolor, browseButton;
 
-					// Setup unique id for form
+					//Setup unique id for form
 					currentFileId = plupload.guid();
 					
-					// Save id for Destroy handler
+					//Save id for Destroy handler
 					fileIds.push(currentFileId);
 
-					// Create form
+					//Create form
 					form = document.createElement('form');
 					form.setAttribute('id', 'form_' + currentFileId);
 					form.setAttribute('method', 'post');
@@ -94,7 +94,7 @@
 					form.setAttribute("target", up.id + '_iframe');
 					form.style.position = 'absolute';
 
-					// Create input and set attributes
+					//Create input and set attributes
 					input = document.createElement('input');
 					input.setAttribute('id', 'input_' + currentFileId);
 					input.setAttribute('type', 'file');
@@ -103,7 +103,7 @@
 					
 					browseButton = getById(up.settings.browse_button);
 					
-					// Route click event to input element programmatically, if possible
+					//Route click event to input element programmatically, if possible
 					if (up.features.triggerDialog && browseButton) {
 						plupload.addEvent(getById(up.settings.browse_button), 'click', function(e) {
 							if (!input.disabled) {
@@ -113,46 +113,46 @@
 						}, up.id);
 					}
 
-					// Set input styles
+					//Set input styles
 					plupload.extend(input.style, {
 						width : '100%',
 						height : '100%',
 						opacity : 0,
-						fontSize: '99px' // force input element to be bigger then needed to occupy whole space
+						fontSize: '99px' //force input element to be bigger then needed to occupy whole space
 					});
 					
 					plupload.extend(form.style, {
 						overflow: 'hidden'
 					});
 
-					// Show the container if shim_bgcolor is specified
+					//Show the container if shim_bgcolor is specified
 					bgcolor = up.settings.shim_bgcolor;
 					if (bgcolor) {
 						form.style.background = bgcolor;
 					}
 
-					// no opacity in IE
+					//no opacity in IE
 					if (IE) {
 						plupload.extend(input.style, {
 							filter : "alpha(opacity=0)"
 						});
 					}
 
-					// add change event
+					//add change event
 					plupload.addEvent(input, 'change', function(e) {
 						var element = e.target, name, files = [], topElement;
 
 						if (element.value) {
 							getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
 
-							// Get file name
+							//Get file name
 							name = element.value.replace(/\\/g, '/');
 							name = name.substring(name.length, name.lastIndexOf('/') + 1);
 
-							// Push files
+							//Push files
 							files.push(new plupload.File(currentFileId, name));
 							
-							// Clean-up events - they won't be needed anymore
+							//Clean-up events - they won't be needed anymore
 							if (!up.features.triggerDialog) {
 								plupload.removeAllEvents(form, up.id);								
 							} else {
@@ -160,17 +160,17 @@
 							}
 							plupload.removeEvent(input, 'change', up.id);
 
-							// Create and position next form
+							//Create and position next form
 							createForm();
 
-							// Fire FilesAdded event
+							//Fire FilesAdded event
 							if (files.length) {
 								uploader.trigger("FilesAdded", files);
 							}							
 						}
 					}, up.id);
 
-					// append to container
+					//append to container
 					form.appendChild(input);
 					container.appendChild(form);
 
@@ -181,16 +181,16 @@
 				function createIframe() {
 					var temp = document.createElement('div');
 
-					// Create iframe using a temp div since IE 6 won't be able to set the name using setAttribute or iframe.name
+					//Create iframe using a temp div since IE 6 won't be able to set the name using setAttribute or iframe.name
 					temp.innerHTML = '<iframe id="' + up.id + '_iframe" name="' + up.id + '_iframe" src="' + url + ':&quot;&quot;" style="display:none"></iframe>';
 					iframe = temp.firstChild;
 					container.appendChild(iframe);
 
-					// Add IFrame onload event
+					//Add IFrame onload event
 					plupload.addEvent(iframe, 'load', function(e) {
 						var n = e.target, el, result;
 
-						// Ignore load event if there is no file
+						//Ignore load event if there is no file
 						if (!currentFile) {
 							return;
 						}
@@ -198,7 +198,7 @@
 						try {
 							el = n.contentWindow.document || n.contentDocument || window.frames[n.id].document;
 						} catch (ex) {
-							// Probably a permission denied error
+							//Probably a permission denied error
 							up.trigger('Error', {
 								code : plupload.SECURITY_ERROR,
 								message : plupload.translate('Security error.'),
@@ -208,22 +208,28 @@
 							return;
 						}
 
-						// Get result
+						//Get result
 						result = el.body.innerHTML;
 						
-						// Assume no error
+						//Assume no error
 						if (result) {
 							currentFile.status = plupload.DONE;
 							currentFile.loaded = 1025;
 							currentFile.percent = 100;
 
 							up.trigger('UploadProgress', currentFile);
+							
+							//Check server response.
+							if(!up.handleServerFeedback(currentFile, result)) {
+							  return;
+							}
+							
 							up.trigger('FileUploaded', currentFile, {
 								response : result
 							});
 						}
 					}, up.id);
-				} // end createIframe
+				} //end createIframe
 				
 				if (up.settings.container) {
 					container = getById(up.settings.container);
@@ -232,26 +238,26 @@
 					}
 				}
 				
-				// Upload file
+				//Upload file
 				up.bind("UploadFile", function(up, file) {
 					var form, input;
 					
-					// File upload finished
+					//File upload finished
 					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 						return;
 					}
 
-					// Get the form and input elements
+					//Get the form and input elements
 					form = getById('form_' + file.id);
 					input = getById('input_' + file.id);
 
-					// Set input element name attribute which allows it to be submitted
+					//Set input element name attribute which allows it to be submitted
 					input.setAttribute('name', up.settings.file_data_name);
 
-					// Store action
+					//Store action
 					form.setAttribute("action", up.settings.url);
 
-					// Append multipart parameters
+					//Append multipart parameters
 					plupload.each(plupload.extend({name : file.target_name || file.name}, up.settings.multipart_params), function(value, name) {
 						var hidden = document.createElement('input');
 
@@ -266,7 +272,7 @@
 
 					currentFile = file;
 
-					// Hide the current form
+					//Hide the current form
 					getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
 					
 					form.submit();
@@ -276,7 +282,7 @@
 				
 				
 				up.bind('FileUploaded', function(up) {
-					up.refresh(); // just to get the form back on top of browse_button
+					up.refresh(); //just to get the form back on top of browse_button
 				});				
 
 				up.bind('StateChanged', function(up) {
@@ -294,7 +300,7 @@
 					}
 				});
 
-				// Refresh button, will reposition the input form
+				//Refresh button, will reposition the input form
 				up.bind("Refresh", function(up) {
 					var browseButton, topElement, hoverClass, activeClass, browsePos, browseSize, inputContainer, inputFile, zIndex;
 
@@ -312,8 +318,8 @@
 							height : browseSize.h + 'px'
 						});
 						
-						// for IE and WebKit place input element underneath the browse button and route onclick event 
-						// TODO: revise when browser support for this feature will change
+						//for IE and WebKit place input element underneath the browse button and route onclick event 
+						//TODO: revise when browser support for this feature will change
 						if (up.features.triggerDialog) {
 							if (plupload.getStyle(browseButton, 'position') === 'static') {
 								plupload.extend(browseButton.style, {
@@ -364,7 +370,7 @@
 					}
 				});
 
-				// Remove files
+				//Remove files
 				uploader.bind("FilesRemoved", function(up, files) {
 					var i, n;
 
@@ -384,7 +390,7 @@
 				});
 				
 				
-				// Completely destroy the runtime
+				//Completely destroy the runtime
 				uploader.bind("Destroy", function(up) {
 					var name, element, form,
 						elements = {
@@ -393,7 +399,7 @@
 							browseButton: up.settings.browse_button
 						};
 
-					// Unbind event handlers
+					//Unbind event handlers
 					for (name in elements) {
 						element = getById(elements[name]);
 						if (element) {
@@ -402,7 +408,7 @@
 					}
 					plupload.removeAllEvents(document.body, up.id);
 					
-					// Remove mark-up
+					//Remove mark-up
 					plupload.each(fileIds, function(id, i) {
 						form = getById('form_' + id);
 						if (form) {
@@ -412,7 +418,7 @@
 					
 				});
 
-				// Create initial form
+				//Create initial form
 				createForm();
 			});
 
