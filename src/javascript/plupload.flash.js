@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-// JSLint defined globals
+//JSLint defined globals
 /*global window:false, document:false, plupload:false, ActiveXObject:false, escape:false */
 
 (function(window, document, plupload, undef) {
@@ -43,7 +43,7 @@
 		 */
 		trigger : function(id, name, obj) {
 								
-			// Detach the call so that error handling in the browser is presented correctly
+			//Detach the call so that error handling in the browser is presented correctly
 			setTimeout(function() {
 				var uploader = uploadInstances[id], i, args;
 
@@ -99,10 +99,10 @@
 			initialized[uploader.id] = false;
 			uploadInstances[uploader.id] = uploader;
 
-			// Find browse button and set to to be relative
+			//Find browse button and set to to be relative
 			browseButton = document.getElementById(uploader.settings.browse_button);
 
-			// Create flash container and insert it at an absolute position within the browse button
+			//Create flash container and insert it at an absolute position within the browse button
 			flashContainer = document.createElement('div');
 			flashContainer.id = uploader.id + '_flash_container';
 
@@ -126,7 +126,7 @@
 
 			container.appendChild(flashContainer);
 			
-			// insert flash object
+			//insert flash object
 			(function() {
 				var html, el;
 				
@@ -147,7 +147,7 @@
 					el = document.createElement('div');
 					flashContainer.appendChild(el);
 					el.outerHTML = html;
-					el = null; // just in case
+					el = null; //just in case
 				} else {
 					flashContainer.innerHTML = html;
 				}
@@ -159,7 +159,7 @@
 
 			function waitLoad() {
 								
-				// Wait for 5 sec
+				//Wait for 5 sec
 				if (waitCount++ > 5000) {
 					callback({success : false});
 					return;
@@ -172,16 +172,16 @@
 
 			waitLoad();
 
-			// Fix IE memory leaks
+			//Fix IE memory leaks
 			browseButton = flashContainer = null;
 
-			// Wait for Flash to send init event
+			//Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {	
 				var lookup = {}, i;
 
 				getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
-				// Prevent eventual reinitialization of the instance
+				//Prevent eventual reinitialization of the instance
 				if (initialized[uploader.id]) {
 					return;
 				}
@@ -233,29 +233,36 @@
 
 					up.trigger('ChunkUploaded', file, chunkArgs);
 
-					// Stop upload if file is maked as failed
+					//Stop upload if file is maked as failed
 					if (file.status !== plupload.FAILED && up.state !== plupload.STOPPED) {
 						getFlashObj().uploadNextChunk();
 					}
 
-					// Last chunk then dispatch FileUploaded event
+					//Last chunk then dispatch FileUploaded event
 					if (info.chunk == info.chunks - 1) {
 						file.status = plupload.DONE;
+						
+						//Also handle server response.
+						if(!up.handleServerFeedback(file, info.text)) {
+						  return;
+						}
 
+            //Trigger FileUploaded event.
 						up.trigger('FileUploaded', file, {
 							response : info.text
 						});
+						
 					}
 				});
 
 				uploader.bind("Flash:SelectFiles", function(up, selected_files) {
 					var file, i, files = [], id;
 
-					// Add the selected files to the file queue
+					//Add the selected files to the file queue
 					for (i = 0; i < selected_files.length; i++) {
 						file = selected_files[i];
 
-						// Store away flash ref internally
+						//Store away flash ref internally
 						id = plupload.guid();
 						lookup[id] = file.id;
 						lookup[file.id] = id;
@@ -263,7 +270,7 @@
 						files.push(new plupload.File(id, file.name, file.size));
 					}
 
-					// Trigger FilesAdded event if we added any
+					//Trigger FilesAdded event if we added any
 					if (files.length) {
 						uploader.trigger("FilesAdded", files);
 					}
@@ -335,7 +342,7 @@
 					if (browseButton && activeClass) {
 						plupload.addClass(browseButton, activeClass);
 						
-						// Make sure that browse_button has active state removed from it
+						//Make sure that browse_button has active state removed from it
 						plupload.addEvent(document.body, 'mouseup', function() {
 							plupload.removeClass(browseButton, activeClass);	
 						}, up.id);
@@ -383,7 +390,7 @@
 				uploader.bind("Refresh", function(up) {
 					var browseButton, browsePos, browseSize;
 
-					// Set file filters incase it has been changed dynamically
+					//Set file filters incase it has been changed dynamically
 					getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
 
 					browseButton = document.getElementById(up.settings.browse_button);

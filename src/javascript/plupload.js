@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-// JSLint defined globals
+//JSLint defined globals
 /*global window:false, escape:false */
 
 /*!@@version@@*/
@@ -17,11 +17,11 @@
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
 		xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'},
 		xmlEncodeRegExp = /[<>&\"\']/g, undef, delay = window.setTimeout,
-		// A place to store references to event handlers
+		//A place to store references to event handlers
 		eventhash = {},
 		uid;
 
-	// IE W3C like event funcs
+	//IE W3C like event funcs
 	function preventDefault() {
 		this.returnValue = false;
 	}
@@ -30,7 +30,7 @@
 		this.cancelBubble = true;
 	}
 
-	// Parses the default mime types string into a mimes lookup map
+	//Parses the default mime types string into a mimes lookup map
 	(function(mime_data) {
 		var items = mime_data.split(/,/), i, y, ext;
 
@@ -91,10 +91,10 @@
 	 * Plupload class with some global constants and functions.
 	 *
 	 * @example
-	 * // Encode entities
+	 * //Encode entities
 	 * console.log(plupload.xmlEncode("My string &lt;&gt;"));
 	 *
-	 * // Generate unique id
+	 * //Generate unique id
 	 * console.log(plupload.guid());
 	 *
 	 * @static
@@ -154,7 +154,7 @@
 		 */
 		DONE : 5,
 
-		// Error constants used by the Error event
+		//Error constants used by the Error event
 
 		/**
 		 * Generic error for example if an exception is thrown inside Silverlight.
@@ -236,6 +236,14 @@
 		 */
 		IMAGE_DIMENSIONS_ERROR : -702,
 		
+		/**
+		 * Server responds the upload failed or was rejected.
+		 *
+		 * @property SERVER_ERROR
+		 * @final
+		 */
+		SERVER_ERROR : -800,
+		
 
 		/**
 		 * Mime type lookup table.
@@ -307,7 +315,7 @@
 		cleanName : function(name) {
 			var i, lookup;
 
-			// Replace diacritics
+			//Replace diacritics
 			lookup = [
 				/[\300-\306]/g, 'A', /[\340-\346]/g, 'a', 
 				/\307/g, 'C', /\347/g, 'c',
@@ -322,10 +330,10 @@
 				name = name.replace(lookup[i], lookup[i + 1]);
 			}
 
-			// Replace whitespace
+			//Replace whitespace
 			name = name.replace(/\s+/g, '_');
 
-			// Remove anything else
+			//Remove anything else
 			name = name.replace(/[^a-z0-9_\-\.]+/gi, '');
 
 			return name;
@@ -401,7 +409,7 @@
 				length = obj.length;
 
 				if (length === undef) {
-					// Loop object items
+					//Loop object items
 					for (key in obj) {
 						if (obj.hasOwnProperty(key)) {
 							if (callback(obj[key], key) === false) {
@@ -410,7 +418,7 @@
 						}
 					}
 				} else {
-					// Loop array items
+					//Loop array items
 					for (i = 0; i < length; i++) {
 						if (callback(obj[i], i) === false) {
 							return;
@@ -432,17 +440,17 @@
 				return plupload.translate('N/A');
 			}
 			
-			// GB
+			//GB
 			if (size > 1073741824) {
 				return Math.round(size / 1073741824, 1) + " GB";
 			}
 
-			// MB
+			//MB
 			if (size > 1048576) {
 				return Math.round(size / 1048576, 1) + " MB";
 			}
 
-			// KB
+			//KB
 			if (size > 1024) {
 				return Math.round(size / 1024, 1) + " KB";
 			}
@@ -464,7 +472,7 @@
 			node = node;
 			root = root || doc.body;
 
-			// Returns the x, y cordinate for an element on IE 6 and IE 7
+			//Returns the x, y cordinate for an element on IE 6 and IE 7
 			function getIEPos(node) {
 				var bodyElm, rect, x = 0, y = 0;
 
@@ -481,7 +489,7 @@
 				};
 			}
 
-			// Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
+			//Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
 			if (node && node.getBoundingClientRect && (navigator.userAgent.indexOf('MSIE') > 0 && doc.documentMode !== 8)) {
 				nodeRect = getIEPos(node);
 				rootRect = getIEPos(root);
@@ -714,17 +722,17 @@
 		addEvent : function(obj, name, callback) {
 			var func, events, types, key;
 			
-			// if passed in, event will be locked with this key - one would need to provide it to removeEvent
+			//if passed in, event will be locked with this key - one would need to provide it to removeEvent
 			key = arguments[3];
 						
 			name = name.toLowerCase();
 						
-			// Initialize unique identifier if needed
+			//Initialize unique identifier if needed
 			if (uid === undef) {
 				uid = 'Plupload_' + plupload.guid();
 			}
 
-			// Add event listener
+			//Add event listener
 			if (obj.addEventListener) {
 				func = callback;
 				
@@ -746,7 +754,7 @@
 				obj.attachEvent('on' + name, func);
 			} 
 			
-			// Log event handler to objects internal Plupload registry
+			//Log event handler to objects internal Plupload registry
 			if (obj[uid] === undef) {
 				obj[uid] = plupload.guid();
 			}
@@ -763,7 +771,7 @@
 					
 			events[name].push({
 				func: func,
-				orig: callback, // store original callback for IE
+				orig: callback, //store original callback for IE
 				key: key
 			});
 		},
@@ -780,7 +788,7 @@
 		removeEvent: function(obj, name) {
 			var type, callback, key;
 			
-			// match the handler either by callback or by key	
+			//match the handler either by callback or by key	
 			if (typeof(arguments[2]) == "function") {
 				callback = arguments[2];
 			} else {
@@ -797,7 +805,7 @@
 			
 				
 			for (var i=type.length-1; i>=0; i--) {
-				// undefined or not, key should match			
+				//undefined or not, key should match			
 				if (type[i].key === key || type[i].orig === callback) {
 										
 					if (obj.detachEvent) {
@@ -811,23 +819,23 @@
 					
 					type.splice(i, 1);
 					
-					// If callback was passed we are done here, otherwise proceed
+					//If callback was passed we are done here, otherwise proceed
 					if (callback !== undef) {
 						break;
 					}
 				}			
 			}	
 			
-			// If event array got empty, remove it
+			//If event array got empty, remove it
 			if (!type.length) {
 				delete eventhash[obj[uid]][name];
 			}
 			
-			// If Plupload registry has become empty, remove it
+			//If Plupload registry has become empty, remove it
 			if (plupload.isEmptyObj(eventhash[obj[uid]])) {
 				delete eventhash[obj[uid]];
 				
-				// IE doesn't let you remove DOM object property with - delete
+				//IE doesn't let you remove DOM object property with - delete
 				try {
 					delete obj[uid];
 				} catch(e) {
@@ -893,10 +901,10 @@
 	plupload.Uploader = function(settings) {
 		var events = {}, total, files = [], startTime, disabled = false;
 
-		// Inital total state
+		//Inital total state
 		total = new plupload.QueueProgress();
 
-		// Default settings
+		//Default settings
 		settings = plupload.extend({
 			chunk_size : 0,
 			multipart : true,
@@ -905,12 +913,12 @@
 			filters : []
 		}, settings);
 
-		// Private methods
+		//Private methods
 		function uploadNext() {
 			var file, count = 0, i;
 
 			if (this.state == plupload.STARTED) {
-				// Find first QUEUED file
+				//Find first QUEUED file
 				for (i = 0; i < files.length; i++) {
 					if (!file && files[i].status == plupload.QUEUED) {
 						file = files[i];
@@ -923,7 +931,7 @@
 					}
 				}
 
-				// All files are DONE or FAILED
+				//All files are DONE or FAILED
 				if (count == files.length) {
 					this.stop();
 					this.trigger("UploadComplete", files);
@@ -934,10 +942,10 @@
 		function calc() {
 			var i, file;
 
-			// Reset stats
+			//Reset stats
 			total.reset();
 
-			// Check status, size, loaded etc on all files
+			//Check status, size, loaded etc on all files
 			for (i = 0; i < files.length; i++) {
 				file = files[i];
 
@@ -957,7 +965,7 @@
 				}
 			}
 
-			// If we couldn't calculate a total file size then use the number of files to calc percent
+			//If we couldn't calculate a total file size then use the number of files to calc percent
 			if (total.size === undef) {
 				total.percent = files.length > 0 ? Math.ceil(total.uploaded / files.length * 100) : 0;
 			} else {
@@ -966,7 +974,7 @@
 			}
 		}
 
-		// Add public methods
+		//Add public methods
 		plupload.extend(this, {
 			/**
 			 * Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
@@ -1046,20 +1054,20 @@
 
 				settings.page_url = settings.page_url || document.location.pathname.replace(/\/[^\/]+$/g, '/');
 
-				// If url is relative force it absolute to the current page
+				//If url is relative force it absolute to the current page
 				if (!/^(\w+:\/\/|\/)/.test(settings.url)) {
 					settings.url = settings.page_url + settings.url;
 				}
 
-				// Convert settings
+				//Convert settings
 				settings.chunk_size = plupload.parseSize(settings.chunk_size);
 				settings.max_file_size = plupload.parseSize(settings.max_file_size);
 
-				// Add files to queue
+				//Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
 					var i, file, count = 0, extensionsRegExp, filters = settings.filters;
 
-					// Convert extensions to regexp
+					//Convert extensions to regexp
 					if (filters && filters.length) {
 						extensionsRegExp = [];
 						
@@ -1082,7 +1090,7 @@
 						file.percent = 0;
 						file.status = plupload.QUEUED;
 
-						// Invalid file extension
+						//Invalid file extension
 						if (extensionsRegExp && !extensionsRegExp.test(file.name)) {
 							up.trigger('Error', {
 								code : plupload.FILE_EXTENSION_ERROR,
@@ -1093,7 +1101,7 @@
 							continue;
 						}
 
-						// Invalid file size
+						//Invalid file size
 						if (file.size !== undef && file.size > settings.max_file_size) {
 							up.trigger('Error', {
 								code : plupload.FILE_SIZE_ERROR,
@@ -1104,23 +1112,23 @@
 							continue;
 						}
 
-						// Add valid file to list
+						//Add valid file to list
 						files.push(file);
 						count++;
 					}
 
-					// Only trigger QueueChanged event if any files where added
+					//Only trigger QueueChanged event if any files where added
 					if (count) {
 						delay(function() {
 							self.trigger("QueueChanged");
 							self.refresh();
 						}, 1);
 					} else {
-						return false; // Stop the FilesAdded event from immediate propagation
+						return false; //Stop the FilesAdded event from immediate propagation
 					}
 				});
 
-				// Generate unique target filenames
+				//Generate unique target filenames
 				if (settings.unique_names) {
 					self.bind("UploadFile", function(up, file) {
 						var matches = file.name.match(/\.([^.]+)$/), ext = "tmp";
@@ -1140,11 +1148,11 @@
 
 				self.bind('StateChanged', function(up) {
 					if (up.state == plupload.STARTED) {
-						// Get start time to calculate bps
+						//Get start time to calculate bps
 						startTime = (+new Date());
 						
 					} else if (up.state == plupload.STOPPED) {						
-						// Reset currently uploading files
+						//Reset currently uploading files
 						for (i = up.files.length - 1; i >= 0; i--) {
 							if (up.files[i].status == plupload.UPLOADING) {
 								up.files[i].status = plupload.QUEUED;
@@ -1157,13 +1165,13 @@
 				self.bind('QueueChanged', calc);
 
 				self.bind("Error", function(up, err) {
-					// Set failed status if an error occured on a file
+					//Set failed status if an error occured on a file
 					if (err.file) {
 						err.file.status = plupload.FAILED;
 						calc();
 
-						// Upload next file but detach it from the error event
-						// since other custom listeners might want to stop the queue
+						//Upload next file but detach it from the error event
+						//since other custom listeners might want to stop the queue
 						if (up.state == plupload.STARTED) {
 							delay(function() {
 								uploadNext.call(self);
@@ -1177,14 +1185,14 @@
 					file.loaded = file.size;
 					up.trigger('UploadProgress', file);
 
-					// Upload next file but detach it from the error event
-					// since other custom listeners might want to stop the queue
+					//Upload next file but detach it from the error event
+					//since other custom listeners might want to stop the queue
 					delay(function() {
 						uploadNext.call(self);
 					}, 1);
 				});
 
-				// Setup runtimeList
+				//Setup runtimeList
 				if (settings.runtimes) {
 					runtimeList = [];
 					items = settings.runtimes.split(/\s?,\s?/);
@@ -1198,20 +1206,20 @@
 					runtimeList = runtimes;
 				}
 
-				// Call init on each runtime in sequence
+				//Call init on each runtime in sequence
 				function callNextInit() {
 					var runtime = runtimeList[runTimeIndex++], features, requiredFeatures, i;
 
 					if (runtime) {
 						features = runtime.getFeatures();
 
-						// Check if runtime supports required features
+						//Check if runtime supports required features
 						requiredFeatures = self.settings.required_features;
 						if (requiredFeatures) {
 							requiredFeatures = requiredFeatures.split(',');
 
 							for (i = 0; i < requiredFeatures.length; i++) {
-								// Specified feature doesn't exist
+								//Specified feature doesn't exist
 								if (!features[requiredFeatures[i]]) {
 									callNextInit();
 									return;
@@ -1219,10 +1227,10 @@
 							}
 						}
 
-						// Try initializing the runtime
+						//Try initializing the runtime
 						runtime.init(self, function(res) {
 							if (res && res.success) {
-								// Successful initialization
+								//Successful initialization
 								self.features = features;
 								self.runtime = runtime.name;
 								self.trigger('Init', {runtime : runtime.name});
@@ -1233,7 +1241,7 @@
 							}
 						});
 					} else {
-						// Trigger an init error if we run out of runtimes
+						//Trigger an init error if we run out of runtimes
 						self.trigger('Error', {
 							code : plupload.INIT_ERROR,
 							message : plupload.translate('Init error.')
@@ -1344,13 +1352,69 @@
 			splice : function(start, length) {
 				var removed;
 
-				// Splice and trigger events
+				//Splice and trigger events
 				removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
 				this.trigger("FilesRemoved", removed);
 				this.trigger("QueueChanged");
 
 				return removed;
+			},
+			
+			/**
+			 * Handles JSON-RPC callback from server.
+			 * Note that for backwards compatability any response that is not JSON-RPC v2.0 is ignored.
+			 *
+			 * @method handleServerFeedback
+			 * @param {plupload.File} file File the server response corresponds to.
+			 * @param {String} response The JSON-RPC response the server replied with.
+			 * @return {Boolean} True if the server feedback caused no errors.
+			 */
+			handleServerFeedback : function(file, response) {
+			  try{
+  			  var response = JSON.parse(response);
+			  } catch (err) {
+			    return true;
+			  }
+			  
+			  //For now only supporting JSON-RPC version 2.0
+			  if(response.jsonrpc != "2.0") {
+			    return true;
+			  }
+			  
+			  //If we have an error.
+			  if("error" in response) {
+			    //Set file status to failed.
+			    file.status = plupload.FAILED;
+			    
+			    //Trigger the error event.
+			    this.trigger('Error', {
+			      code : plupload.SERVER_ERROR,
+			      message : response.error.message,
+			      file : file,
+			      serverCode : response.error.code
+			    });
+			    
+			    return false;
+			  }
+			  
+			  else if("result" in response) {
+			    if(typeof response.result == "number") {
+			      this.trigger('ServerFileIdReport', response.result);
+			    }
+			    
+			    return true;
+			  }
+			  
+			  else {
+			    //Trigger the error event.
+			    this.trigger('Error', {
+			      code : plupload.SERVER_ERROR,
+			      message : "Malformated JSON-RPC response from server. Either \"result\" or \"error\" must be set.",
+			      file : file,
+			      serverCode : response.error.code
+			    });
+			  }
 			},
 
 			/**
@@ -1364,16 +1428,16 @@
 			trigger : function(name) {
 				var list = events[name.toLowerCase()], i, args;
 
-				// console.log(name, arguments);
+				//console.log(name, arguments);
 
 				if (list) {
-					// Replace name with sender in args
+					//Replace name with sender in args
 					args = Array.prototype.slice.call(arguments);
 					args[0] = this;
 
-					// Dispatch event to all listeners
+					//Dispatch event to all listeners
 					for (i = 0; i < list.length; i++) {
-						// Fire event, break chain if false is returned
+						//Fire event, break chain if false is returned
 						if (list[i].func.apply(list[i].scope, args) === false) {
 							return false;
 						}
@@ -1434,7 +1498,7 @@
 						list = [];
 					}
 
-					// delete event list if it has become empty
+					//delete event list if it has become empty
 					if (!list.length) {
 						delete events[name];
 					}
@@ -1463,7 +1527,7 @@
 				this.stop();						
 				this.trigger('Destroy');
 				
-				// Clean-up after uploader itself
+				//Clean-up after uploader itself
 				this.unbindAll();
 			}
 
@@ -1604,7 +1668,7 @@
 	 * @param {Number} size File size in bytes.
 	 */
 	plupload.File = function(id, name, size) {
-		var self = this; // Setup alias for self to reduce code size when it's compressed
+		var self = this; //Setup alias for self to reduce code size when it's compressed
 
 		/**
 		 * File id this is a globally unique id for the specific file.
@@ -1695,7 +1759,7 @@
 	 * @method QueueProgress
 	 */
 	 plupload.QueueProgress = function() {
-		var self = this; // Setup alias for self to reduce code size when it's compressed
+		var self = this; //Setup alias for self to reduce code size when it's compressed
 
 		/**
 		 * Total queue file size.
@@ -1763,9 +1827,9 @@
 		};
 	};
 
-	// Create runtimes namespace
+	//Create runtimes namespace
 	plupload.runtimes = {};
 
-	// Expose plupload namespace
+	//Expose plupload namespace
 	window.plupload = plupload;
 })();
