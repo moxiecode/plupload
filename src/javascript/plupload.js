@@ -800,10 +800,10 @@
 				// undefined or not, key should match			
 				if (type[i].key === key || type[i].orig === callback) {
 										
-					if (obj.detachEvent) {
-						obj.detachEvent('on'+name, type[i].func);
-					} else if (obj.removeEventListener) {
+					if (obj.removeEventListener) {
 						obj.removeEventListener(name, type[i].func, false);		
+					} else if (obj.detachEvent) {
+						obj.detachEvent('on'+name, type[i].func);
 					}
 					
 					type[i].orig = null;
