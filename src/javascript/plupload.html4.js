@@ -270,10 +270,11 @@
 					getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
 					
 					form.submit();
-					form.parentNode.removeChild(form);
+					// Do not remove 'form' here, because this makes us unable to resume uploading.
+					// up.stop(); // When uploading
+					// up.start(); // ERROR! because the form is already gone!
+					//form.parentNode.removeChild(form);
 				});
-				
-				
 				
 				up.bind('FileUploaded', function(up) {
 					up.refresh(); // just to get the form back on top of browse_button
@@ -292,6 +293,16 @@
 							}
 						}, 0);
 					}
+
+					plupload.each(up.files, function(file, i) {
+						if (file.status === plupload.DONE || file.status === plupload.FAILED) {
+							var form = getById('form_' + file.id);
+							
+							if(form){
+								form.parentNode.removeChild(form);
+							}
+						}
+					});
 				});
 
 				// Refresh button, will reposition the input form
