@@ -1,3 +1,5 @@
+	Fixed bug in plupload.js: allow objects in multipart_params (Thx to Jeroen Desloovere) (2012-02-24)
+
 Version 1.5.2 (2012-01-06)
 	UI Widget: Do not show UI if no runtime can be initialized.
 	UI Widget: Timely update file size and total size if resize in action.
