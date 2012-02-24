@@ -376,15 +376,43 @@
 		buildUrl : function(url, items) {
 			var query = '';
 
-			plupload.each(items, function(value, name) {
-				query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
+			plupload.each(items, function(name, value) {
+				query = plupload.buildUrlForKeyAndValue(name, value, query, '');
 			});
 
-			if (query) {
-				url += (url.indexOf('?') > 0 ? '&' : '?') + query;
-			}
+			url += (url.indexOf('?') > 0) ? query : ('?' + query.substring(1, query.length));
 
 			return url;
+		},
+
+		/**
+		 * Builds an url object
+		 *
+		 * @param {string} name
+		 * @param {string} value
+		 * @param {string} query
+		 * @param {string} prefix
+		 */
+		buildUrlForKeyAndValue : function(name, value, query, prefix){
+			// define prefix
+			if(prefix){
+				prefix += encodeURIComponent('[' + name + ']');
+			}
+			else prefix = name;
+
+			// is object or not
+			if(typeof(value) == 'object'){
+				// loop value
+				$.each(value, function(key, val){
+					query += plupload.buildUrlForKeyAndValue(key, val, '', prefix);
+				});
+			}
+			else{
+				query += '&' + prefix + '=' + encodeURIComponent(value);
+			}
+
+			// return query
+			return query;
 		},
 
 		/**
