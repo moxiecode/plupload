@@ -388,10 +388,10 @@
 		/**
 		 * Builds an url object
 		 *
-		 * @param {string} name
-		 * @param {string} value
-		 * @param {string} query
-		 * @param {string} prefix
+		 * @param {string} name Name of the name/value object
+		 * @param {string} value Value of the name/value object
+		 * @param {string} query Build on this previous query
+		 * @param {string} prefix Build on previous oubjects
 		 */
 		buildUrlForKeyAndValue : function(name, value, query, prefix){
 			// define prefix
