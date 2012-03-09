@@ -12,7 +12,7 @@
 /*global window:false, document:false, plupload:false, ActiveXObject:false, escape:false */
 
 (function(window, document, plupload, undef) {
-	var uploadInstances = {}, initialized = {};
+	var uploadInstances = {}, initialized = {}, destroyed = false;
 
 	function getFlashVersion() {
 		var version;
@@ -158,7 +158,8 @@
 			}
 
 			function waitLoad() {
-								
+				if destroyed return;
+
 				// Wait for 5 sec
 				if (waitCount++ > 5000) {
 					callback({success : false});
@@ -407,6 +408,7 @@
 				
 				uploader.bind("Destroy", function(up) {
 					var flashContainer;
+					destroyed = true;
 					
 					plupload.removeAllEvents(document.body, up.id);
 					
