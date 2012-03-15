@@ -911,6 +911,11 @@
 
 			if (this.state == plupload.STARTED) {
 				// Find first QUEUED file
+				// this probably is not correct but it works for the HTML5 runtime
+				// the local and public `files` attribute don't seem to be sync'ed
+				// access to the local `files` not available in the event handler
+				// See Gh-520
+				files = this.files;
 				for (i = 0; i < files.length; i++) {
 					if (!file && files[i].status == plupload.QUEUED) {
 						file = files[i];
