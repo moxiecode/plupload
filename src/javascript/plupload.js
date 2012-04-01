@@ -1268,7 +1268,7 @@
 			 * @method start
 			 */
 			start : function() {
-				if (this.state != plupload.STARTED) {
+				if (files.length && this.state != plupload.STARTED) {
 					this.state = plupload.STARTED;
 					this.trigger("StateChanged");	
 					
