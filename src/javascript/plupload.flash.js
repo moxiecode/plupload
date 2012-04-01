@@ -158,7 +158,9 @@
 			}
 
 			function waitLoad() {
-								
+				if(initialized[uploader.id] == undefined) 
+					return;
+
 				// Wait for 5 sec
 				if (waitCount++ > 5000) {
 					callback({success : false});
@@ -174,6 +176,20 @@
 
 			// Fix IE memory leaks
 			browseButton = flashContainer = null;
+
+			uploader.bind("Destroy", function(up) {
+				var flashContainer;
+				
+				plupload.removeAllEvents(document.body, up.id);
+				
+				delete initialized[up.id];
+				delete uploadInstances[up.id];
+				
+				flashContainer = document.getElementById(up.id + '_flash_container');
+				if (flashContainer) {
+					container.removeChild(flashContainer);
+				}
+			});
 
 			// Wait for Flash to send init event
 			uploader.bind("Flash:Init", function() {	
@@ -402,21 +418,6 @@
 				
 				uploader.bind("DisableBrowse", function(up, disabled) {
 					getFlashObj().disableBrowse(disabled);
-				});
-			
-				
-				uploader.bind("Destroy", function(up) {
-					var flashContainer;
-					
-					plupload.removeAllEvents(document.body, up.id);
-					
-					delete initialized[up.id];
-					delete uploadInstances[up.id];
-					
-					flashContainer = document.getElementById(up.id + '_flash_container');
-					if (flashContainer) {
-						container.removeChild(flashContainer);
-					}
 				});
 							
 				callback({success : true});
