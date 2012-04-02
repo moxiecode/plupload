@@ -183,7 +183,7 @@
 				});
 				
 				uploader.bind("CancelUpload", function() {
-					browserPlus.Uploader.cancel();
+					browserPlus.Uploader.cancel({}, function(){});
 				});
 				
 				uploader.bind("DisableBrowse", function(up, state) {
