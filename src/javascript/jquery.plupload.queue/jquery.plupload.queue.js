@@ -235,7 +235,7 @@
 					up.settings.browse_button = id + '_browse';
 
 					// Enable drag/drop
-					if (up.features.dragdrop && up.settings.dragdrop) {
+					if (up.features.dragdrop && up.settings.dragdrop && !up.settings.drop_element) {
 						up.settings.drop_element = id + '_filelist';
 						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
 					}
