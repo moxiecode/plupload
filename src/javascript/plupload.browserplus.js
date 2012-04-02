@@ -164,7 +164,7 @@
 								type = plupload.mimeTypes[ext[a]];
 								
 								if (type && plupload.inArray(type, mimes) === -1) {
-									mimes.push(plupload.mimes[ext[a]]);
+									mimes.push(plupload.mimeTypes[ext[a]]);
 								}
 							}
 						}
