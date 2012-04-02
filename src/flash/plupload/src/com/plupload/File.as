@@ -31,6 +31,7 @@ package com.plupload {
 	import flash.net.URLStream;
 	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
+	import flash.utils.setTimeout;
 	import flash.external.ExternalInterface;
 	import com.mxi.image.events.ExifParserEvent;
 	
@@ -314,8 +315,13 @@ package com.plupload {
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
 		 */
 		public function uploadNextChunk():Boolean {
-			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
-			var url:String, file:File = this;
+			var file:File = this, fileData:ByteArray, chunkData:ByteArray, req:URLRequest, url:String;
+			var onComplete:Function, onIOError:Function, onSecurityError:Function;
+			var removeAllEventListeners:Function = function() : void {
+				file._urlStream.removeEventListener(Event.COMPLETE, onComplete);
+				file._urlStream.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
+				file._urlStream.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+			};
 
 			// All chunks uploaded?
 			if (this._chunk >= this._chunks) {
@@ -340,12 +346,13 @@ package com.plupload {
 			fileData.readBytes(chunkData, 0, fileData.position + this._chunkSize > fileData.length ? fileData.length - fileData.position : this._chunkSize);
 
 			// Setup URL stream
+			file._urlStream = null;
 			file._urlStream = new URLStream();
 
 			// Wait for response and dispatch it
-			file._urlStream.addEventListener(Event.COMPLETE, function(e:Event):void {
-				file._urlStream.removeEventListener(Event.COMPLETE, arguments.callee);
+			onComplete = function(e:Event):void {
 				
+
 				var response:String = file._urlStream.readUTFBytes(file._urlStream.bytesAvailable);
 				
 				// Fake UPLOAD_COMPLETE_DATA event
@@ -367,20 +374,24 @@ package com.plupload {
 
 				// Clean up memory
 				file._urlStream.close();
+				removeAllEventListeners();
 				chunkData.clear();
-			});
+			};
+			file._urlStream.addEventListener(Event.COMPLETE, onComplete);
 
 			// Delegate upload IO errors
-			file._urlStream.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
-				file._urlStream.removeEventListener(IOErrorEvent.IO_ERROR, arguments.callee);
+			onIOError = function(e:IOErrorEvent):void {
+				removeAllEventListeners();
 				dispatchEvent(e);
-			});
+			};
+			file._urlStream.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 
 			// Delegate secuirty errors
-			file._urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
-				file._urlStream.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, arguments.callee);
+			onSecurityError = function(e:SecurityErrorEvent):void {
+				removeAllEventListeners();
 				dispatchEvent(e);
-			});
+			};
+			file._urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 
 			// Setup URL
 			url = this._uploadUrl;
@@ -453,8 +464,9 @@ package com.plupload {
 			}
 
 			// Make request
-			file._urlStream.load(req);
-
+			setTimeout(function() : void { // otherwise URLStream eventually hangs for Chrome+Flash (as of FP11.2 r202)
+				file._urlStream.load(req);
+			}, 1);
 			return true;
 		}
 	}
