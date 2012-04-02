@@ -118,7 +118,10 @@
 						width : '100%',
 						height : '100%',
 						opacity : 0,
-						fontSize: '99px' // force input element to be bigger then needed to occupy whole space
+						fontSize: '99px', // force input element to be bigger then needed to occupy whole space
+						cursor: 'pointer',
+						position: 'absolute', // if 'static',
+						right: 0              // there is a small gap to the left side in IE6.
 					});
 					
 					plupload.extend(form.style, {
@@ -208,9 +211,16 @@
 							return;
 						}
 
-						// Get result
-						result = el.body.innerHTML;
-						
+						// plugin function to handle json, xml, etc.
+						if (up.settings.parseIframe) {
+							result = up.settings.parseIframe.call(this, up, el);
+						}
+
+						if (!result) {
+							// Get result
+							result = el.body.innerHTML;
+						}
+
 						// Assume no error
 						if (result) {
 							currentFile.status = plupload.DONE;
@@ -267,13 +277,15 @@
 					currentFile = file;
 
 					// Hide the current form
-					getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
+					// Do not need this, if this exists there is no input field upon the browse_button till up.refresh().
+					//getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
 					
 					form.submit();
-					form.parentNode.removeChild(form);
+					// Do not remove 'form' here, because this makes us unable to resume uploading.
+					// up.stop(); // When uploading
+					// up.start(); // ERROR! because the form is already gone!
+					//form.parentNode.removeChild(form);
 				});
-				
-				
 				
 				up.bind('FileUploaded', function(up) {
 					up.refresh(); // just to get the form back on top of browse_button
@@ -292,6 +304,16 @@
 							}
 						}, 0);
 					}
+
+					plupload.each(up.files, function(file, i) {
+						if (file.status === plupload.DONE || file.status === plupload.FAILED) {
+							var form = getById('form_' + file.id);
+							
+							if(form){
+								form.parentNode.removeChild(form);
+							}
+						}
+					});
 				});
 
 				// Refresh button, will reposition the input form
