@@ -271,7 +271,6 @@
 					getById('form_' + currentFileId).style.top = -0xFFFFF + "px";
 					
 					form.submit();
-					form.parentNode.removeChild(form);
 				});
 				
 				
@@ -283,9 +282,7 @@
 				up.bind('StateChanged', function(up) {
 					if (up.state == plupload.STARTED) {
 						createIframe();
-					}
-
-					if (up.state == plupload.STOPPED) {
+					} else if (up.state == plupload.STOPPED) {
 						window.setTimeout(function() {
 							plupload.removeEvent(iframe, 'load', up.id);
 							if (iframe.parentNode) { // #382
@@ -293,6 +290,16 @@
 							}
 						}, 0);
 					}
+					
+					plupload.each(up.files, function(file, i) {
+						if (file.status === plupload.DONE || file.status === plupload.FAILED) {
+							var form = getById('form_' + file.id);
+
+							if(form){
+								form.parentNode.removeChild(form);
+							}
+						}
+					});
 				});
 
 				// Refresh button, will reposition the input form
