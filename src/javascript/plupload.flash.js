@@ -222,7 +222,10 @@
 				});
 				
 				uploader.bind("CancelUpload", function() {
-					getFlashObj().cancelUpload();
+					try {
+						getFlashObj().cancelUpload();
+					} catch(err) {
+					}
 				});
 
 
