@@ -59,7 +59,7 @@
 	<target name="clean">
 		<delete quiet="true">
 			<fileset dir="js" includes="**/*">
-				<!-- <exclude name="plupload.flash.swf"/> -->
+				<exclude name="plupload.flash.swf"/>
 				<exclude name="plupload.silverlight.xap"/>
 			</fileset>
 		</delete>
