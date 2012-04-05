@@ -122,6 +122,10 @@
 				if (plupload.getStyle(container, 'position') === 'static') {
 					container.style.position = 'relative';
 				}
+				if (container) {
+					container.style.minWidth = '1px';
+					container.style.minHeight = '1px';
+				}
 			}
 
 			container.appendChild(flashContainer);
