@@ -49,6 +49,8 @@ package com.plupload {
 		private var _id:String, _fileName:String, _size:Number, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
 		private var _headers:Object, _settings:Object;
+		private var _removeAllListeners:Function;
+		private var _removeAllURLStreamListeners:Function;
 
 		/**
 		 * Id property of file.
@@ -98,9 +100,27 @@ package com.plupload {
 		{
 			if (this.canUseSimpleUpload(this._settings)) {
 				this._fileRef.cancel();
-			} else if (this._urlStream && this._urlStream.connected) {
+			} else if (!this._urlStream) {
+				// In case of a large file and before _fileRef.load#COMPLETE.
+				// Need to cancel() twice, not sure why.
+				// If single cancel(), #2037 will occurred at _fileRef.load().
+				this._fileRef.cancel();
+				this._fileRef.cancel();
+				this._removeAllListeners();
+			} else if (this._urlStream.connected) {
+				// just in case
+				this._removeAllURLStreamListeners();
+
 				this._urlStream.close();
-			}
+
+				// In case of a large file and after the first uploadNextChunk().
+				// #2174 will occur at _fileRef.load() and
+				// #2029 will occur at _urlStream.readUTFBytes as well
+				// after loading file is stopped before _fileRef.load#COMPLETE.
+		
+				// Uploaded file will be broken as well if the following line does not exist.
+				this._urlStream = null;
+			} 
 		}
 
 		/**
@@ -133,15 +153,16 @@ package com.plupload {
 		}
 
 		public function simpleUpload(url:String, settings:Object):void {
-			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String, 
-				onProgress:Function, onUploadComplete:Function, onIOError:Function, onSecurityErrorEvent:Function,
-				
-				removeAllListeners:Function = function () : void {
+			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String;
+			var onProgress:Function, onUploadComplete:Function, onIOError:Function, onSecurityErrorEvent:Function;
+			var removeAllListeners:Function = function () : void {
 					file._fileRef.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 					file._fileRef.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
 					file._fileRef.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 					file._fileRef.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityErrorEvent);
 				};
+			
+			this._removeAllListeners = removeAllListeners;
 			
 			file._postvars = settings["multipart_params"];
 			file._chunk = 0;
@@ -214,8 +235,8 @@ package com.plupload {
 		public function advancedUpload(url:String, settings:Object):void {
 			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean, fileDataName:String;
 			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
-			var onComplete:Function, onIOError:Function,
-				removeAllListeneres:Function = function() : void {
+			var onComplete:Function, onIOError:Function;
+			var removeAllListeners:Function = function() : void {
 					file._fileRef.removeEventListener(Event.COMPLETE, onComplete);
 					file._fileRef.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 				};
@@ -225,6 +246,9 @@ package com.plupload {
 			this._cancelled = false;
 			this._headers = settings.headers;
 			this._mimeType = settings.mime;
+			
+			// make it available for whole class (cancelUpload requires it for example)
+			this._removeAllListeners = removeAllListeners;
 
 			multipart = new Boolean(settings["multipart"]);
 			fileDataName = new String(settings["file_data_name"]);
@@ -235,7 +259,7 @@ package com.plupload {
 
 			// When file is loaded start uploading
 			onComplete = function(e:Event):void {
-				removeAllListeneres();
+				removeAllListeners();
 				
 				var startUpload:Function = function() : void
 				{
@@ -302,8 +326,8 @@ package com.plupload {
 
 			// File load IO error
 			onIOError = function(e:Event):void {
-				removeAllListeneres();
-				this.dispatchEvent(e);
+				removeAllListeners();
+				dispatchEvent(e);
 			};
 			this._fileRef.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 
@@ -318,10 +342,12 @@ package com.plupload {
 			var file:File = this, fileData:ByteArray, chunkData:ByteArray, req:URLRequest, url:String;
 			var onComplete:Function, onIOError:Function, onSecurityError:Function;
 			var removeAllEventListeners:Function = function() : void {
-				file._urlStream.removeEventListener(Event.COMPLETE, onComplete);
-				file._urlStream.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
-				file._urlStream.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
-			};
+					file._urlStream.removeEventListener(Event.COMPLETE, onComplete);
+					file._urlStream.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
+					file._urlStream.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+				};
+				
+			this._removeAllURLStreamListeners = removeAllEventListeners;
 
 			// All chunks uploaded?
 			if (this._chunk >= this._chunks) {
