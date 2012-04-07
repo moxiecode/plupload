@@ -211,7 +211,14 @@
 		 * @final
 		 */
 		FILE_EXTENSION_ERROR : -601,
-		
+        /**
+                 * File name error. If the user selects a file that isn't valid according to the name regular expression
+                 *
+                 *@property FILE_NAME_ERROR
+                 *@final
+                 */
+        FILE_NAME_ERROR: -602,
+
 		/**
 		 * Runtime will try to detect if image is proper one. Otherwise will throw this error.
 		 *
@@ -1057,7 +1064,7 @@
 
 				// Add files to queue
 				self.bind('FilesAdded', function(up, selected_files) {
-					var i, file, count = 0, extensionsRegExp, filters = settings.filters;
+					var i, file, count = 0, extensionsRegExp, filters = settings.filters, name_regex = settings.file_name_pattern;
 
 					// Convert extensions to regexp
 					if (filters && filters.length) {
@@ -1103,6 +1110,17 @@
 
 							continue;
 						}
+
+                        // Invalid file name
+                        if(name_regex && !name_regex.test(file.name)) {
+                            up.trigger('Error', {
+                                code: plupload.FILE_NAME_ERROR,
+                                message: 'File name error.',
+                                file: file
+                            });
+
+                            continue;
+                        }
 
 						// Add valid file to list
 						files.push(file);
