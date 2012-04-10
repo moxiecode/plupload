@@ -31,6 +31,7 @@ package com.plupload {
 	import flash.net.URLStream;
 	import flash.net.URLVariables;
 	import flash.utils.ByteArray;
+	import flash.utils.setTimeout;
 	import flash.external.ExternalInterface;
 	import com.mxi.image.events.ExifParserEvent;
 	
@@ -43,11 +44,13 @@ package com.plupload {
 	 */
 	public class File extends EventDispatcher {
 		// Private fields
-		private var _fileRef:FileReference, _cancelled:Boolean;
+		private var _fileRef:FileReference, _urlStream:URLStream, _cancelled:Boolean;
 		private var _uploadUrl:String, _uploadPath:String, _mimeType:String;
 		private var _id:String, _fileName:String, _size:Number, _imageData:ByteArray;
 		private var _multipart:Boolean, _fileDataName:String, _chunking:Boolean, _chunk:int, _chunks:int, _chunkSize:int, _postvars:Object;
 		private var _headers:Object, _settings:Object;
+		private var _removeAllListeners:Function;
+		private var _removeAllURLStreamListeners:Function;
 
 		/**
 		 * Id property of file.
@@ -89,6 +92,36 @@ package com.plupload {
 			this._size = file_ref.size;
 			this._fileName = file_ref.name;
 		}
+		
+		/**
+		 * Cancel current upload.
+		 */
+		public function cancelUpload(): void
+		{
+			if (this.canUseSimpleUpload(this._settings)) {
+				this._fileRef.cancel();
+			} else if (!this._urlStream) {
+				// In case of a large file and before _fileRef.load#COMPLETE.
+				// Need to cancel() twice, not sure why.
+				// If single cancel(), #2037 will occurred at _fileRef.load().
+				this._fileRef.cancel();
+				this._fileRef.cancel();
+				this._removeAllListeners();
+			} else if (this._urlStream.connected) {
+				// just in case
+				this._removeAllURLStreamListeners();
+
+				this._urlStream.close();
+
+				// In case of a large file and after the first uploadNextChunk().
+				// #2174 will occur at _fileRef.load() and
+				// #2029 will occur at _urlStream.readUTFBytes as well
+				// after loading file is stopped before _fileRef.load#COMPLETE.
+		
+				// Uploaded file will be broken as well if the following line does not exist.
+				this._urlStream = null;
+			} 
+		}
 
 		/**
 		 * Uploads a the file to the specified url. This method will upload it as a normal
@@ -120,15 +153,16 @@ package com.plupload {
 		}
 
 		public function simpleUpload(url:String, settings:Object):void {
-			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String, 
-				onProgress:Function, onUploadComplete:Function, onIOError:Function, onSecurityErrorEvent:Function,
-				
-				removeAllListeners:Function = function () : void {
+			var file:File = this, request:URLRequest, postData:URLVariables, fileDataName:String;
+			var onProgress:Function, onUploadComplete:Function, onIOError:Function, onSecurityErrorEvent:Function;
+			var removeAllListeners:Function = function () : void {
 					file._fileRef.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 					file._fileRef.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, onUploadComplete);
 					file._fileRef.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 					file._fileRef.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityErrorEvent);
 				};
+			
+			this._removeAllListeners = removeAllListeners;
 			
 			file._postvars = settings["multipart_params"];
 			file._chunk = 0;
@@ -201,8 +235,8 @@ package com.plupload {
 		public function advancedUpload(url:String, settings:Object):void {
 			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean, fileDataName:String;
 			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
-			var onComplete:Function, onIOError:Function,
-				removeAllListeneres:Function = function() : void {
+			var onComplete:Function, onIOError:Function;
+			var removeAllListeners:Function = function() : void {
 					file._fileRef.removeEventListener(Event.COMPLETE, onComplete);
 					file._fileRef.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 				};
@@ -212,6 +246,9 @@ package com.plupload {
 			this._cancelled = false;
 			this._headers = settings.headers;
 			this._mimeType = settings.mime;
+			
+			// make it available for whole class (cancelUpload requires it for example)
+			this._removeAllListeners = removeAllListeners;
 
 			multipart = new Boolean(settings["multipart"]);
 			fileDataName = new String(settings["file_data_name"]);
@@ -222,7 +259,7 @@ package com.plupload {
 
 			// When file is loaded start uploading
 			onComplete = function(e:Event):void {
-				removeAllListeneres();
+				removeAllListeners();
 				
 				var startUpload:Function = function() : void
 				{
@@ -289,8 +326,8 @@ package com.plupload {
 
 			// File load IO error
 			onIOError = function(e:Event):void {
-				removeAllListeneres();
-				this.dispatchEvent(e);
+				removeAllListeners();
+				dispatchEvent(e);
 			};
 			this._fileRef.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 
@@ -302,8 +339,15 @@ package com.plupload {
 		 * Uploads the next chunk or terminates the upload loop if all chunks are done.
 		 */
 		public function uploadNextChunk():Boolean {
-			var req:URLRequest, fileData:ByteArray, chunkData:ByteArray;
-			var urlStream:URLStream, url:String, file:File = this;
+			var file:File = this, fileData:ByteArray, chunkData:ByteArray, req:URLRequest, url:String;
+			var onComplete:Function, onIOError:Function, onSecurityError:Function;
+			var removeAllEventListeners:Function = function() : void {
+					file._urlStream.removeEventListener(Event.COMPLETE, onComplete);
+					file._urlStream.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
+					file._urlStream.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+				};
+				
+			this._removeAllURLStreamListeners = removeAllEventListeners;
 
 			// All chunks uploaded?
 			if (this._chunk >= this._chunks) {
@@ -328,14 +372,15 @@ package com.plupload {
 			fileData.readBytes(chunkData, 0, fileData.position + this._chunkSize > fileData.length ? fileData.length - fileData.position : this._chunkSize);
 
 			// Setup URL stream
-			urlStream = new URLStream();
+			file._urlStream = null;
+			file._urlStream = new URLStream();
 
 			// Wait for response and dispatch it
-			urlStream.addEventListener(Event.COMPLETE, function(e:Event):void {
-				var response:String;
+			onComplete = function(e:Event):void {
+				
 
-				response = urlStream.readUTFBytes(urlStream.bytesAvailable);
-
+				var response:String = file._urlStream.readUTFBytes(file._urlStream.bytesAvailable);
+				
 				// Fake UPLOAD_COMPLETE_DATA event
 				var uploadChunkEvt:UploadChunkEvent = new UploadChunkEvent(
 					UploadChunkEvent.UPLOAD_CHUNK_COMPLETE_DATA,
@@ -354,19 +399,25 @@ package com.plupload {
 				dispatchEvent(pe);
 
 				// Clean up memory
-				urlStream.close();
+				file._urlStream.close();
+				removeAllEventListeners();
 				chunkData.clear();
-			});
+			};
+			file._urlStream.addEventListener(Event.COMPLETE, onComplete);
 
 			// Delegate upload IO errors
-			urlStream.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
+			onIOError = function(e:IOErrorEvent):void {
+				removeAllEventListeners();
 				dispatchEvent(e);
-			});
+			};
+			file._urlStream.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 
 			// Delegate secuirty errors
-			urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(e:SecurityErrorEvent):void {
+			onSecurityError = function(e:SecurityErrorEvent):void {
+				removeAllEventListeners();
 				dispatchEvent(e);
-			});
+			};
+			file._urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 
 			// Setup URL
 			url = this._uploadUrl;
@@ -439,8 +490,9 @@ package com.plupload {
 			}
 
 			// Make request
-			urlStream.load(req);
-
+			setTimeout(function() : void { // otherwise URLStream eventually hangs for Chrome+Flash (as of FP11.2 r202)
+				file._urlStream.load(req);
+			}, 1);
 			return true;
 		}
 	}

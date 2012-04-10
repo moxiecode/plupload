@@ -1,4 +1,4 @@
-// .po file like language pack
+// French
 plupload.addI18n({
     'Select files' : 'Sélectionnez les fichiers',
     'Add files to the upload queue and click the start button.' : 'Ajoutez des fichiers à la file et appuyez sur le bouton démarrer.',

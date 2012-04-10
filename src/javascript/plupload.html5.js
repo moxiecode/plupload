@@ -210,7 +210,7 @@
 		 * @param {function} callback Callback to execute when the runtime initializes or fails to initialize. If it succeeds an object with a parameter name success will be set to true.
 		 */
 		init : function(uploader, callback) {
-			var features;
+			var features, xhr;
 			
 			function hasFiles(dataTransfer) {
 				if (!dataTransfer || typeof(dataTransfer.files) === "undefined") {
@@ -301,7 +301,7 @@
 						
 						type = plupload.mimeTypes[ext[y]];
 
-						if (type) {
+						if (type && plupload.inArray(type, mimes) === -1) {
 							mimes.push(type);
 						}
 					}
@@ -369,7 +369,10 @@
 					// Route click event to the input[type=file] element for supporting browsers
 					if (up.features.triggerDialog) {
 						plupload.addEvent(browseButton, 'click', function(e) {
-							document.getElementById(up.id + '_html5').click();
+							var input = document.getElementById(up.id + '_html5');
+							if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
+								input.click();
+							}
 							e.preventDefault();
 						}, up.id); 
 					}
@@ -490,7 +493,20 @@
 						plupload.extend(inputContainer.style, {
 							zIndex : zIndex - 1
 						});
-					}
+					}				
+				}
+			});
+			
+			uploader.bind("DisableBrowse", function(up, disabled) {
+				var input = document.getElementById(up.id + '_html5');
+				if (input) {
+					input.disabled = disabled;	
+				}
+			});
+			
+			uploader.bind("CancelUpload", function() {
+				if (xhr && xhr.abort) {
+					xhr.abort();	
 				}
 			});
 
@@ -527,13 +543,13 @@
 						
 						function prepareAndSend(bin) {
 							var multipartDeltaSize = 0,
-								xhr = new XMLHttpRequest,
-								upload = xhr.upload,	
-								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = ''
+								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = '';
 								
+							xhr = new XMLHttpRequest;
+															
 							// Do we have upload progress support
-							if (upload) {
-								upload.onprogress = function(e) {
+							if (xhr.upload) {
+								xhr.upload.onprogress = function(e) {
 									file.loaded = Math.min(file.size, loaded + e.loaded - multipartDeltaSize); // Loaded can be larger than file size due to multipart encoding
 									up.trigger('UploadProgress', file);
 								};
@@ -541,8 +557,8 @@
 	
 							xhr.onreadystatechange = function() {
 								var httpStatus, chunkArgs;
-	
-								if (xhr.readyState == 4) {
+																	
+								if (xhr.readyState == 4 && up.state !== plupload.STOPPED) {
 									// Getting the HTTP status might fail on some Gecko versions
 									try {
 										httpStatus = xhr.status;
@@ -598,10 +614,7 @@
 											// Still chunks left
 											uploadNextChunk();
 										}
-									}	
-									
-									xhr = null;
-																
+									}																	
 								}
 							};
 							
@@ -749,8 +762,10 @@
 						if (res.success) {
 							file.size = res.data.length;
 							sendBinaryBlob(res.data);
-						} else {
+						} else if (features.chunks) {
 							sendBinaryBlob(nativeFile); 
+						} else {
+							readFileAsBinary(nativeFile, sendBinaryBlob); // for browsers not supporting File.slice (e.g. FF3.6)
 						}
 					});
 				// if there's no way to slice file without preloading it in memory, preload it

@@ -53,6 +53,7 @@ package com.plupload {
 		private var multipleFiles:Boolean;
 		private var fileRefArray:Array = [];
 		private var fileRef:FileReference;
+		private var _disabled:Boolean = false;
 
 		/**
 		 * Main constructor for the Plupload class.
@@ -72,8 +73,8 @@ package com.plupload {
 		private function init(e:Event = null):void {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 
-			// Allow upload cross domain upload
-			Security.allowDomain("*");
+			// Allow cross domain scripting access
+			// Security.allowDomain("*");
 
 			// Setup id
 			this.id = this.stage.loaderInfo.parameters["id"];
@@ -114,8 +115,10 @@ package com.plupload {
 			this.clickArea.addEventListener(FocusEvent.FOCUS_OUT, this.stageEvent);
 
 			// Add external callbacks
+			ExternalInterface.addCallback('disableBrowse', this.disableBrowse);
 			ExternalInterface.addCallback('uploadFile', this.uploadFile);
 			ExternalInterface.addCallback('removeFile', this.removeFile);
+			ExternalInterface.addCallback('cancelUpload', this.cancelUpload);
 			ExternalInterface.addCallback('clearQueue', this.clearFiles);
 			ExternalInterface.addCallback('setFileFilters', this.setFileFilters);
 			ExternalInterface.addCallback('uploadNextChunk', this.uploadNextChunk);
@@ -276,6 +279,10 @@ package com.plupload {
 		 */
 		private function stageClickEvent(e:Event):void {
 			var filters:Array = [], i:int;
+			
+			if (this._disabled) {
+				return;
+			}
 
 			if (this.fileFilters != null) {
 				for (i = 0; i < this.fileFilters.length; i++) {
@@ -305,7 +312,17 @@ package com.plupload {
 				this.fireEvent("SelectError", ex2.message);
 			}
 		}
+		
+		/**
+		 * Disable file dialog trigger.
+		 * 
+		 * @param	disabled Boolean Disable or enable file dialog trigger.
+		 */
+		private function disableBrowse(disabled:Boolean = true):void {
+			this._disabled = disabled;
+		}
 
+		 
 		/**
 		 * External interface function. This can be called from page level JS to start the upload of a specific file.
 		 *
@@ -343,6 +360,15 @@ package com.plupload {
 		private function removeFile(id:String):void {
 			if (this.files[id] != null)
 				delete this.files[id];
+		}
+		
+		/**
+		 * Cancel upload.
+		 */
+		private function cancelUpload(): void {
+			if (this.currentFile) {
+				this.currentFile.cancelUpload();
+			}
 		}
 
 		/**

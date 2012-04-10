@@ -211,7 +211,7 @@ package com.mxi.image {
 			}
 			
 			Gps = extractTags(offsets['gpsIFD'], tags.gps);	
-			if (Gps.hasOwnProperty('GPSVersionID')) {
+			if (Gps.hasOwnProperty('GPSVersionID') && Gps.GPSVersionID is Array) {
 				Gps.GPSVersionID = Gps.GPSVersionID.join('.');
 			}
 				
