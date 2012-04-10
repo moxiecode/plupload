@@ -73,8 +73,8 @@ package com.plupload {
 		private function init(e:Event = null):void {
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 
-			// Allow upload cross domain upload
-			Security.allowDomain("*");
+			// Allow upload cross domain access
+			// Security.allowDomain("*");
 
 			// Setup id
 			this.id = this.stage.loaderInfo.parameters["id"];
