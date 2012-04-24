@@ -111,8 +111,7 @@
 				top : '0px',
 				background : uploader.settings.shim_bgcolor || 'transparent',
 				zIndex : 99999,
-				width : '100%',
-				height : '100%'
+				width : '100%'
 			});
 
 			flashContainer.className = 'plupload flash';
