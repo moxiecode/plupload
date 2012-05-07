@@ -465,7 +465,7 @@
 							});
 						}
 						
-						zIndex = parseInt(plupload.getStyle(browseButton, 'z-index'), 10);
+						zIndex = parseInt(plupload.getStyle(browseButton, 'zIndex'), 10);
 						if (isNaN(zIndex)) {
 							zIndex = 0;
 						}						
