@@ -395,6 +395,11 @@
 									dropInputElm.parentNode.removeChild(dropInputElm);									
 								}, uploader.id);
 								
+								// avoid event propagation as Safari cancels the whole capability of dropping files if you are doing a preventDefault of this event on the document body
+								plupload.addEvent(dropInputElm, 'dragover', function(e) {
+									e.stopPropagation();
+								}, uploader.id);
+								
 								dropElm.appendChild(dropInputElm);
 							}
 
