@@ -92,7 +92,6 @@
 					form.setAttribute('enctype', 'multipart/form-data');
 					form.setAttribute('encoding', 'multipart/form-data');
 					form.setAttribute("target", up.id + '_iframe');
-					form.style.position = 'absolute';
 
 					// Create input and set attributes
 					input = document.createElement('input');
@@ -123,7 +122,9 @@
 					});
 					
 					plupload.extend(form.style, {
-						overflow: 'hidden'
+						position: 'absolute',
+						overflow: 'hidden',
+						zIndex: 99999
 					});
 
 					// Show the container if shim_bgcolor is specified
