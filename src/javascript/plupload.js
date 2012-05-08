@@ -942,8 +942,13 @@
 				file = files[i];
 
 				if (file.size !== undef) {
-					total.size += file.size;
-					total.loaded += file.loaded;
+					// check if we have a scaling ratio here (currently set by html5 only)
+					// if none... then go on with default progress calculation with value of '1'
+					if(! file.scale_ratio) file.scale_ratio = 1;
+					// Use ratio to calculate progress regarding *original* size of files
+					// See post http://www.plupload.com/punbb/viewtopic.php?pid=5745#p5745 for more info
+					total.size += Math.ceil(file.size / file.scale_ratio);
+					total.loaded += Math.ceil(file.loaded / file.scale_ratio);
 				} else {
 					total.size = undef;
 				}

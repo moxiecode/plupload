@@ -744,7 +744,10 @@
 						// If it was scaled send the scaled image if it failed then
 						// send the raw image and let the server do the scaling
 						if (res.success) {
+							// store original size and scaling ratio
+							file.native_size = file.size;
 							file.size = res.data.length;
+							file.scale_ratio = file.size / file.native_size;
 							sendBinaryBlob(res.data);
 						} else if (features.chunks) {
 							sendBinaryBlob(nativeFile); 
