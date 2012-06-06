@@ -36,7 +36,7 @@
 				multipart: true,
 				
 				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
-				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit) 
+				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit || /MSIE 9\.0/.test(navigator.appVersion)) 
 			};
 		},
 
