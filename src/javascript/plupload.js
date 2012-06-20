@@ -11,7 +11,7 @@
 // JSLint defined globals
 /*global window:false, escape:false */
 
-/*!@@version@@*/
+/* !@@version@@ */
 
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
