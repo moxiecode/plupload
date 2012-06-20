@@ -234,7 +234,7 @@ package com.plupload {
 
 		public function advancedUpload(url:String, settings:Object):void {
 			var file:File = this, width:int, height:int, quality:int, multipart:Boolean, chunking:Boolean, fileDataName:String;
-			var chunk:int, chunks:int, chunkSize:int, postvars:Object;
+			var chunk:int, chunks:int, chunkSize:int, forceChunkSize:Boolean, postvars:Object;
 			var onComplete:Function, onIOError:Function;
 			var removeAllListeners:Function = function() : void {
 					file._fileRef.removeEventListener(Event.COMPLETE, onComplete);
@@ -252,6 +252,7 @@ package com.plupload {
 
 			multipart = new Boolean(settings["multipart"]);
 			fileDataName = new String(settings["file_data_name"]);
+			forceChunkSize = new Boolean(settings["force_chunk_size"]);
 			chunkSize = settings["chunk_size"];
 			chunking = chunkSize > 0;
 			postvars = settings["multipart_params"];
@@ -265,12 +266,11 @@ package com.plupload {
 				{
 					if (chunking) {
 						chunks = Math.ceil(file._size / chunkSize);
-
 						// Force at least 4 chunks to fake progress. We need to fake this since the URLLoader
 						// doesn't have a upload progress event and we can't use FileReference.upload since it
 						// doesn't support cookies, breaks on HTTPS and doesn't support custom data so client
 						// side image resizing will not be possible.
-						if (chunks < 4 && file._size > 1024 * 32) {
+						if (!forceChunkSize && (chunks < 4) && (file._size > 1024 * 32)) {
 							chunkSize = Math.ceil(file._size / 4);
 							chunks = 4;
 						}

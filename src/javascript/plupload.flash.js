@@ -210,20 +210,30 @@
 				uploader.bind("UploadFile", function(up, file) {
 					var settings = up.settings, resize = uploader.settings.resize || {};
 
-					getFlashObj().uploadFile(lookup[file.id], settings.url, {
-						name : file.target_name || file.name,
-						mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream',
-						chunk_size : settings.chunk_size,
-						width : resize.width,
-						height : resize.height,
-						quality : resize.quality,
-						multipart : settings.multipart,
-						multipart_params : settings.multipart_params || {},
-						file_data_name : settings.file_data_name,
-						format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png',
-						headers : settings.headers,
-						urlstream_upload : settings.urlstream_upload
-					});
+					try {
+						getFlashObj().uploadFile(lookup[file.id], settings.url, {
+							name : file.target_name || file.name,
+							mime : plupload.mimeTypes[file.name.replace(/^.+\.([^.]+)/, '$1').toLowerCase()] || 'application/octet-stream',
+							chunk_size : settings.chunk_size,
+							force_chunk_size : settings.force_chunk_size,
+							width : resize.width,
+							height : resize.height,
+							quality : resize.quality,
+							multipart : settings.multipart,
+							multipart_params : settings.multipart_params || {},
+							file_data_name : settings.file_data_name,
+							format : /\.(jpg|jpeg)$/i.test(file.name) ? 'jpg' : 'png',
+							headers : settings.headers,
+							urlstream_upload : settings.urlstream_upload
+						});
+					} catch (e) {
+						up.trigger('Error', {
+							code: plupload.GENERIC_ERROR,
+							message: plupload.translate('Generic Error.'),
+							details: 'Flash threw exception internally... (Could not open file reference?)',
+							file: file
+						});
+					}
 				});
 				
 				uploader.bind("CancelUpload", function() {
