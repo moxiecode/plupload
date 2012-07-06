@@ -224,6 +224,41 @@
 					types.length === 0;
 			}
 			
+			function walkFileSystem(directory, callback, error) {
+				if (!callback.pending) {
+					callback.pending = 0;
+				}
+				if (!callback.files) {
+					callback.files = [];
+				}
+				
+				callback.pending++;
+				
+				var reader = directory.createReader(),
+						relativePath = directory.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
+				reader.readEntries(function(entries) {
+					callback.pending--;
+					plupload.each(entries, function(entry) {
+						if (entry.isFile) {
+							callback.pending++;
+							entry.file(function(File) {
+								File.relativePath = relativePath + File.name;
+								callback.files.push(File);
+								if (--callback.pending === 0) {
+									callback(callback.files);
+								}
+							}, error);
+						} else {
+							walkFileSystem(entry, callback, error);
+						}
+					});
+					
+					if (callback.pending === 0) {
+						callback(callback.files);
+					}
+				}, error);
+			}
+			
 			function addSelectedFiles(native_files) {
 				var file, i, files = [], id, fileNames = {};
 
@@ -243,7 +278,7 @@
 					html5files[id] = file;
 
 					// Expose id, name and size
-					files.push(new plupload.File(id, file.fileName || file.name, file.fileSize || file.size)); // fileName / fileSize depricated
+					files.push(new plupload.File(id, file.fileName || file.name, file.fileSize || file.size, file.relativePath)); // fileName / fileSize depricated
 				}
 
 				// Trigger FilesAdded event if we added any
@@ -447,9 +482,19 @@
 						if (!hasFiles(dataTransfer)) {
 							return;
 						}
-
-						// Add dropped files
-						addSelectedFiles(dataTransfer.files);
+						
+						var items = dataTransfer.items || [], firstEntry;
+						if (items[0] && items[0].webkitGetAsEntry && (firstEntry = items[0].webkitGetAsEntry())) {
+						  // Experimental way of uploading entire folders (only supported by chrome >= 21)
+							walkFileSystem(firstEntry.filesystem.root, function(files) {
+								addSelectedFiles(files);
+							}, function() {
+							  // Fallback to old way when error happens
+								addSelectedFiles(dataTransfer.files);
+							});
+						} else {
+							addSelectedFiles(dataTransfer.files);
+						}
 
 						e.preventDefault();
 					}, uploader.id);
