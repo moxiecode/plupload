@@ -1603,7 +1603,7 @@
 	 * @param {String} name File name.
 	 * @param {Number} size File size in bytes.
 	 */
-	plupload.File = function(id, name, size) {
+	plupload.File = function(id, name, size, relativePath) {
 		var self = this; // Setup alias for self to reduce code size when it's compressed
 
 		/**
@@ -1629,6 +1629,14 @@
 		 * @type Number
 		 */
 		self.size = size;
+
+		/**
+		 * Relative path in original file system
+		 *
+		 * @property relativePath
+		 * @type String
+		 */
+		self.relativePath = relativePath || name;
 
 		/**
 		 * Number of bytes uploaded of the files total size.
