@@ -1,3 +1,5 @@
+Version 1.5.4 (2012-04-12)
+	Flash: Disable scripting if swf was loaded from another domain.
 Version 1.5.3 (2012-04-05)
 	HTML5: Check if xhr object is initialized, before calling abort() on it.
 	HTML4: Postpone form removal until uploaders state changes, to avoid error on resuming stopped uploads.
