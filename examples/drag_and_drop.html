@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Plupload - Drag &amp; drop example</title>
+    <style>
+      body {
+        font-family: Verdana, Geneva, sans-serif;
+        font-size: 13px;
+        color: #333;
+        background: url(bg.jpg);
+        width: 620px;
+        margin: 40px auto;
+      }
+      #drop-target {
+        border: 10px dashed #999;
+        text-align: center;
+        color: #999;
+        font-size: 20px;
+        width: 600px;
+        height: 300px;
+        line-height: 300px;
+        cursor: pointer;
+      }
+      
+      #drop-target.dragover {
+        background: rgba(255, 255, 255, 0.4);
+        border-color: green;
+      }
+      
+      #debug {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="drop-target">Drop your files or folders (Chrome >= 21) here</div>
+    
+    <div id="debug">No runtime found, your browser doesn't support HTML5 drag &amp; drop upload.</div>
+    <script type="text/javascript" src="../src/javascript/plupload.js"></script>
+    <script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
+    <script type="text/javascript">
+      // Custom example logic
+      function $(id) {
+        return document.getElementById(id);
+      }
+    
+      var uploader = new plupload.Uploader({
+        runtimes : 'html5',
+        drop_element : 'drop-target',
+        browse_button : 'drop-target',
+        max_file_size : '10mb',
+        upload : "upload.php"
+      });
+      
+      uploader.bind('Init', function(up, params) {
+        if (uploader.features.dragdrop) {
+          $('debug').innerHTML = "";
+          
+          var target = $("drop-target");
+          
+          target.ondragover = function(event) {
+            event.dataTransfer.dropEffect = "copy";
+          };
+          
+          target.ondragenter = function() {
+            this.className = "dragover";
+          };
+          
+          target.ondragleave = function() {
+            this.className = "";
+          };
+          
+          target.ondrop = function() {
+            this.className = "";
+          };
+        }
+      });
+
+      uploader.bind('FilesAdded', function(up, files) {
+        for (var i in files) {
+          $('debug').innerHTML += '<div id="' + files[i].id + '">- ' + files[i].relativePath + ' (' + plupload.formatSize(files[i].size) + ')</div>';
+        }
+      });
+
+      uploader.init();
+    </script>
+  </body>
+</html>
