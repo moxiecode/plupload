@@ -483,17 +483,17 @@
 							return;
 						}
 						
-						var items = dataTransfer.items || [], firstEntry;
+						var items = dataTransfer.items || [], files = dataTransfer.files, firstEntry;
 						if (items[0] && items[0].webkitGetAsEntry && (firstEntry = items[0].webkitGetAsEntry())) {
 						  // Experimental way of uploading entire folders (only supported by chrome >= 21)
 							walkFileSystem(firstEntry.filesystem.root, function(files) {
 								addSelectedFiles(files);
 							}, function() {
 							  // Fallback to old way when error happens
-								addSelectedFiles(dataTransfer.files);
+								addSelectedFiles(files);
 							});
 						} else {
-							addSelectedFiles(dataTransfer.files);
+							addSelectedFiles(files);
 						}
 
 						e.preventDefault();
