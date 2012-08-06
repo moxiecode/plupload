@@ -232,7 +232,7 @@
 
 
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
-					var file = up.getFile(lookup[flash_file.id]);
+					var file = up.getMyFile(lookup[flash_file.id]);
 
 					if (file.status != plupload.FAILED) {
 						file.loaded = flash_file.loaded;
@@ -243,7 +243,7 @@
 				});
 
 				uploader.bind("Flash:UploadChunkComplete", function(up, info) {
-					var chunkArgs, file = up.getFile(lookup[info.id]);
+					var chunkArgs, file = up.getMyFile(lookup[info.id]);
 
 					chunkArgs = {
 						chunk : info.chunk,
@@ -294,7 +294,7 @@
 						code : plupload.SECURITY_ERROR,
 						message : plupload.translate('Security error.'),
 						details : err.message,
-						file : uploader.getFile(lookup[err.id])
+						file : uploader.getMyFile(lookup[err.id])
 					});
 				});
 
@@ -303,7 +303,7 @@
 						code : plupload.GENERIC_ERROR,
 						message : plupload.translate('Generic error.'),
 						details : err.message,
-						file : uploader.getFile(lookup[err.id])
+						file : uploader.getMyFile(lookup[err.id])
 					});
 				});
 
@@ -312,7 +312,7 @@
 						code : plupload.IO_ERROR,
 						message : plupload.translate('IO error.'),
 						details : err.message,
-						file : uploader.getFile(lookup[err.id])
+						file : uploader.getMyFile(lookup[err.id])
 					});
 				});
 				
@@ -320,7 +320,7 @@
 					uploader.trigger('Error', {
 						code : parseInt(err.code, 10),
 						message : plupload.translate('Image error.'),
-						file : uploader.getFile(lookup[err.id])
+						file : uploader.getMyFile(lookup[err.id])
 					});
 				});
 				
@@ -375,12 +375,12 @@
 				
 				
 				uploader.bind('Flash:ExifData', function(up, obj) {
-					uploader.trigger('ExifData', uploader.getFile(lookup[obj.id]), obj.data);
+					uploader.trigger('ExifData', uploader.getMyFile(lookup[obj.id]), obj.data);
 				});
 				
 				
 				uploader.bind('Flash:GpsData', function(up, obj) {
-					uploader.trigger('GpsData', uploader.getFile(lookup[obj.id]), obj.data);
+					uploader.trigger('GpsData', uploader.getMyFile(lookup[obj.id]), obj.data);
 				});
 				
 
