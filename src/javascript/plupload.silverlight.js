@@ -272,12 +272,12 @@
 						code : plupload.IO_ERROR,
 						message : 'IO Error.',
 						details : message,
-						file : up.getFile(lookup[file_id])
+						file : up.getMyFile(lookup[file_id])
 					});
 				});
 
 				uploader.bind("Silverlight:UploadFileProgress", function(up, sl_id, loaded, total) {
-					var file = up.getFile(lookup[sl_id]);
+					var file = up.getMyFile(lookup[sl_id]);
 
 					if (file.status != plupload.FAILED) {
 						file.size = total;
@@ -305,7 +305,7 @@
 				});
 
 				uploader.bind("Silverlight:UploadChunkSuccessful", function(up, sl_id, chunk, chunks, text) {
-					var chunkArgs, file = up.getFile(lookup[sl_id]);
+					var chunkArgs, file = up.getMyFile(lookup[sl_id]);
 
 					chunkArgs = {
 						chunk : chunk,
@@ -331,7 +331,7 @@
 				});
 
 				uploader.bind("Silverlight:UploadSuccessful", function(up, sl_id, response) {
-					var file = up.getFile(lookup[sl_id]);
+					var file = up.getMyFile(lookup[sl_id]);
 
 					file.status = plupload.DONE;
 
