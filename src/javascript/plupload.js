@@ -1303,11 +1303,11 @@
 			/**
 			 * Returns the specified file object by id.
 			 *
-			 * @method getFile
+			 * @method getMyFile
 			 * @param {String} id File id to look for.
 			 * @return {plupload.File} File object or undefined if it wasn't found;
 			 */
-			getFile : function(id) {
+			getMyFile : function(id) {
 				var i;
 
 				for (i = files.length - 1; i >= 0; i--) {
