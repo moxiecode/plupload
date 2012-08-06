@@ -403,19 +403,19 @@ $.widget("ui.plupload", {
 		this._trigger('stop', null);
 	},
 	
-	getFile: function(id) {
+	getMyFile: function(id) {
 		var file;
 		
 		if (typeof id === 'number') {
 			file = this.uploader.files[id];	
 		} else {
-			file = this.uploader.getFile(id);	
+			file = this.uploader.getMyFile(id);	
 		}
 		return file;
 	},
 	
 	removeFile: function(id) {
-		var file = this.getFile(id);
+		var file = this.getMyFile(id);
 		if (file) {
 			this.uploader.removeFile(file);
 		}
@@ -623,7 +623,7 @@ $.widget("ui.plupload", {
 			var targetSpan = $(e.target), file, parts, name, ext = "";
 
 			// Get file name and split out name and extension
-			file = self.uploader.getFile(targetSpan.parents('tr')[0].id);
+			file = self.uploader.getMyFile(targetSpan.parents('tr')[0].id);
 			name = file.name;
 			parts = /^(.+)(\.[^.]+)$/.exec(name);
 			if (parts) {
@@ -681,7 +681,7 @@ $.widget("ui.plupload", {
 				var i, length, idx, files = [];
 				
 				$.each($(this).sortable('toArray'), function(i, id) {
-					files[files.length] = self.uploader.getFile(id);
+					files[files.length] = self.uploader.getMyFile(id);
 				});				
 				
 				files.unshift(files.length);
