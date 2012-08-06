@@ -203,7 +203,7 @@
 							var targetSpan = $(e.target), file, parts, name, ext = "";
 
 							// Get file name and split out name and extension
-							file = up.getFile(targetSpan.parents('li')[0].id);
+							file = up.getMyFile(targetSpan.parents('li')[0].id);
 							name = file.name;
 							parts = /^(.+)(\.[^.]+)$/.exec(name);
 							if (parts) {
