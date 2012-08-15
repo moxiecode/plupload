@@ -12,8 +12,9 @@
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false, ArrayBuffer:false, Uint8Array:false, BlobBuilder:false, unescape:false */
 
 (function(window, document, plupload, undef) {
-	var html5files = {}, // queue of original File objects
-		fakeSafariDragDrop;
+	var fakeSafariDragDrop;
+
+	plupload.html5files = {}; // queue of original File objects
 
 	function readFileAsDataURL(file, callback) {
 		var reader;
@@ -49,7 +50,7 @@
 		var canvas, context, img, scale,
 			up = this;
 			
-		readFileAsDataURL(html5files[file.id], function(data) {
+		readFileAsDataURL(plupload.html5files[file.id], function(data) {
 			// Setup canvas and context
 			canvas = document.createElement("canvas");
 			canvas.style.display = 'none';
@@ -228,7 +229,7 @@
 
 					// Store away gears blob internally
 					id = plupload.guid();
-					html5files[id] = file;
+					plupload.html5files[id] = file;
 
 					// Expose id, name and size
 					files.push(new plupload.File(id, file.fileName || file.name, file.fileSize || file.size)); // fileName / fileSize depricated
@@ -736,7 +737,7 @@
 					uploadNextChunk();
 				}
 
-				nativeFile = html5files[file.id];
+				nativeFile = plupload.html5files[file.id];
 								
 				// Resize image if it's a supported format and resize is enabled
 				if (features.jpgresize && up.settings.resize && /\.(png|jpg|jpeg)$/i.test(file.name)) {
