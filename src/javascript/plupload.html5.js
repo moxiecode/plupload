@@ -197,8 +197,8 @@
 				chunks: sliceSupport,
 				// Safari on Windows has problems when selecting multiple files
 				multi_selection: !(plupload.ua.safari && plupload.ua.windows),
-				// Gecko 2+ can trigger file dialog programatically
-				triggerDialog: plupload.ua.gecko && window.FormData
+				// WebKit and Gecko 2+ can trigger file dialog progrmmatically
+				triggerDialog: (plupload.ua.gecko && window.FormData || plupload.ua.webkit)
 			};
 		},
 
@@ -465,10 +465,7 @@
 							});
 						}
 						
-						zIndex = parseInt(plupload.getStyle(browseButton, 'zIndex'), 10);
-						if (isNaN(zIndex)) {
-							zIndex = 0;
-						}						
+						zIndex = plupload.getZindex(browseButton);
 							
 						plupload.extend(browseButton.style, {
 							zIndex : zIndex
