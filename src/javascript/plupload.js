@@ -703,6 +703,27 @@
 		},
 
 		/**
+		 * returns the z-index of a DOM element, if explicitly set with a style or auto set value
+		 * by virtue of the element being a member of a stacking context (see: http://www.w3.org/TR/CSS2/visuren.html#z-index)
+		 *
+		 * This will handle a button in a dialog or tooltip where the maximizing of the z-index of
+		 * the buttons stacking context has already been handled.
+		 *
+		 * @param domElement
+		 * @return z index of root of stacking context or 0
+		 */
+		getZindex: function(domElement) {
+			var zIndex = NaN;
+			var contextRootElement = domElement;
+			while (contextRootElement != null && isNaN(zIndex)) {
+				zIndex = parseInt(plupload.getStyle(contextRootElement, 'zIndex'), 10);
+				contextRootElement = contextRootElement.parentNode;
+			}
+			return isNaN(zIndex) ? 0 : zIndex;
+		},
+
+
+		/**
 		 * Adds an event handler to the specified object and store reference to the handler
 		 * in objects internal Plupload registry (@see removeEvent).
 		 *
