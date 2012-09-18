@@ -231,7 +231,9 @@
 					html5files[id] = file;
 
 					// Expose id, name and size
-					files.push(new plupload.File(id, file.fileName || file.name, file.fileSize || file.size)); // fileName / fileSize depricated
+					var f = new plupload.File(id, file.fileName || file.name, file.fileSize || file.size); // fileName / fileSize depricated
+					f.nativeFile = file;
+					files.push(f);
 				}
 
 				// Trigger FilesAdded event if we added any
