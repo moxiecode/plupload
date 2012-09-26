@@ -191,6 +191,8 @@ namespace Moxiecode.Plupload {
 			if (!this.multipart) {
 				if (url.IndexOf('?') == -1) {
 					url += '?';
+				} else {
+					url += '&';
 				}
 
                 url += "name=" + Uri.EscapeDataString(this.targetName);
