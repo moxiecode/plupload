@@ -56,7 +56,7 @@ $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
 if (!file_exists($targetDir))
 	@mkdir($targetDir);
 
-// Remove old temp files	
+// Remove old temp files
 if ($cleanupTargetDir && is_dir($targetDir) && ($dir = opendir($targetDir))) {
 	while (($file = readdir($dir)) !== false) {
 		$tmpfilePath = $targetDir . DIRECTORY_SEPARATOR . $file;
@@ -70,7 +70,7 @@ if ($cleanupTargetDir && is_dir($targetDir) && ($dir = opendir($targetDir))) {
 	closedir($dir);
 } else
 	die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
-	
+
 
 // Look for the content type header
 if (isset($_SERVER["HTTP_CONTENT_TYPE"]))
@@ -80,7 +80,7 @@ if (isset($_SERVER["CONTENT_TYPE"]))
 	$contentType = $_SERVER["CONTENT_TYPE"];
 
 // Handle non multipart uploads older WebKit versions didn't support multipart in HTML5
-if (strpos($contentType, "multipart") !== false) {
+if (!strstr($contentType, "multipart")) {
 	if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
 		// Open temp file
 		$out = fopen("{$filePath}.part", $chunk == 0 ? "wb" : "ab");
@@ -121,7 +121,7 @@ if (strpos($contentType, "multipart") !== false) {
 
 // Check if file has been uploaded
 if (!$chunks || $chunk == $chunks - 1) {
-	// Strip the temp .part suffix off 
+	// Strip the temp .part suffix off
 	rename("{$filePath}.part", $filePath);
 }
 
