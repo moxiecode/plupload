@@ -196,6 +196,7 @@
 
 				try {
 					getFlashObj().setFileFilters(uploader.settings.filters, uploader.settings.multi_selection);
+					getFlashObj().setReturnFileData(uploader.settings.return_file_data);
 				} catch (ex) {
 					callback({success : false});
 					return;
@@ -280,7 +281,7 @@
 						lookup[id] = file.id;
 						lookup[file.id] = id;
 
-						files.push(new plupload.File(id, file.name, file.size));
+						files.push(new plupload.File(id, file.name, file.size, file.data));
 					}
 
 					// Trigger FilesAdded event if we added any
