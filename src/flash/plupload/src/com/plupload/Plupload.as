@@ -9,6 +9,7 @@
  */
 
 package com.plupload {
+	import flash.display.Loader;
 	import flash.display.LoaderInfo;
 	import flash.display.Sprite;
 	import flash.errors.IOError;
@@ -53,6 +54,7 @@ package com.plupload {
 		private var multipleFiles:Boolean;
 		private var fileRefArray:Array = [];
 		private var fileRef:FileReference;
+		private var returnFileData:Boolean;
 		private var _disabled:Boolean = false;
 
 		/**
@@ -122,6 +124,7 @@ package com.plupload {
 			ExternalInterface.addCallback('clearQueue', this.clearFiles);
 			ExternalInterface.addCallback('setFileFilters', this.setFileFilters);
 			ExternalInterface.addCallback('uploadNextChunk', this.uploadNextChunk);
+			ExternalInterface.addCallback('setReturnFileData', this.setReturnFileData);
 
 			this.fireEvent("Init");
 		}
@@ -155,6 +158,8 @@ package com.plupload {
 		 *
 		 * @param e Event object.
 		 */
+		
+		
 		private function selectEvent(e:Event):void {
 			var selectedFiles:Array = [], files:Dictionary = this.files;
 
@@ -166,7 +171,7 @@ package com.plupload {
 					fireEvent("UploadProcess", {
 						id : file.id,
 						loaded : e.bytesLoaded,
-						size : e.bytesTotal
+						size : e.bytesTotal						
 					});
 				});
 
@@ -248,18 +253,47 @@ package com.plupload {
 				// Setup selected files object to pass page to page level js
 				selectedFiles.push({id : file.id, name : file.fileName, size : file.size, loaded : 0});
 			}
-
+			this.fileRefArray.splice(0);
 			if (this.multipleFiles) {
 				for (var i:Number = 0; i < this.fileRefList.fileList.length; i++) {
 					processFile(new File("file_" + (this.idCounter++), this.fileRefList.fileList[i]));
+					this.fileRefArray.push(this.fileRefList.fileList[0]);
 				}
 			} else {
 				processFile(new File("file_" + (this.idCounter++), this.fileRef));
 				this.fileRefArray.push(this.fileRef);
 				initSingleFileReference();
 			}
-
-			this.fireEvent("SelectFiles", selectedFiles);
+			
+			// Return array of selected files. Optionally load the data for each and return as Base64 encoded in .data property.
+			var self: Plupload = this;
+			if ( this.returnFileData )
+			{
+				function execute(i: Number) : void
+				{
+					if ( i == selectedFiles.length ) // We're done
+						self.fireEvent("SelectFiles", selectedFiles);
+					else
+					{
+						var f:FileReference =  self.fileRefArray[i];
+						trace(f);
+						f.addEventListener(Event.COMPLETE,  onComplete);
+						f.load();
+					}
+					
+					function onComplete(e:Event): void
+					{
+						e.target.removeEventListener(Event.COMPLETE, onComplete);
+						selectedFiles[i].data = Base64.encodeByteArray(e.target.data);
+						execute(++i);
+					}
+				}
+				execute(0);
+			}
+			else
+				this.fireEvent("SelectFiles", selectedFiles);
+						
+			
 		}
 
 		/**
@@ -391,6 +425,16 @@ package com.plupload {
 			this.multipleFiles = multi;
 		}
 
+		/**
+		 * Sets file filters to be used for selection.
+		 *
+		 * @param filters Id of the file to remove.
+		 * @param multi Bool state if multiple files is to be selected.
+		 */
+		private function setReturnFileData(fileData:Boolean):void {
+			this.returnFileData = fileData;
+		}
+		
 		/**
 		 * Fires an event from the flash movie out to the page level JS.
 		 *

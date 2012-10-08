@@ -1603,7 +1603,7 @@
 	 * @param {String} name File name.
 	 * @param {Number} size File size in bytes.
 	 */
-	plupload.File = function(id, name, size) {
+	plupload.File = function(id, name, size, data) {
 		var self = this; // Setup alias for self to reduce code size when it's compressed
 
 		/**
@@ -1654,6 +1654,16 @@
 		 * @see plupload
 		 */
 		self.status = 0;
+
+		/**
+		 * Data encoded as Base64
+		 *
+		 * @property data
+		 * @type String
+		 * @see plupload
+		 */
+		self.data = data;
+
 	};
 
 	/**
