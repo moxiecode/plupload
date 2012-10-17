@@ -207,6 +207,14 @@
 							});
 
 							return;
+						} finally {
+							// Probably a permission denied error
+							up.trigger('Error', {
+								code : plupload.SECURITY_ERROR,
+								message : plupload.translate('Security error.')
+							});
+
+							return;
 						}
 
 						// Get result
