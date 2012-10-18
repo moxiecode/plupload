@@ -15,6 +15,7 @@ header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
+header("Content-Type: application/json");
 
 // Settings
 $targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
@@ -83,18 +84,18 @@ if (isset($_SERVER["CONTENT_TYPE"]))
 if (strpos($contentType, "multipart") !== false) {
 	if (isset($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name'])) {
 		// Open temp file
-		$out = fopen("{$filePath}.part", $chunk == 0 ? "wb" : "ab");
+		$out = @fopen("{$filePath}.part", $chunk == 0 ? "wb" : "ab");
 		if ($out) {
 			// Read binary input stream and append it to temp file
-			$in = fopen($_FILES['file']['tmp_name'], "rb");
+			$in = @fopen($_FILES['file']['tmp_name'], "rb");
 
 			if ($in) {
 				while ($buff = fread($in, 4096))
 					fwrite($out, $buff);
 			} else
 				die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
-			fclose($in);
-			fclose($out);
+			@fclose($in);
+			@fclose($out);
 			@unlink($_FILES['file']['tmp_name']);
 		} else
 			die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
@@ -102,10 +103,10 @@ if (strpos($contentType, "multipart") !== false) {
 		die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."}, "id" : "id"}');
 } else {
 	// Open temp file
-	$out = fopen("{$filePath}.part", $chunk == 0 ? "wb" : "ab");
+	$out = @fopen("{$filePath}.part", $chunk == 0 ? "wb" : "ab");
 	if ($out) {
 		// Read binary input stream and append it to temp file
-		$in = fopen("php://input", "rb");
+		$in = @fopen("php://input", "rb");
 
 		if ($in) {
 			while ($buff = fread($in, 4096))
@@ -113,8 +114,8 @@ if (strpos($contentType, "multipart") !== false) {
 		} else
 			die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
 
-		fclose($in);
-		fclose($out);
+		@fclose($in);
+		@fclose($out);
 	} else
 		die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
 }
@@ -128,5 +129,3 @@ if (!$chunks || $chunk == $chunks - 1) {
 
 // Return JSON-RPC response
 die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
-
-?>
