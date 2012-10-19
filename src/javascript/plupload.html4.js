@@ -199,22 +199,24 @@
 						try {
 							el = n.contentWindow.document || n.contentDocument || window.frames[n.id].document;
 						} catch (ex) {
-							// Probably a permission denied error
-							up.trigger('Error', {
-								code : plupload.SECURITY_ERROR,
-								message : plupload.translate('Security error.'),
-								file : currentFile
-							});
+                                                        try{
+								// Probably a permission denied error
+								up.trigger('Error', {
+									code : plupload.SECURITY_ERROR,
+									message : plupload.translate('Security error.'),
+									file : currentFile
+								});
 
-							return;
-						} finally {
-							// Probably a permission denied error
-							up.trigger('Error', {
-								code : plupload.SECURITY_ERROR,
-								message : plupload.translate('Security error.')
-							});
+								return;
+							} catch (ex2) {
+								// Probably a permission denied error
+								up.trigger('Error', {
+									code : plupload.SECURITY_ERROR,
+									message : plupload.translate('Security error.')
+								});
 
-							return;
+								return;
+							}
 						}
 
 						// Get result
