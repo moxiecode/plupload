@@ -543,7 +543,7 @@ $.widget("ui.plupload", {
 			
 		// destroy sortable if enabled
 		if ($.ui.sortable && this.options.sortable) {
-			$('tbody', filelist).sortable('destroy');	
+			$('tbody.ui-sortable', filelist).sortable('destroy');	
 		}
 		
 		filelist.empty();
