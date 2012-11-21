@@ -74,7 +74,7 @@
 		"text/css,css," +
 		"text/csv,csv," +
 		"text/rtf,rtf," +
-		"video/mpeg,mpeg mpg mpe," +
+		"video/mpeg,mpeg mpg mpe m2v," +
 		"video/quicktime,qt mov," +
 		"video/mp4,mp4," +
 		"video/x-m4v,m4v," +
@@ -82,6 +82,8 @@
 		"video/x-ms-wmv,wmv," +
 		"video/avi,avi," +
 		"video/webm,webm," +
+		"video/3gpp,3gp," +
+		"video/3gpp2,3g2," +
 		"video/vnd.rn-realvideo,rv," +
 		"application/vnd.oasis.opendocument.formula-template,otf," +
 		"application/octet-stream,exe"
