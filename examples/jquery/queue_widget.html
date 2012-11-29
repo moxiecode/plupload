@@ -13,16 +13,9 @@
 </style>
 <link rel="stylesheet" href="../../js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" media="screen" />
 
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 
-<script type="text/javascript" src="../../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.gears.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
+<script type="text/javascript" src="../../js/plupload.full.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 
 <!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
@@ -36,26 +29,18 @@
 
 	<div style="float: left; margin-right: 20px">
 		<h3>Flash runtime</h3>
-		<div id="flash_uploader" style="width: 450px; height: 330px;">You browser doesn't have Flash installed.</div>
+		<div id="flash_uploader" style="width: 500px; height: 330px;">You browser doesn't have Flash installed.</div>
 
-		<h3>Gears runtime</h3>
-		<div id="gears_uploader" style="width: 450px; height: 330px;">You browser doesn't have Gears installed.</div>
-	</div>
-
-	<div style="float: left; margin-right: 20px">
 		<h3>Silverlight runtime</h3>
-		<div id="silverlight_uploader" style="width: 450px; height: 330px;">You browser doesn't have Silverlight installed.</div>
-
-		<h3>HTML 5 runtime</h3>
-		<div id="html5_uploader" style="width: 450px; height: 330px;">You browser doesn't support native upload. Try Firefox 3 or Safari 4.</div>
+		<div id="silverlight_uploader" style="width: 500px; height: 330px;">You browser doesn't have Silverlight installed.</div>
 	</div>
 
 	<div style="float: left; margin-right: 20px">
-		<h3>BrowserPlus runtime</h3>
-		<div id="browserplus_uploader" style="width: 450px; height: 330px;">You browser doesn't have BrowserPlus installed.</div>
-
 		<h3>HTML 4 runtime</h3>
-		<div id="html4_uploader" style="width: 450px; height: 330px;">You browser doesn't have HTML 4 support.</div>
+		<div id="html4_uploader" style="width: 500px; height: 330px;">You browser doesn't have HTML 4 support.</div>
+		
+		<h3>HTML 5 runtime</h3>
+		<div id="html5_uploader" style="width: 500px; height: 330px;">You browser doesn't support native upload. Try Firefox 3 or Safari 4.</div>
 	</div>
 
 	<br style="clear: both" />
@@ -82,31 +67,15 @@ $(function() {
 		resize : {width : 320, height : 240, quality : 90},
 
 		// Flash settings
-		flash_swf_url : '../../js/plupload.flash.swf'
+		flash_swf_url : '../../js/Moxie.swf'
 	});
 
-	// Setup gears version
-	$("#gears_uploader").pluploadQueue({
-		// General settings
-		runtimes : 'gears',
-		url : 'upload.php',
-		max_file_size : '10mb',
-		chunk_size : '1mb',
-		unique_names : true,
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip"}
-		],
-
-		// Resize images on clientside if we can
-		resize : {width : 320, height : 240, quality : 90}
-	});
 
 	// Setup silverlight version
 	$("#silverlight_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'silverlight',
-		url : 'upload.php',
+		url : '../upload.php',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
@@ -119,14 +88,14 @@ $(function() {
 		resize : {width : 320, height : 240, quality : 90},
 
 		// Silverlight settings
-		silverlight_xap_url : '../../js/plupload.silverlight.xap'
+		silverlight_xap_url : '../../js/Moxie.xap'
 	});
 
 	// Setup html5 version
 	$("#html5_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'html5',
-		url : 'upload.php',
+		url : '../upload.php',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
@@ -139,28 +108,12 @@ $(function() {
 		resize : {width : 320, height : 240, quality : 90}
 	});
 
-	// Setup browserplus version
-	$("#browserplus_uploader").pluploadQueue({
-		// General settings
-		runtimes : 'browserplus',
-		url : 'upload.php',
-		max_file_size : '10mb',
-		chunk_size : '1mb',
-		unique_names : true,
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip"}
-		],
-
-		// Resize images on clientside if we can
-		resize : {width : 320, height : 240, quality : 90}
-	});
 
 	// Setup html4 version
 	$("#html4_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'html4',
-		url : 'upload.php',
+		url : '../upload.php',
 		unique_names : true,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},

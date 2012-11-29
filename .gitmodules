@@ -1,0 +1,3 @@
+[submodule "src/moxie"]
+	path = src/moxie
+	url = git@github.com:moxiecode/moxie.git

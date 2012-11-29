@@ -12,20 +12,13 @@
 	}
 </style>
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
-<link rel="stylesheet" href="../../src/javascript/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+<link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
-<script type="text/javascript" src="../../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.gears.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
-<script type="text/javascript" src="../../src/javascript/jquery.ui.plupload/jquery.ui.plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 
 <!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 </head>
@@ -45,7 +38,7 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'flash,html5,browserplus,silverlight,gears,html4',
+		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
 		max_file_size : '1000mb',
 		max_file_count: 20, // user can add no more then 20 files at a time
@@ -55,12 +48,6 @@ $(function() {
 
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90},
-		
-		// Rename files by clicking on their titles
-		rename: true,
-		
-		// Sort files
-		sortable: true,
 
 		// Specify what files to browse for
 		filters : [
@@ -69,10 +56,27 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../../js/plupload.flash.swf',
+		flash_swf_url : '../../js/Moxie.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../../js/plupload.silverlight.xap'
+		silverlight_xap_url : '../../js/Moxie.xap',
+
+		// Rename files by clicking on their titles
+		rename: true,
+		
+		// Sort files
+		sortable: true,
+
+		// Enable ability to drop files onto the widget (currently only HTML5 supports that)
+		dragdrop: true,
+
+		// Views to activate
+		views: {
+			list: true,
+			thumbs: true // Show thumbs
+		},
+		default_view: 'thumbs',
+		remember_view: true // requires jquery cookie plugin
 	});
 
 	// Client side form validation

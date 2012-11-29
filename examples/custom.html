@@ -14,15 +14,30 @@
 	}
 </style>
 
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+<!-- production -->
+<script type="text/javascript" src="../js/plupload.full.min.js"></script>
+<!-- -->
 
-<script type="text/javascript" src="../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.gears.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.browserplus.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
+<!-- debug 
+<script type="text/javascript" src="../src/moxie/src/javascript/core/mOxie.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/Utils.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/Exceptions.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/I18N.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/EventTarget.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/Runtime.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/Transporter.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/FileAPI.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/Image.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/extra/ImageInfo.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/core/XMLHttpRequest.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/html5.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/html4.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/flash.js"></script>
+<script type="text/javascript" src="../src/moxie/src/javascript/silverlight.js"></script>
+
+<script type="text/javascript" src="../src/plupload.js"></script>
+-->
+
 
 <!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
 
@@ -34,7 +49,7 @@
 <p>Shows you how to use the core plupload API.</p>
 
 <div id="container">
-    <div id="filelist">No runtime found.</div>
+	<div id="filelist"></div>
     <br />
     <a id="pickfiles" href="javascript:;">[Select files]</a> 
     <a id="uploadfiles" href="javascript:;">[Upload files]</a>
@@ -49,23 +64,20 @@ function $(id) {
 
 
 var uploader = new plupload.Uploader({
-	runtimes : 'gears,html5,flash,silverlight,browserplus',
+	runtimes : 'silverlight,html4',
 	browse_button : 'pickfiles',
 	container: 'container',
 	max_file_size : '10mb',
 	url : 'upload.php',
 	resize : {width : 320, height : 240, quality : 90},
-	flash_swf_url : '../js/plupload.flash.swf',
-	silverlight_xap_url : '../js/plupload.silverlight.xap',
+	flash_swf_url : '../js/Moxie.swf',
+	silverlight_xap_url : '../js/Moxie.xap',
 	filters : [
 		{title : "Image files", extensions : "jpg,gif,png"},
 		{title : "Zip files", extensions : "zip"}
 	]
 });
 
-uploader.bind('Init', function(up, params) {
-	$('filelist').innerHTML = "<div>Current runtime: " + params.runtime + "</div>";
-});
 
 uploader.bind('FilesAdded', function(up, files) {
 	for (var i in files) {

@@ -4,7 +4,7 @@
 	<meta charset="UTF-8" />
 	<title>Plupload Unit Tests</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	<link rel="stylesheet" href="qunit/qunit.css" type="text/css"/>
+	<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
 	<style type="text/css">
 	ol { font-family: 'trebuchet ms', verdana, arial; }
 	h2, ol {font-size: 10pt; }
@@ -34,35 +34,15 @@
 		margin: 10px;
 	}
 	</style>
-	<script type="text/javascript" src="qunit/runner.js"></script>
-	<script type="text/javascript">
-		// Focus the browser
-		top.focus();
-
-		// Init QUnitRunner
-		QUnitRunner.init({
-			columns: [
-				[
-					{title: 'Basic tests', tests: [
-						{title: 'Core API', url: 'api.html'}
-					]},
-
-					{title: 'Manual tests', manual: true, tests: [
-						{title: 'Multipart setting', url: 'multipart.html'},
-						{title: 'Errors from server', url: 'error.html'},
-						{title: 'Overlay shim', url: 'shim.html'}
-					]}
-				]
-			]
-		});
-	</script>
+	<script type="text/javascript" src="js/runner.js"></script>
+	<script type="text/javascript" src="tests.js"></script>
 </head>
 <body>
 
-<h1 id="qunit-header">Plupload Unit Tests</h1>
+<h1 id="qunit-header">TinyMCE Unit Tests</h1>
 <div id="total_status"></div>
 <div id="menu"></div>
-<div><input type="button" value="Run all" onclick="QUnitRunner.run();" /></div>
+<div><input type="button" value="Run all" onclick="QUnitRunner.run();" /><input type="checkbox" id="min" name="min" checked="checked" /> Run on minified code</div>
 <div id="log"></div>
 
 </body>
