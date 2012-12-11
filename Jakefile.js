@@ -38,7 +38,7 @@ task("moxie", [], function (params) {
 
 
 desc("Minify JS files");
-task("minifyjs", [], function (params) {
+task("minifyjs", ["moxie"], function (params) {
 	var targetDir = "./js", moxieDir = "src/moxie";
 	
 	// Clear previous versions
