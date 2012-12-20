@@ -18,7 +18,7 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 
 <!-- production -->
-<script type="text/javascript" src="../js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../../js/plupload.full.min.js"></script>
 <!-- -->
 
 <!-- debug 
@@ -62,7 +62,7 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'html5,flash,silverlight,html4',
+		runtimes : 'flash,silverlight,html4',
 		url : '../upload.php',
 		max_file_size : '1000mb',
 		max_file_count: 20, // user can add no more then 20 files at a time
