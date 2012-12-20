@@ -713,7 +713,7 @@ plupload.Uploader = function(settings) {
 
 		try {
 			img.onload = function() {
-				img.resize(params.width, params.height);
+				img.resize(params.width, params.height, params.crop);
 			};
 
 			img.onresize = function() {
