@@ -75,69 +75,74 @@
 				
 				scale = Math.min(resize.width / img.width, resize.height / img.height);
 
-				if (scale < 1 || (scale === 1 && mime === 'image/jpeg')) {
+				if (scale < 1) {
 					width = Math.round(img.width * scale);
 					height = Math.round(img.height * scale);
-
-					// Scale image and canvas
-					canvas.width = width;
-					canvas.height = height;
-					context.drawImage(img, 0, 0, width, height);
-					
-					// Preserve JPEG headers
-					if (mime === 'image/jpeg') {
-						jpegHeaders = new JPEG_Headers(atob(data.substring(data.indexOf('base64,') + 7)));
-						if (jpegHeaders['headers'] && jpegHeaders['headers'].length) {
-							exifParser = new ExifParser();			
-											
-							if (exifParser.init(jpegHeaders.get('exif')[0])) {
-								// Set new width and height
-								exifParser.setExif('PixelXDimension', width);
-								exifParser.setExif('PixelYDimension', height);
-																							
-								// Update EXIF header
-								jpegHeaders.set('exif', exifParser.getBinary());
-								
-								// trigger Exif events only if someone listens to them
-								if (up.hasEventListener('ExifData')) {
-									up.trigger('ExifData', file, exifParser.EXIF());
-								}
-								
-								if (up.hasEventListener('GpsData')) {
-									up.trigger('GpsData', file, exifParser.GPS());
-								}
-							}
-						}
-						
-						if (resize['quality']) {							
-							// Try quality property first
-							try {
-								data = canvas.toDataURL(mime, resize['quality'] / 100);	
-							} catch (e) {
-								data = canvas.toDataURL(mime);	
-							}
-						}
-					} else {
-						data = canvas.toDataURL(mime);
-					}
-
-					// Remove data prefix information and grab the base64 encoded data and decode it
-					data = data.substring(data.indexOf('base64,') + 7);
-					data = atob(data);
-
-					// Restore JPEG headers if applicable
-					if (jpegHeaders && jpegHeaders['headers'] && jpegHeaders['headers'].length) {
-						data = jpegHeaders.restore(data);
-						jpegHeaders.purge(); // free memory
-					}
-
-					// Remove canvas and execute callback with decoded image data
-					canvas.parentNode.removeChild(canvas);
-					callback({success : true, data : data});
+				} else if (resize['quality'] && mime === 'image/jpeg') {
+					// do not upsize, but drop the quality for jpegs
+					width = img.width;
+					height = img.height;
 				} else {
 					// Image does not need to be resized
 					callback({success : false});
+					return;
 				}
+
+				// Scale image and canvas
+				canvas.width = width;
+				canvas.height = height;
+				context.drawImage(img, 0, 0, width, height);
+				
+				// Preserve JPEG headers
+				if (mime === 'image/jpeg') {
+					jpegHeaders = new JPEG_Headers(atob(data.substring(data.indexOf('base64,') + 7)));
+					if (jpegHeaders['headers'] && jpegHeaders['headers'].length) {
+						exifParser = new ExifParser();			
+										
+						if (exifParser.init(jpegHeaders.get('exif')[0])) {
+							// Set new width and height
+							exifParser.setExif('PixelXDimension', width);
+							exifParser.setExif('PixelYDimension', height);
+																						
+							// Update EXIF header
+							jpegHeaders.set('exif', exifParser.getBinary());
+							
+							// trigger Exif events only if someone listens to them
+							if (up.hasEventListener('ExifData')) {
+								up.trigger('ExifData', file, exifParser.EXIF());
+							}
+							
+							if (up.hasEventListener('GpsData')) {
+								up.trigger('GpsData', file, exifParser.GPS());
+							}
+						}
+					}
+					
+					if (resize['quality']) {							
+						// Try quality property first
+						try {
+							data = canvas.toDataURL(mime, resize['quality'] / 100);	// used to throw an exception in Firefox
+						} catch (ex) {
+							data = canvas.toDataURL(mime);	
+						}
+					}
+				} else {
+					data = canvas.toDataURL(mime);
+				}
+
+				// Remove data prefix information and grab the base64 encoded data and decode it
+				data = data.substring(data.indexOf('base64,') + 7);
+				data = atob(data);
+
+				// Restore JPEG headers if applicable
+				if (jpegHeaders && jpegHeaders['headers'] && jpegHeaders['headers'].length) {
+					data = jpegHeaders.restore(data);
+					jpegHeaders.purge(); // free memory
+				}
+
+				// Remove canvas and execute callback with decoded image data
+				canvas.parentNode.removeChild(canvas);
+				callback({success : true, data : data});
 			};
 
 			img.src = data;

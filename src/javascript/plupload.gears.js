@@ -108,25 +108,27 @@
 		try {
 			canvas.decode(image_blob);
 			
-			if (!resize['width']) {
-				resize['width'] = canvas.width;
+			if (!resize.width) {
+				resize.width = canvas.width;
 			}
 			
-			if (!resize['height']) {
-				resize['height'] = canvas.height;	
+			if (!resize.height) {
+				resize.height = canvas.height;	
 			}
 			
-			scale = Math.min(width / canvas.width, height / canvas.height);
+			scale = Math.min(resize.width / canvas.width, resize.height / canvas.height);
 
-			if (scale < 1 || (scale === 1 && mime === 'image/jpeg')) {
+			if (scale < 1) {
 				canvas.resize(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
-				
-				if (resize['quality']) {
-					return canvas.encode(mime, {quality : resize.quality / 100});
-				}
-
-				return canvas.encode(mime);
+			} else if (!resize.quality || mime !== 'image/jpeg') {
+				return image_blob;
 			}
+			
+			if (resize.quality) {
+				return canvas.encode(mime, {quality : resize.quality / 100});
+			}
+
+			return canvas.encode(mime);
 		} catch (e) {
 			// Ignore for example when a user uploads a file that can't be decoded
 		}
