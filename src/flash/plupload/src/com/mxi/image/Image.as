@@ -67,14 +67,16 @@ package com.mxi.image
 			
 			_width = width || info.width;
 			_height = height || info.height;
-			_quality = quality || 90;
 						
 			// we might not need to scale 
-			scale = Math.min(_width / info.width, _height / info.height);							
-			if (scale > 1 || (scale == 1 && info.type !== "JPEG")) {
+			scale = Math.min(_width / info.width, _height / info.height);	
+			
+			if (scale > 1 && (!quality || info.type != "JPEG")) {
 				dispatchEvent(new ImageEvent(ImageEvent.COMPLETE));
 				return;
 			}
+			
+			_quality = quality || 90;
 			
 			// scale
 			_loader = new Loader;
@@ -119,6 +121,12 @@ package com.mxi.image
 			
 			// re-calculate width/height proportionally
 			scale = Math.min(_width / width, _height / height);
+			
+			// whatever the case, do not upsize
+			if (scale > 1) {
+				scale = 1;
+			}
+			
 			_width = Math.round(width * scale);
 			_height = Math.round(height * scale);
 			

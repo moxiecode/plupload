@@ -360,7 +360,7 @@
 							chunk_size : settings.chunk_size,
 							image_width : resize.width,
 							image_height : resize.height,
-							image_quality : resize.quality || 90,
+							image_quality : resize.quality,
 							multipart : !!settings.multipart,
 							multipart_params : settings.multipart_params || {},
 							file_data_name : settings.file_data_name,

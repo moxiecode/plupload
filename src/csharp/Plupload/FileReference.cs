@@ -115,6 +115,7 @@ namespace Moxiecode.Plupload {
 			imageWidth = Convert.ToInt32(settings["image_width"]);
 			imageHeight = Convert.ToInt32(settings["image_height"]);
 			imageQuality = Convert.ToInt32(settings["image_quality"]);
+
 			this.fileDataName = (string)settings["file_data_name"];
 			this.multipart = Convert.ToBoolean(settings["multipart"]);
 			this.multipartParams = (Dictionary<string, object>)settings["multipart_params"];
@@ -496,8 +497,12 @@ namespace Moxiecode.Plupload {
 				double scale = Math.Min((double) width / writableBitmap.PixelWidth, (double) height / writableBitmap.PixelHeight);
 
 				// No resize needed
-				if (scale >= 1.0)
+				if (scale >= 1.0 && (quality == 0 || type != ImageType.Jpeg))
 					return image_stream;
+
+				if (quality == 0) {
+					quality = 90;
+				}
 
 				// Setup shorter names and pixelbuffers
 				int w = writableBitmap.PixelWidth;
@@ -521,17 +526,24 @@ namespace Moxiecode.Plupload {
 				}
 
 				// Create new FluxJpeg image based on pixel data
-				FluxJpeg.Core.Image jpegImage = new FluxJpeg.Core.Image(new ColorModel {
+				Image jpegImage = new Image(new ColorModel {
 					colorspace = ColorSpace.RGB
 				}, imageRaster);
 
-				// Calc new proportional size
-				width = (int) Math.Round(writableBitmap.PixelWidth * scale);
-				height = (int) Math.Round(writableBitmap.PixelHeight * scale);
-
-				// Resize the image
 				ImageResizer resizer = new ImageResizer(jpegImage);
-				Image resizedImage = resizer.Resize(width, height, FluxJpeg.Core.Filtering.ResamplingFilters.LowpassAntiAlias);
+				Image resizedImage;
+
+				if (scale < 1.0) {
+					// Calc new proportional size
+					width = (int) Math.Round(writableBitmap.PixelWidth * scale);
+					height = (int) Math.Round(writableBitmap.PixelHeight * scale);
+
+					// Resize the image
+					resizedImage = resizer.Resize(width, height, FluxJpeg.Core.Filtering.ResamplingFilters.LowpassAntiAlias);
+				} else {
+					resizedImage = jpegImage;
+				}
+
 				Stream imageStream = new MemoryStream();
 
 				if (type == ImageType.Jpeg) {
