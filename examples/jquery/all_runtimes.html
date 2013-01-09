@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>Plupload - Queue widget example</title>
+<style type="text/css">
+	body {
+		font-family:Verdana, Geneva, sans-serif;
+		font-size:13px;
+		color:#333;
+		background:url(../bg.jpg);
+	}
+</style>
+<link rel="stylesheet" href="../../js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" media="screen" />
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+
+<script type="text/javascript" src="../../js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
+
+<!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
+</head>
+<body>
+
+<form method="post" action="dump.php">
+	<h1>Queue widget example</h1>
+
+	<p>Shows the jQuery Plupload Queue widget and under different runtimes.</p>
+
+	<div style="float: left; margin-right: 20px">
+		<h3>Flash runtime</h3>
+		<div id="flash_uploader" style="width: 500px; height: 330px;">You browser doesn't have Flash installed.</div>
+
+		<h3>Silverlight runtime</h3>
+		<div id="silverlight_uploader" style="width: 500px; height: 330px;">You browser doesn't have Silverlight installed.</div>
+	</div>
+
+	<div style="float: left; margin-right: 20px">
+		<h3>HTML 4 runtime</h3>
+		<div id="html4_uploader" style="width: 500px; height: 330px;">You browser doesn't have HTML 4 support.</div>
+		
+		<h3>HTML 5 runtime</h3>
+		<div id="html5_uploader" style="width: 500px; height: 330px;">You browser doesn't support native upload. Try Firefox 3+ or Safari 4+.</div>
+	</div>
+
+	<br style="clear: both" />
+
+	<input type="submit" value="Send" />
+</form>
+
+<script type="text/javascript">
+$(function() {
+	// Setup flash version
+	$("#flash_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'flash',
+		url : '../upload.php',
+		max_file_size : '10mb',
+		chunk_size : '1mb',
+		unique_names : true,
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90},
+
+		// Flash settings
+		flash_swf_url : '../../js/Moxie.swf'
+	});
+
+
+	// Setup silverlight version
+	$("#silverlight_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'silverlight',
+		url : '../upload.php',
+		max_file_size : '10mb',
+		chunk_size : '1mb',
+		unique_names : true,
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90},
+
+		// Silverlight settings
+		silverlight_xap_url : '../../js/Moxie.xap'
+	});
+
+	// Setup html5 version
+	$("#html5_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'html5',
+		url : '../upload.php',
+		max_file_size : '10mb',
+		chunk_size : '1mb',
+		unique_names : true,
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		],
+
+		// Resize images on clientside if we can
+		resize : {width : 320, height : 240, quality : 90}
+	});
+
+
+	// Setup html4 version
+	$("#html4_uploader").pluploadQueue({
+		// General settings
+		runtimes : 'html4',
+		url : '../upload.php',
+		unique_names : true,
+		filters : [
+			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Zip files", extensions : "zip"}
+		]
+	});
+});
+</script>
+
+</body>
+</html>

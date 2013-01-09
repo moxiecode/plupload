@@ -234,10 +234,9 @@
 
 					up.settings.browse_button = id + '_browse';
 
-					// Enable drag/drop
-					if (up.features.dragdrop && up.settings.dragdrop) {
+					// Enable drag/drop (see PostInit handler as well)
+					if (up.settings.dragdrop) {
 						up.settings.drop_element = id + '_filelist';
-						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
 					}
 
 					$('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);
@@ -256,6 +255,13 @@
 					});
 
 					$('a.plupload_start', target).addClass('plupload_disabled');
+				});
+
+				uploader.bind("PostInit", function(up) {
+					// features are populated only after input components are fully instantiated
+					if (up.settings.dragdrop && up.features.dragdrop) {
+						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
+					}
 				});
 
 				uploader.init();
