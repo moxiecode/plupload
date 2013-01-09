@@ -17,11 +17,11 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 
-<!-- production -->
+<!-- production 
 <script type="text/javascript" src="../../js/plupload.full.min.js"></script>
+-->
 
-
-<!-- debug 
+<!-- debug -->
 <script type="text/javascript" src="../../src/moxie/src/javascript/core/mOxie.js"></script>
 <script type="text/javascript" src="../../src/moxie/src/javascript/core/Utils.js"></script>
 <script type="text/javascript" src="../../src/moxie/src/javascript/core/Exceptions.js"></script>
@@ -39,7 +39,6 @@
 <script type="text/javascript" src="../../src/moxie/src/javascript/silverlight.js"></script>
 
 <script type="text/javascript" src="../../src/plupload.js"></script>
--->
 
 
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
@@ -62,7 +61,7 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'silverlight,html4',
+		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
 		max_file_size : '1000mb',
 		max_file_count: 20, // user can add no more then 20 files at a time

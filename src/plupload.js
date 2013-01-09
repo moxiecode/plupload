@@ -585,7 +585,7 @@ plupload.Uploader = function(settings) {
 
 							// for backward compatibility
 							o.extend(self.features, {
-								chunks: info.can('stream_upload'),
+								chunks: info.can('slice_blob'),
 								multipart: info.can('send_multipart'),
 								multi_selection: info.can('select_multiple')
 							});
