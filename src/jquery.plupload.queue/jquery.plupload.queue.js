@@ -53,8 +53,8 @@
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
 									'<div class="plupload_buttons">' +
-										'<a href="#" class="plupload_button plupload_add">' + _('Add files') + '</a>' +
-										'<a href="#" class="plupload_button plupload_start">' + _('Start upload') + '</a>' +
+										'<a href="#" class="plupload_button plupload_add">' + _('Add Files') + '</a>' +
+										'<a href="#" class="plupload_button plupload_start">' + _('Start Upload') + '</a>' +
 									'</div>' +
 									'<span class="plupload_upload_status"></span>' +
 								'</div>' +
@@ -172,9 +172,9 @@
 					$('span.plupload_total_file_size', target).html(plupload.formatSize(uploader.total.size));
 
 					if (uploader.total.queued === 0) {
-						$('span.plupload_add_text', target).text(_('Add files.'));
+						$('span.plupload_add_text', target).text(_('Add Files'));
 					} else {
-						$('span.plupload_add_text', target).text(uploader.total.queued + ' files queued.');
+						$('span.plupload_add_text', target).text(_('%d files queued').replace(/%d/, uploader.total.queued));
 					}
 
 					$('a.plupload_start', target).toggleClass('plupload_disabled', uploader.files.length == (uploader.total.uploaded + uploader.total.failed));
@@ -277,11 +277,11 @@
 						}
 
 						if (err.code == plupload.FILE_SIZE_ERROR) {
-							alert(_("Error: File too large: ") + file.name);
+							alert(_("Error: File too large:") + " " + file.name);
 						}
 
 						if (err.code == plupload.FILE_EXTENSION_ERROR) {
-							alert(_("Error: Invalid file extension: ") + file.name);
+							alert(_("Error: Invalid file extension:") + " " + file.name);
 						}
 						
 						file.hint = message;

@@ -372,16 +372,16 @@ $.widget("ui.plupload", {
 							break;
 						
 						case plupload.IMAGE_FORMAT_ERROR :
-							details = plupload.translate('Image format either wrong or not supported.');
+							details = _('Image format either wrong or not supported.');
 							break;	
 						
 						case plupload.IMAGE_MEMORY_ERROR :
-							details = plupload.translate('Runtime ran out of available memory.');
+							details = _('Runtime ran out of available memory.');
 							break;
 						
 						/* // This needs a review
 						case plupload.IMAGE_DIMENSIONS_ERROR :
-							details = plupload.translate('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.').replace(/%([swh])/g, function($0, $1) {
+							details = _('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.').replace(/%([swh])/g, function($0, $1) {
 								switch ($1) {
 									case 's': return up.runtime;
 									case 'w': return up.features.maxWidth;	
@@ -391,7 +391,7 @@ $.widget("ui.plupload", {
 							break;	*/
 													
 						case plupload.HTTP_ERROR:
-							details = _("Upload URL might be wrong or doesn't exist");
+							details = _("Upload URL might be wrong or doesn't exist.");
 							break;
 					}
 					message += " <br /><i>" + details + "</i>";
