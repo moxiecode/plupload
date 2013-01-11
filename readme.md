@@ -1,3 +1,5 @@
+# Plupload
+
 Plupload is a cross-browser multi-runtime file uploading API. Basically a set of tools that will help you to build reliable and visually appealing file uploader in minutes.
 
 Historically Plupload comes from dark and hostile age of no HTML5, hence all the alternative fallbacks, like Flash, Silverlight and Java (still in development). It is meant to provide you with an API, that will work anywhere and in any case, in one way or another. But while having very solid fallbacks, Plupload is fully oriented onto a nice and bright future of HTML5.
@@ -22,7 +24,7 @@ It was very logical that developers started to look for alternatives and writing
 Currently Plupload may be considered as consisting of three parts: low-level pollyfills, Plupload API and Widgets (UI and Queue). Initially Widgets were meant to only serve as examples to the API, but quickly formed into fully-functional API implementations that now come bundled with the Plupload API. This has been a source for multiple misconceptions about the API as Widgets were easily mistaken for the Plupload itself, while they are only implementations. Such as any of you can build by yourself out of the API.
 
 * [Low-level pollyfills (mOxie)](https://github.com/moxiecode/moxie) - have their own [code base](https://github.com/moxiecode/moxie) and [documentation](https://github.com/moxiecode/moxie/wiki) on GitHub.
-* [[Plupload API|API]]
+* [Plupload API](/moxiecode/plupload/wiki/API)
 * [UI Widget]()
 * [Queue Widget]()
 
