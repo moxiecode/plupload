@@ -1,10 +1,19 @@
 ;(function(window, o, undef) {
 	
 var delay = window.setTimeout;
-	
+
+/** 
+ * @module plupload	
+ * @static
+ */
 var plupload = {
 	/**
 	 * Plupload version will be replaced on build.
+	 *
+	 * @property VERSION
+	 * @for Plupload
+	 * @static
+	 * @final
 	 */
 	VERSION : '@@version@@',
 
@@ -12,6 +21,7 @@ var plupload = {
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
 	 *
 	 * @property STOPPED
+	 * @static
 	 * @final
 	 */
 	STOPPED : 1,
@@ -20,6 +30,7 @@ var plupload = {
 	 * Upload process is running
 	 *
 	 * @property STARTED
+	 * @static
 	 * @final
 	 */
 	STARTED : 2,
@@ -28,6 +39,7 @@ var plupload = {
 	 * File is queued for upload
 	 *
 	 * @property QUEUED
+	 * @static
 	 * @final
 	 */
 	QUEUED : 1,
@@ -36,6 +48,7 @@ var plupload = {
 	 * File is being uploaded
 	 *
 	 * @property UPLOADING
+	 * @static
 	 * @final
 	 */
 	UPLOADING : 2,
@@ -44,6 +57,7 @@ var plupload = {
 	 * File has failed to be uploaded
 	 *
 	 * @property FAILED
+	 * @static
 	 * @final
 	 */
 	FAILED : 4,
@@ -52,6 +66,7 @@ var plupload = {
 	 * File has been uploaded successfully
 	 *
 	 * @property DONE
+	 * @static
 	 * @final
 	 */
 	DONE : 5,
@@ -62,6 +77,7 @@ var plupload = {
 	 * Generic error for example if an exception is thrown inside Silverlight.
 	 *
 	 * @property GENERIC_ERROR
+	 * @static
 	 * @final
 	 */
 	GENERIC_ERROR : -100,
@@ -70,6 +86,7 @@ var plupload = {
 	 * HTTP transport error. For example if the server produces a HTTP status other than 200.
 	 *
 	 * @property HTTP_ERROR
+	 * @static
 	 * @final
 	 */
 	HTTP_ERROR : -200,
@@ -78,6 +95,7 @@ var plupload = {
 	 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
 	 *
 	 * @property IO_ERROR
+	 * @static
 	 * @final
 	 */
 	IO_ERROR : -300,
@@ -86,6 +104,7 @@ var plupload = {
 	 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
 	 *
 	 * @property SECURITY_ERROR
+	 * @static
 	 * @final
 	 */
 	SECURITY_ERROR : -400,
@@ -94,6 +113,7 @@ var plupload = {
 	 * Initialization error. Will be triggered if no runtime was initialized.
 	 *
 	 * @property INIT_ERROR
+	 * @static
 	 * @final
 	 */
 	INIT_ERROR : -500,
@@ -102,6 +122,7 @@ var plupload = {
 	 * File size error. If the user selects a file that is too large it will be blocked and an error of this type will be triggered.
 	 *
 	 * @property FILE_SIZE_ERROR
+	 * @static
 	 * @final
 	 */
 	FILE_SIZE_ERROR : -600,
@@ -110,6 +131,7 @@ var plupload = {
 	 * File extension error. If the user selects a file that isn't valid according to the filters setting.
 	 *
 	 * @property FILE_EXTENSION_ERROR
+	 * @static
 	 * @final
 	 */
 	FILE_EXTENSION_ERROR : -601,
@@ -118,6 +140,7 @@ var plupload = {
 	 * Runtime will try to detect if image is proper one. Otherwise will throw this error.
 	 *
 	 * @property IMAGE_FORMAT_ERROR
+	 * @static
 	 * @final
 	 */
 	IMAGE_FORMAT_ERROR : -700,
@@ -126,6 +149,7 @@ var plupload = {
 	 * While working on the image runtime will try to detect if the operation may potentially run out of memeory and will throw this error.
 	 *
 	 * @property IMAGE_MEMORY_ERROR
+	 * @static
 	 * @final
 	 */
 	IMAGE_MEMORY_ERROR : -701,
@@ -134,6 +158,7 @@ var plupload = {
 	 * Each runtime has an upper limit on a dimension of the image it can handle. If bigger, will throw this error.
 	 *
 	 * @property IMAGE_DIMENSIONS_ERROR
+	 * @static
 	 * @final
 	 */
 	IMAGE_DIMENSIONS_ERROR : -702,
@@ -381,8 +406,6 @@ var plupload = {
 		return url;
 	},
 
-
-
 	/**
 	 * Formats the specified number as a size string for example 1024 becomes 1 KB.
 	 *
@@ -414,7 +437,6 @@ var plupload = {
 	},
 
 
-
 	/**
 	 * Parses the specified size string into a byte value. For example 10kb becomes 10240.
 	 *
@@ -426,7 +448,128 @@ var plupload = {
 };
 
 
+/**
+ * 
+ * @class Uploader
+ * @constructor
+ */
 plupload.Uploader = function(settings) {
+	/**
+	 * Fires when the current RunTime has been initialized.
+	 *
+	 * @event Init
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */
+
+	/**
+	 * Fires after the init event incase you need to perform actions there.
+	 *
+	 * @event PostInit
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */
+
+	/**
+	 * Fires when the silverlight/flash or other shim needs to move.
+	 *
+	 * @event Refresh
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */
+
+	/**
+	 * Fires when the overall state is being changed for the upload queue.
+	 *
+	 * @event StateChanged
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */
+
+	/**
+	 * Fires when a file is to be uploaded by the runtime.
+	 *
+	 * @event UploadFile
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File to be uploaded.
+	 */
+
+	/**
+	 * Fires when just before a file is uploaded. This event enables you to override settings
+	 * on the uploader instance before the file is uploaded.
+	 *
+	 * @event BeforeUpload
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File to be uploaded.
+	 */
+
+	/**
+	 * Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+	 *
+	 * @event QueueChanged
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */
+
+	/**
+	 * Fires while a file is being uploaded. Use this event to update the current file upload progress.
+	 *
+	 * @event UploadProgress
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File that is currently being uploaded.
+	 */
+
+	/**
+	 * Fires while a file was removed from queue.
+	 *
+	 * @event FilesRemoved
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {Array} files Array of files that got removed.
+	 */
+
+	/**
+	 * Fires while when the user selects files to upload.
+	 *
+	 * @event FilesAdded
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {Array} files Array of file objects that was added to queue/selected by the user.
+	 */
+
+	/**
+	 * Fires when a file is successfully uploaded.
+	 *
+	 * @event FileUploaded
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File that was uploaded.
+	 * @param {Object} response Object with response properties.
+	 */
+
+	/**
+	 * Fires when file chunk is uploaded.
+	 *
+	 * @event ChunkUploaded
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File that the chunk was uploaded for.
+	 * @param {Object} response Object with response properties.
+	 */
+
+	/**
+	 * Fires when all files in a queue are uploaded.
+	 *
+	 * @event UploadComplete
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {Array} files Array of file objects that was added to queue/selected by the user.
+	 */
+
+	/**
+	 * Fires when a error occurs.
+	 *
+	 * @event Error
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {Object} error Contains code, message and sometimes file and other details.
+	 */
+	 
+	 /**
+	 * Fires when destroy method is called.
+	 *
+	 * @event Destroy
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */
 	var files = [], events = {}, required_features = [], required_caps = {}, feature2cap = {}, 
 		startTime, total, disabled = false, 
 		fileInput, fileDrop, xhr;
@@ -1334,142 +1477,18 @@ plupload.Uploader = function(settings) {
 			// Clean-up after uploader itself
 			this.unbindAll();
 		}
-
-		/**
-		 * Fires when the current RunTime has been initialized.
-		 *
-		 * @event Init
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 */
-
-		/**
-		 * Fires after the init event incase you need to perform actions there.
-		 *
-		 * @event PostInit
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 */
-
-		/**
-		 * Fires when the silverlight/flash or other shim needs to move.
-		 *
-		 * @event Refresh
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 */
-
-		/**
-		 * Fires when the overall state is being changed for the upload queue.
-		 *
-		 * @event StateChanged
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 */
-
-		/**
-		 * Fires when a file is to be uploaded by the runtime.
-		 *
-		 * @event UploadFile
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {plupload.File} file File to be uploaded.
-		 */
-
-		/**
-		 * Fires when just before a file is uploaded. This event enables you to override settings
-		 * on the uploader instance before the file is uploaded.
-		 *
-		 * @event BeforeUpload
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {plupload.File} file File to be uploaded.
-		 */
-
-		/**
-		 * Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
-		 *
-		 * @event QueueChanged
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 */
-
-		/**
-		 * Fires while a file is being uploaded. Use this event to update the current file upload progress.
-		 *
-		 * @event UploadProgress
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {plupload.File} file File that is currently being uploaded.
-		 */
-
-		/**
-		 * Fires while a file was removed from queue.
-		 *
-		 * @event FilesRemoved
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {Array} files Array of files that got removed.
-		 */
-
-		/**
-		 * Fires while when the user selects files to upload.
-		 *
-		 * @event FilesAdded
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {Array} files Array of file objects that was added to queue/selected by the user.
-		 */
-
-		/**
-		 * Fires when a file is successfully uploaded.
-		 *
-		 * @event FileUploaded
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {plupload.File} file File that was uploaded.
-		 * @param {Object} response Object with response properties.
-		 */
-
-		/**
-		 * Fires when file chunk is uploaded.
-		 *
-		 * @event ChunkUploaded
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {plupload.File} file File that the chunk was uploaded for.
-		 * @param {Object} response Object with response properties.
-		 */
-
-		/**
-		 * Fires when all files in a queue are uploaded.
-		 *
-		 * @event UploadComplete
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {Array} files Array of file objects that was added to queue/selected by the user.
-		 */
-
-		/**
-		 * Fires when a error occurs.
-		 *
-		 * @event Error
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 * @param {Object} error Contains code, message and sometimes file and other details.
-		 */
-		 
-		 /**
-		 * Fires when destroy method is called.
-		 *
-		 * @event Destroy
-		 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-		 */
 	});
 };
 
 /**
- * File instance.
- *
- * @class plupload.File
- * @param {String} name Name of the file.
- * @param {Number} size File size.
- */
-
-/**
  * Constructs a new file instance.
  *
+ * @class File
  * @constructor
- * @method File
- * @param {String} id Unique file id.
- * @param {String} name File name.
- * @param {Number} size File size in bytes.
+ * 
+ * @param {Object} file Object containing file properties
+ * @param {String} file.name Name of the file.
+ * @param {Number} file.size File size.
  */
 plupload.File = (function() {
 	var filepool = {};
@@ -1552,16 +1571,10 @@ plupload.File = (function() {
 		
 
 /**
- * Runtime class gets implemented by each upload runtime.
- *
- * @class plupload.QueueProgress
- */
-
-/**
  * Constructs a queue progress.
  *
+ * @class QueueProgress
  * @constructor
- * @method QueueProgress
  */
  plupload.QueueProgress = function() {
 	var self = this; // Setup alias for self to reduce code size when it's compressed

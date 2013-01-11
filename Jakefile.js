@@ -9,6 +9,8 @@ var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
 var zip = tools.zip;
 
+var wiki = require('./build/wiki');
+
 function exit(message) {
 	if (message) {
 		console.info(message);
@@ -91,7 +93,14 @@ task("minifyjs", ["moxie"], function (params) {
 
 desc("Generate documentation using YUIDoc");
 task("yuidoc", [], function (params) {
-	yuidoc("src", "docs");
+	yuidoc("src", "docs", {
+		norecurse: true
+	});
+});
+
+desc("Generate wiki pages");
+task("wiki", [], function() {
+	wiki("git@github.com:moxiecode/plupload.wiki.git", "wiki", "docs");
 });
 
 desc("Runs JSHint on source files");

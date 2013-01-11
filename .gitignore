@@ -1,10 +1,12 @@
 js
 examples/uploads/*
 tmp
+libs
 jslint.xml
 .settings
 .project
 docs
+wiki
 jscoverage
 *~
 *.diff
