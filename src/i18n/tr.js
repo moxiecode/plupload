@@ -1,25 +1,2 @@
-﻿// Turkish
-plupload.addI18n({
-    'Select files' : 'Dosyaları seç',
-    'Add files to the upload queue and click the start button.' : 'Dosyaları kuyruğa ekleyin ve başlatma butonuna tıklayın.',
-    'Filename' : 'Dosya adı',
-    'Status' : 'Durum',
-    'Size' : 'Boyut',
-    'Add files' : 'Dosya ekle',
-    'Stop current upload' : 'Mevcut yüklemeyi durdur',
-    'Start uploading queue' : 'Yüklemeyi başlat',
-    'Uploaded %d/%d files': '%d/%d dosya yüklendi',
-    'N/A' : '-',
-    'Drag files here.' : 'Dosyaları buraya bırakın.',
-    'File extension error.': 'Dosya uzantısı hatası.',
-    'File size error.': 'Dosya boyutu hatası.',
-    'Init error.': 'Başlangıç hatası.',
-    'HTTP Error.': 'HTTP hatası.',
-    'Security error.': 'Güvenlik hatası.',
-    'Generic error.': 'Genel hata.',
-    'IO error.': 'G/Ç hatası.',
-    'Stop Upload': 'Yüklemeyi durdur',
-    'Add Files': 'Dosya ekle',
-    'Start upload': 'Yüklemeyi başlat',
-    '%d files queued': 'Kuyrukta %d dosya var.',
-});
+// Turkish - Türkçe
+plupload.addI18n({"Select files":"Dosyalar\u0131 se\u00e7","Add files to the upload queue and click the start button.":"Dosyalar\u0131 kuyru\u011fa ekleyin ve ba\u015flatma butonuna t\u0131klay\u0131n.",Filename:"Dosya ad\u0131",Status:"Durum",Size:"Boyut","Add Files":"Dosya ekle","Uploaded %d/%d files":"%d/%d dosya y\u00fcklendi","%d files queued":"Kuyrukta %d dosya var.","Drag files here.":"Dosyalar\u0131 buraya b\u0131rak\u0131n.","Stop Upload":"Y\u00fcklemeyi durdur","HTTP Error.":"HTTP hatas\u0131.","File size error.":"Dosya boyutu hatas\u0131.","File extension error.":"Dosya uzant\u0131s\u0131 hatas\u0131.","Init error.":"Ba\u015flang\u0131\u00e7 hatas\u0131.","N/A":"-","Stop current upload":"Mevcut y\u00fcklemeyi durdur","Start uploading queue":"Y\u00fcklemeyi ba\u015flat","Security error.":"G\u00fcvenlik hatas\u0131.","Generic error.":"Genel hata.","IO error.":"G/\u00c7 hatas\u0131.","Start Upload":"Start Upload","Error: File too large:":"Error: File too large:","Error: Invalid file extension:":"Error: Invalid file extension:",Close:"Close","Upload URL might be wrong or doesn\'t exist.":"Upload URL might be wrong or doesn\'t exist.","Runtime ran out of available memory.":"Runtime ran out of available memory.","Image format either wrong or not supported.":"Image format either wrong or not supported.","Upload element accepts only %d file(s) at a time. Extra files were stripped.":"Upload element accepts only %d file(s) at a time. Extra files were stripped.","File: %f, size: %s, max file size: %m":"File: %f, size: %s, max file size: %m","File: %s":"File: %s","File count error.":"File count error.","Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.":"Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.","Using runtime: ":"Using runtime:","Add files.":"","Upload URL might be wrong or doesn\'t exist":""});

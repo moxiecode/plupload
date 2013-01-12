@@ -1,25 +1,2 @@
-// French
-plupload.addI18n({
-    'Select files' : 'Sélectionnez les fichiers',
-    'Add files to the upload queue and click the start button.' : 'Ajoutez des fichiers à la file et appuyez sur le bouton démarrer.',
-    'Filename' : 'Nom de fichier',
-    'Status' : 'Status',
-    'Size' : 'Taille',
-    'Add files' : 'Ajouter Fichiers',
-    'Stop current upload' : 'Arrêter l\'envoi en cours',
-    'Start uploading queue' : 'Démarrer l\'envoi',
-    'Uploaded %d/%d files': '%d/%d fichiers envoyés',
-    'N/A' : 'Non applicable',
-    'Drag files here.' : 'Déposer les fichiers ici.',
-    'File extension error.': 'Erreur extension fichier',
-    'File size error.': 'Erreur taille fichier.',
-    'Init error.': 'Erreur d\'initialisation.',
-    'HTTP Error.': 'Erreur HTTP.',
-    'Security error.': 'Erreur de sécurité.',
-    'Generic error.': 'Erreur générique.',
-    'IO error.': 'Erreur E/S.',
-    'Stop Upload': 'Arrêter les envois.',
-    'Add Files': 'Ajouter des fichiers',
-    'Start Upload': 'Démarrer les envois.',
-    '%d files queued': '%d fichiers en attente.'
-});
+// French - Français
+plupload.addI18n({"Select files":"S\u00e9lectionnez les fichiers","Add files to the upload queue and click the start button.":"Ajoutez des fichiers \u00e0 la file et appuyez sur le bouton d\u00e9marrer.",Filename:"Nom de fichier",Status:"Status",Size:"Taille","Add Files":"Ajouter des fichiers","Start Upload":"D\u00e9marrer les envois.","Uploaded %d/%d files":"%d/%d fichiers envoy\u00e9s","%d files queued":"%d fichiers en attente.","Drag files here.":"D\u00e9poser les fichiers ici.","Stop Upload":"Arr\u00eater les envois.","HTTP Error.":"Erreur HTTP.","File size error.":"Erreur taille fichier.","File extension error.":"Erreur extension fichier","Init error.":"Erreur d\'initialisation.","N/A":"Non applicable","Stop current upload":"Arr\u00eater l\'envoi en cours","Start uploading queue":"D\u00e9marrer l\'envoi","Security error.":"Erreur de s\u00e9curit\u00e9.","Generic error.":"Erreur g\u00e9n\u00e9rique.","IO error.":"Erreur E/S.","Error: File too large:":"Error: File too large:","Error: Invalid file extension:":"Error: Invalid file extension:",Close:"Close","Upload URL might be wrong or doesn\'t exist.":"Upload URL might be wrong or doesn\'t exist.","Runtime ran out of available memory.":"Runtime ran out of available memory.","Image format either wrong or not supported.":"Image format either wrong or not supported.","Upload element accepts only %d file(s) at a time. Extra files were stripped.":"Upload element accepts only %d file(s) at a time. Extra files were stripped.","File: %f, size: %s, max file size: %m":"File: %f, size: %s, max file size: %m","File: %s":"File: %s","File count error.":"File count error.","Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.":"Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.","Using runtime: ":"Using runtime:","Add files.":"","Upload URL might be wrong or doesn\'t exist":""});

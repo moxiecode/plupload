@@ -1,12 +1,2 @@
-﻿// .po file like language pack
-plupload.addI18n({
-	'Select files' : 'Välj filer',
-	'Add files to the upload queue and click the start button.' : 'Lägg till filer till kön och tryck på start.',
-	'Filename' : 'Filnamn',
-	'Status' : 'Status',
-	'Size' : 'Storlek',
-	'Add files' : 'Lägg till filer',
-	'Stop current upload' : 'Stoppa uppladdningen',
-	'Start uploading queue' : 'Starta uppladdningen',
-	'Drag files here.' : 'Dra filer hit'
-});
+// Swedish - Svenska
+plupload.addI18n({"Select files":"V\u00e4lj filer","Add files to the upload queue and click the start button.":"L\u00e4gg till filer till k\u00f6n och tryck p\u00e5 start.",Filename:"Filnamn",Status:"Status",Size:"Storlek","Drag files here.":"Dra filer hit","Stop current upload":"Stoppa uppladdningen","Start uploading queue":"Starta uppladdningen","Add Files":"Add Files","Start Upload":"Start Upload","Uploaded %d/%d files":"Uploaded %d/%d files","%d files queued":"%d files queued","Error: File too large:":"Error: File too large:","Error: Invalid file extension:":"Error: Invalid file extension:","Stop Upload":"Stop Upload",Close:"Close","Upload URL might be wrong or doesn\'t exist.":"Upload URL might be wrong or doesn\'t exist.","Runtime ran out of available memory.":"Runtime ran out of available memory.","Image format either wrong or not supported.":"Image format either wrong or not supported.","Upload element accepts only %d file(s) at a time. Extra files were stripped.":"Upload element accepts only %d file(s) at a time. Extra files were stripped.","File: %f, size: %s, max file size: %m":"File: %f, size: %s, max file size: %m","File: %s":"File: %s","File count error.":"File count error.","HTTP Error.":"HTTP Error.","File size error.":"File size error.","File extension error.":"File extension error.","Init error.":"Init error.","N/A":"N/A","Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.":"Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.","Security error.":"Security error.","Generic error.":"Generic error.","IO error.":"IO error.","Using runtime: ":"Using runtime:","Add files.":"","Upload URL might be wrong or doesn\'t exist":""});

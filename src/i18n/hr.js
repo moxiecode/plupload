@@ -1,25 +1,2 @@
-// Croatian
-plupload.addI18n({
-    'Select files': 'Izaberite datoteke:',
-    'Add files to the upload queue and click the start button.': 'Dodajte datoteke u listu i kliknite Upload.',
-    'Filename': 'Ime datoteke',
-    'Status': 'Status',
-    'Size': 'Veličina',
-    'Add files': 'Dodajte datoteke',
-    'Stop current upload': 'Zaustavi trenutan upload',
-    'Start uploading queue': 'Pokreni Upload',
-    'Uploaded %d/%d files': 'Uploadano %d/%d datoteka',
-    'N/A': 'N/A',
-    'Drag files here.': 'Dovucite datoteke ovdje',
-    'File extension error.': 'Greška ekstenzije datoteke.',
-    'File size error.': 'Greška veličine datoteke.',
-    'Init error.': 'Greška inicijalizacije.',
-    'HTTP Error.': 'HTTP greška.',
-    'Security error.': 'Sigurnosna greška.',
-    'Generic error.': 'Generička greška.',
-    'IO error.': 'I/O greška.',
-    'Stop Upload': 'Zaustavi upload.',
-    'Add Files': 'Dodaj datoteke',
-    'Start Upload': 'Pokreni upload.',
-    '%d files queued': '%d datoteka na čekanju.'
-});
+// Croatian - Hrvatski
+plupload.addI18n({"Select files":"Izaberite datoteke:","Add files to the upload queue and click the start button.":"Dodajte datoteke u listu i kliknite Upload.",Filename:"Ime datoteke",Status:"Status",Size:"Veli\u010dina","Add Files":"Dodaj datoteke","Start Upload":"Pokreni upload.","Uploaded %d/%d files":"Uploadano %d/%d datoteka","%d files queued":"%d datoteka na \u010dekanju.","Drag files here.":"Dovucite datoteke ovdje","Stop Upload":"Zaustavi upload.","HTTP Error.":"HTTP gre\u0161ka.","File size error.":"Gre\u0161ka veli\u010dine datoteke.","File extension error.":"Gre\u0161ka ekstenzije datoteke.","Init error.":"Gre\u0161ka inicijalizacije.","N/A":"N/A","Stop current upload":"Zaustavi trenutan upload","Start uploading queue":"Pokreni Upload","Security error.":"Sigurnosna gre\u0161ka.","Generic error.":"Generi\u010dka gre\u0161ka.","IO error.":"I/O gre\u0161ka.","Error: File too large:":"Error: File too large:","Error: Invalid file extension:":"Error: Invalid file extension:",Close:"Close","Upload URL might be wrong or doesn\'t exist.":"Upload URL might be wrong or doesn\'t exist.","Runtime ran out of available memory.":"Runtime ran out of available memory.","Image format either wrong or not supported.":"Image format either wrong or not supported.","Upload element accepts only %d file(s) at a time. Extra files were stripped.":"Upload element accepts only %d file(s) at a time. Extra files were stripped.","File: %f, size: %s, max file size: %m":"File: %f, size: %s, max file size: %m","File: %s":"File: %s","File count error.":"File count error.","Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.":"Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.","Using runtime: ":"Using runtime:","Add files.":"","Upload URL might be wrong or doesn\'t exist":""});

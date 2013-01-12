@@ -1,14 +1,2 @@
-﻿// Serbian
-plupload.addI18n({
-    'Select files' : 'Izaberite fajlove',
-    'Add files to the upload queue and click the start button.' : 'Dodajte fajlove u listu i kliknite na dugme Start.',
-    'Filename' : 'Naziv fajla',
-    'Status' : 'Status',
-    'Size' : 'Veličina',
-    'Add Files' : 'Dodaj fajlove',
-    'Stop current upload' : 'Zaustavi upload',
-    'Start uploading queue' : 'Počni upload',
-    'Drag files here.' : 'Prevucite fajlove ovde.',
-    'Start Upload': 'Počni upload',
-    'Uploaded %d/%d files': 'Snimljeno %d/%d fajlova'
-});
+// Serbian — Српски
+plupload.addI18n({"Select files":"Izaberite fajlove","Add files to the upload queue and click the start button.":"Dodajte fajlove u listu i kliknite na dugme Start.",Filename:"Naziv fajla",Status:"Status",Size:"Veli\u010dina","Add Files":"Dodaj fajlove","Start Upload":"Po\u010dni upload","Uploaded %d/%d files":"Snimljeno %d/%d fajlova","Drag files here.":"Prevucite fajlove ovde.","Stop current upload":"Zaustavi upload","Start uploading queue":"Po\u010dni upload","%d files queued":"%d files queued","Error: File too large:":"Error: File too large:","Error: Invalid file extension:":"Error: Invalid file extension:","Stop Upload":"Stop Upload",Close:"Close","Upload URL might be wrong or doesn\'t exist.":"Upload URL might be wrong or doesn\'t exist.","Runtime ran out of available memory.":"Runtime ran out of available memory.","Image format either wrong or not supported.":"Image format either wrong or not supported.","Upload element accepts only %d file(s) at a time. Extra files were stripped.":"Upload element accepts only %d file(s) at a time. Extra files were stripped.","File: %f, size: %s, max file size: %m":"File: %f, size: %s, max file size: %m","File: %s":"File: %s","File count error.":"File count error.","HTTP Error.":"HTTP Error.","File size error.":"File size error.","File extension error.":"File extension error.","Init error.":"Init error.","N/A":"N/A","Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.":"Resoultion out of boundaries! %s runtime supports images only up to %wpx%hpx.","Security error.":"Security error.","Generic error.":"Generic error.","IO error.":"IO error.","Using runtime: ":"Using runtime:","Add files.":"","Upload URL might be wrong or doesn\'t exist":""});
