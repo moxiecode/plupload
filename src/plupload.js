@@ -449,10 +449,34 @@ var plupload = {
 
 
 /**
- * 
- * @class Uploader
- * @constructor
- */
+@class Uploader
+@constructor
+
+@param {Object} settings For detailed information about each option check documentation.
+	@param {String} settings.browse_button id of the DOM element to use as file dialog trigger.
+	@param {String} settings.url URL of the server-side upload handler.
+	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
+	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
+	@param {String} [settings.drop_element] id of the DOM element to use as a drop zone for Drag-n-Drop.
+	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
+	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`
+	@param {String} [settings.flash_swf_url] URL of the Flash swf.
+	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
+	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set.
+	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
+	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
+	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
+	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
+	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
+		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
+		@param {Number} [settings.resize.height] If image is bigger, it will be resized.
+		@param {Number} [settings.resize.quality=90] Compression quality for jpegs (1-100).
+		@param {Boolean} [settings.resize.crop=false] Whether to crop images to exact dimensions. By default they will be resized proportionally.
+	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
+	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
+	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
+	@param {Boolean} [settings.urlstream_upload=false] Option specific to Flash runtime, enables URLStream upload mode.
+*/
 plupload.Uploader = function(settings) {
 	/**
 	 * Fires when the current RunTime has been initialized.
@@ -584,7 +608,7 @@ plupload.Uploader = function(settings) {
 		multi_selection : true,
 		file_data_name : 'file',
 		filters : [],
-		url_stream: false // forces Flash runtime into the URLStream mode
+		urlstream_upload: false // forces Flash runtime into the URLStream mode
 	}, settings);
 
 
