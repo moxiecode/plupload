@@ -1,8 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
 <title>Plupload - Queue widget example</title>
+
 <style type="text/css">
 	body {
 		font-family:Verdana, Geneva, sans-serif;
@@ -15,11 +17,10 @@
 
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 
-<!-- production 
+<!-- production -->
 <script type="text/javascript" src="../../js/plupload.full.min.js"></script>
--->
 
-<!-- debug -->
+<!-- debug 
 <script type="text/javascript" src="../../src/moxie/src/javascript/core/mOxie.js"></script>
 <script type="text/javascript" src="../../src/moxie/src/javascript/core/Utils.js"></script>
 <script type="text/javascript" src="../../src/moxie/src/javascript/core/Exceptions.js"></script>
@@ -37,17 +38,17 @@
 <script type="text/javascript" src="../../src/moxie/src/javascript/silverlight.js"></script>
 
 <script type="text/javascript" src="../../src/plupload.js"></script>
+-->
 
+<script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 
-<script type="text/javascript" src="../../src/jquery.plupload.queue/jquery.plupload.queue.js"></script>
-
-<!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
 </head>
 <body>
 
 <form method="post" action="dump.php">	
-	<div id="uploader">You browser doesn't support native upload. Try Firefox 3+ or Safari 4+.</div>
-
+	<div id="uploader">
+		<p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+	</div>
 	<input type="submit" value="Send" />
 </form>
 
