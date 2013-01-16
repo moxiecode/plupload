@@ -1121,12 +1121,6 @@ plupload.Uploader = function(settings) {
 
 							up.trigger('ChunkUploaded', file, chunkArgs);
 
-							// Stop upload
-							if (chunkArgs.cancelled) {
-								file.status = plupload.FAILED;
-								return;
-							}
-
 							file.loaded = Math.min(file.size, (chunk + 1) * chunkSize);
 						} else {
 							file.loaded = file.size;
