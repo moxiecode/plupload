@@ -662,7 +662,8 @@ plupload.Uploader = function(settings) {
 
 			// All files are DONE or FAILED
 			if (count == files.length) {
-				this.stop();
+				this.state = plupload.STOPPED;	
+				this.trigger("StateChanged");
 				this.trigger("UploadComplete", files);
 			}
 		}
