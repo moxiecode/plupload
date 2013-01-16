@@ -1079,10 +1079,10 @@ plupload.Uploader = function(settings) {
 					args = {name : file.target_name || file.name};
 
 					// Only add chunking args if needed
-					if (settings.chunk_size && features.chunks && file.size > settings.chunk_size) { // blob will be of type string if it was loaded in memory 
+					if (settings.chunk_size && features.chunks && blob.size > settings.chunk_size) { // blob will be of type string if it was loaded in memory 
 						chunkSize = settings.chunk_size;
-						chunks = Math.ceil(file.size / chunkSize);
-						curChunkSize = Math.min(chunkSize, file.size - (chunk * chunkSize));					
+						chunks = Math.ceil(blob.size / chunkSize);
+						curChunkSize = Math.min(chunkSize, blob.size - (chunk * chunkSize));					
 						
 						chunkBlob = blob.slice(chunk * chunkSize, chunk * chunkSize + curChunkSize);
 
@@ -1090,7 +1090,7 @@ plupload.Uploader = function(settings) {
 						args.chunk = chunk;
 						args.chunks = chunks;
 					} else {
-						curChunkSize = file.size;
+						curChunkSize = blob.size;
 						chunkBlob = blob;
 					}
 					
@@ -1108,6 +1108,8 @@ plupload.Uploader = function(settings) {
 					xhr.onload = function() {
 						// Handle chunk response
 						if (chunks) {
+							chunkBlob.destroy(); // Dispose
+
 							chunkArgs = {
 								chunk : chunk,
 								chunks : chunks,
@@ -1536,6 +1538,14 @@ plupload.File = (function() {
 			 * @type String
 			 */
 			name: file.name || file.fileName,
+
+			/**
+			 * File type, `e.g image/jpeg`
+			 *
+			 * @property type
+			 * @type String
+			 */
+			type: file.type || '',
 			
 			/**
 			 * File size in bytes (may change after client-side manupilation).
