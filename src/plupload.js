@@ -1108,7 +1108,9 @@ plupload.Uploader = function(settings) {
 					xhr.onload = function() {
 						// Handle chunk response
 						if (chunks) {
-							chunkBlob.destroy(); // Dispose
+							if (chunkBlob.isDetached()) { // Dispose if standalone chunk
+								chunkBlob.destroy(); 
+							}
 
 							chunkArgs = {
 								chunk : chunk,
