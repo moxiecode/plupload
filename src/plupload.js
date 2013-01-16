@@ -651,8 +651,8 @@ plupload.Uploader = function(settings) {
 			for (i = 0; i < files.length; i++) {
 				if (!file && files[i].status == plupload.QUEUED) {
 					file = files[i];
-					file.status = plupload.UPLOADING;
 					if (this.trigger("BeforeUpload", file)) {
+						file.status = plupload.UPLOADING;
 						this.trigger("UploadFile", file);
 					}
 				} else {
