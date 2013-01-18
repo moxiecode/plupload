@@ -662,8 +662,10 @@ plupload.Uploader = function(settings) {
 
 			// All files are DONE or FAILED
 			if (count == files.length) {
-				this.state = plupload.STOPPED;	
-				this.trigger("StateChanged");
+				if (this.state !== plupload.STOPPED) {
+					this.state = plupload.STOPPED;	
+					this.trigger("StateChanged");
+				}
 				this.trigger("UploadComplete", files);
 			}
 		}
@@ -1065,15 +1067,17 @@ plupload.Uploader = function(settings) {
 			}
 			
 			self.bind("UploadFile", function(up, file) {
-				var blob, url = up.settings.url, features = up.features;
+				var blob, loaded, url = up.settings.url, features = up.features;
 						
 				function uploadNextChunk() {
-					var chunkBlob, formData, br, chunk = 0, chunks, args, chunkSize, curChunkSize, mimeType;													
+					var chunkBlob, formData, chunk = 0, chunks, args, chunkSize, curChunkSize;	
 
 					// File upload finished
 					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 						return;
 					}
+
+					loaded = file.loaded;
 
 					// Standard arguments
 					args = {name : file.target_name || file.name};
@@ -1094,14 +1098,13 @@ plupload.Uploader = function(settings) {
 						curChunkSize = blob.size;
 						chunkBlob = blob;
 					}
-					
-							
+						
 					xhr = new o.XMLHttpRequest;
 													
 					// Do we have upload progress support
 					if (xhr.upload) {
 						xhr.upload.onprogress = function(e) {
-							file.loaded = Math.min(file.size, file.loaded + e.loaded);
+							file.loaded = Math.min(file.size, loaded + e.loaded);
 							up.trigger('UploadProgress', file);
 						};
 					}
@@ -1113,16 +1116,17 @@ plupload.Uploader = function(settings) {
 								chunkBlob.destroy(); 
 							}
 
+							loaded += curChunkSize;
+							file.loaded = Math.min(file.size, (chunk + 1) * chunkSize);
+
 							chunkArgs = {
 								chunk : chunk,
 								chunks : chunks,
 								response : xhr.responseText,
 								status : xhr.status
-							};
-
+							};	
+	
 							up.trigger('ChunkUploaded', file, chunkArgs);
-
-							file.loaded = Math.min(file.size, (chunk + 1) * chunkSize);
 						} else {
 							file.loaded = file.size;
 						}
@@ -1132,16 +1136,16 @@ plupload.Uploader = function(settings) {
 						chunkBlob = formData = null; // Free memory
 						
 						// Check if file is uploaded
-						if (!chunks || ++chunk >= chunks) {
+						if (!chunks || chunk + 1 >= chunks) {
 							file.status = plupload.DONE;
-																		
+
 							up.trigger('FileUploaded', file, {
 								response : xhr.responseText,
 								status : xhr.status
 							});										
 						} else {										
 							// Still chunks left
-							uploadNextChunk();
+							delay(uploadNextChunk, 1); // run detached, otherwise event handlers interfere
 						}
 					};
 					
@@ -1152,7 +1156,11 @@ plupload.Uploader = function(settings) {
 							file : file,
 							status : xhr.status
 						});
-					};							
+					};
+
+					xhr.onloadend = function() {
+						xhr.unbindAll();
+					};						
 
 					// Build multipart request
 					if (up.settings.multipart && features.multipart) {
@@ -1312,12 +1320,12 @@ plupload.Uploader = function(settings) {
 		stop : function() {
 			if (this.state != plupload.STOPPED) {
 				this.state = plupload.STOPPED;	
-				this.trigger("CancelUpload");				
 				this.trigger("StateChanged");
+				this.trigger("CancelUpload");				
 			}
 		},
 		
-		/** 
+		/**
 		 * Disables/enables browse button on request.
 		 *
 		 * @method disableBrowse
