@@ -1159,7 +1159,7 @@ plupload.Uploader = function(settings) {
 					};
 
 					xhr.onloadend = function() {
-						xhr.unbindAll();
+						this.unbindAll();
 					};						
 
 					// Build multipart request
