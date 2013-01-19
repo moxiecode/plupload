@@ -1395,7 +1395,7 @@ plupload.Uploader = function(settings) {
 					});
 					return;
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
-					// if we are delaing with input[type="file"]
+					// if we are dealing with input[type="file"]
 					o.each(file.files, resolveFile);
 				} else if (type === 'array') {
 					// mixed array
