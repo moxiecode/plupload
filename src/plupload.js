@@ -1359,6 +1359,58 @@ plupload.Uploader = function(settings) {
 		},
 
 		/**
+		 * Adds file to the queue programmatically. Can be native file, instance of Plupload.File,
+		 * instance of mOxie.File, input[type="file"] element, or array of these. Fires FilesAdded, 
+		 * if any files were added to the queue. Otherwise nothing happens.
+		 *
+		 * @method addFile
+		 * @param {Plupload.File|mOxie.File|File|Node|Array} file File or files to add to the queue.
+		 */
+		addFile : function(file) {
+			var self = this, files = [], queue = [];
+
+			function resolveFile(file) {
+				var type = o.typeOf(file);
+				
+				if (file instanceof o.File || file instanceof o.Blob) {
+					// final step for other condition branches
+					files.push(file);
+				} else if (type === 'file') {
+					// this process is asyncronous, so we queue it to be handled in series
+					queue.push(function(cb) {
+						var target = new o.RuntimeTarget();
+						target.bind('RuntimeInit', function(e, runtime) {
+							resolveFile(new o.File(runtime.uid, file));
+							cb();
+						});
+						try {
+							target.connectRuntime({ runtime_order: "html5" });
+						} catch (ex) {
+							self.trigger('Error', {
+								code : plupload.FILE_EXTENSION_ERROR,
+								message : plupload.translate('File extension error.'),
+								file : file
+							});
+						}
+					});
+					return;
+				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
+					// if we are delaing with input[type="file"]
+					o.each(file.files, resolveFile);
+				} else if (type === 'array') {
+					// mixed array
+					o.each(file, resolveFile);
+				}
+			}
+
+			resolveFile(file);
+
+			o.inSeries(queue, function() { // if queue is empty, callback will be invoked instantly
+				addSelectedFiles.call(self, files);
+			});
+		},
+
+		/**
 		 * Removes a specific file.
 		 *
 		 * @method removeFile
