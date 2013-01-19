@@ -1391,6 +1391,7 @@ plupload.Uploader = function(settings) {
 								message : plupload.translate('File extension error.'),
 								file : file
 							});
+							cb();
 						}
 					});
 					return;
