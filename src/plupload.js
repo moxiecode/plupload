@@ -1378,6 +1378,7 @@ plupload.Uploader = function(settings) {
 				} else if (type === 'file') {
 					// this process is asyncronous, so we queue it to be handled in series
 					queue.push(function(cb) {
+						// we are attaching the file to the runtime here
 						var target = new o.RuntimeTarget();
 						target.bind('RuntimeInit', function(e, runtime) {
 							resolveFile(new o.File(runtime.uid, file));
@@ -1386,6 +1387,7 @@ plupload.Uploader = function(settings) {
 						try {
 							target.connectRuntime({ runtime_order: "html5" });
 						} catch (ex) {
+							// runtime failed to initialize
 							self.trigger('Error', {
 								code : plupload.FILE_EXTENSION_ERROR,
 								message : plupload.translate('File extension error.'),
