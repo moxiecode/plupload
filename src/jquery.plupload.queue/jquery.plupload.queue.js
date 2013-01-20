@@ -199,7 +199,7 @@
 
 					// Enable rename support
 					if (!settings.unique_names && settings.rename) {
-						$('#' + id + '_filelist div.plupload_file_name span', target).live('click', function(e) {
+						$('#' + id + '_filelist div.plupload_file_name span', target).delegate('', 'click', function(e) {
 							var targetSpan = $(e.target), file, parts, name, ext = "";
 
 							// Get file name and split out name and extension
