@@ -77,7 +77,7 @@ package com.plupload {
 			// Security.allowDomain("*");
 
 			// Setup id
-			this.id = this.stage.loaderInfo.parameters["id"];
+			this.id = (this.stage.loaderInfo.parameters["id"]).toString().replace(/[^\w]/g, ''); // allow only [a-zA-Z0-9_]
 
 			// Setup file reference list
 			this.fileRefList = new FileReferenceList();
