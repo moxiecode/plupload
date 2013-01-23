@@ -3,6 +3,7 @@ js
 obj
 tmp
 docs
+src/moxie
 jslint.xml
 .settings
 .project
