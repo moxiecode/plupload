@@ -528,9 +528,20 @@
 						
 
 					function uploadNextChunk() {
-						var chunkBlob, br, chunks, args, chunkSize, curChunkSize, mimeType, url = up.settings.url;													
+						var chunkBlob, br, chunks, args, chunkSize, curChunkSize, mimeType, url = up.settings.url;	
 
-						
+						function sendAsBinaryString(bin) {
+							if (xhr.sendAsBinary) { // Gecko
+								xhr.sendAsBinary(bin);
+							} else if (up.features.canSendBinary) { // WebKit with typed arrays support
+								var ui8a = new Uint8Array(bin.length);
+								for (var i = 0; i < bin.length; i++) {
+									ui8a[i] = (bin.charCodeAt(i) & 0xff);
+								}
+								xhr.send(ui8a.buffer);
+							}
+						}												
+	
 						function prepareAndSend(bin) {
 							var multipartDeltaSize = 0,
 								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = '';
@@ -664,17 +675,8 @@
 		
 									multipartDeltaSize = multipartBlob.length - bin.length;
 									bin = multipartBlob;
-								
 							
-									if (xhr.sendAsBinary) { // Gecko
-										xhr.sendAsBinary(bin);
-									} else if (features.canSendBinary) { // WebKit with typed arrays support
-										var ui8a = new Uint8Array(bin.length);
-										for (var i = 0; i < bin.length; i++) {
-											ui8a[i] = (bin.charCodeAt(i) & 0xff);
-										}
-										xhr.send(ui8a.buffer);
-									}
+									sendAsBinaryString(bin);
 									return; // will return from here only if shouldn't send binary
 								} 							
 							}
@@ -690,8 +692,12 @@
 							plupload.each(up.settings.headers, function(value, name) {
 								xhr.setRequestHeader(name, value);
 							});
-												
-							xhr.send(bin); 
+							
+							if (typeof(bin) === 'string') {	
+								sendAsBinaryString(bin);
+							} else {				
+								xhr.send(bin); 
+							}
 						} // prepareAndSend
 
 
