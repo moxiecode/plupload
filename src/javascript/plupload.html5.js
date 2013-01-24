@@ -116,19 +116,20 @@
 								up.trigger('GpsData', file, exifParser.GPS());
 							}
 						}
-					}
-					
-					if (resize['quality']) {							
-						// Try quality property first
-						try {
-							data = canvas.toDataURL(mime, resize['quality'] / 100);	// used to throw an exception in Firefox
-						} catch (ex) {
-							data = canvas.toDataURL(mime);	
-						}
+					}					
+				} 
+
+				if (resize['quality'] && mime === 'image/jpeg') {							
+					// Try quality property first
+					try {
+						data = canvas.toDataURL(mime, resize['quality'] / 100);	// used to throw an exception in Firefox
+					} catch (ex) {
+						data = canvas.toDataURL(mime);	
 					}
 				} else {
 					data = canvas.toDataURL(mime);
 				}
+
 
 				// Remove data prefix information and grab the base64 encoded data and decode it
 				data = data.substring(data.indexOf('base64,') + 7);
