@@ -130,7 +130,8 @@ namespace Moxiecode.Plupload {
 
             try {
                 // Is jpeg and image size is defined
-				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase) && (imageWidth != 0 || imageHeight != 0)) {
+				if (Regex.IsMatch(this.name, @"\.(jpeg|jpg|png)$", RegexOptions.IgnoreCase) && (imageWidth != 0 || imageHeight != 0 || imageQuality != 0))
+				{
 					if (Regex.IsMatch(this.name, @"\.png$"))
 						this.imageStream = this.ResizeImage(this.info.OpenRead(), imageWidth, imageHeight, imageQuality, ImageType.Png);
 					else
@@ -493,6 +494,14 @@ namespace Moxiecode.Plupload {
 				BitmapImage bitmapImage = new BitmapImage();
 				bitmapImage.SetSource(image_stream);
 				writableBitmap = new WriteableBitmap(bitmapImage);
+
+				if (width == 0) {
+					width = writableBitmap.PixelWidth;
+				}
+
+				if (height == 0) {
+					height = writableBitmap.PixelHeight;
+				}
 
 				double scale = Math.Min((double) width / writableBitmap.PixelWidth, (double) height / writableBitmap.PixelHeight);
 
