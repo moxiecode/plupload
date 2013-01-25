@@ -243,7 +243,13 @@ var plupload = {
 	 * @param {String} s String to encode.
 	 * @return {String} Encoded string.
 	 */
-	xmlEncode : o.xmlEncode,
+	xmlEncode : function(str) {
+		var xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'}, xmlEncodeRegExp = /[<>&\"\']/g;
+		
+		return str ? ('' + str).replace(xmlEncodeRegExp, function(chr) {
+			return xmlEncodeChars[chr] ? '&' + xmlEncodeChars[chr] + ';' : chr;
+		}) : str;
+	},
 
 	/**
 	 * Forces anything into an array.
@@ -775,7 +781,7 @@ plupload.Uploader = function(settings) {
 						
 						fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
 							if (!disabled) {
-								var bButton = o(settings.browse_button);
+								var bButton = o.get(settings.browse_button);
 								if (bButton) {
 									if (settings.browse_button_hover) {
 										if ('mouseenter' === e.type) {
@@ -971,7 +977,7 @@ plupload.Uploader = function(settings) {
 			settings.max_file_size = plupload.parseSize(settings.max_file_size);
 
 			// Check if drop zone requested
-			settings.drop_element = o(settings.drop_element);
+			settings.drop_element = o.get(settings.drop_element);
 
 
 			if (typeof(settings.preinit) == "function") {

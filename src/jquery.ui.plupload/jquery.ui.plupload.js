@@ -751,8 +751,8 @@ $.widget("ui.plupload", {
 							width: 100, 
 							height: 60, 
 							crop: true,
-							swf_url: o.resolveUrl(self.options.flash_swf_url),
-							xap_url: o.resolveUrl(self.options.silverlight_xap_url)
+							swf_url: mOxie.Url.resolveUrl(self.options.flash_swf_url),
+							xap_url: mOxie.Url.resolveUrl(self.options.silverlight_xap_url)
 						});
 						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 					};
@@ -845,7 +845,7 @@ $.widget("ui.plupload", {
 		} 
 	
 		// ugly fix for IE6 - make content area stretchable
-		if (o.ua.browser === 'IE' && o.ua.version < 7) {
+		if (mOxie.Env.browser === 'IE' && mOxie.Env.version < 7) {
 			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (type === 'list' ? 133 : 103) + ');');
 		}
 
