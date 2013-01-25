@@ -1006,7 +1006,7 @@ plupload.Uploader = function(settings) {
 						});
 					});
 					
-					extensionsRegExp = new RegExp(extensionsRegExp.join('|') + '$', 'i');
+					extensionsRegExp = new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
 				}
 
 				for (i = 0; i < selected_files.length; i++) {
