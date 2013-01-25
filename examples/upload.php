@@ -57,20 +57,21 @@ if (!file_exists($targetDir))
 	@mkdir($targetDir);
 
 // Remove old temp files	
-if ($cleanupTargetDir && is_dir($targetDir) && ($dir = opendir($targetDir))) {
-	while (($file = readdir($dir)) !== false) {
-		$tmpfilePath = $targetDir . DIRECTORY_SEPARATOR . $file;
+if ($cleanupTargetDir) {
+	if (is_dir($targetDir) && ($dir = opendir($targetDir))) {
+		while (($file = readdir($dir)) !== false) {
+			$tmpfilePath = $targetDir . DIRECTORY_SEPARATOR . $file;
 
-		// Remove temp file if it is older than the max age and is not the current file
-		if (preg_match('/\.part$/', $file) && (filemtime($tmpfilePath) < time() - $maxFileAge) && ($tmpfilePath != "{$filePath}.part")) {
-			@unlink($tmpfilePath);
+			// Remove temp file if it is older than the max age and is not the current file
+			if (preg_match('/\.part$/', $file) && (filemtime($tmpfilePath) < time() - $maxFileAge) && ($tmpfilePath != "{$filePath}.part")) {
+				@unlink($tmpfilePath);
+			}
 		}
+		closedir($dir);
+	} else {
+		die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
 	}
-
-	closedir($dir);
-} else
-	die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
-	
+}	
 
 // Look for the content type header
 if (isset($_SERVER["HTTP_CONTENT_TYPE"]))
@@ -128,5 +129,3 @@ if (!$chunks || $chunk == $chunks - 1) {
 
 // Return JSON-RPC response
 die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
-
-?>
