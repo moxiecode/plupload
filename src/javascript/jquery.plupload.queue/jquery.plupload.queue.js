@@ -218,12 +218,14 @@
 							}).keydown(function(e) {
 								var targetInput = $(this);
 
-								if (e.keyCode == 13) {
+								if ($.inArray(e.keyCode, [13, 27]) !== -1) {
 									e.preventDefault();
 
 									// Rename file and glue extension back on
-									file.name = targetInput.val() + ext;
-									targetSpan.text(file.name);
+									if (e.keyCode === 13) {
+										file.name = targetInput.val() + ext;
+										targetSpan.text(file.name);
+									}
 									targetInput.blur();
 								}
 							});
