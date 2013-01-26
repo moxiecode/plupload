@@ -619,7 +619,7 @@ $.widget("ui.plupload", {
 	_enableRenaming: function() {
 		var self = this;
 		
-		$('.plupload_delete .plupload_file_name span', this.filelist).live('click', function(e) {
+		$('.plupload_delete .plupload_file_name span', this.filelist).delegate('', 'click', function(e) {
 			var targetSpan = $(e.target), file, parts, name, ext = "";
 
 			// Get file name and split out name and extension
