@@ -7,9 +7,15 @@ Historically Plupload comes from dark and hostile age of no HTML5, hence all the
 ## Table of Contents
 * [Backstory](#backstory)
 * [Structure](#structure)
+  * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie)
+  * [Plupload API](/moxiecode/plupload/wiki/API)
+  * UI Widget
+  * Queue Widget
+* [Building Instructions](#build)
+* Getting Started
 * [Support](#support)
 * [Contributing](#contribute)
-* [Contact us](http://www.moxiecode.com/contact.php)
+* [Contact Us](http://www.moxiecode.com/contact.php)
 
 <a name="backstory" />
 ### Backstory
@@ -27,6 +33,23 @@ Currently Plupload may be considered as consisting of three parts: low-level pol
 * [Plupload API](/moxiecode/plupload/wiki/API)
 * [UI Widget]()
 * [Queue Widget]()
+
+<a name="build" />
+### Building instructions
+
+Plupload depends on File API and XHR2 L2 pollyfills that currently have their [own repository](https://github.com/moxiecode/moxie) on GitHub. However in most cases you shouldn't care as we bundle the latest build of mOxie, including full and minified JavaScript source and pre-compiled `SWF` and `XAP` components, with the repository here. You can find everything you may need under `js/` folder.
+
+But there are cases when you might need a custom build, for example free of unnecessary runtimes, half the original size, etc. Main complexity for this task is caused by the mOxie and its set of additional runtimes, that require special tools on your workstation in order to compile. Consider [build instructions for mOxie](#) - everything applies to Plupload as well.
+
+First of all, if you want to build custom Plupload packages you will require [Node.js](http://nodejs.org/), as this is our build environment of choice. Node.js binaries (as well as Source) [are available](http://nodejs.org/download/) for all major operating systems.
+
+In addtion to Node.js some additional modules will be required. Change your working directory to where you have extracted Pluplod repo and run: `node bootstrap`. All dependencies will be downloaded and installed automatically. Bootstrap will also try to populate `src/moxie/` folder with the actual mOxie source, as Plupload includes it as a sub-module and doesn't contain the source. You should have [git](http://git-scm.com/) installed on your system for this operation to succeed. If you don't have one and you still require the source, you will need to manually download it from [the repository](https://github.com/moxiecode/moxie) and extract to the above folder.
+
+*Note:* currently for unknown reason, locally installed Node.js modules on Windows, may not be automatically added to the system PATH. So if `jake` commands below are not recognized you will need to add them manually:
+
+```
+set PATH=%PATH%;%CD%\node_modules\.bin\
+``` 
 
 <a name="support" />
 ### Support
@@ -46,4 +69,4 @@ We are open to suggestions and code revisions, however there are some rules and 
 
 These basic rules help us earn for the living and ensure that code remains Open Source and compatible with LGPL license. All contributions will be added to the changelog and appear in every release and on the site. 
 
-You can read more about how to contribute to this project at [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
+You can read more about how to contribute at: [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
