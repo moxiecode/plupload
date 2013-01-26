@@ -13,7 +13,7 @@
 </style>
 <link rel="stylesheet" href="../../js/jquery.plupload.queue/css/jquery.plupload.queue.css" type="text/css" media="screen" />
 
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
 <script type="text/javascript" src="../../src/javascript/plupload.js"></script>
@@ -23,9 +23,8 @@
 <script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
 <script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
 <script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
-<script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
+<script type="text/javascript" src="../../src/javascript/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 
-<!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
 </head>
 <body>
 
@@ -72,7 +71,7 @@ $(function() {
 		url : '../upload.php',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
-		unique_names : true,
+		rename : true,
 		filters : [
 			{title : "Image files", extensions : "jpg,gif,png"},
 			{title : "Zip files", extensions : "zip"}

@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
 <link rel="stylesheet" href="../../src/javascript/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 <script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
 
@@ -27,7 +27,6 @@
 <script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
 <script type="text/javascript" src="../../src/javascript/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 
-<!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 </head>
 <body>
 
@@ -50,7 +49,7 @@ $(function() {
 		max_file_size : '1000mb',
 		max_file_count: 20, // user can add no more then 20 files at a time
 		chunk_size : '1mb',
-		unique_names : true,
+		rename: true,
 		multiple_queues : true,
 
 		// Resize images on clientside if we can
