@@ -365,18 +365,21 @@ $.widget("ui.plupload", {
 								}
 							});
 							break;
+
+						case plupload.FILE_DUPLICATE_ERROR:
+							details = _("%s already present in the queue.").replace(/%s/, file.name);
+							break;
 							
 						case self.FILE_COUNT_ERROR:
-							details = _("Upload element accepts only %d file(s) at a time. Extra files were stripped.")
-								.replace('%d', self.options.max_file_count);
+							details = _("Upload element accepts only %d file(s) at a time. Extra files were stripped.").replace('%d', self.options.max_file_count);
 							break;
 						
 						case plupload.IMAGE_FORMAT_ERROR :
-							details = _('Image format either wrong or not supported.');
+							details = _("Image format either wrong or not supported.");
 							break;	
 						
 						case plupload.IMAGE_MEMORY_ERROR :
-							details = _('Runtime ran out of available memory.');
+							details = _("Runtime ran out of available memory.");
 							break;
 						
 						/* // This needs a review

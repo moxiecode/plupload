@@ -135,6 +135,15 @@ var plupload = {
 	 * @final
 	 */
 	FILE_EXTENSION_ERROR : -601,
+
+	/**
+	 * Duplicate file error. If prevent_duplicates is set to true and user selects the same file again.
+	 *
+	 * @property FILE_DUPLICATE_ERROR
+	 * @static
+	 * @final
+	 */
+	FILE_DUPLICATE_ERROR : -602,
 	
 	/**
 	 * Runtime will try to detect if image is proper one. Otherwise will throw this error.
@@ -465,13 +474,14 @@ var plupload = {
 	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
 	@param {String} [settings.drop_element] id of the DOM element to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
-	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`
+	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
 	@param {String} [settings.flash_swf_url] URL of the Flash swf.
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
-	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set.
+	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
 	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
+	@param {Boolean} [settings.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
 	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
 	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
 		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
@@ -614,6 +624,7 @@ plupload.Uploader = function(settings) {
 		multi_selection : true,
 		file_data_name : 'file',
 		filters : [],
+		prevent_duplicates: false,
 		urlstream_upload: false // forces Flash runtime into the URLStream mode
 	}, settings);
 
@@ -990,7 +1001,7 @@ plupload.Uploader = function(settings) {
 
 			// Add files to queue
 			self.bind('FilesAdded', function(up, selected_files) {
-				var i, file, count = 0, extensionsRegExp, filters = settings.filters;
+				var i, ii, file, count = 0, extensionsRegExp, filters = settings.filters;
 
 				// Convert extensions to regexp
 				if (filters && filters.length) {
@@ -1009,6 +1020,7 @@ plupload.Uploader = function(settings) {
 					extensionsRegExp = new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
 				}
 
+				next_file:
 				for (i = 0; i < selected_files.length; i++) {
 					file = selected_files[i];
 					file.loaded = 0;
@@ -1035,6 +1047,22 @@ plupload.Uploader = function(settings) {
 						});
 
 						continue;
+					}
+
+					// Bypass duplicates
+					if (settings.prevent_duplicates) {
+						ii = up.files.length;
+						while (ii--) {
+							// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
+							if (file.name === up.files[ii].name && file.size === up.files[ii].size) {
+								up.trigger('Error', {
+									code : plupload.FILE_DUPLICATE_ERROR,
+									message : plupload.translate('Duplicate file error.'),
+									file : file
+								});
+								continue next_file;
+							}
+						}
 					}
 
 					// Add valid file to list
