@@ -194,6 +194,8 @@ html > body .plupload_view_list .plupload_file { /* make sure IE6 doesn't unders
 .plupload_view_thumbs .plupload_file_thumb {
 	width: 100px;
 	height: 60px;
+	text-align: center;
+	overflow: hidden;
 }
 
 .plupload_view_thumbs div.plupload_file_action {
