@@ -16,9 +16,6 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
-// By default all responses are errors unless we get to the end and change to success response code.
-header("HTTP/1.1 500 Internal Server Error");
-
 // Settings
 $targetDir = ini_get("upload_tmp_dir") . DIRECTORY_SEPARATOR . "plupload";
 //$targetDir = 'uploads';
@@ -129,7 +126,5 @@ if (!$chunks || $chunk == $chunks - 1) {
 	rename("{$filePath}.part", $filePath);
 }
 
-
 // Return Success JSON-RPC response
-header("HTTP/1.1 200 OK");
 die('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
