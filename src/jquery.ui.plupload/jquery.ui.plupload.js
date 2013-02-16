@@ -198,8 +198,7 @@ $.widget("ui.plupload", {
 	},
 
 	_initUploader: function() {
-		var 
-		  self = this
+		var self = this
 		, id = this.id
 		, buttonsContainer = $('.plupload_buttons', this.element).attr('id', id + '_buttons')
 		, uploader
@@ -596,8 +595,7 @@ $.widget("ui.plupload", {
 
 
 		function addFields() {
-			var 
-			  fields = ''
+			var fields = ''
 			, count = parseInt(self.counter.val() || 0, 10)
 			, id = self.id + '_' + count
 			;
@@ -754,8 +752,8 @@ $.widget("ui.plupload", {
 							width: 100, 
 							height: 60, 
 							crop: true,
-							swf_url: mOxie.Url.resolveUrl(self.options.flash_swf_url),
-							xap_url: mOxie.Url.resolveUrl(self.options.silverlight_xap_url)
+							swf_url: mOxie.resolveUrl(self.options.flash_swf_url),
+							xap_url: mOxie.resolveUrl(self.options.silverlight_xap_url)
 						});
 						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 					};
@@ -859,8 +857,7 @@ $.widget("ui.plupload", {
 
 
 	_enableViewSwitcher: function() {
-		var 
-		  self = this
+		var self = this
 		, type
 		, switcher = $('.plupload_view_switch', this.container)
 		, buttons
@@ -982,6 +979,5 @@ $.widget("ui.plupload", {
 		});		
 	}
 });
-
 
 } (window, document, plupload, jQuery));
