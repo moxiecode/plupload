@@ -1101,33 +1101,33 @@ plupload.Uploader = function(settings) {
 			}
 			
 			self.bind("UploadFile", function(up, file) {
-				var blob, loaded, url = up.settings.url, features = up.features;
+				var blob, url = up.settings.url, features = up.features, chunkSize = settings.chunk_size, offset = 0;
+
+				// make sure we start at a predictable offset
+				if (file.loaded) {
+					offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
+				}
 						
 				function uploadNextChunk() {
-					var chunkBlob, formData, chunk = 0, chunks, args, chunkSize, curChunkSize;	
+					var chunkBlob, formData, args, curChunkSize;	
 
 					// File upload finished
 					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
 						return;
 					}
 
-					loaded = file.loaded;
-
 					// Standard arguments
 					args = {name : file.target_name || file.name};
 
 					// Only add chunking args if needed
-					if (settings.chunk_size && features.chunks && blob.size > settings.chunk_size) { // blob will be of type string if it was loaded in memory 
-						chunkSize = settings.chunk_size;
-						chunk = Math.floor(file.loaded / chunkSize);
-						chunks = Math.ceil(blob.size / chunkSize);
-						curChunkSize = Math.min(chunkSize, blob.size - (chunk * chunkSize));					
+					if (chunkSize && features.chunks && blob.size > chunkSize) { // blob will be of type string if it was loaded in memory 
+						curChunkSize = Math.min(settings.chunk_size, blob.size - offset);					
 						
-						chunkBlob = blob.slice(chunk * chunkSize, chunk * chunkSize + curChunkSize);
+						chunkBlob = blob.slice(offset, offset + curChunkSize);
 
 						// Setup query string arguments
-						args.chunk = chunk;
-						args.chunks = chunks;
+						args.offset = offset;
+						args.total = blob.size;
 					} else {
 						curChunkSize = blob.size;
 						chunkBlob = blob;
@@ -1138,24 +1138,24 @@ plupload.Uploader = function(settings) {
 					// Do we have upload progress support
 					if (xhr.upload) {
 						xhr.upload.onprogress = function(e) {
-							file.loaded = Math.min(file.size, loaded + e.loaded);
+							file.loaded = Math.min(file.size, offset + e.loaded);
 							up.trigger('UploadProgress', file);
 						};
 					}
 					
 					xhr.onload = function() {
 						// Handle chunk response
-						if (chunks) {
+						if (curChunkSize < blob.size) {
 							if (chunkBlob.isDetached()) { // Dispose if standalone chunk
 								chunkBlob.destroy(); 
 							}
 
-							loaded += curChunkSize;
-							file.loaded = Math.min(file.size, (chunk + 1) * chunkSize);
+							offset += curChunkSize;
+							file.loaded = Math.min(offset, blob.size);
 
 							chunkArgs = {
-								chunk : chunk,
-								chunks : chunks,
+								offset : file.loaded,
+								total : blob.size,
 								response : xhr.responseText,
 								status : xhr.status
 							};	
@@ -1170,7 +1170,7 @@ plupload.Uploader = function(settings) {
 						chunkBlob = formData = null; // Free memory
 						
 						// Check if file is uploaded
-						if (!chunks || chunk + 1 >= chunks) {
+						if (!offset || offset >= blob.size) {
 							file.status = plupload.DONE;
 
 							up.trigger('FileUploaded', file, {
