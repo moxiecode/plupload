@@ -76,15 +76,6 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 
 <title>Plupload to Amazon S3 Example</title>
 
-<style type="text/css">
-	body {
-		font-family:Verdana, Geneva, sans-serif;
-		font-size:13px;
-		color:#333;
-		background:url(../bg.jpg);
-	}
-</style>
-
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
 <script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
@@ -94,10 +85,9 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 
 <script type="text/javascript" src="../../js/plupload.full.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
-<!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 
 </head>
-<body>
+<body style="font:13px Verdana;background:url(../bg.jpg);color:#333">
 
 <h1>Plupload to Amazon S3 Example</h1>
 
@@ -141,10 +131,10 @@ $(function() {
 		],
 
 		// Flash settings
-		flash_swf_url : '../../js/plupload.flash.swf',
+		flash_swf_url : '../../js/Moxie.swf',
 
 		// Silverlight settings
-		silverlight_xap_url : '../../js/plupload.silverlight.xap'
+		silverlight_xap_url : '../../js/Moxie.xap'
 	});
 });
 </script>
