@@ -50,9 +50,10 @@ task("minifyjs", ["moxie"], function (params) {
 	fs.mkdirSync(targetDir, 0755);
 
 	// Copy compiled moxie files
-	tools.copySync(moxieDir + "/js/Moxie.swf", "js/Moxie.swf");
-	tools.copySync(moxieDir + "/js/Moxie.xap", "js/Moxie.xap");
-	tools.copySync(moxieDir + "/js/moxie.min.js", "js/moxie.min.js");
+	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
+	tools.copySync(moxieDir + "/bin/silverlight/Moxie.xap", "js/Moxie.xap");
+	tools.copySync(moxieDir + "/bin/js/moxie.min.js", "js/moxie.min.js");
+	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
 
 	// Copy UI Plupload
 	wrench.copyDirSyncRecursive("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});

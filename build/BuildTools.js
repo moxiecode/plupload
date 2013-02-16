@@ -319,7 +319,7 @@ exports.rmDir = function(dirPath) {
 
 // extract version details from chengelog.txt
 exports.getReleaseInfo = function (srcPath) {
-	if (!path.existsSync(srcPath)) {
+	if (!fs.existsSync(srcPath)) {
 		console.info(srcPath + " cannot be found.");
 		process.exit(1);
 	} 
@@ -363,7 +363,7 @@ exports.addReleaseDetailsTo = function (destPath, info) {
 		return /\.(js|txt)$/.filePath;
 	}
 	
-	if (path.existsSync(headNotePath)) {
+	if (fs.existsSync(headNotePath)) {
 		headNote = fs.readFileSync(headNotePath).toString();
 	}
 
