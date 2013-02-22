@@ -260,6 +260,7 @@
 			
 			return {
 				windows: navigator.platform.indexOf('Win') !== -1,
+				android: /Android/.test(userAgent),
 				ie: !webkit && !opera && (/MSIE/gi).test(userAgent) && (/Explorer/gi).test(nav.appName),
 				webkit: webkit,
 				gecko: !webkit && /Gecko/.test(userAgent),

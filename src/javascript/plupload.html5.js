@@ -198,7 +198,8 @@
 				multipart: dataAccessSupport || !!window.FileReader || !!window.FormData,
 				canSendBinary: canSendBinary,
 				// gecko 2/5/6 can't send blob with FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150 
-				cantSendBlobInFormData: !!(plupload.ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer),
+				// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
+				cantSendBlobInFormData: !!(plupload.ua.gecko && window.FormData && window.FileReader && !FileReader.prototype.readAsArrayBuffer) || plupload.ua.android,
 				progress: hasProgress,
 				chunks: sliceSupport,
 				// Safari on Windows has problems when selecting multiple files
