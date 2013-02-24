@@ -37,8 +37,9 @@ function $(id) {
 
 
 var uploader = new plupload.Uploader({
-	runtimes : 'silverlight,html4',
-	browse_button : 'pickfiles',
+	runtimes : 'html5,flash,silverlight,html4',
+	browse_button : 'pickfiles', // you can pass in id or DOM Element itself
+	drop_element : $('container'), 
 	container: 'container',
 	max_file_size : '10mb',
 	url : 'upload.php',

@@ -468,11 +468,11 @@ var plupload = {
 @constructor
 
 @param {Object} settings For detailed information about each option check documentation.
-	@param {String} settings.browse_button id of the DOM element to use as file dialog trigger.
+	@param {String|DOMElement} settings.browse_button id of the DOM element or DOM element itself to use as file dialog trigger.
 	@param {String} settings.url URL of the server-side upload handler.
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
 	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
-	@param {String} [settings.drop_element] id of the DOM element to use as a drop zone for Drag-n-Drop.
+	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
 	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
 	@param {String} [settings.flash_swf_url] URL of the Flash swf.
