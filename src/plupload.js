@@ -478,6 +478,7 @@ var plupload = {
 	@param {String} [settings.flash_swf_url] URL of the Flash swf.
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
 	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
+	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
 	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
@@ -620,6 +621,7 @@ plupload.Uploader = function(settings) {
 	// Default settings
 	settings = plupload.extend({
 		chunk_size : 0,
+		max_retries: 0,
 		multipart : true,
 		multi_selection : true,
 		file_data_name : 'file',
@@ -1101,11 +1103,31 @@ plupload.Uploader = function(settings) {
 			}
 			
 			self.bind("UploadFile", function(up, file) {
-				var blob, url = up.settings.url, features = up.features, chunkSize = settings.chunk_size, offset = 0;
+				var url = up.settings.url
+				, features = up.features
+				, chunkSize = settings.chunk_size
+				, retries = settings.max_retries
+				, blob, offset = 0
+				;
 
 				// make sure we start at a predictable offset
 				if (file.loaded) {
 					offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
+				}
+
+				function handleError() {
+					if (retries-- > 0) {
+						delay(uploadNextChunk, 1);
+					} else {
+						file.loaded = offset; // reset all progress
+
+						up.trigger('Error', {
+							code : plupload.HTTP_ERROR,
+							message : plupload.translate('HTTP Error.'),
+							file : file,
+							status : xhr.status
+						});
+					}
 				}
 						
 				function uploadNextChunk() {
@@ -1146,14 +1168,7 @@ plupload.Uploader = function(settings) {
 					xhr.onload = function() {
 						// check if upload made itself through
 						if (xhr.status >= 400) {
-							file.loaded = offset; // reset all progress
-
-							up.trigger('Error', {
-								code : plupload.HTTP_ERROR,
-								message : plupload.translate('HTTP Error.'),
-								file : file,
-								status : xhr.status
-							});
+							handleError();
 							return;
 						}
 
@@ -1197,14 +1212,7 @@ plupload.Uploader = function(settings) {
 					};
 					
 					xhr.onerror = function() {
-						file.loaded = offset; // reset all progress
-						
-						up.trigger('Error', {
-							code : plupload.HTTP_ERROR,
-							message : plupload.translate('HTTP Error.'),
-							file : file,
-							status : xhr.status
-						});
+						handleError();
 					};
 
 					xhr.onloadend = function() {
@@ -1302,7 +1310,8 @@ plupload.Uploader = function(settings) {
 				// Set failed status if an error occured on a file
 				if (err.file) {
 					err.file.status = plupload.FAILED;
-					calc();
+					
+					calcFile(err.file);
 
 					// Upload next file but detach it from the error event
 					// since other custom listeners might want to stop the queue
