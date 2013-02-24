@@ -1144,6 +1144,19 @@ plupload.Uploader = function(settings) {
 					}
 					
 					xhr.onload = function() {
+						// check if upload made itself through
+						if (xhr.status >= 400) {
+							file.loaded = offset; // reset all progress
+
+							up.trigger('Error', {
+								code : plupload.HTTP_ERROR,
+								message : plupload.translate('HTTP Error.'),
+								file : file,
+								status : xhr.status
+							});
+							return;
+						}
+
 						// Handle chunk response
 						if (curChunkSize < blob.size) {
 							if (chunkBlob.isDetached()) { // Dispose if standalone chunk
@@ -1184,6 +1197,8 @@ plupload.Uploader = function(settings) {
 					};
 					
 					xhr.onerror = function() {
+						file.loaded = offset; // reset all progress
+						
 						up.trigger('Error', {
 							code : plupload.HTTP_ERROR,
 							message : plupload.translate('HTTP Error.'),
