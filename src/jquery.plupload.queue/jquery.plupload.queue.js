@@ -124,7 +124,7 @@
 				function updateTotalProgress() {
 					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
 					$('div.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
-					$('span.plupload_upload_status', target).text(
+					$('span.plupload_upload_status', target).html(
 						_('Uploaded %d/%d files').replace(/%d\/%d/, uploader.total.uploaded+'/'+uploader.files.length)
 					);
 				}
@@ -172,9 +172,9 @@
 					$('span.plupload_total_file_size', target).html(plupload.formatSize(uploader.total.size));
 
 					if (uploader.total.queued === 0) {
-						$('span.plupload_add_text', target).text(_('Add Files'));
+						$('span.plupload_add_text', target).html(_('Add Files'));
 					} else {
-						$('span.plupload_add_text', target).text(_('%d files queued').replace(/%d/, uploader.total.queued));
+						$('span.plupload_add_text', target).html(_('%d files queued').replace(/%d/, uploader.total.queued));
 					}
 
 					$('a.plupload_start', target).toggleClass('plupload_disabled', uploader.files.length == (uploader.total.uploaded + uploader.total.failed));
@@ -223,7 +223,7 @@
 
 									// Rename file and glue extension back on
 									file.name = targetInput.val() + ext;
-									targetSpan.text(file.name);
+									targetSpan.html(file.name);
 									targetInput.blur();
 								}
 							});
@@ -293,7 +293,7 @@
 					if (uploader.state === plupload.STARTED) {
 						$('li.plupload_delete a,div.plupload_buttons', target).hide();
 						$('span.plupload_upload_status,div.plupload_progress,a.plupload_stop', target).css('display', 'block');
-						$('span.plupload_upload_status', target).text('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
+						$('span.plupload_upload_status', target).html('Uploaded ' + uploader.total.uploaded + '/' + uploader.files.length + ' files');
 
 						if (settings.multiple_queues) {
 							$('span.plupload_total_status,span.plupload_total_file_size', target).show();
