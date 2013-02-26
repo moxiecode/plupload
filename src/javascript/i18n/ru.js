@@ -8,7 +8,7 @@ plupload.addI18n({
     'Add files' : 'Добавить файлы',
     'Stop current upload' : 'Остановить загрузку',
     'Start uploading queue' : 'Загрузить файлы',
-    'Uploaded %d/%d files': 'Загружено %d из %d файлов',
+    'Uploaded %d/%d files': 'Загружено %d/%d файлов',
     'N/A' : 'N/D',
     'Drag files here.' : 'Перетащите файлы сюда.',
     'File extension error.': 'Неправильное расширение файла.',
