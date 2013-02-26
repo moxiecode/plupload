@@ -446,7 +446,7 @@ $.widget("ui.plupload", {
 				.add('.plupload_started')
 					.removeClass('plupload_hidden');
 							
-			$('.plupload_upload_status', self.element).text(
+			$('.plupload_upload_status', self.element).html(
 				_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length)
 			);
 			
@@ -531,7 +531,7 @@ $.widget("ui.plupload", {
 				.html(plupload.formatSize(up.total.size))
 				.end()
 			.find('.plupload_upload_status')
-				.text(_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length));
+				.html(_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length));
 	},
 	
 	
@@ -586,9 +586,9 @@ $.widget("ui.plupload", {
 		});
 
 		if (up.total.queued === 0) {
-			$('.ui-button-text', self.browse_button).text(_('Add Files'));
+			$('.ui-button-text', self.browse_button).html(_('Add Files'));
 		} else {
-			$('.ui-button-text', self.browse_button).text(_('%d files queued').replace('%d', up.total.queued));
+			$('.ui-button-text', self.browse_button).html(_('%d files queued').replace('%d', up.total.queued));
 		}
 
 
@@ -644,7 +644,7 @@ $.widget("ui.plupload", {
 					// Rename file and glue extension back on
 					if (e.keyCode === 13) {
 						file.name = targetInput.val() + ext;
-						targetSpan.text(file.name);
+						targetSpan.html(file.name);
 					}
 					targetInput.blur();
 				}
