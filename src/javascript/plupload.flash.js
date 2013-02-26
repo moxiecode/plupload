@@ -186,7 +186,7 @@
 				
 				flashContainer = document.getElementById(up.id + '_flash_container');
 				if (flashContainer) {
-					container.removeChild(flashContainer);
+					flashContainer.parentNode.removeChild(flashContainer);
 				}
 			});
 

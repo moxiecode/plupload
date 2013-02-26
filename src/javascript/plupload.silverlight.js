@@ -436,7 +436,7 @@
 					
 					silverlightContainer = document.getElementById(up.id + '_silverlight_container');
 					if (silverlightContainer) {
-						container.removeChild(silverlightContainer);
+						silverlightContainer.parentNode.removeChild(silverlightContainer);
 					}
 				});
 

@@ -414,7 +414,7 @@
 					plupload.each(fileIds, function(id, i) {
 						form = getById('form_' + id);
 						if (form) {
-							container.removeChild(form);
+							form.parentNode.removeChild(form);
 						}
 					});
 					
