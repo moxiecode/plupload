@@ -485,7 +485,7 @@
 			}
 
 			// Use getBoundingClientRect on IE 6 and IE 7 but not on IE 8 in standards mode
-			if (node && node.getBoundingClientRect && ((navigator.userAgent.indexOf('MSIE') > 0) && (doc.documentMode < 8))) {
+			if (node && node.getBoundingClientRect && plupload.ua.ie && (!doc.documentMode || doc.documentMode < 8)) {
 				nodeRect = getIEPos(node);
 				rootRect = getIEPos(root);
 
