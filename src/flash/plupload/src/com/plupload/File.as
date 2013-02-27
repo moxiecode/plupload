@@ -429,7 +429,7 @@ package com.plupload {
 				else
 					url += '&';
 
-				url += "name=" + encodeURIComponent(this._settings["name"]);
+				url += "name=" + unescape(encodeURIComponent(this._settings["name"]));
 
 				if (this._chunking) {
 					url += "&chunk=" + this._chunk + "&chunks=" + this._chunks;
@@ -467,14 +467,14 @@ package com.plupload {
 					multipartBlob.writeUTFBytes(
 						dashdash + boundary + crlf +
 						'Content-Disposition: form-data; name="' + name + '"' + crlf + crlf +
-						this._postvars[name] + crlf
+						unescape(encodeURIComponent(this._postvars[name])) + crlf
 					);
 				}
 
 				// Add file header
 				multipartBlob.writeUTFBytes(
 					dashdash + boundary + crlf +
-					'Content-Disposition: form-data; name="' + this._fileDataName + '"; filename="' + this._fileName + '"' + crlf +
+					'Content-Disposition: form-data; name="' + this._fileDataName + '"; filename="' + unescape(encodeURIComponent(this._fileName)) + '"' + crlf +
 					'Content-Type: ' + this._mimeType + crlf + crlf
 				);
 
