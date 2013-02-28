@@ -1,3 +1,12 @@
+Version 1.5.6 (2013-02-28)
+	Fix regression: getPos() wrong on ie6/7.
+	HTML5: Send file as binary string if it was mangled, even if multipart is set to false.
+	HTML5: Add workaround Android browsers, that are unable to properly send blobs in FormData.
+	HTML4/Flash/Silverlight: Destroy fails to cleanup everything when container not defined.
+	UI, Queue: Use html() instead of text(), otherwise special characters fail to display properly.
+	UI, Queue: Use on() instead of delegate() or live(). Update examples to use jQuery 1.9.0 by default.
+	Queue: Blur rename input field when ESC is pressed.
+	Additional language packs: Slovak.
 Version 1.5.5 (2013-01-23)
 	UI Widget: Fix sortable feature, broken in jQuery UI 1.9.
 	Queue: Replace live() with delegate(), as live() was removed from jQuery 1.9.
