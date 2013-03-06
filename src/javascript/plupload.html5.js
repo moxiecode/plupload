@@ -12,6 +12,98 @@
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false, ArrayBuffer:false, Uint8Array:false, BlobBuilder:false, unescape:false */
 
 (function(window, document, plupload, undef) {
+	/**
+	 * Detect subsampling in loaded image.
+	 * In iOS, larger images than 2M pixels may be subsampled in rendering.
+	 */
+	function detectSubsampling(img) {
+		var iw = img.naturalWidth, ih = img.naturalHeight;
+		if (iw * ih > 1024 * 1024) { // subsampling may happen over megapixel image
+			var canvas = document.createElement('canvas');
+			canvas.width = canvas.height = 1;
+			var ctx = canvas.getContext('2d');
+			ctx.drawImage(img, -iw + 1, 0);
+			// subsampled image becomes half smaller in rendering size.
+			// check alpha channel value to confirm image is covering edge pixel or not.
+			// if alpha value is 0 image is not covering, hence subsampled.
+			return ctx.getImageData(0, 0, 1, 1).data[3] === 0;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Detecting vertical squash in loaded image.
+	 * Fixes a bug which squash image vertically while drawing into canvas for some images.
+	 */
+	function detectVerticalSquash(img, iw, ih) {
+		var canvas = document.createElement('canvas');
+		canvas.width = 1;
+		canvas.height = ih;
+		var ctx = canvas.getContext('2d');
+		ctx.drawImage(img, 0, 0);
+		var data = ctx.getImageData(0, 0, 1, ih).data;
+		// search image edge pixel position in case it is squashed vertically.
+		var sy = 0;
+		var ey = ih;
+		var py = ih;
+		while (py > sy) {
+			var alpha = data[(py - 1) * 4 + 3];
+			if (alpha === 0) {
+				ey = py;
+			} else {
+				sy = py;
+			}
+
+			py = (ey + sy) >> 1;
+		}
+
+		var ratio = (py / ih);
+		return (ratio === 0) ? 1 : ratio;
+	}
+
+	/**
+	* Rendering image element (with resizing) into the canvas element
+	*/
+	function renderImageToCanvas(img, canvas, options) {
+		var iw = img.naturalWidth, ih = img.naturalHeight;
+		var width = options.width, height = options.height;
+		var ctx = canvas.getContext('2d');
+		ctx.save();
+		var subsampled = detectSubsampling(img);
+		if (subsampled) {
+			iw /= 2;
+			ih /= 2;
+		}
+
+		var d = 1024; // size of tiling canvas
+		var tmpCanvas = document.createElement('canvas');
+		tmpCanvas.width = tmpCanvas.height = d;
+		var tmpCtx = tmpCanvas.getContext('2d');
+		var vertSquashRatio = detectVerticalSquash(img, iw, ih);
+		var sy = 0;
+		while (sy < ih) {
+			var sh = sy + d > ih ? ih - sy : d;
+			var sx = 0;
+			while (sx < iw) {
+				var sw = sx + d > iw ? iw - sx : d;
+				tmpCtx.clearRect(0, 0, d, d);
+				tmpCtx.drawImage(img, -sx, -sy);
+				var dx = (sx * width / iw) << 0;
+				var dw = Math.ceil(sw * width / iw);
+				var dy = (sy * height / ih / vertSquashRatio) << 0;
+				var dh = Math.ceil(sh * height / ih / vertSquashRatio);
+				ctx.drawImage(tmpCanvas, 0, 0, sw, sh, dx, dy, dw, dh);
+				sx += d;
+			}
+
+			sy += d;
+		}
+
+		ctx.restore();
+		tmpCanvas = tmpCtx = null;
+	}
+
 	var html5files = {}, // queue of original File objects
 		fakeSafariDragDrop;
 
@@ -54,7 +146,6 @@
 			canvas = document.createElement("canvas");
 			canvas.style.display = 'none';
 			document.body.appendChild(canvas);
-			context = canvas.getContext('2d');
 
 			// Load image
 			img = new Image();
@@ -91,7 +182,7 @@
 				// Scale image and canvas
 				canvas.width = width;
 				canvas.height = height;
-				context.drawImage(img, 0, 0, width, height);
+				renderImageToCanvas(img, canvas, { width: width, height: height });
 				
 				// Preserve JPEG headers
 				if (mime === 'image/jpeg') {
