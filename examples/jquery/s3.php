@@ -83,8 +83,16 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
 <link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
+
+<!-- production -->
 <script type="text/javascript" src="../../js/plupload.full.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
+
+<!-- debug 
+<script type="text/javascript" src="../../js/moxie.js"></script>
+<script type="text/javascript" src="../../js/plupload.js"></script>
+<script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
+-->
 
 </head>
 <body style="font:13px Verdana;background:url(../bg.jpg);color:#333">
