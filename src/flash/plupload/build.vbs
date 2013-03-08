@@ -14,7 +14,7 @@ strWorkspace = Mid(strFolder,1,(Len(strFolder) - 19)) 'C:\plupload-1.x (Removed 
 comspec = objWSShell.ExpandEnvironmentStrings("%comspec%")
 
 Set objFile = objShell.BrowseForFolder(0, "Please select the directory that you have extracted Flex SDK:", &H0001) 'Change to &H4000 to show files too
-  
+	
 If IsValue(objFile) Then
 	 strPathToExileFile = objFile.self.Path
 	 
@@ -44,7 +44,7 @@ strExec = Quotes(strPathToExileFile & "\bin\mxmlc.exe") &_
 
 '1: Show prompt, True: Wait to finish to continue processing
 'strErrorCode = 
-objWSShell.Run(Quotes(strFolder & "\exec.bat") & " " & Quotes(strPathToExileFile),1,True)
+objWSShell.Run Quotes(strFolder & "\exec.bat") & " " & Quotes(strPathToExileFile),1,True
 
 'If strErrorCode = 0 Then
 If objFSO.FileExists(strWorkspace & "\js\plupload.flash.swf") Then

@@ -335,7 +335,7 @@
 		},
 
 		/**
-		 * Adds a specific upload runtime like for example flash or gears.
+		 * Adds a specific upload runtime like for example flash or silverlight.
 		 *
 		 * @method addRuntime
 		 * @param {String} name Runtime name for example flash.
@@ -865,7 +865,7 @@
 	 *
 	 * @example
 	 * var uploader = new plupload.Uploader({
-	 *     runtimes : 'gears,html5,flash',
+	 *     runtimes : 'html5,flash',
 	 *     browse_button : 'button_id'
 	 * });
 	 *

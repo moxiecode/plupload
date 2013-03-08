@@ -4,7 +4,7 @@ Plupload - Cross browser and platform uploader API
 What is Plupload
 -----------------
 Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering,
-request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight, Flash, Gears and BrowserPlus.
+request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and Flash.
 
 What you need to build Plupload
 -------------------------------
@@ -31,7 +31,7 @@ Will produce release packages. The release packages will be placed in the tmp di
 
 How to build Flash runtime
 ---------------------------
-The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/devnet/flex/flex-sdk-download.html](http://www.adobe.com/devnet/flex/flex-sdk-download.html)
+The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/products/flex/flexdownloads/](http://www.adobe.com/products/flex/flexdownloads/)
 
 How to build Silverlight runtime
 ---------------------------------

@@ -84,18 +84,16 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 	}
 </style>
 
-<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
-<script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/themes/base/jquery-ui.css" type="text/css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script src=" https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
 
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
 <link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
 <script type="text/javascript" src="../../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.gears.js"></script>
 <script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
 <script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
 <script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
 <script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
@@ -107,7 +105,7 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <h1>Plupload to Amazon S3 Example</h1>
 
 <div id="uploader">
-    <p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+    <p>You browser doesn't have Flash, Silverlight or HTML5 support.</p>
 </div>
 
 <script type="text/javascript">

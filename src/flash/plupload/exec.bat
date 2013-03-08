@@ -4,7 +4,7 @@ REM flex_dir received by VBScript
 Set flex_dir=%~1
 
 if [%flex_dir%] EQU [] (
-  echo Please do not call this file directly! Use build.vbs
+	echo Please do not call this file directly! Use build.vbs
 	pause
 	exit
 )
