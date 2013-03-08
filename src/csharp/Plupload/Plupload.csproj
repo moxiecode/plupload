@@ -14,7 +14,7 @@
     <ProjectGuid>{95F0DEE8-DE7A-46C5-9DCC-0570B0FC4643}</ProjectGuid>
     <OutputType>Library</OutputType>
     <NoStdLib>true</NoStdLib>
-    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <StartPageUrl>Default.html</StartPageUrl>
     <XapOutputs>true</XapOutputs>
