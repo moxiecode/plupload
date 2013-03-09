@@ -4,7 +4,7 @@
 <title>Core API tests</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript" src="qunit/jquery.simulate.js"></script>
 <script type="text/javascript" src="qunit/qunit.js"></script>
 <script type="text/javascript" src="qunit/runner.js"></script>
@@ -20,7 +20,7 @@ module("Core API");
 test('cleanName', function() {
 	expect(1);
 
-	equals(plupload.cleanName('a\300\340\307\347\310-\313\350\314\317\354\321\361\322\362\331\371 b'), 'aAaCcE-EeIIiNnOoUu_b');
+	equal(plupload.cleanName('a\300\340\307\347\310-\313\350\314\317\354\321\361\322\362\331\371 b'), 'aAaCcE-EeIIiNnOoUu_b');
 });
 
 test('extend', function() {
@@ -33,22 +33,22 @@ test('extend', function() {
 test('parseSize', function() {
 	expect(7);
 	
-	equals(plupload.parseSize(1024), 1024, 1024);
-	equals(plupload.parseSize('1024k'), 1048576, '"1024k"');
-	equals(plupload.parseSize('1024kb'), 1048576, '"1024kb"');
-	equals(plupload.parseSize('1024Kb'), 1048576, '"1024Kb"');
-	equals(plupload.parseSize('2mb'), 2097152, '"2mb"');
-	equals(plupload.parseSize('4gb'), 4294967296, '"4gb"');	
-  equals(plupload.parseSize('4b'), 4, 4);
+	equal(plupload.parseSize(1024), 1024, 1024);
+	equal(plupload.parseSize('1024k'), 1048576, '"1024k"');
+	equal(plupload.parseSize('1024kb'), 1048576, '"1024kb"');
+	equal(plupload.parseSize('1024Kb'), 1048576, '"1024Kb"');
+	equal(plupload.parseSize('2mb'), 2097152, '"2mb"');
+	equal(plupload.parseSize('4gb'), 4294967296, '"4gb"');	
+  	equal(plupload.parseSize('4b'), 4, 4);
 });
 
 test('formatSize', function() {
 	var undef;
 	//expect(6);
 	
-	equals(plupload.formatSize(undef), 'N/A', 'undefined');
-	equals(plupload.formatSize('abcdefg'), 'N/A', '"abcdefg"');
-	equals(plupload.formatSize('4294967296'), '4 GB', '"4294967296"');
+	equal(plupload.formatSize(undef), 'N/A', 'undefined');
+	equal(plupload.formatSize('abcdefg'), 'N/A', '"abcdefg"');
+	equal(plupload.formatSize('4294967296'), '4 GB', '"4294967296"');
 		
 });
 
