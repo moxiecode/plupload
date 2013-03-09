@@ -31,7 +31,7 @@ Will produce release packages. The release packages will be placed in the tmp di
 
 How to build Flash runtime
 ---------------------------
-The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/products/flex/flexdownloads/](http://www.adobe.com/products/flex/flexdownloads/)
+The Flash runtime uses a .swf file that can be built using the Flex SDK. This SDK can be downloaded from Adobe. [http://www.adobe.com/devnet/flex/flex-sdk-download.html](http://www.adobe.com/devnet/flex/flex-sdk-download.html)
 
 How to build Silverlight runtime
 ---------------------------------
