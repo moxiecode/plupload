@@ -91,13 +91,12 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <!-- Load plupload and all it's runtimes and finally the UI widget -->
 <link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
-<script type="text/javascript" src="../../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
+<script type="text/javascript" src="../../js/plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.silverlight.js"></script>
+<script type="text/javascript" src="../../js/plupload.flash.js"></script>
+<script type="text/javascript" src="../../js/plupload.html4.js"></script>
+<script type="text/javascript" src="../../js/plupload.html5.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
-<!--<script type="text/javascript" src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script>-->
 
 </head>
 <body>
