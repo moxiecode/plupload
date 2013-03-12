@@ -523,8 +523,8 @@
 		 */
 		getSize : function(node) {
 			return {
-				w : node.offsetWidth || node.clientWidth,
-				h : node.offsetHeight || node.clientHeight
+				w : node.style.width.substring(0,node.style.width.length - 2) || node.offsetWidth || node.clientWidth,
+				h : node.style.height.substring(0,node.style.height.length - 2) || node.offsetHeight || node.clientHeight
 			};
 		},
 
