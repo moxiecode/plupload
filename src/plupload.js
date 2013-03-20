@@ -630,6 +630,13 @@ plupload.Uploader = function(settings) {
 		urlstream_upload: false // forces Flash runtime into the URLStream mode
 	}, settings);
 
+	// Resize defaults
+	if (settings.resize) {
+		settings.resize = plupload.extend({
+			preserve_headers: true,
+			crop: false
+		}, settings.resize);
+	}
 
 	// Required features
 	feature2cap = {
@@ -902,11 +909,12 @@ plupload.Uploader = function(settings) {
 
 		try {
 			img.onload = function() {
-				img.resize(params.width, params.height, params.crop);
+				img.resize(params.width, params.height, params.crop, params.preserve_headers);
 			};
 
 			img.onresize = function() {
-				cb(img.getAsBlob(blob.type, params.quality));
+				cb(this.getAsBlob(blob.type, params.quality));
+				this.destroy();
 			};
 
 			img.onerror = function() {
@@ -1155,7 +1163,7 @@ plupload.Uploader = function(settings) {
 						chunkBlob = blob;
 					}
 						
-					xhr = new o.XMLHttpRequest;
+					xhr = new o.XMLHttpRequest();
 													
 					// Do we have upload progress support
 					if (xhr.upload) {
@@ -1174,9 +1182,7 @@ plupload.Uploader = function(settings) {
 
 						// Handle chunk response
 						if (curChunkSize < blob.size) {
-							if (chunkBlob.isDetached()) { // Dispose if standalone chunk
-								chunkBlob.destroy(); 
-							}
+							chunkBlob.destroy(); 
 
 							offset += curChunkSize;
 							file.loaded = Math.min(offset, blob.size);
@@ -1199,6 +1205,12 @@ plupload.Uploader = function(settings) {
 						
 						// Check if file is uploaded
 						if (!offset || offset >= blob.size) {
+							// If file was modified, destory the copy
+							if (file.size != file.origSize) {
+								blob.destroy();
+								blob = null;
+							}
+
 							file.status = plupload.DONE;
 
 							up.trigger('FileUploaded', file, {
@@ -1216,7 +1228,8 @@ plupload.Uploader = function(settings) {
 					};
 
 					xhr.onloadend = function() {
-						this.unbindAll();
+						this.destroy();
+						xhr = null;
 					};						
 
 					// Build multipart request
