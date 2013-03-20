@@ -228,7 +228,7 @@
 										
 					// Safari on Windows will add first file from dragged set multiple times
 					// @see: https://bugs.webkit.org/show_bug.cgi?id=37957
-					if (fileNames[file.name]) {
+					if (fileNames[file.name] && plupload.ua.safari && plupload.ua.windows) {
 						continue;
 					}
 					fileNames[file.name] = true;
