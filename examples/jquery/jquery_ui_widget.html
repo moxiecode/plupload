@@ -11,21 +11,18 @@
 		background:url(../bg.jpg);
 	}
 </style>
-<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
-<link rel="stylesheet" href="../../src/javascript/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/themes/base/jquery-ui.css" type="text/css" />
+<link rel="stylesheet" href="../../js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
 
-<script type="text/javascript" src="../../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.gears.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
-<script type="text/javascript" src="../../src/javascript/jquery.ui.plupload/jquery.ui.plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.silverlight.js"></script>
+<script type="text/javascript" src="../../js/plupload.flash.js"></script>
+<script type="text/javascript" src="../../js/plupload.html4.js"></script>
+<script type="text/javascript" src="../../js/plupload.html5.js"></script>
+<script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 
 </head>
 <body>
@@ -36,7 +33,7 @@
 
 <form  method="post" action="../dump.php">
 	<div id="uploader">
-		<p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+		<p>You browser doesn't have Flash, Silverlight or HTML5 support.</p>
 	</div>
 </form>
 <script type="text/javascript">
@@ -44,7 +41,7 @@
 $(function() {
 	$("#uploader").plupload({
 		// General settings
-		runtimes : 'flash,html5,browserplus,silverlight,gears,html4',
+		runtimes : 'flash,html5,silverlight,html4',
 		url : '../upload.php',
 		max_file_size : '1000mb',
 		max_file_count: 20, // user can add no more then 20 files at a time

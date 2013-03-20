@@ -14,17 +14,11 @@
 	}
 </style>
 
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
-
-<script type="text/javascript" src="../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.gears.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.browserplus.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
-
-<!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
+<script type="text/javascript" src="../js/plupload.js"></script>
+<script type="text/javascript" src="../js/plupload.silverlight.js"></script>
+<script type="text/javascript" src="../js/plupload.flash.js"></script>
+<script type="text/javascript" src="../js/plupload.html4.js"></script>
+<script type="text/javascript" src="../js/plupload.html5.js"></script>
 
 </head>
 <body>
@@ -49,7 +43,7 @@ function $(id) {
 
 
 var uploader = new plupload.Uploader({
-	runtimes : 'gears,html5,flash,silverlight,browserplus',
+	runtimes : 'html5,flash,silverlight',
 	browse_button : 'pickfiles',
 	container: 'container',
 	max_file_size : '10mb',

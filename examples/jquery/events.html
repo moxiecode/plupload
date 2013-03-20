@@ -13,16 +13,13 @@
 	}
 </style>
 
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-<script type="text/javascript" src="../../src/javascript/plupload.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.gears.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.silverlight.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.flash.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.browserplus.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html4.js"></script>
-<script type="text/javascript" src="../../src/javascript/plupload.html5.js"></script>
+<script type="text/javascript" src="../../js/plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.silverlight.js"></script>
+<script type="text/javascript" src="../../js/plupload.flash.js"></script>
+<script type="text/javascript" src="../../js/plupload.html4.js"></script>
+<script type="text/javascript" src="../../js/plupload.html5.js"></script>
 <script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 
 </head>
@@ -88,7 +85,7 @@ $(function() {
 
 	$("#uploader").pluploadQueue({
 		// General settings
-		runtimes: 'html5,gears,browserplus,silverlight,flash,html4',
+		runtimes: 'html5,silverlight,flash,html4',
 		url: '../upload.php',
 		max_file_size: '10mb',
 		chunk_size: '1mb',
