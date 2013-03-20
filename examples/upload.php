@@ -34,10 +34,10 @@ if (!file_exists($targetDir)) {
 	@mkdir($targetDir);
 }
 
-$fileName = isset($_REQUEST["name"]) ? $_REQUEST["name"] : '';
+$fileName = isset($_REQUEST["name"]) ? $_REQUEST["name"] : uniqid("file_");
 $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
 
-$chunking = is_numeric($_REQUEST["offset"]) && is_numeric($_REQUEST["total"]);
+$chunking = isset($_REQUEST["offset"]) && isset($_REQUEST["total"]);
 
 
 // Remove old temp files	
