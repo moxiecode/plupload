@@ -1436,7 +1436,7 @@ plupload.Uploader = function(settings) {
 			function resolveFile(file) {
 				var type = o.typeOf(file);
 				
-				if (file instanceof o.File || file instanceof o.Blob) {
+				if (file instanceof o.Blob) {
 					// final step for other condition branches
 					files.push(file);
 				} else if (type === 'file') {
@@ -1509,6 +1509,11 @@ plupload.Uploader = function(settings) {
 
 			this.trigger("FilesRemoved", removed);
 			this.trigger("QueueChanged");
+
+			// Dispose any resources allocated by those files
+			plupload.each(removed, function(file) {
+				file.destroy(); 
+			});
 
 			return removed;
 		},
@@ -1715,8 +1720,15 @@ plupload.File = (function() {
 				if (!filepool[this.id]) {
 					return null;	
 				}
-				
 				return filepool[this.id];
+			},
+
+			destroy: function() {
+				var src = this.getSource();
+				if (src) {
+					src.destroy();
+					delete filepool[this.id];
+				}
 			}
 		});
 		
