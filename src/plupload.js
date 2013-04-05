@@ -1717,11 +1717,23 @@ plupload.File = (function() {
 			 */
 			status: 0,
 
+			/**
+			 * Returns native window.File object, when it's available.
+			 *
+			 * @method getNative
+			 * @return {window.File} or null, if plupload.File is of different origin
+			 */
 			getNative: function() {
 				var file = this.getSource().getSource();
 				return o.inArray(o.typeOf(file), ['blob', 'file']) !== -1 ? file : null;
 			},
 			
+			/**
+			 * Returns mOxie.File - unified wrapper object that can be used across runtimes.
+			 *
+			 * @method getSource
+			 * @return {mOxie.File} or null
+			 */
 			getSource: function() {
 				if (!filepool[this.id]) {
 					return null;	
@@ -1729,6 +1741,11 @@ plupload.File = (function() {
 				return filepool[this.id];
 			},
 
+			/**
+			 * Destroys plupload.File object.
+			 *
+			 * @method destroy
+			 */
 			destroy: function() {
 				var src = this.getSource();
 				if (src) {
