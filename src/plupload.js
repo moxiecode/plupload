@@ -1715,6 +1715,11 @@ plupload.File = (function() {
 			 * @see plupload
 			 */
 			status: 0,
+
+			getNative: function() {
+				var file = this.getSource().getSource();
+				return o.inArray(o.typeOf(file), ['blob', 'file']) !== -1 ? file : null;
+			},
 			
 			getSource: function() {
 				if (!filepool[this.id]) {
