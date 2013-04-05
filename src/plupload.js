@@ -1437,8 +1437,9 @@ plupload.Uploader = function(settings) {
 				var type = o.typeOf(file);
 				
 				if (file instanceof o.Blob) {
-					// final step for other condition branches
-					files.push(file);
+					files.push(file); // final step for other condition branches
+				} else if (file instanceof plupload.File) {
+					files.push(file.getSource());
 				} else if (type === 'file') {
 					// this process is asyncronous, so we queue it to be handled in series
 					queue.push(function(cb) {
