@@ -12,6 +12,9 @@
 /*global plupload:false, File:false, window:false, atob:false, FormData:false, FileReader:false, ArrayBuffer:false, Uint8Array:false, BlobBuilder:false, unescape:false */
 
 (function(window, document, plupload, undef) {
+	var html5files = {}, // queue of original File objects
+		fakeSafariDragDrop;
+
 	/**
 	 * Detect subsampling in loaded image.
 	 * In iOS, larger images than 2M pixels may be subsampled in rendering.
@@ -103,9 +106,6 @@
 		ctx.restore();
 		tmpCanvas = tmpCtx = null;
 	}
-
-	var html5files = {}, // queue of original File objects
-		fakeSafariDragDrop;
 
 	function readFileAsDataURL(file, callback) {
 		var reader;
