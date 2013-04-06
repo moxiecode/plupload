@@ -24,8 +24,6 @@
 <script type="text/javascript" src="../src/javascript/plupload.html4.js"></script>
 <script type="text/javascript" src="../src/javascript/plupload.html5.js"></script>
 
-<!-- <script type="text/javascript"  src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script> -->
-
 </head>
 <body>
 
@@ -67,6 +65,8 @@ uploader.bind('Init', function(up, params) {
 	$('filelist').innerHTML = "<div>Current runtime: " + params.runtime + "</div>";
 });
 
+uploader.init();
+
 uploader.bind('FilesAdded', function(up, files) {
 	for (var i in files) {
 		$('filelist').innerHTML += '<div id="' + files[i].id + '">' + files[i].name + ' (' + plupload.formatSize(files[i].size) + ') <b></b></div>';
@@ -82,7 +82,7 @@ $('uploadfiles').onclick = function() {
 	return false;
 };
 
-uploader.init();
+
 </script>
 </body>
 </html>

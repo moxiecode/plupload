@@ -107,7 +107,7 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 <h1>Plupload to Amazon S3 Example</h1>
 
 <div id="uploader">
-    <p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+    <p>Your browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
 </div>
 
 <script type="text/javascript">
