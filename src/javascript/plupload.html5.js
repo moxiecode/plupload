@@ -529,8 +529,7 @@
 				}	
 
 				function sendBinaryBlob(blob) {
-					var chunk = 0, loaded = 0,
-						fr = ("FileReader" in window) ? new FileReader : null;
+					var chunk = 0, loaded = 0;
 						
 
 					function uploadNextChunk() {
@@ -738,16 +737,19 @@
 							chunkBlob = blob;
 						}
 						
-						// workaround Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
-						if (up.settings.multipart && features.multipart && typeof(chunkBlob) !== 'string' && fr && features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) { // Gecko 2,5,6
-							fr.onload = function() {
-								prepareAndSend(fr.result);
-							}
-							fr.readAsBinaryString(chunkBlob);
+						// workaround for Android and Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
+						if (up.settings.multipart && features.multipart && typeof(chunkBlob) !== 'string' && window.FileReader && features.cantSendBlobInFormData && features.chunks && up.settings.chunk_size) { // Gecko 2,5,6
+							(function() {
+								var fr = new FileReader(); // we need to recreate FileReader object in Android, otherwise it hangs
+								fr.onload = function() {
+									prepareAndSend(fr.result);
+									fr = null; // maybe give a hand to GC (Gecko had problems with this)
+								}
+								fr.readAsBinaryString(chunkBlob);
+							}());
 						} else {
 							prepareAndSend(chunkBlob);
-						}
-							
+						}	
 					}
 
 					// Start uploading chunks
