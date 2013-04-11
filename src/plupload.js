@@ -432,23 +432,28 @@ var plupload = {
 		if (size === undef || /\D/.test(size)) {
 			return plupload.translate('N/A');
 		}
+
+		// TB
+		if (size > 1099511627776) {
+			return Math.round(size / 1099511627776, 1) + " " + plupload.translate('tb');
+		}
 		
 		// GB
 		if (size > 1073741824) {
-			return Math.round(size / 1073741824, 1) + " GB";
+			return Math.round(size / 1073741824, 1) + " " + plupload.translate('gb');
 		}
 
 		// MB
 		if (size > 1048576) {
-			return Math.round(size / 1048576, 1) + " MB";
+			return Math.round(size / 1048576, 1) + " " + plupload.translate('mb');
 		}
 
 		// KB
 		if (size > 1024) {
-			return Math.round(size / 1024, 1) + " KB";
+			return Math.round(size / 1024, 1) + " " + plupload.translate('kb');
 		}
 
-		return size + " b";
+		return size + " " + plupload.translate('b');
 	},
 
 
