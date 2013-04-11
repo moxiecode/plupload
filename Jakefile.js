@@ -1,5 +1,4 @@
 var fs = require("fs");
-var wrench = require("wrench");
 var path = require("path");
 var exec = require('child_process').exec;
 var tools = require('./build/BuildTools');
@@ -45,7 +44,7 @@ task("minifyjs", ["moxie"], function (params) {
 	
 	// Clear previous versions
 	if (path.existsSync(targetDir)) {
-		tools.rmDir(targetDir);
+		jake.rmRf(targetDir);
 	}
 	fs.mkdirSync(targetDir, 0755);
 
@@ -59,7 +58,7 @@ task("minifyjs", ["moxie"], function (params) {
 	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
 
 	// Copy UI Plupload
-	wrench.copyDirSyncRecursive("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
+	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
 
 	uglify([
 		'jquery.ui.plupload.js'
@@ -68,7 +67,7 @@ task("minifyjs", ["moxie"], function (params) {
 	});
 
 	// Copy Queue Plupload
-	wrench.copyDirSyncRecursive("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
+	jake.cpR("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
 
 	uglify([
 		'jquery.plupload.queue.js'
@@ -121,7 +120,7 @@ task("package", [], function (params) {
 
 	var tmpDir = "./tmp";
 	if (path.existsSync(tmpDir)) {
-		wrench.rmdirSyncRecursive(tmpDir);
+		jake.rmRf(tmpDir);
 	}
 	fs.mkdirSync(tmpDir, 0755);
 
