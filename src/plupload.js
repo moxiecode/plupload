@@ -1251,6 +1251,7 @@ plupload.Uploader = function(settings) {
 						});
 
 						// Add file and send it
+						chunkBlob.name = file.name
 						formData.append(up.settings.file_data_name, chunkBlob);								
 						xhr.send(formData, {
 							runtime_order: up.settings.runtimes,
