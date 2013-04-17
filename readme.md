@@ -13,6 +13,7 @@ Historically Plupload comes from dark and hostile age of no HTML5, hence all the
   * Queue Widget
 * [Building Instructions](#build)
 * Getting Started
+* [Frequently-Asked-Questions](/moxiecode/plupload/wiki/Frequently-Asked-Questions)
 * [Support](#support)
 * [Contributing](#contribute)
 * [Contact Us](http://www.moxiecode.com/contact.php)
