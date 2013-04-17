@@ -8,12 +8,12 @@ Historically Plupload comes from dark and hostile age of no HTML5, hence all the
 * [Backstory](#backstory)
 * [Structure](#structure)
   * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie)
-  * [Plupload API](API)
+  * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
   * UI Widget
   * Queue Widget
 * [Building Instructions](#build)
 * Getting Started
-* [Frequently Asked Questions](Frequently-Asked-Questions)
+* [Frequently Asked Questions](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
 * [Support](#support)
 * [Contributing](#contribute)
 * [Contact Us](http://www.moxiecode.com/contact.php)
