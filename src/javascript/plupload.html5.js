@@ -643,6 +643,10 @@
 								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = '';
 								
 							xhr = new XMLHttpRequest;
+                            if (xhr.withCredentials !== undefined) {
+                                // https://developer.mozilla.org/en-US/docs/HTTP/Access_control_CORS#Requests_with_credentials
+                                xhr.withCredentials = true;
+                            }                            
 															
 							// Do we have upload progress support
 							if (xhr.upload) {
