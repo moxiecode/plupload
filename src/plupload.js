@@ -765,22 +765,33 @@ plupload.Uploader = function(settings) {
 
 	function initControls() {
 		var self = this, initialized = 0;
+		
+		// common settings
+		var options = { 
+			accept: settings.filters,
+			runtime_order: settings.runtimes,
+			required_caps: required_caps,
+			swf_url: settings.flash_swf_url,
+			xap_url: settings.silverlight_xap_url
+		};
+
+		// add runtime specific options if any
+		plupload.each(settings.runtimes.split(/\s*,\s*/), function(runtime) {
+			if (settings[runtime]) {
+				options[runtime] = settings[runtime];
+			}
+		});
 
 		o.inSeries([
 			function(cb) {
 				// Initialize file dialog trigger
 				if (settings.browse_button) {
-					fileInput = new o.FileInput({
-						accept: settings.filters,
-						runtime_order: settings.runtimes,
+					fileInput = new o.FileInput(plupload.extend({}, options, {
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
 						container: settings.container,
-						browse_button: settings.browse_button,
-						required_caps: required_caps,
-						swf_url: settings.flash_swf_url,
-						xap_url: settings.silverlight_xap_url
-					});
+						browse_button: settings.browse_button
+					}));
 
 					fileInput.onready = function() {
 						var info = o.Runtime.getInfo(this.ruid);
@@ -838,14 +849,9 @@ plupload.Uploader = function(settings) {
 			function(cb) {
 				// Initialize drag/drop interface if requested
 				if (settings.drop_element) {
-					fileDrop = new o.FileDrop({
-						drop_zone: settings.drop_element,
-						accept: settings.filters,
-						runtime_order: settings.runtimes,
-						required_caps: required_caps,
-						swf_url: settings.flash_swf_url,
-						xap_url: settings.silverlight_xap_url
-					});
+					fileDrop = new o.FileDrop(plupload.extend({}, options, {
+						drop_zone: settings.drop_element
+					}));
 
 					fileDrop.onready = function() {
 						var info = o.Runtime.getInfo(this.ruid);
