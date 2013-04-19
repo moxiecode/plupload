@@ -25,7 +25,7 @@ is built with the future of HTML5 in mind.
 <a name="backstory" />
 ### Backstory
 
-Plupload started in a time when uploading a file in a responsive and customizable manner was real pain. 
+Plupload started in a time when uploading a file in a responsive and customizable manner was a real pain. 
 Internally, browsers only had the `input[type="file"]` element. It that was ugly and clunky at the same time. 
 One couldn't even change it's visuals, without hiding it and coding another one on top of it from scratch. 
 And then there was no progress indication for the upload process... Sounds pretty crazy today.
