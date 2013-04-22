@@ -85,8 +85,8 @@ Plupload includes it as a sub-module and doesn't contain the source. You should 
 and you still require the source, you will need to manually download it from 
 [the repository](https://github.com/moxiecode/moxie) and extract to the above folder.
 
-*Note:* currently for unknown reason, locally installed Node.js modules on Windows, may not be automatically 
-added to the system PATH. So if `jake` commands below are not recognized you will need to add them manually:
+*Note:* Currently, for an unknown reason, locally installed Node.js modules on Windows, may not be automatically 
+added to the system PATH. So, if `jake` commands below are not recognized you will need to add them manually:
 
 ```
 set PATH=%PATH%;%CD%\node_modules\.bin\
