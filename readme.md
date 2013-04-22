@@ -3,7 +3,7 @@
 Plupload is a cross-browser multi-runtime file uploading API. Basically, a set of tools that will help you to 
 build a reliable and visually appealing file uploader in minutes.
 
-Historically, Plupload comes from dark and hostile age of no HTML5, hence all the alternative fallbacks, 
+Historically, Plupload comes from a dark and hostile age of no HTML5, hence all the alternative fallbacks, 
 like Flash, Silverlight and Java (still in development). It is meant to provide an API, that 
 will work anywhere and in any case, in one way or another. While having very solid fallbacks, Plupload 
 is built with the future of HTML5 in mind.
