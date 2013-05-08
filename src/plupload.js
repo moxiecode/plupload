@@ -913,7 +913,7 @@ plupload.Uploader = function(settings) {
 
 		try {
 			img.onload = function() {
-				img.resize(params.width, params.height, params.crop, params.preserve_headers);
+				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
 			};
 
 			img.onresize = function() {
