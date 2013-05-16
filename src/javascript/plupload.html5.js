@@ -657,14 +657,17 @@
 																	
 								if (xhr.readyState == 4 && up.state !== plupload.STOPPED) {
 									// Getting the HTTP status might fail on some Gecko versions
+									var errorStatus = false;
 									try {
 										httpStatus = xhr.status;
+										// Per http://www.w3.org/TR/XMLHttpRequest/#the-status-attribute the reported status is 0 in case of network errors.
+										errorStatus = (httpStatus===0);
 									} catch (ex) {
 										httpStatus = 0;
 									}
 	
 									// Is error status
-									if (httpStatus >= 400) {
+									if (httpStatus >= 400 || errorStatus) {
 										up.trigger('Error', {
 											code : plupload.HTTP_ERROR,
 											message : plupload.translate('HTTP Error.'),
