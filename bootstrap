@@ -1,0 +1,13 @@
+console.info("\nThis may take several minutes...\n");
+
+require("child_process").exec(
+	"npm install jake jshint node-native-zip uglify-js@1 yuidocjs amdlc coverjs", 
+	function(error, stdout, stderr) {
+		if (error) {
+			console.log(stderr);
+			process.exit(1);
+		}
+		console.info("All done!\n");
+		process.exit(0);
+	}
+);

@@ -77,20 +77,9 @@ First of all, if you want to build custom Plupload packages you will require [No
 as this is our build environment of choice. Node.js binaries (as well as Source)
 [are available](http://nodejs.org/download/) for all major operating systems.
 
-In addtion to Node.js some additional modules will be required. Change your working directory to where you
-have extracted Plupload repo and run: `node bootstrap`. All dependencies will be downloaded and installed 
-automatically. Bootstrap will also try to populate `src/moxie/` folder with the actual mOxie source, as 
-Plupload includes it as a sub-module and doesn't contain the source. You should have 
-[git](http://git-scm.com/) installed on your system for this operation to succeed. If you don't have one 
-and you still require the source, you will need to manually download it from 
-[the repository](https://github.com/moxiecode/moxie) and extract to the above folder.
+In addtion to Node.js some additional modules will be required. Change your working directory to where you have extracted Plupload repo and run: `node bootstrap` You will need to manually download `moxie` from [the repository](https://github.com/moxiecode/moxie) and extract to the above folder.
 
-*Note:* Currently, for an unknown reason, locally installed Node.js modules on Windows, may not be automatically 
-added to the system PATH. So, if `jake` commands below are not recognized you will need to add them manually:
-
-```
-set PATH=%PATH%;%CD%\node_modules\.bin\
-``` 
+*Note:* In case `jake` is recognized by bash, do install `jake` globally by executing command `npm -g install jake`.
 
 <a name="support" />
 ### Support
