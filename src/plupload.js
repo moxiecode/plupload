@@ -1509,9 +1509,7 @@ plupload.Uploader = function(settings) {
 		 * @param {plupload.File} file File to remove from queue.
 		 */
 		removeFile : function(file) {
-			var i;
-
-			for (i = files.length - 1; i >= 0; i--) {
+			for (var i = files.length - 1; i >= 0; i--) {
 				if (files[i].id === file.id) {
 					return this.splice(i, 1)[0];
 				}
@@ -1527,10 +1525,8 @@ plupload.Uploader = function(settings) {
 		 * @return {Array} Array of files that was removed.
 		 */
 		splice : function(start, length) {
-			var removed;
-
 			// Splice and trigger events
-			removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
+			var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
 			this.trigger("FilesRemoved", removed);
 			this.trigger("QueueChanged");
@@ -1651,6 +1647,15 @@ plupload.Uploader = function(settings) {
 		 */
 		destroy : function() {
 			this.stop();
+
+			if (fileInput) {
+				fileInput.destroy();
+			}
+
+			if (fileDrop) {
+				fileDrop.destroy();
+			}
+
 			this.trigger('Destroy');
 
 			// Clean-up after uploader itself
