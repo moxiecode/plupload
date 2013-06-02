@@ -1,0 +1,20 @@
+{
+    "name": "bootstrap",
+    "version": "0.0.1",
+    "private": true,
+    "engines": {
+        "node" : ">=0.8.0"
+    },
+    "dependencies": {
+        "jake": "0.5.x",
+        "jshint": "1.1.x",
+        "moxie-zip": "0.0.x",
+        "yuidocjs": "0.3.x"
+    },
+    "devDependencies": {
+        "uglify-js": "1.x",
+        "amdlc": "0.1.x",
+        "coverjs": "0.0.x",
+        "bunyip": "https://github.com/jayarjo/bunyip/tarball/master"
+    }
+}
