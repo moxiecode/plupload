@@ -7,6 +7,7 @@ var less = tools.less;
 var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
 var zip = tools.zip;
+var utils = require('./build/utils');
 
 var wiki = require('./build/wiki');
 
@@ -126,24 +127,30 @@ task("package", [], function (params) {
 
 
 	// User package
-	zip([
-		"js",
-		"examples",
-		["readme.md", "readme.txt"],
-		"changelog.txt",
-		"license.txt"
-	], path.join(tmpDir, "plupload_" + releaseInfo.fileVersion + ".zip"));
-
-	// Development package
-	zip([
-		"src",
-		"js",
-		"examples",
-		"tests",
-		"build",
-		"Jakefile.js",		
-		["readme.md", "readme.txt"],
-		"changelog.txt",
-		"license.txt"
-	], path.join(tmpDir, "plupload_" + releaseInfo.fileVersion + "_dev.zip"));
-});
+	utils.inSeries([
+		function(cb) {
+			zip([
+				"js",
+				"examples",
+				["readme.md", "readme.txt"],
+				"changelog.txt",
+				"license.txt"
+			], path.join(tmpDir, "plupload_" + releaseInfo.fileVersion + ".zip"), cb);
+		},
+		function(cb) {
+			zip([
+				"src",
+				"js",
+				"examples",
+				//"tests",
+				"build",
+				"Jakefile.js",		
+				["readme.md", "readme.txt"],
+				"changelog.txt",
+				"license.txt"
+			], path.join(tmpDir, "plupload_" + releaseInfo.fileVersion + "_dev.zip"), cb);
+		}
+	], function() {
+		complete();
+	});
+}, true);

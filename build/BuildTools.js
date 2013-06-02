@@ -223,13 +223,13 @@ exports.jshint = function (sourceDir, options) {
 	process(sourceDir);
 }
 
-exports.zip = function (sourceFiles, zipFile, options) {
-	var zip = require("node-native-zip");
-	var archive = new zip();
+exports.zip = function (sourceFiles, zipFile, cb) {
+	var ZipWriter = require("moxie-zip").ZipWriter;
+	var zip = new ZipWriter();
 
 	var files = [];
 
-	function process(filePath, zipFilePath) {
+	function processFile(filePath, zipFilePath) {
 		var stat = fs.statSync(filePath);
 
 		zipFilePath = zipFilePath || filePath;
@@ -239,27 +239,26 @@ exports.zip = function (sourceFiles, zipFile, options) {
 		} else if (stat.isDirectory()) {
 			fs.readdirSync(filePath).forEach(function(fileName) {
 				if (/^[^\.]/.test(fileName)) {
-					process(path.join(filePath, fileName), path.join(zipFilePath, fileName));
+					processFile(path.join(filePath, fileName), path.join(zipFilePath, fileName));
 				}
 			});
 		}
 	}
 
-	options = extend({
-	}, options);
-
 	sourceFiles.forEach(function(filePath) {
 		if (filePath instanceof Array) {
-			process(filePath[0], filePath[1]);
+			processFile(filePath[0], filePath[1]);
 		} else {
-			process(filePath);			
+			processFile(filePath);			
 		}
 	});
 
-	archive.addFiles(files, function() {
-		archive.toBuffer(function(buffer) {
-			fs.writeFileSync(zipFile, buffer);
-		});
+	files.forEach(function(file) {
+		zip.addFile(file.name, file.path);
+	});
+
+	zip.saveAs(zipFile, function() {
+		cb();
 	});
 }
 
