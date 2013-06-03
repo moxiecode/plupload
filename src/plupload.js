@@ -14,6 +14,52 @@
 
 var delay = window.setTimeout;
 
+// convert plupload features to caps acceptable by mOxie
+function normalizeCaps(settings) {		
+	var features = settings.required_features, caps = {};
+
+	function resolve(feature, value, strict) {
+		// Feature notation is deprecated, use caps (this thing here is required for backward compatibility)
+		var map = { 
+			chunks: 'slice_blob',
+			resize: 'send_binary_string',
+			jpgresize: 'send_binary_string',
+			pngresize: 'send_binary_string',
+			progress: 'report_upload_progress',
+			multi_selection: 'select_multiple',
+			canSendBinary: 'send_binary'
+			//dragdrop: 'drag_and_drop',
+			//triggerDialog: 'summon_file_dialog'
+		};
+
+		if (map[feature]) {
+			caps[map[feature]] = value;
+		} else if (!strict) {
+			caps[feature] = value;
+		}
+	}
+
+	if (typeof(features) === 'string') {
+		plupload.each(features.split(/\s*,\s*/), function(feature) {
+			resolve(feature, true);
+		});
+	} else if (typeof(features) === 'object') {
+		plupload.each(features, function(value, feature) {
+			resolve(feature, value);
+		});
+	}
+
+	// check settings for required features
+	plupload.each(settings, function(value, feature) {
+		resolve(feature, !!value, true); // strict check
+	});
+
+	if (!settings.multipart) { // special care for multipart: false
+		caps.send_binary_string = true;
+	}
+	return caps;
+}
+
 /** 
  * @module plupload	
  * @static
@@ -473,7 +519,20 @@ var plupload = {
 	 * @param {String/Number} size String to parse or number to just pass through.
 	 * @return {Number} Size in bytes.
 	 */
-	parseSize : o.parseSizeStr
+	parseSize : o.parseSizeStr,
+
+
+	/**
+	 * A way to predict what runtime will be choosen in the current environment with the
+	 * specified settings or a list of features/caps.
+	 *
+	 * @method predictRuntime
+	 * @param {Object|String} features List of settings/features/caps
+	 * @return {String} Type of compatible runtime
+	 */
+	predictRuntime : function(features) {
+		return o.Runtime.thatCan(normalizeCaps(features));
+	}
 };
 
 
@@ -628,52 +687,6 @@ plupload.Uploader = function(settings) {
 		startTime, total, disabled = false,
 		fileInput, fileDrop, xhr;
 
-
-	function initRequiredCaps(settings) {		
-		var features = settings.required_features, caps = {};
-
-		function resolve(feature, value, strict) {
-			// Feature notation is deprecated, use caps (this thing here is required for backward compatibility)
-			var map = { 
-				chunks: 'slice_blob',
-				resize: 'send_binary_string',
-				jpgresize: 'send_binary_string',
-				pngresize: 'send_binary_string',
-				progress: 'report_upload_progress',
-				multi_selection: 'select_multiple',
-				canSendBinary: 'send_binary'
-				//dragdrop: 'drag_and_drop',
-				//triggerDialog: 'summon_file_dialog'
-			};
-
-			if (map[feature]) {
-				caps[map[feature]] = value;
-			} else if (!strict) {
-				caps[feature] = value;
-			}
-		}
-
-		if (typeof(features) === 'string') {
-			plupload.each(features.split(/\s*,\s*/), function(feature) {
-				resolve(feature, true);
-			});
-		} else if (typeof(features) === 'object') {
-			plupload.each(features, function(value, feature) {
-				resolve(feature, value);
-			});
-		}
-
-		// check settings for required features
-		plupload.each(settings, function(value, feature) {
-			resolve(feature, !!value, true); // strict check
-		});
-
-		if (!settings.multipart) { // special care for multipart: false
-			caps.send_binary_string = true;
-		}
-
-		return caps;
-	}
 
 	// Private methods
 	function uploadNext() {
@@ -956,7 +969,7 @@ plupload.Uploader = function(settings) {
 		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
 	}, settings.chunks);
 	
-	required_caps = initRequiredCaps(settings);
+	required_caps = normalizeCaps(settings);
 
 
 	// Add public methods
@@ -1423,6 +1436,7 @@ plupload.Uploader = function(settings) {
 				this.trigger("CancelUpload");
 			}
 		},
+
 
 		/**
 		 * Disables/enables browse button on request.
