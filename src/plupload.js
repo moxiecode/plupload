@@ -950,6 +950,12 @@ plupload.Uploader = function(settings) {
 		}, settings.resize);
 	}
 
+	// Alternative format for chunks
+	settings.chunks = plupload.extend({
+		size: settings.chunk_size, 
+		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
+	}, settings.chunks);
+	
 	required_caps = initRequiredCaps(settings);
 
 
@@ -1018,7 +1024,7 @@ plupload.Uploader = function(settings) {
 			var self = this;
 
 			// Convert settings
-			settings.chunk_size = plupload.parseSize(settings.chunk_size);
+			settings.chunks.size = plupload.parseSize(settings.chunks.size);
 			settings.max_file_size = plupload.parseSize(settings.max_file_size);
 
 			// Check if drop zone requested
@@ -1135,7 +1141,7 @@ plupload.Uploader = function(settings) {
 			}
 
 			self.bind("UploadFile", function(up, file) {
-				var url = up.settings.url, features = up.features, chunkSize = settings.chunk_size,
+				var url = up.settings.url, features = up.features, chunkSize = settings.chunks.size,
 					retries = settings.max_retries,
 					blob, offset = 0;
 
@@ -1172,13 +1178,18 @@ plupload.Uploader = function(settings) {
 
 					// Only add chunking args if needed
 					if (chunkSize && features.chunks && blob.size > chunkSize) { // blob will be of type string if it was loaded in memory 
-						curChunkSize = Math.min(settings.chunk_size, blob.size - offset);
+						curChunkSize = Math.min(chunkSize, blob.size - offset);
 
 						chunkBlob = blob.slice(offset, offset + curChunkSize);
 
 						// Setup query string arguments
-						args.offset = offset;
-						args.total = blob.size;
+						if (settings.chunks.send_chunk_number) {
+							args.chunk = Math.ceil(offset / chunkSize);
+							args.chunks = Math.ceil(blob.size / chunkSize);
+						} else {
+							args.offset = offset;
+							args.total = blob.size;
+						}
 					} else {
 						curChunkSize = blob.size;
 						chunkBlob = blob;
