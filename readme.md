@@ -20,6 +20,7 @@ is built with the future of HTML5 in mind.
 * [Frequently Asked Questions](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
 * [Support](#support)
 * [Contributing](#contribute)
+* [License](#license)
 * [Contact Us](http://www.moxiecode.com/contact.php)
 
 <a name="backstory" />
@@ -54,7 +55,7 @@ easily mistaken for the Plupload itself. They are only implementations, such as 
 build by yourself out of the API.
 
 * [Low-level pollyfills (mOxie)](https://github.com/moxiecode/moxie) - have their own [code base](https://github.com/moxiecode/moxie) and [documentation](https://github.com/moxiecode/moxie/wiki) on GitHub.
-* [Plupload API](/moxiecode/plupload/wiki/API)
+* [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
 * [UI Widget]()
 * [Queue Widget]()
 
@@ -77,13 +78,17 @@ First of all, if you want to build custom Plupload packages you will require [No
 as this is our build environment of choice. Node.js binaries (as well as Source)
 [are available](http://nodejs.org/download/) for all major operating systems.
 
-In addtion to Node.js some additional modules will be required. Change your working directory to where you
-have extracted Plupload repo and run: `node bootstrap`. All dependencies will be downloaded and installed 
-automatically. Bootstrap will also try to populate `src/moxie/` folder with the actual mOxie source, as 
-Plupload includes it as a sub-module and doesn't contain the source. You should have 
-[git](http://git-scm.com/) installed on your system for this operation to succeed. If you don't have one 
-and you still require the source, you will need to manually download it from 
-[the repository](https://github.com/moxiecode/moxie) and extract to the above folder.
+Plupload includes _mOxie_ as a submodule, it also depends on some other repositories for building up it's dev
+environment - to avoid necessity of downloading them one by one, we recommended you to simply clone Plupload 
+with [git](http://git-scm.com/) recursively (you will require git installed on your system for this operation 
+to succeed):
+
+```
+git clone --recursive https://github.com/moxiecode/plupload.git
+```
+
+And finalize the preparation stage with: `npm install` - this will install all additional modules, including those
+required by dev and test environments. In case you would rather keep it minimal, add a `--production` flag.
 
 *Note:* Currently, for an unknown reason, locally installed Node.js modules on Windows, may not be automatically 
 added to the system PATH. So, if `jake` commands below are not recognized you will need to add them manually:
@@ -118,3 +123,11 @@ want to consider first.
 These basic rules help us earn a living and ensure that code remains Open Source and compatible with LGPL license. All contributions will be added to the changelog and appear in every release and on the site. 
 
 You can read more about how to contribute at: [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
+
+<a name="license" />
+### License
+
+Copyright 2013, [Moxiecode Systems AB](http://www.moxiecode.com/)  
+Released under [GPLv2 License](https://github.com/moxiecode/plupload/blob/master/license.txt).
+
+We also provide [commercial license](http://www.plupload.com/commercial.php).
