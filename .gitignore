@@ -13,6 +13,6 @@ jscoverage
 *.patch
 *.bak
 *.log
-*.min.js
 .DS_Store
+_notes
 node_modules
