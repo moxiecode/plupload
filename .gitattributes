@@ -1,0 +1,24 @@
+* text=auto
+
+*.csproj binary merge=union
+*.csproj.user binary merge=union
+.actionScriptProperties binary merge=union
+.project binary merge=union
+
+*.cs text eol=lf
+*.as text eol=lf
+*.cs text eol=lf
+*.js text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.php text eol=lf
+*.css text eol=lf
+
+*.png binary
+*.jpg binary
+*.swf binary
+*.swc binary
+*.xap binary
+*.min.js binary
+js/* binary
