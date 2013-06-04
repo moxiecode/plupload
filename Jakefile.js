@@ -1,3 +1,5 @@
+/* global jake:true, desc:true, task:true, complete:true, require:true, console:true, process:true */
+/* jshint unused:false */
 var fs = require("fs");
 var path = require("path");
 var exec = require('child_process').exec;
@@ -7,9 +9,9 @@ var less = tools.less;
 var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
 var zip = tools.zip;
-var utils = require('./build/utils');
 
-var wiki = require('./build/wiki');
+var utils = require('./src/moxie/build/utils');
+var wiki = require('./src/moxie/build/wiki');
 
 function exit(message) {
 	if (message) {

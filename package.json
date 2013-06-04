@@ -9,7 +9,8 @@
         "jake": "0.5.x",
         "jshint": "1.1.x",
         "moxie-zip": "0.0.x",
-        "yuidocjs": "0.3.x"
+        "yuidocjs": "0.3.x",
+        "handlebars": "1.0.x"
     },
     "devDependencies": {
         "uglify-js": "1.x",
