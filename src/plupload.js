@@ -248,6 +248,8 @@ var plupload = {
 	 * Gets the true type of the built-in object (better version of typeof).
 	 * @credits Angus Croll (http://javascriptweblog.wordpress.com/)
 	 *
+	 * @method typeOf
+	 * @static
 	 * @param {Object} o Object to check.
 	 * @return {String} Object [[Class]]
 	 */
@@ -257,6 +259,7 @@ var plupload = {
 	 * Extends the specified object with another object.
 	 *
 	 * @method extend
+	 * @static
 	 * @param {Object} target Object to extend.
 	 * @param {Object..} obj Multiple objects to extend with.
 	 * @return {Object} Same as target, the extended object.
@@ -271,6 +274,7 @@ var plupload = {
 	 * to an user unique key.
 	 *
 	 * @method guid
+	 * @static
 	 * @return {String} Virtually unique id.
 	 */
 	guid : o.guid,
@@ -279,6 +283,8 @@ var plupload = {
 	 * Executes the callback function for each item in array/object. If you return false in the
 	 * callback it will break the loop.
 	 *
+	 * @method each
+	 * @static
 	 * @param {Object} obj Object to iterate.
 	 * @param {function} callback Callback function to execute for each item.
 	 */
@@ -288,6 +294,7 @@ var plupload = {
 	 * Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
 	 *
 	 * @method getPos
+	 * @static
 	 * @param {Element} node HTML element or element id to get x, y position from.
 	 * @param {Element} root Optional root element to stop calculations at.
 	 * @return {object} Absolute position of the specified element object with x, y fields.
@@ -297,6 +304,8 @@ var plupload = {
 	/**
 	 * Returns the size of the specified node in pixels.
 	 *
+	 * @method getSize
+	 * @static
 	 * @param {Node} node Node to get the size of.
 	 * @return {Object} Object with a w and h property.
 	 */
@@ -306,6 +315,7 @@ var plupload = {
 	 * Encodes the specified string.
 	 *
 	 * @method xmlEncode
+	 * @static
 	 * @param {String} s String to encode.
 	 * @return {String} Encoded string.
 	 */
@@ -321,6 +331,7 @@ var plupload = {
 	 * Forces anything into an array.
 	 *
 	 * @method toArray
+	 * @static
 	 * @param {Object} obj Object with length field.
 	 * @return {Array} Array object containing all items.
 	 */
@@ -330,6 +341,7 @@ var plupload = {
 	 * Find an element in array and return it's index if present, otherwise return -1.
 	 *
 	 * @method inArray
+	 * @static
 	 * @param {mixed} needle Element to find
 	 * @param {Array} array
 	 * @return {Int} Index of the element, or -1 if not found
@@ -339,6 +351,8 @@ var plupload = {
 	/**
 	 * Extends the language pack object with new items.
 	 *
+	 * @method addI18n
+	 * @static
 	 * @param {Object} pack Language pack items to add.
 	 * @return {Object} Extended language pack object.
 	 */
@@ -347,6 +361,8 @@ var plupload = {
 	/**
 	 * Translates the specified string by checking for the english string in the language pack lookup.
 	 *
+	 * @method translate
+	 * @static
 	 * @param {String} str String to look for.
 	 * @return {String} Translated string or the input string if it wasn't found.
 	 */
@@ -355,6 +371,8 @@ var plupload = {
 	/**
 	 * Checks if object is empty.
 	 *
+	 * @method isEmptyObj
+	 * @static
 	 * @param {Object} obj Object to check.
 	 * @return {Boolean}
 	 */
@@ -363,6 +381,8 @@ var plupload = {
 	/**
 	 * Checks if specified DOM element has specified class.
 	 *
+	 * @method hasClass
+	 * @static
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Class name
 	 */
@@ -371,6 +391,8 @@ var plupload = {
 	/**
 	 * Adds specified className to specified DOM element.
 	 *
+	 * @method addClass
+	 * @static
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Class name
 	 */
@@ -379,6 +401,8 @@ var plupload = {
 	/**
 	 * Removes specified className from specified DOM element.
 	 *
+	 * @method removeClass
+	 * @static
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Class name
 	 */
@@ -387,6 +411,8 @@ var plupload = {
 	/**
 	 * Returns a given computed style of a DOM element.
 	 *
+	 * @method getStyle
+	 * @static
 	 * @param {Object} obj DOM element like object.
 	 * @param {String} name Style you want to get from the DOM element
 	 */
@@ -396,6 +422,8 @@ var plupload = {
 	 * Adds an event handler to the specified object and store reference to the handler
 	 * in objects internal Plupload registry (@see removeEvent).
 	 *
+	 * @method addEvent
+	 * @static
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Name to add event listener to.
 	 * @param {Function} callback Function to call when event occurs.
@@ -407,6 +435,8 @@ var plupload = {
 	 * Remove event handler from the specified object. If third argument (callback)
 	 * is not specified remove all events with the specified name.
 	 *
+	 * @method removeEvent
+	 * @static
 	 * @param {Object} obj DOM element to remove event listener(s) from.
 	 * @param {String} name Name of event listener to remove.
 	 * @param {Function|String} (optional) might be a callback or unique key to match.
@@ -416,6 +446,8 @@ var plupload = {
 	/**
 	 * Remove all kind of events from the specified object
 	 *
+	 * @method removeAllEvents
+	 * @static
 	 * @param {Object} obj DOM element to remove event listeners from.
 	 * @param {String} (optional) unique key to match, when removing events.
 	 */
@@ -425,6 +457,7 @@ var plupload = {
 	 * Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
 	 *
 	 * @method cleanName
+	 * @static
 	 * @param {String} s String to clean up.
 	 * @return {String} Cleaned string.
 	 */
@@ -458,6 +491,8 @@ var plupload = {
 	/**
 	 * Builds a full url out of a base URL and an object with items to append as query string items.
 	 *
+	 * @method buildUrl
+	 * @static
 	 * @param {String} url Base URL to append query string items to.
 	 * @param {Object} items Name/value object to serialize as a querystring.
 	 * @return {String} String with url + serialized query string items.
@@ -480,6 +515,7 @@ var plupload = {
 	 * Formats the specified number as a size string for example 1024 becomes 1 KB.
 	 *
 	 * @method formatSize
+	 * @static
 	 * @param {Number} size Size to format as string.
 	 * @return {String} Formatted size string.
 	 */
@@ -516,7 +552,8 @@ var plupload = {
 	 * Parses the specified size string into a byte value. For example 10kb becomes 10240.
 	 *
 	 * @method parseSize
-	 * @param {String/Number} size String to parse or number to just pass through.
+	 * @static
+	 * @param {String|Number} size String to parse or number to just pass through.
 	 * @return {Number} Size in bytes.
 	 */
 	parseSize : o.parseSizeStr,
@@ -527,6 +564,7 @@ var plupload = {
 	 * specified settings or a list of features/caps.
 	 *
 	 * @method predictRuntime
+	 * @static
 	 * @param {Object|String} features List of settings/features/caps
 	 * @return {String} Type of compatible runtime
 	 */
