@@ -22,7 +22,7 @@ function exit(message) {
 }
 
 desc("Default build task");
-task("default", ["minifyjs", "yuidoc"], function (params) {});
+task("default", ["minifyjs", "docs"], function (params) {});
 
 desc("Build release package");
 task("release", ["default", "package"], function (params) {});
@@ -98,14 +98,14 @@ task("minifyjs", ["moxie"], function (params) {
 
 
 desc("Generate documentation using YUIDoc");
-task("yuidoc", [], function (params) {
+task("docs", [], function (params) {
 	yuidoc("src", "docs", {
 		norecurse: true
 	});
-});
+}, true);
 
 desc("Generate wiki pages");
-task("wiki", [], function() {
+task("wiki", ["docs"], function() {
 	wiki("git@github.com:moxiecode/plupload.wiki.git", "wiki", "docs");
 });
 
