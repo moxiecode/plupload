@@ -286,7 +286,7 @@ $.widget("ui.plupload", {
 		views: {
 			list: true,
 			thumbs: false,
-			'default': 'list',
+			active: 'list',
 			remember: true // requires: https://github.com/carhartl/jquery-cookie, otherwise disabled even if set to true
 		},
 		autostart: false,
