@@ -1070,34 +1070,34 @@ $.widget("ui.plupload", {
 	},
 	
 
-	_viewChanged: function(type) {
+	_viewChanged: function(view) {
 		// update or write a new cookie
-		if (this.options.remember_view && $.cookie) {
-			$.cookie('plupload_ui_view', type, { expires: 7, path: '/' });
+		if (this.options.views.remember && $.cookie) {
+			$.cookie('plupload_ui_view', view, { expires: 7, path: '/' });
 		} 
 	
 		// ugly fix for IE6 - make content area stretchable
 		if (mOxie.Env.browser === 'IE' && mOxie.Env.version < 7) {
-			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (type === 'list' ? 133 : 103) + ');');
+			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (view === 'list' ? 133 : 103) + ');');
 		}
 
-		this.container.removeClass('plupload_view_list plupload_view_thumbs').addClass('plupload_view_' + type); 
-		this.view_mode = type;
-		this._trigger('viewchanged', null, { view: type });
+		this.container.removeClass('plupload_view_list plupload_view_thumbs').addClass('plupload_view_' + view); 
+		this.view_mode = view;
+		this._trigger('viewchanged', null, { view: view });
 	},
 
 
 	_enableViewSwitcher: function() {
 		var self = this
-		, type
+		, view
 		, switcher = $('.plupload_view_switch', this.container)
 		, buttons
 		, button
 		;
 
-		$.each(self.options.views, function(type, on) {
-			if (!on) {
-				switcher.find('[for="plupload_view_' + type + '"], #plupload_view_' + type).remove();
+		$.each(['list', 'thumbs'], function(view) {
+			if (!self.options.views[view]) {
+				switcher.find('[for="plupload_view_' + view + '"], #plupload_view_' + view).remove();
 			}
 		});
 
@@ -1106,34 +1106,34 @@ $.widget("ui.plupload", {
 
 		if (buttons.length === 1) {
 			switcher.hide();
-			type = buttons.attr('for').replace(/^plupload_view_/, '');
-			self._viewChanged(type);
+			view = buttons.attr('for').replace(/^plupload_view_/, '');
+			this._viewChanged(view);
 			return;
 		} else if ($.ui.button && buttons.length > 1) {
 			switcher.show();
 			switcher.buttonset();
 		} else {
 			switcher.show();
-			self._viewChanged(this.options.default_view);
+			this._viewChanged(this.options.views.active);
 			return;
 		}
 
 		switcher.find('.plupload_button').click(function() {
-			type = $(this).attr('for').replace(/^plupload_view_/, '');
-			self._viewChanged(type);
+			view = $(this).attr('for').replace(/^plupload_view_/, '');
+			self._viewChanged(view);
 		});
 
-		if (this.options.remember_view && $.cookie) {
-			type = $.cookie('plupload_ui_view');
+		if (this.options.views.remember && $.cookie) {
+			view = $.cookie('plupload_ui_view');
 		}
 
 		// if wierd case, bail out to default
-		if (!~plupload.inArray(type, ['list', 'thumbs'])) {
-			type = this.options.default_view;
+		if (!~plupload.inArray(view, ['list', 'thumbs'])) {
+			view = this.options.views.active;
 		}
 
 		// if view not active - happens when switcher wasn't clicked manually
-		button = switcher.find('[for="plupload_view_'+type+'"]');
+		button = switcher.find('[for="plupload_view_'+view+'"]');
 		if (button.length) {
 			button.trigger('click');
 			return; 
