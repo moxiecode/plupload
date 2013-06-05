@@ -267,6 +267,8 @@ function renderUI(obj) {
 
 $.widget("ui.plupload", {
 
+	widgetEventPrefix: '',
+
 	imgs: {},
 	
 	contents_bak: '',
