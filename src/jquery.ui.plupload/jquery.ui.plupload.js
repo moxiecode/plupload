@@ -111,10 +111,10 @@ $.widget("ui.plupload", {
 		},
 		views: {
 			list: true,
-			thumbs: false
+			thumbs: false,
+			'default': 'list',
+			remember: true // requires: https://github.com/carhartl/jquery-cookie, otherwise disabled even if set to true
 		},
-		default_view: 'list',
-		remember_view: true, // requires: https://github.com/carhartl/jquery-cookie, otherwise disabled even if set to true
 		autostart: false,
 		sortable: false,
 		rename: false,
@@ -204,6 +204,7 @@ $.widget("ui.plupload", {
 		}
 		;
 
+		$('.plupload_buttons', this.element).attr('id', id + '_buttons');
 		if (self.options.dragdrop) {
 			this.filelist.parent().attr('id', this.id + '_dropbox');
 			options.drop_element = this.id + '_dropbox';
@@ -271,6 +272,7 @@ $.widget("ui.plupload", {
 		
 		// check if file count doesn't exceed the limit
 		if (self.options.max_file_count) {
+			self.options.multiple_queues = false; // one go only
 			uploader.bind('FilesAdded', function(up, selectedFiles) {
 				var removed = [], selectedCount = selectedFiles.length;
 				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
@@ -396,7 +398,7 @@ $.widget("ui.plupload", {
 				}
 				
 				self.notify('error', message);
-				self._trigger('error', null, { up: up, file: file, error: message } );
+				self._trigger('error', null, { up: up, error: message, file: file } );
 			}
 		});
 	},
@@ -435,13 +437,13 @@ $.widget("ui.plupload", {
 	
 	start: function() {
 		this.uploader.start();
-		this._trigger('start', null);
+		this._trigger('start', null, { up: this.uploader });
 	},
 
 	
 	stop: function() {
 		this.uploader.stop();
-		this._trigger('stop', null);
+		this._trigger('stop', null, { up: this.uploader });
 	},
 
 	enable: function() {
@@ -776,7 +778,7 @@ $.widget("ui.plupload", {
 			this._enableSortingList();	
 		}
 
-		this._trigger('updatelist', null, this.filelist);
+		this._trigger('updatelist', null, { filelist: this.filelist });
 	},
 
 
@@ -811,7 +813,7 @@ $.widget("ui.plupload", {
 			}
 		}
 
-		this._trigger('updatelist', null, self.filelist);
+		this._trigger('updatelist', null, { filelist: this.filelist });
 	},
 	
 
@@ -828,7 +830,7 @@ $.widget("ui.plupload", {
 
 		this.container.removeClass('plupload_view_list plupload_view_thumbs').addClass('plupload_view_' + type); 
 		this.view_mode = type;
-		this._trigger('viewchanged', type);
+		this._trigger('viewchanged', null, { view: type });
 	},
 
 
