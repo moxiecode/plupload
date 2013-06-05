@@ -999,7 +999,10 @@ $.widget("ui.plupload", {
 					};
 
 					img.onerror = function() {
-						// error logic here
+						var ext = file.name.match(/\.([^\.]{1,7})$/);
+						$('#' + file.id + ' .plupload_file_thumb', self.filelist)
+							.html('<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">' + (ext ? ext[1] : 'none') + '</span></div>');
+						img.destroy();
 						cb();
 					};
 					img.load(file.getSource());
