@@ -17,10 +17,9 @@
  *	jquery.ui.sortable.js
  */
 
-// JSLint defined globals
-/*global window:false, document:false, plupload:false, jQuery:false */
+ /* global jQuery:true */
 
-(function(window, document, plupload, $, undef) {
+(function(window, document, plupload, $) {
 	
 var uploaders = {};	
 	
@@ -125,9 +124,7 @@ $.widget("ui.plupload", {
 	FILE_COUNT_ERROR: -9001,
 	
 	_create: function() {
-		var self = this, id, uploader;
-		
-		id = this.element.attr('id');
+		var id = this.element.attr('id');
 		if (!id) {
 			id = plupload.guid();
 			this.element.attr('id', id);
@@ -200,7 +197,6 @@ $.widget("ui.plupload", {
 	_initUploader: function() {
 		var self = this
 		, id = this.id
-		, buttonsContainer = $('.plupload_buttons', this.element).attr('id', id + '_buttons')
 		, uploader
 		, options = { 
 			container: id + '_buttons',
@@ -230,7 +226,7 @@ $.widget("ui.plupload", {
 			}
 		});
 		
-		uploader.bind('PostInit', function(up, res) {	
+		uploader.bind('PostInit', function(up) {	
 			// all buttons are optional, so they can be disabled and hidden
 			if (!self.options.buttons.browse) {
 				self.browse_button.button('disable').hide();
@@ -414,10 +410,10 @@ $.widget("ui.plupload", {
 			
 			if (!value.browse) {
 				self.browse_button.button('disable').hide();
-				up.disableBrowse(true);
+				self.uploader.disableBrowse(true);
 			} else {
 				self.browse_button.button('enable').show();
-				up.disableBrowse(false);
+				self.uploader.disableBrowse(false);
 			}
 			
 			if (!value.start) {
@@ -449,12 +445,12 @@ $.widget("ui.plupload", {
 	},
 
 	enable: function() {
-		self.browse_button.button('enable')
+		this.browse_button.button('enable');
 		this.uploader.disableBrowse(false);
 	},
 
 	disable: function() {
-		this.browse_button.button('disable')
+		this.browse_button.button('disable');
 		this.uploader.disableBrowse(true);
 	},
 
@@ -473,7 +469,7 @@ $.widget("ui.plupload", {
 	
 	removeFile: function(file) {
 		if (plupload.typeOf(file) === 'string') {
-			file = this.getFile(id);
+			file = this.getFile(file);
 		}
 		this._removeFiles(file);
 	},
@@ -533,7 +529,7 @@ $.widget("ui.plupload", {
 		
 		// destroy progressbar
 		if ($.ui.progressbar) {
-			 this.progressbar.progressbar('destroy');	
+			this.progressbar.progressbar('destroy');	
 		}
 		
 		// destroy sortable behavior
@@ -633,8 +629,7 @@ $.widget("ui.plupload", {
 				iconClass = 'ui-icon ui-icon-circle-arrow-w';
 				
 				// scroll uploading file into the view if its bottom boundary is out of it
-				var 
-				  scroller = $('.plupload_scroll', this.container)
+				var scroller = $('.plupload_scroll', this.container)
 				, scrollTop = scroller.scrollTop()
 				, scrollerHeight = scroller.height()
 				, rowOffset = $('#' + file.id).position().top + $('#' + file.id).height()
@@ -744,8 +739,7 @@ $.widget("ui.plupload", {
 
 			if (self.options.views.thumbs) {
 				queue.push(function(cb) {
-					var img;
-					img = new o.Image;
+					var img = new o.Image();
 
 					img.onload = function() {
 						img.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
@@ -774,33 +768,15 @@ $.widget("ui.plupload", {
 		});
 
 		if (queue.length) {
-			self._series(queue);
+			o.inSeries(queue);
 		}
 
 		// re-enable sortable
 		if (this.options.sortable && $.ui.sortable) {
-			 this._enableSortingList();	
+			this._enableSortingList();	
 		}
 
 		this._trigger('updatelist', null, this.filelist);
-	},
-
-
-	_series: function(queue, cb) {
-		var i = 0, length = queue.length;
-
-		if (o.typeOf(cb) !== 'function') {
-			cb = function() {};
-		}
-
-		function callNext(i) {
-			if (o.typeOf(queue[i]) === 'function') {
-				queue[i](function() {
-					++i < length ? callNext(i) : cb();
-				});
-			}
-		}
-		callNext(i);
 	},
 
 
@@ -831,7 +807,7 @@ $.widget("ui.plupload", {
 		if (up.files.length) {
 			// re-initialize sortable
 			if (this.options.sortable && $.ui.sortable) {
-				 this._enableSortingList();	
+				this._enableSortingList();	
 			}
 		}
 
@@ -914,7 +890,7 @@ $.widget("ui.plupload", {
 		var self = this;
 
 		this.filelist.dblclick(function(e) {
-			var nameSpan = $(e.target), nameInput, file, parts, name, width, ext = "";
+			var nameSpan = $(e.target), nameInput, file, parts, name, ext = "";
 
 			if (!nameSpan.hasClass('plupload_file_namespan')) {
 				return;
@@ -952,7 +928,7 @@ $.widget("ui.plupload", {
 	
 	
 	_enableSortingList: function() {
-		var idxStart, self = this, filelist = $('.plupload_filelist_content', this.element);
+		var self = this, filelist = $('.plupload_filelist_content', this.element);
 		
 		if ($('.plupload_file', filelist).length < 2) {
 			return;	
@@ -963,8 +939,8 @@ $.widget("ui.plupload", {
 			
 			cancel: 'object, .plupload_clearer',
 
-			stop: function(e, ui) {
-				var i, length, idx, files = [];
+			stop: function() {
+				var files = [];
 				
 				$.each($(this).sortable('toArray'), function(i, id) {
 					files[files.length] = self.uploader.getFile(id);

@@ -12,6 +12,10 @@
 	"globals": {
 		"define": true,
 		"escape": true,
-		"unescape": true
+		"unescape": true,
+		"moxie": true,
+		"o": true,
+		"mOxie": true,
+		"plupload": true
 	}
 }
