@@ -99,7 +99,7 @@ task("minifyjs", ["moxie"], function (params) {
 
 desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
-	yuidoc("src", "docs", {
+	yuidoc(["src", "src/jquery.ui.plupload"], "docs", {
 		norecurse: true
 	});
 }, true);

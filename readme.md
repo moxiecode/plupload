@@ -13,7 +13,7 @@ is built with the future of HTML5 in mind.
 * [Structure](#structure)
   * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie)
   * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
-  * UI Widget
+  * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
   * Queue Widget
 * [Building Instructions](#build)
 * Getting Started
@@ -56,8 +56,8 @@ build by yourself out of the API.
 
 * [Low-level pollyfills (mOxie)](https://github.com/moxiecode/moxie) - have their own [code base](https://github.com/moxiecode/moxie) and [documentation](https://github.com/moxiecode/moxie/wiki) on GitHub.
 * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
-* [UI Widget]()
-* [Queue Widget]()
+* [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
+* Queue Widget
 
 <a name="build" />
 ### Building instructions
