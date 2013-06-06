@@ -28,25 +28,35 @@
 
 <p>You can see this example with different themes on the <a href="http://plupload.com/example_jquery_ui.php">www.plupload.com</a> website.</p>
 
-<form  method="post" action="dump.php">
+<form id="form" method="post" action="dump.php">
 	<div id="uploader">
 		<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
 	</div>
+	<br />
+	<input type="submit" value="Submit" />
 </form>
 
 <script type="text/javascript">
-// Convert divs to queue widgets when the DOM is ready
+// Initialize the widget when the DOM is ready
 $(function() {
 	$("#uploader").plupload({
 		// General settings
 		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
+
+		// Select multiple files at once
 		multi_selection: false, // if set to true, html4 will always fail, since it can't select multiple files
+
+		// Maximum file size
 		max_file_size : '1000mb',
-		max_file_count: 20, // user can add no more then 20 files at a time
-		chunk_size : '1mb',
-		rename : true,
-		multiple_queues : true,
+
+		// User can upload no more then 20 files in one go (sets multiple_queues to false)
+		max_file_count: 20,
+		
+		chunks : {
+			size: '1mb',
+			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
+		},
 
 		// Resize images on clientside if we can
 		resize : {
@@ -62,47 +72,45 @@ $(function() {
 			{title : "Zip files", extensions : "zip,avi"}
 		],
 
-		// Flash settings
-		flash_swf_url : '../../js/Moxie.swf',
-
-		// Silverlight settings
-		silverlight_xap_url : '../../js/Moxie.xap',
-
 		// Rename files by clicking on their titles
 		rename: true,
 		
 		// Sort files
 		sortable: true,
 
-		// Enable ability to drop files onto the widget (currently only HTML5 supports that)
+		// Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
 		dragdrop: true,
 
 		// Views to activate
 		views: {
 			list: true,
-			thumbs: true // Show thumbs
+			thumbs: true, // Show thumbs
+			active: 'thumbs'
 		},
-		default_view: 'thumbs'
+
+		// Flash settings
+		flash_swf_url : '../../js/Moxie.swf',
+
+		// Silverlight settings
+		silverlight_xap_url : '../../js/Moxie.xap'
 	});
 
-	// Client side form validation
-	$('form').submit(function(e) {
-        var uploader = $('#uploader').plupload('getUploader');
 
+	// Handle the case when form was submitted before uploading has finished
+	$('#form').submit(function(e) {
         // Files in queue upload them first
-        if (uploader.files.length > 0) {
+        if ($('#uploader').plupload('getFiles').length > 0) {
+            
             // When all files are uploaded submit form
-            uploader.bind('StateChanged', function() {
-                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
-                    $('form')[0].submit();
-                }
+            $('#uploader').on('complete', function() {
+                $('#form')[0].submit();
             });
                 
-            uploader.start();
-        } else
-            alert('You must at least upload one file.');
-
-        return false;
+            $('#uploader').plupload('start');
+        } else {
+            alert("You must have at least one file in the queue.");
+        }
+        return false; // Keep the form from submitting
     });
 });
 </script>
