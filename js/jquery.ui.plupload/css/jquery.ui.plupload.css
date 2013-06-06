@@ -166,7 +166,8 @@ html > body .plupload_view_list .plupload_file { /* make sure IE6 doesn't unders
 	width: 52px;
 }
 
-.plupload_view_list .plupload_file_thumb {
+.plupload_view_list .plupload_file_thumb,
+.plupload_view_list .plupload_file_dummy {
 	top: -999px;
 }
 
@@ -191,11 +192,21 @@ html > body .plupload_view_list .plupload_file { /* make sure IE6 doesn't unders
 	border: 1px solid #fff;
 }
 
-.plupload_view_thumbs .plupload_file_thumb {
+.plupload_view_thumbs .plupload_file_thumb,
+.plupload_view_thumbs .plupload_file_dummy {
 	width: 100px;
 	height: 60px;
 	text-align: center;
 	overflow: hidden;
+}
+
+.plupload_view_thumbs .plupload_file_dummy {
+	font-size: 21px;
+	font-weight: bold;
+	text-transform: lowercase;
+	overflow: hidden;
+	line-height: 60px;
+	border: none;
 }
 
 .plupload_view_thumbs div.plupload_file_action {

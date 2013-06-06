@@ -2229,6 +2229,20 @@ define('moxie/runtime/Runtime', [
 		return false;
 	};
 
+	/**
+	Evaluate the expression to boolean value and create a function that always returns it.
+
+	@private
+	@static
+	@param {Mixed} expr Expression to evaluate
+	@return {Function} Function returning the result of evaluation
+	*/
+	Runtime.capTest = function(expr) {
+		return function() {
+			return !!expr;
+		};
+	};
+
 	return Runtime;
 });
 
@@ -5841,24 +5855,25 @@ define("moxie/runtime/html5/Runtime", [
 	var type = "html5", extensions = {};
 	
 	function Html5Runtime(options) {
-		var I = this;
+		var I = this
+		, Test = Runtime.capTest
+		, True = Runtime.capTrue
+		;
 
 		var caps = Basic.extend({
-				access_binary: !!(window.FileReader || window.File && window.File.getAsDataURL),
+				access_binary: Test(window.FileReader || window.File && window.File.getAsDataURL),
 				access_image_binary: function() {
 					return I.can('access_binary') && !!extensions.Image;
 				},
-				display_media: Env.can('create_canvas') || Env.can('use_data_uri_over32kb'),
-				do_cors: function() {
-					return !!(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
-				},
-				drag_and_drop: (function() {
+				display_media: Test(Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+				do_cors: Test(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()),
+				drag_and_drop: Test(function() {
 					// this comes directly from Modernizr: http://www.modernizr.com/
 					var div = document.createElement('div');
 					// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
 					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 				}()),
-				return_response_headers: Runtime.capTrue,
+				return_response_headers: True,
 				return_response_type: function(responseType) {
 					if (responseType === 'json') {
 						return true; // we can fake this one even if it's not supported
@@ -5866,31 +5881,28 @@ define("moxie/runtime/html5/Runtime", [
 						return Env.can('return_response_type', responseType);
 					}
 				},
-				report_upload_progress: function() {
-					return !!(window.XMLHttpRequest && new XMLHttpRequest().upload);
-				},
+				report_upload_progress: Test(window.XMLHttpRequest && new XMLHttpRequest().upload),
 				resize_image: function() {
 					return I.can('access_binary') && Env.can('create_canvas');
 				},
-				select_folder: Env.browser === 'Chrome' && Env.version >= 21,
-				select_multiple: !(Env.browser === 'Safari' && Env.OS === 'Windows'),
-				send_binary_string:
-					!!(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
-				send_custom_headers: !!window.XMLHttpRequest,
+				select_folder: Test(Env.browser === 'Chrome' && Env.version >= 21),
+				select_multiple: Test(!(Env.browser === 'Safari' && Env.OS === 'Windows')),
+				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
+				send_custom_headers: Test(window.XMLHttpRequest),
 				send_multipart: function() {
 					return !!(window.XMLHttpRequest && new XMLHttpRequest().upload && window.FormData) || I.can('send_binary_string');
 				},
-				slice_blob: !!(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
-				stream_upload: function() {
+				slice_blob: Test(window.File && (File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice)),
+				stream_upload: function(){
 					return I.can('slice_blob') && I.can('send_multipart');
 				},
-				summon_file_dialog: (function() { // yeah... some dirty sniffing here...
+				summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
 					return (Env.browser === 'Firefox' && Env.version >= 4) ||
 						(Env.browser === 'Opera' && Env.version >= 12) ||
 						(Env.browser === 'IE' && Env.version >= 10) ||
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 				}()),
-				upload_filesize: Runtime.capTrue
+				upload_filesize: True
 			}, 
 			arguments[2]
 		);
@@ -9524,12 +9536,15 @@ define("moxie/runtime/html4/Runtime", [
 	var type = 'html4', extensions = {};
 
 	function Html4Runtime(options) {
-		var I = this;
+		var I = this
+		, Test = Runtime.capTest
+		, True = Runtime.capTrue
+		;
 
 		Runtime.call(this, options, type, {
-			access_binary: !!(window.FileReader || window.File && File.getAsDataURL),
+			access_binary: Test(window.FileReader || window.File && File.getAsDataURL),
 			access_image_binary: false,
-			display_media: extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb')),
+			display_media: Test(extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb'))),
 			do_cors: false,
 			drag_and_drop: false,
 			resize_image: function() {
@@ -9549,12 +9564,13 @@ define("moxie/runtime/html4/Runtime", [
 			send_multipart: true,
 			slice_blob: false,
 			stream_upload: true,
-			summon_file_dialog: (function() { // yeah... some dirty sniffing here...
-				return  (Env.browser === 'Firefox' && Env.version >= 4)	||
-						(Env.browser === 'Opera' && Env.version >= 12)	||
-						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
+			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
+				return (Env.browser === 'Firefox' && Env.version >= 4) ||
+					(Env.browser === 'Opera' && Env.version >= 12) ||
+					(Env.browser === 'IE' && Env.version >= 10) ||
+					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 			}()),
-			upload_filesize: Runtime.capTrue,
+			upload_filesize: True,
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}

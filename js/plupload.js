@@ -62,13 +62,18 @@ function normalizeCaps(settings) {
 	}
 
 	// check settings for required features
-	plupload.each(settings, function(value, feature) {
-		resolve(feature, !!value, true); // strict check
-	});
-
 	if (!settings.multipart) { // special care for multipart: false
 		caps.send_binary_string = true;
 	}
+
+	if (!settings.chunks.size) {
+		delete settings.chunks;
+	}
+	
+	plupload.each(settings, function(value, feature) {
+		resolve(feature, !!value, true); // strict check
+	});
+	
 	return caps;
 }
 
@@ -581,7 +586,7 @@ var plupload = {
 	 * @return {String} Type of compatible runtime
 	 */
 	predictRuntime : function(features) {
-		return o.Runtime.thatCan(normalizeCaps(features));
+		return o.Runtime.thatCan(normalizeCaps(plupload.extend({}, features)));
 	}
 };
 
@@ -996,7 +1001,6 @@ plupload.Uploader = function(settings) {
 
 	// Default settings
 	settings = plupload.extend({
-		chunk_size : 0,
 		max_retries: 0,
 		multipart : true,
 		multi_selection : true,
@@ -1015,11 +1019,11 @@ plupload.Uploader = function(settings) {
 
 	// Alternative format for chunks
 	settings.chunks = plupload.extend({
-		size: settings.chunk_size, 
+		size: settings.chunk_size || 0, 
 		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
 	}, settings.chunks);
 	
-	required_caps = normalizeCaps(settings);
+	required_caps = normalizeCaps(plupload.extend({}, settings));
 
 
 	// Add public methods

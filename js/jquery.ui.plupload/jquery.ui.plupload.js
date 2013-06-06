@@ -1,7 +1,7 @@
 /**
  * jquery.ui.plupload.js
  *
- * Copyright 2009, Moxiecode Systems AB
+ * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
  *
  * License: http://www.plupload.com/license
@@ -10,18 +10,191 @@
  * Depends:
  *	jquery.ui.core.js
  *	jquery.ui.widget.js
- *	
- * Optionally:
  *	jquery.ui.button.js
  *	jquery.ui.progressbar.js
+ *	
+ * Optionally:
  *	jquery.ui.sortable.js
  */
 
-// JSLint defined globals
-/*global window:false, document:false, plupload:false, jQuery:false */
+ /* global jQuery:true */
 
-(function(window, document, plupload, $, undef) {
-	
+/**
+jQuery UI based implementation of the Plupload API - multi-runtime file uploading API.
+
+To use the widget you must include _jQuery_ and _jQuery UI_ bundle (including `ui.core`, `ui.widget`, `ui.button`, 
+`ui.progressbar` and `ui.sortable`).
+
+In general the widget is designed the way that you do not usually need to do anything to it after you instantiate it. 
+But! You still can intervenue, to some extent, in case you need to. Although, due to the fact that widget is based on 
+_jQuery UI_ widget factory, there are some specifics. See examples below for more details.
+
+@example
+	<!-- Instantiating: -->
+	<div id="uploader">
+		<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
+	</div>
+
+	<script>
+		$('#uploader').plupload({
+			url : '../upload.php',
+			filters : [
+				{title : "Image files", extensions : "jpg,gif,png"}
+			],
+			rename: true,
+			sortable: true,
+			flash_swf_url : '../../js/Moxie.swf',
+			silverlight_xap_url : '../../js/Moxie.xap',
+		});
+	</script>
+
+@example
+	// Invoking methods:
+	$('#uploader').plupload(options);
+
+	// Display welcome message in the notification area
+	$('#uploader').plupload('notify', 'info', "This might be obvious, but you need to click 'Add Files' to add some files.");
+
+@example
+	// Subscribing to the events...
+	// ... on initialization:
+	$('#uploader').plupload({ 
+		...
+		viewchanged: function(event, args) {
+			// stuff ...
+		}
+	});
+	// ... or after initialization
+	$('#uploader').on("viewchanged", function(event, args) {
+		// stuff ...
+	});
+
+@class UI.Plupload
+@constructor
+@param {Object} settings For detailed information about each option check documentation.
+	@param {String} settings.url URL of the server-side upload handler.
+	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
+	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
+	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
+	@param {String} [settings.flash_swf_url] URL of the Flash swf.
+	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
+	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
+	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
+	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
+	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
+	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
+	@param {Boolean} [settings.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
+	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
+	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
+		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
+		@param {Number} [settings.resize.height] If image is bigger, it will be resized.
+		@param {Number} [settings.resize.quality=90] Compression quality for jpegs (1-100).
+		@param {Boolean} [settings.resize.crop=false] Whether to crop images to exact dimensions. By default they will be resized proportionally.
+	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
+	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
+	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
+
+	@param {Boolean} [settings.autostart=false] Whether to auto start uploading right after file selection.
+	@param {Boolean} [settings.dragdrop=true] Enable ability to add file to the queue by drag'n'dropping them from the desktop.
+	@param {Boolean} [settings.rename=false] Enable ability to rename files in the queue.
+	@param {Boolean} [settings.sortable=false] Enable ability to sort files in the queue, changing their uploading priority.
+	@param {Object} [settings.buttons] Control the visibility of functional buttons. 
+		@param {Boolean} [settings.buttons.browse=true] Display browse button.
+		@param {Boolean} [settings.buttons.start=true] Display start button.
+		@param {Boolean} [settings.buttons.stop=true] Display stop button. 
+	@param {Object} [settings.views] Control various views of the file queue.
+		@param {Boolean} [settings.views.list=true] Enable list view.
+		@param {Boolean} [settings.views.thumbs=false] Enable thumbs view.
+		@param {String} [settings.views.default='list'] Default view.
+		@param {Boolean} [settings.views.remember=true] Whether to remember the current view (requires jQuery Cookie plugin).
+	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
+	@param {Number} [settings.max_file_count=0] Limit the number of files user is able to upload in one go, autosets _multiple_queues_ to _false_ (default is 0 - no limit).
+*/
+(function(window, document, plupload, $) {
+
+/**
+Dispatched when the widget is initialized and ready.
+
+@event ready
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+*/
+
+/**
+Dispatched when file dialog is closed.
+
+@event selected
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {Array} files Array of selected files represented by plupload.File objects
+*/
+
+/**
+Dispatched when file dialog is closed.
+
+@event removed
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {Array} files Array of removed files represented by plupload.File objects
+*/
+
+/**
+Dispatched when upload is started.
+
+@event start
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+*/
+
+/**
+Dispatched when upload is stopped.
+
+@event stop
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+*/
+
+/**
+Dispatched during the upload process.
+
+@event progress
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {plupload.File} file File that is being uploaded (includes loaded and percent properties among others).
+	@param {Number} size Total file size in bytes.
+	@param {Number} loaded Number of bytes uploaded of the files total size.
+	@param {Number} percent Number of percentage uploaded of the file.
+*/
+
+/**
+Dispatched when file is uploaded.
+
+@event uploaded
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {plupload.File} file File that was uploaded.
+	@param {Enum} status Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+*/
+
+/**
+Dispatched when upload of the whole queue is complete.
+
+@event complete
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {Array} files Array of uploaded files represented by plupload.File objects
+*/
+
+/**
+Dispatched when the view is changed, e.g. from `list` to `thumbs` or vice versa.
+
+@event viewchanged
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {String} type Current view type.
+*/
+
+/**
+Dispatched when error of some kind is detected.
+
+@event error
+@param {plupload.Uploader} uploader Uploader instance sending the event.
+@param {String} error Error message.
+@param {plupload.File} file File that was uploaded.
+	@param {Enum} status Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+*/
+
 var uploaders = {};	
 	
 function _(str) {
@@ -94,6 +267,8 @@ function renderUI(obj) {
 
 $.widget("ui.plupload", {
 
+	widgetEventPrefix: '',
+
 	imgs: {},
 	
 	contents_bak: '',
@@ -112,10 +287,10 @@ $.widget("ui.plupload", {
 		},
 		views: {
 			list: true,
-			thumbs: false
+			thumbs: false,
+			active: 'list',
+			remember: true // requires: https://github.com/carhartl/jquery-cookie, otherwise disabled even if set to true
 		},
-		default_view: 'list',
-		remember_view: true, // requires: https://github.com/carhartl/jquery-cookie, otherwise disabled even if set to true
 		autostart: false,
 		sortable: false,
 		rename: false,
@@ -125,9 +300,7 @@ $.widget("ui.plupload", {
 	FILE_COUNT_ERROR: -9001,
 	
 	_create: function() {
-		var self = this, id, uploader;
-		
-		id = this.element.attr('id');
+		var id = this.element.attr('id');
 		if (!id) {
 			id = plupload.guid();
 			this.element.attr('id', id);
@@ -200,13 +373,14 @@ $.widget("ui.plupload", {
 	_initUploader: function() {
 		var self = this
 		, id = this.id
-		, buttonsContainer = $('.plupload_buttons', this.element).attr('id', id + '_buttons')
 		, uploader
 		, options = { 
 			container: id + '_buttons',
 			browse_button: id + '_browse'
 		}
 		;
+
+		$('.plupload_buttons', this.element).attr('id', id + '_buttons');
 
 		if (self.options.dragdrop) {
 			this.filelist.parent().attr('id', this.id + '_dropbox');
@@ -230,7 +404,7 @@ $.widget("ui.plupload", {
 			}
 		});
 		
-		uploader.bind('PostInit', function(up, res) {	
+		uploader.bind('PostInit', function(up) {	
 			// all buttons are optional, so they can be disabled and hidden
 			if (!self.options.buttons.browse) {
 				self.browse_button.button('disable').hide();
@@ -275,6 +449,8 @@ $.widget("ui.plupload", {
 		
 		// check if file count doesn't exceed the limit
 		if (self.options.max_file_count) {
+			self.options.multiple_queues = false; // one go only
+
 			uploader.bind('FilesAdded', function(up, selectedFiles) {
 				var removed = [], selectedCount = selectedFiles.length;
 				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
@@ -400,7 +576,7 @@ $.widget("ui.plupload", {
 				}
 				
 				self.notify('error', message);
-				self._trigger('error', null, { up: up, file: file, error: message } );
+				self._trigger('error', null, { up: up, error: message, file: file } );
 			}
 		});
 	},
@@ -414,10 +590,10 @@ $.widget("ui.plupload", {
 			
 			if (!value.browse) {
 				self.browse_button.button('disable').hide();
-				up.disableBrowse(true);
+				self.uploader.disableBrowse(true);
 			} else {
 				self.browse_button.button('enable').show();
-				up.disableBrowse(false);
+				self.uploader.disableBrowse(false);
 			}
 			
 			if (!value.start) {
@@ -437,28 +613,57 @@ $.widget("ui.plupload", {
 	},
 
 	
+	/**
+	Start upload. Triggers `start` event.
+
+	@method start
+	*/
 	start: function() {
 		this.uploader.start();
-		this._trigger('start', null);
+		this._trigger('start', null, { up: this.uploader });
 	},
 
 	
+	/**
+	Stop upload. Triggers `stop` event.
+
+	@method stop
+	*/
 	stop: function() {
 		this.uploader.stop();
-		this._trigger('stop', null);
+		this._trigger('stop', null, { up: this.uploader });
 	},
 
+
+	/**
+	Enable browse button.
+
+	@method enable
+	*/
 	enable: function() {
-		self.browse_button.button('enable')
+		this.browse_button.button('enable');
 		this.uploader.disableBrowse(false);
 	},
 
+
+	/**
+	Disable browse button.
+
+	@method disable
+	*/
 	disable: function() {
-		this.browse_button.button('disable')
+		this.browse_button.button('disable');
 		this.uploader.disableBrowse(true);
 	},
 
 	
+	/**
+	Retrieve file by it's unique id.
+
+	@method getFile
+	@param {String} id Unique id of the file
+	@return {plupload.File}
+	*/
 	getFile: function(id) {
 		var file;
 		
@@ -470,29 +675,69 @@ $.widget("ui.plupload", {
 		return file;
 	},
 
+	/**
+	Return array of files currently in the queue.
 	
+	@method getFiles
+	@return {Array} Array of files in the queue represented by plupload.File objects
+	*/
+	getFiles: function() {
+		return this.uploader.files;
+	},
+
+	
+	/**
+	Remove the file from the queue.
+
+	@method removeFile
+	@param {plupload.File|String} file File to remove, might be specified directly or by it's unique id
+	*/
 	removeFile: function(file) {
 		if (plupload.typeOf(file) === 'string') {
-			file = this.getFile(id);
+			file = this.getFile(file);
 		}
 		this._removeFiles(file);
 	},
 
 	
+	/**
+	Clear the file queue.
+
+	@method clearQueue
+	*/
 	clearQueue: function() {
 		this.uploader.splice();
 	},
 
-	
+
+	/**
+	Retrieve internal plupload.Uploader object (usually not required).
+
+	@method getUploader
+	@return {plupload.Uploader}
+	*/
 	getUploader: function() {
 		return this.uploader;
 	},
 
-	
+
+	/**
+	Trigger refresh procedure, specifically browse_button re-measure and re-position operations.
+
+	@method refresh
+	*/
 	refresh: function() {
 		this.uploader.refresh();
 	},
 
+
+	/**
+	Display a message in notification area.
+
+	@method notify
+	@param {Enum} type Type of the message, either `error` or `info`
+	@param {String} message The text message to display.
+	*/
 	notify: function(type, message) {
 		var popup = $(
 			'<div class="plupload_message">' + 
@@ -514,8 +759,13 @@ $.widget("ui.plupload", {
 		
 		$('.plupload_header', this.container).append(popup);
 	},
-	
 
+	
+	/**
+	Destroy the widget, the uploader, free associated resources and bring back original html.
+
+	@method destroy
+	*/
 	destroy: function() {
 		this._removeFiles([].slice.call(this.uploader.files));
 		
@@ -533,7 +783,7 @@ $.widget("ui.plupload", {
 		
 		// destroy progressbar
 		if ($.ui.progressbar) {
-			 this.progressbar.progressbar('destroy');	
+			this.progressbar.progressbar('destroy');	
 		}
 		
 		// destroy sortable behavior
@@ -633,8 +883,7 @@ $.widget("ui.plupload", {
 				iconClass = 'ui-icon ui-icon-circle-arrow-w';
 				
 				// scroll uploading file into the view if its bottom boundary is out of it
-				var 
-				  scroller = $('.plupload_scroll', this.container)
+				var scroller = $('.plupload_scroll', this.container)
 				, scrollTop = scroller.scrollTop()
 				, scrollerHeight = scroller.height()
 				, rowOffset = $('#' + file.id).position().top + $('#' + file.id).height()
@@ -744,8 +993,7 @@ $.widget("ui.plupload", {
 
 			if (self.options.views.thumbs) {
 				queue.push(function(cb) {
-					var img;
-					img = new o.Image;
+					var img = new o.Image();
 
 					img.onload = function() {
 						img.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
@@ -763,7 +1011,10 @@ $.widget("ui.plupload", {
 					};
 
 					img.onerror = function() {
-						// error logic here
+						var ext = file.name.match(/\.([^\.]{1,7})$/);
+						$('#' + file.id + ' .plupload_file_thumb', self.filelist)
+							.html('<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">' + (ext ? ext[1] : 'none') + '</span></div>');
+						img.destroy();
 						cb();
 					};
 					img.load(file.getSource());
@@ -774,33 +1025,15 @@ $.widget("ui.plupload", {
 		});
 
 		if (queue.length) {
-			self._series(queue);
+			o.inSeries(queue);
 		}
 
 		// re-enable sortable
 		if (this.options.sortable && $.ui.sortable) {
-			 this._enableSortingList();	
+			this._enableSortingList();	
 		}
 
-		this._trigger('updatelist', null, this.filelist);
-	},
-
-
-	_series: function(queue, cb) {
-		var i = 0, length = queue.length;
-
-		if (o.typeOf(cb) !== 'function') {
-			cb = function() {};
-		}
-
-		function callNext(i) {
-			if (o.typeOf(queue[i]) === 'function') {
-				queue[i](function() {
-					++i < length ? callNext(i) : cb();
-				});
-			}
-		}
-		callNext(i);
+		this._trigger('updatelist', null, { filelist: this.filelist });
 	},
 
 
@@ -831,42 +1064,42 @@ $.widget("ui.plupload", {
 		if (up.files.length) {
 			// re-initialize sortable
 			if (this.options.sortable && $.ui.sortable) {
-				 this._enableSortingList();	
+				this._enableSortingList();	
 			}
 		}
 
-		this._trigger('updatelist', null, self.filelist);
+		this._trigger('updatelist', null, { filelist: this.filelist });
 	},
 	
 
-	_viewChanged: function(type) {
+	_viewChanged: function(view) {
 		// update or write a new cookie
-		if (this.options.remember_view && $.cookie) {
-			$.cookie('plupload_ui_view', type, { expires: 7, path: '/' });
+		if (this.options.views.remember && $.cookie) {
+			$.cookie('plupload_ui_view', view, { expires: 7, path: '/' });
 		} 
 	
 		// ugly fix for IE6 - make content area stretchable
 		if (mOxie.Env.browser === 'IE' && mOxie.Env.version < 7) {
-			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (type === 'list' ? 133 : 103) + ');');
+			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (view === 'list' ? 133 : 103) + ');');
 		}
 
-		this.container.removeClass('plupload_view_list plupload_view_thumbs').addClass('plupload_view_' + type); 
-		this.view_mode = type;
-		this._trigger('viewchanged', type);
+		this.container.removeClass('plupload_view_list plupload_view_thumbs').addClass('plupload_view_' + view); 
+		this.view_mode = view;
+		this._trigger('viewchanged', null, { view: view });
 	},
 
 
 	_enableViewSwitcher: function() {
 		var self = this
-		, type
+		, view
 		, switcher = $('.plupload_view_switch', this.container)
 		, buttons
 		, button
 		;
 
-		$.each(self.options.views, function(type, on) {
-			if (!on) {
-				switcher.find('[for="plupload_view_' + type + '"], #plupload_view_' + type).remove();
+		$.each(['list', 'thumbs'], function(view) {
+			if (!self.options.views[view]) {
+				switcher.find('[for="plupload_view_' + view + '"], #plupload_view_' + view).remove();
 			}
 		});
 
@@ -875,34 +1108,34 @@ $.widget("ui.plupload", {
 
 		if (buttons.length === 1) {
 			switcher.hide();
-			type = buttons.attr('for').replace(/^plupload_view_/, '');
-			self._viewChanged(type);
+			view = buttons.attr('for').replace(/^plupload_view_/, '');
+			this._viewChanged(view);
 			return;
 		} else if ($.ui.button && buttons.length > 1) {
 			switcher.show();
 			switcher.buttonset();
 		} else {
 			switcher.show();
-			self._viewChanged(this.options.default_view);
+			this._viewChanged(this.options.views.active);
 			return;
 		}
 
 		switcher.find('.plupload_button').click(function() {
-			type = $(this).attr('for').replace(/^plupload_view_/, '');
-			self._viewChanged(type);
+			view = $(this).attr('for').replace(/^plupload_view_/, '');
+			self._viewChanged(view);
 		});
 
-		if (this.options.remember_view && $.cookie) {
-			type = $.cookie('plupload_ui_view');
+		if (this.options.views.remember && $.cookie) {
+			view = $.cookie('plupload_ui_view');
 		}
 
 		// if wierd case, bail out to default
-		if (!~plupload.inArray(type, ['list', 'thumbs'])) {
-			type = this.options.default_view;
+		if (!~plupload.inArray(view, ['list', 'thumbs'])) {
+			view = this.options.views.active;
 		}
 
 		// if view not active - happens when switcher wasn't clicked manually
-		button = switcher.find('[for="plupload_view_'+type+'"]');
+		button = switcher.find('[for="plupload_view_'+view+'"]');
 		if (button.length) {
 			button.trigger('click');
 			return; 
@@ -914,7 +1147,7 @@ $.widget("ui.plupload", {
 		var self = this;
 
 		this.filelist.dblclick(function(e) {
-			var nameSpan = $(e.target), nameInput, file, parts, name, width, ext = "";
+			var nameSpan = $(e.target), nameInput, file, parts, name, ext = "";
 
 			if (!nameSpan.hasClass('plupload_file_namespan')) {
 				return;
@@ -952,7 +1185,7 @@ $.widget("ui.plupload", {
 	
 	
 	_enableSortingList: function() {
-		var idxStart, self = this, filelist = $('.plupload_filelist_content', this.element);
+		var self = this, filelist = $('.plupload_filelist_content', this.element);
 		
 		if ($('.plupload_file', filelist).length < 2) {
 			return;	
@@ -963,8 +1196,8 @@ $.widget("ui.plupload", {
 			
 			cancel: 'object, .plupload_clearer',
 
-			stop: function(e, ui) {
-				var i, length, idx, files = [];
+			stop: function() {
+				var files = [];
 				
 				$.each($(this).sortable('toArray'), function(i, id) {
 					files[files.length] = self.uploader.getFile(id);
