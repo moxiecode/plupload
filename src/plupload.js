@@ -569,7 +569,7 @@ var plupload = {
 	 * @return {String} Type of compatible runtime
 	 */
 	predictRuntime : function(features) {
-		return o.Runtime.thatCan(normalizeCaps(features));
+		return o.Runtime.thatCan(normalizeCaps(plupload.extend({}, features)));
 	}
 };
 
@@ -1007,7 +1007,7 @@ plupload.Uploader = function(settings) {
 		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
 	}, settings.chunks);
 	
-	required_caps = normalizeCaps(settings);
+	required_caps = normalizeCaps(plupload.extend({}, settings));
 
 
 	// Add public methods
