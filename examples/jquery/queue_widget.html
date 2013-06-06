@@ -39,8 +39,11 @@ $(function() {
 		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
 		max_file_size : '10mb',
-		chunk_size : '1mb',
 		multi_selection: false, // if set to true, html4 will always fail, since it can't select multiple files
+		chunks : {
+			size: '1mb',
+			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
+		},
 		rename : true,
 		dragdrop: true,
 		filters : [

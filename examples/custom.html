@@ -7,7 +7,6 @@
 
 <!-- production -->
 <script type="text/javascript" src="../js/plupload.full.min.js"></script>
-<!-- -->
 
 <!-- debug 
 <script type="text/javascript" src="../js/moxie.js"></script>
@@ -21,9 +20,10 @@
 
 <p>Shows you how to use the core plupload API.</p>
 
+<div id="filelist">Your browser doesn't have Flash, Silverlight or HTML5 support.</div>
+<br />
+
 <div id="container">
-	<div id="filelist"></div>
-    <br />
     <a id="pickfiles" href="javascript:;">[Select files]</a> 
     <a id="uploadfiles" href="javascript:;">[Upload files]</a>
 </div>
@@ -35,22 +35,24 @@ function $(id) {
 	return document.getElementById(id);	
 }
 
-
 var uploader = new plupload.Uploader({
 	runtimes : 'html5,flash,silverlight,html4',
-	browse_button : 'pickfiles', // you can pass in id or DOM Element itself
-	drop_element : $('container'), 
-	container: 'container',
+	browse_button : 'pickfiles', // you can pass in id...
+	container: $('container'), // ... or DOM Element itself
 	multi_selection: false, // if set to true, html4 will always fail, since it can't select multiple files
 	max_file_size : '10mb',
 	url : 'upload.php',
-	resize : {width : 320, height : 240, quality : 90},
 	flash_swf_url : '../js/Moxie.swf',
 	silverlight_xap_url : '../js/Moxie.xap',
 	filters : [
 		{title : "Image files", extensions : "jpg,gif,png"},
 		{title : "Zip files", extensions : "zip"}
 	]
+});
+
+
+uploader.bind('PostInit', function() {
+	$('filelist').innerHTML = '';
 });
 
 
