@@ -41,6 +41,7 @@ var uploader = new plupload.Uploader({
 	browse_button : 'pickfiles', // you can pass in id or DOM Element itself
 	drop_element : $('container'), 
 	container: 'container',
+	multi_selection: false, // if set to true, html4 will always fail, since it can't select multiple files
 	max_file_size : '10mb',
 	url : 'upload.php',
 	resize : {width : 320, height : 240, quality : 90},

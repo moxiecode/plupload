@@ -40,6 +40,7 @@ $(function() {
 		url : '../upload.php',
 		max_file_size : '10mb',
 		chunk_size : '1mb',
+		multi_selection: false, // if set to true, html4 will always fail, since it can't select multiple files
 		rename : true,
 		dragdrop: true,
 		filters : [
