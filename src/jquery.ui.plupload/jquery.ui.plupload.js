@@ -1087,7 +1087,7 @@ $.widget("ui.plupload", {
 		, button
 		;
 
-		$.each(['list', 'thumbs'], function(view) {
+		plupload.each(['list', 'thumbs'], function(view) {
 			if (!self.options.views[view]) {
 				switcher.find('[for="plupload_view_' + view + '"], #plupload_view_' + view).remove();
 			}

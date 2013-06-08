@@ -722,16 +722,6 @@ $.widget("ui.plupload", {
 
 
 	/**
-	Trigger refresh procedure, specifically browse_button re-measure and re-position operations.
-
-	@method refresh
-	*/
-	refresh: function() {
-		this.uploader.refresh();
-	},
-
-
-	/**
 	Display a message in notification area.
 
 	@method notify
@@ -1097,7 +1087,7 @@ $.widget("ui.plupload", {
 		, button
 		;
 
-		$.each(['list', 'thumbs'], function(view) {
+		plupload.each(['list', 'thumbs'], function(view) {
 			if (!self.options.views[view]) {
 				switcher.find('[for="plupload_view_' + view + '"], #plupload_view_' + view).remove();
 			}
