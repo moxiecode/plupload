@@ -1215,7 +1215,9 @@ plupload.Uploader = function(settings) {
 							code : plupload.HTTP_ERROR,
 							message : plupload.translate('HTTP Error.'),
 							file : file,
-							status : xhr.status
+							response : xhr.responseText,
+							status : xhr.status,
+							responseHeaders: xhr.getAllResponseHeaders()
 						});
 					}
 				}
@@ -1278,7 +1280,8 @@ plupload.Uploader = function(settings) {
 								offset : file.loaded,
 								total : blob.size,
 								response : xhr.responseText,
-								status : xhr.status
+								status : xhr.status,
+								responseHeaders: xhr.getAllResponseHeaders()
 							});
 						} else {
 							file.loaded = file.size;
@@ -1300,7 +1303,8 @@ plupload.Uploader = function(settings) {
 
 							up.trigger('FileUploaded', file, {
 								response : xhr.responseText,
-								status : xhr.status
+								status : xhr.status,
+								responseHeaders: xhr.getAllResponseHeaders()
 							});
 						} else {
 							// Still chunks left
