@@ -1547,15 +1547,25 @@ plupload.Uploader = function(settings) {
 			function resolveFile(file) {
 				var type = o.typeOf(file);
 
-				if (file instanceof o.Blob) {
-					files.push(file); // final step for other condition branches
-				} else if (file instanceof plupload.File) {
-					files.push(file.getSource());
-				} else if (o.inArray(type, ['file', 'blob']) !== -1 && ruid) {
-					files.push(new o.File(ruid, file));
+				if (file instanceof o.File) { // final step for other branches
+					if (!file.ruid) {
+						if (!ruid) { // weird case
+							return false;
+						}
+						file.ruid = ruid;
+						file.connectRuntime(ruid);
+					}
+					files.push(file);
 					if (fileName) {
 						files[files.length - 1].name = fileName;
 					}
+				} else if (file instanceof o.Blob) {
+					resolveFile(file.getSource());
+					file.destroy();
+				} else if (file instanceof plupload.File) {
+					resolveFile(file.getSource());
+				} else if (o.inArray(type, ['file', 'blob']) !== -1) {
+					resolveFile(new o.File(null, file));
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
 					// if we are dealing with input[type="file"]
 					o.each(file.files, resolveFile);
