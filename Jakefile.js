@@ -52,13 +52,13 @@ task("minifyjs", ["moxie"], function (params) {
 	fs.mkdirSync(targetDir, 0755);
 
 	// Include Plupload source
-	tools.copySync('./src/plupload.js', "js/plupload.js");
+	tools.copySync('./src/plupload.js', "js/plupload.dev.js");
 
 	// Copy compiled moxie files
 	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
 	tools.copySync(moxieDir + "/bin/silverlight/Moxie.xap", "js/Moxie.xap");
 	tools.copySync(moxieDir + "/bin/js/moxie.min.js", "js/moxie.min.js");
-	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
+	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.dev.js");
 
 	// Copy UI Plupload
 	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
@@ -86,7 +86,7 @@ task("minifyjs", ["moxie"], function (params) {
 	});
 
 	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
-	tools.addReleaseDetailsTo(targetDir + "/plupload.js", releaseInfo);
+	tools.addReleaseDetailsTo(targetDir + "/plupload.dev.js", releaseInfo);
 	tools.addReleaseDetailsTo(targetDir + "/plupload.min.js", releaseInfo);
 
 	var code = "";
