@@ -1586,11 +1586,13 @@ plupload.Uploader = function(settings) {
 		 * Removes a specific file.
 		 *
 		 * @method removeFile
-		 * @param {plupload.File} file File to remove from queue.
+		 * @param {plupload.File|String} file File to remove from queue.
 		 */
 		removeFile : function(file) {
+			var id = typeof(file) === 'string' ? file : file.id;
+
 			for (var i = files.length - 1; i >= 0; i--) {
-				if (files[i].id === file.id) {
+				if (files[i].id === id) {
 					return this.splice(i, 1)[0];
 				}
 			}
