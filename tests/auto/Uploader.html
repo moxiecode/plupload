@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: Test Uploader</title>
+
+<!-- qunit -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<!-- testrunner -->
+<script src="../js/reporter.js"></script>
+<script src="../scriptloader.js"></script>
+<script src="../FileHash.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.autostart = false;
+
+FileHash.init({
+	files: ['files/01.min.js', 'files/02.min.js'],
+	onready: function() {
+		QUnit.start();
+	}
+});
+
+o.Env.swf_url = "../../js/flash/Moxie.swf";
+o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+
+module("plupload.Uploader", {
+	setup: function() {
+		var options, up;
+
+		$('#qunit-fixture').html('<div id="uploader" />');
+
+		options = this.options = {
+			browse_button: 'uploader',
+			container: 'qunit-fixture',
+			url: "Plupload/upload.php"
+		};
+
+		up = this.up = new plupload.Uploader(options);
+
+		up.bind('PostInit', function() {
+			QUnit.start();
+		});
+
+		QUnit.stop();
+		up.init();
+	},
+
+	teardown: function() {
+		this.up.destroy();
+	}
+});
+
+// test initialization and options
+
+// test internal filters
+test('Internal filters (filters, max_file_size, prevent_duplicates)', function() {
+
+});
+
+test('addFile()', function() {
+	expect(8);
+	
+	var file, files = FileHash.nativeFiles;
+	// window.Blob
+	this.up.addFile(files[0].blob, files[0].name);
+	equal(this.up.files.length, 1, "window.Blob added.");
+	equal(this.up.files[0].name, files[0].name, "File name set properly through the second, optional argument.");
+
+	// o.Blob
+	file = new o.Blob(null, files[0].blob);
+	this.up.addFile(file, files[0].name);
+	equal(this.up.files.length, 2, "o.Blob added (file name: " + this.up.files[1].name  + ").");
+
+	// o.File
+	file = new o.File(null, files[1].blob);
+	file.name = files[1].name;
+	this.up.addFile(file);
+	equal(this.up.files.length, 3, "o.File added (file name: " + this.up.files[2].name  + ").");
+
+	// plupload.File
+	file = new plupload.File(new o.File(null, files[1].blob));
+	this.up.addFile(file);
+	equal(this.up.files.length, 4, "plupload.File added (file name: " + this.up.files[3].name  + ").");
+
+	this.up.bind('FilesAdded', function(up, files) {
+		equal(files.length, 4, "FilesAdded triggered, " + files.length + " files were passed to listener.");
+	});
+
+	// array of file objects
+	this.up.addFile([
+		files[0].blob,
+		new o.Blob(null, files[0].blob),
+		new o.File(null, files[1].blob),
+		new plupload.File(new o.File(null, files[1].blob))
+	], files[0].name);
+	equal(this.up.files.length, 8, "Mixed array of various file objects added.");
+	notEqual(this.up.files[7].name, files[0].name, "Second parameter (fileName) properly ignored, when first one is an array.");
+});
+
+
+test('getFile()', function() {
+	expect(1);
+
+	var file, files = FileHash.nativeFiles;
+
+	this.up.addFile([
+		files[0].blob,
+		new o.Blob(null, files[0].blob),
+		new o.File(null, files[1].blob),
+		new plupload.File(new o.File(null, files[1].blob))
+	]);
+
+	file = this.up.getFile(this.up.files[0].id);
+	deepEqual(file, this.up.files[0], "File retrieved by id with getFile().");
+});
+
+
+test('removeFile() / splice()', function() {
+	expect(5);
+
+	var countFiles, files = FileHash.nativeFiles;
+
+	this.up.addFile([
+		files[0].blob,
+		new o.Blob(null, files[0].blob),
+		new o.File(null, files[1].blob),
+		new plupload.File(new o.File(null, files[1].blob))
+	]);
+
+	countFiles = this.up.files.length;
+
+	this.up.removeFile(this.up.files[0]);
+	equal(this.up.files.length, --countFiles, "File removed from the queue by passing a plupload.File object.");
+
+	this.up.removeFile(this.up.files[0].id);
+	equal(this.up.files.length, --countFiles, "File removed from the queue by passing file id.");
+
+
+	this.up.bind('FilesRemoved', function(up, files) {
+		equal(files.length, 2, "FilesRemoved triggred, " + files.length + " removed.");
+	});
+
+	this.up.bind('QueueChanged', function(up) {
+		ok(true, "QueueChanged triggered.");
+	});
+	this.up.splice(0, 2);
+	equal(this.up.files.length, 0, "Two files removed simultaneously with splice().");
+});
+
+// test upload
+
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">Plupload: Test Uploader</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests">
+	</ol>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

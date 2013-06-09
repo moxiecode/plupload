@@ -1510,7 +1510,6 @@ plupload.Uploader = function(settings) {
 		 */
 		getFile : function(id) {
 			var i;
-
 			for (i = files.length - 1; i >= 0; i--) {
 				if (files[i].id === id) {
 					return files[i];
