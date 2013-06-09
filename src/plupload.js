@@ -989,6 +989,7 @@ plupload.Uploader = function(settings) {
 
 	// Default settings
 	settings = plupload.extend({
+		runtimes: o.Runtime.order,
 		max_retries: 0,
 		multipart : true,
 		multi_selection : true,
