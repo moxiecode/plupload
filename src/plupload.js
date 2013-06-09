@@ -1524,10 +1524,25 @@ plupload.Uploader = function(settings) {
 		 * if any files were added to the queue. Otherwise nothing happens.
 		 *
 		 * @method addFile
-		 * @param {Plupload.File|mOxie.File|File|Node|Array} file File or files to add to the queue.
+		 * @param {plupload.File|mOxie.File|File|Node|Array} file File or files to add to the queue.
+		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
-		addFile : function(file) {
-			var self = this, files = [], queue = [];
+		addFile : function(file, fileName) {
+			var self = this
+			, files = []
+			, ruid
+			;
+
+			function getRUID() {
+				var runtime, ctrl = fileDrop || fileInput;
+				if (ctrl) {
+					runtime = ctrl.getRuntime();
+					if (runtime.type === 'html5') {
+						return runtime.uid;
+					}
+				}
+				return false;
+			}
 
 			function resolveFile(file) {
 				var type = o.typeOf(file);
@@ -1536,42 +1551,25 @@ plupload.Uploader = function(settings) {
 					files.push(file); // final step for other condition branches
 				} else if (file instanceof plupload.File) {
 					files.push(file.getSource());
-				} else if (type === 'file') {
-					// this process is asyncronous, so we queue it to be handled in series
-					queue.push(function(cb) {
-						// we are attaching the file to the runtime here
-						var target = new o.RuntimeTarget();
-						target.bind('RuntimeInit', function(e, runtime) {
-							resolveFile(new o.File(runtime.uid, file));
-							cb();
-						});
-						try {
-							target.connectRuntime({ runtime_order: "html5" });
-						} catch (ex) {
-							// runtime failed to initialize
-							self.trigger('Error', {
-								code : plupload.FILE_EXTENSION_ERROR,
-								message : plupload.translate('File extension error.'),
-								file : file
-							});
-							cb();
-						}
-					});
-					return;
+				} else if (o.inArray(type, ['file', 'blob']) !== -1 && ruid) {
+					files.push(new o.File(ruid, file));
+					if (fileName) {
+						files[files.length - 1].name = fileName;
+					}
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
 					// if we are dealing with input[type="file"]
 					o.each(file.files, resolveFile);
 				} else if (type === 'array') {
 					// mixed array
+					fileName = null; // should never happen, but unset anyway to avoid funny situations
 					o.each(file, resolveFile);
 				}
 			}
 
-			resolveFile(file);
+			ruid = getRUID();
 
-			o.inSeries(queue, function() { // if queue is empty, callback will be invoked instantly
-				addSelectedFiles.call(self, files);
-			});
+			resolveFile(file);
+			addSelectedFiles.call(self, files);
 		},
 
 		/**
