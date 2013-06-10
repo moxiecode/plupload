@@ -58,11 +58,6 @@ module("plupload.Uploader", {
 
 // test initialization and options
 
-// test internal filters
-test('Internal filters (filters, max_file_size, prevent_duplicates)', function() {
-
-});
-
 test('addFile()', function() {
 	expect(8);
 	
@@ -151,6 +146,108 @@ test('removeFile() / splice()', function() {
 	});
 	this.up.splice(0, 2);
 	equal(this.up.files.length, 0, "Two files removed simultaneously with splice().");
+});
+
+
+// test internal filters
+test('options.filters', function() {
+	expect(3);
+
+	var files = FileHash.nativeFiles;
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters : [
+			{title : "Image files", extensions : "jpg,jpeg,gif,png"}
+		]
+	}, this.options));
+
+
+	up.bind('PostInit', function() {
+		start();
+
+		up.addFile(files[1].blob, files[1].name);
+		equal(up.files.length, 0, "No files were added to the queue.");
+
+		// add asterisk wildcard
+		up.settings.filters.push({title: "All files", extensions: "*"});
+		up.addFile(files[1].blob, files[1].name);
+		equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
+
+		up.destroy();
+	});
+
+	up.bind('Error', function(up, error) {
+		equal(error.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
+	});
+
+	stop();
+	up.init();
+});
+
+
+test('options.max_file_size', function() {
+	expect(2);
+
+	var files = FileHash.nativeFiles;
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		max_file_size: '100kb'
+	}, this.options));
+
+
+	up.bind('PostInit', function() {
+		start();
+
+		up.addFile(files[1].blob, files[1].name);
+		equal(up.files.length, 0, "No files were added to the queue.");
+
+		up.destroy();
+	});
+
+	up.bind('Error', function(up, error) {
+		equal(error.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
+	});
+
+	stop();
+	up.init();
+});
+
+
+test('options.prevent_duplicates', function() {
+	expect(4);
+
+	var files = FileHash.nativeFiles;
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		prevent_duplicates: true
+	}, this.options));
+
+
+	up.bind('PostInit', function() {
+		start();
+
+		up.addFile(files[1].blob, files[1].name);
+		up.addFile(files[0].blob, files[1].name); // another file but with the same name
+		equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
+
+		up.addFile(files[0].blob, files[0].name);
+		equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
+
+		up.addFile(files[0].blob, files[0].name);
+		equal(up.files.length, 3, "File ignored, 'cause a file with the same and size already in the queue.");
+
+		up.destroy();
+	});
+
+	up.bind('Error', function(up, error) {
+		equal(error.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
+	});
+
+	stop();
+	up.init();
 });
 
 // test upload
