@@ -1,8 +1,9 @@
 /* global jake:true, desc:true, task:true, complete:true, require:true, console:true, process:true */
 /* jshint unused:false */
-var fs = require("fs");
-var path = require("path");
+var fs = require('fs');
+var path = require('path');
 var exec = require('child_process').exec;
+var Instrument = require('coverjs').Instrument;
 var tools = require('./build/BuildTools');
 var uglify = tools.uglify;
 var less = tools.less;
@@ -22,7 +23,7 @@ function exit(message) {
 }
 
 desc("Default build task");
-task("default", ["minifyjs", "docs"], function (params) {});
+task("default", ["mkjs", "docs"], function (params) {});
 
 desc("Build release package");
 task("release", ["default", "package"], function (params) {});
@@ -42,7 +43,7 @@ task("moxie", [], function (params) {
 
 
 desc("Minify JS files");
-task("minifyjs", ["moxie"], function (params) {
+task("mkjs", ["moxie"], function (params) {
 	var targetDir = "./js", moxieDir = "src/moxie";
 	
 	// Clear previous versions
@@ -53,6 +54,12 @@ task("minifyjs", ["moxie"], function (params) {
 
 	// Include Plupload source
 	tools.copySync('./src/plupload.js', "js/plupload.dev.js");
+
+	// Instrument Plupload code
+	fs.writeFileSync(targetDir + '/plupload.cov.js', new Instrument(fs.readFileSync('./src/plupload.js').toString(), {
+		name: 'Plupload'
+	}).instrument());
+	
 
 	// Copy compiled moxie files
 	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
