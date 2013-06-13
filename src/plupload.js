@@ -1533,12 +1533,9 @@ plupload.Uploader = function(settings) {
 			;
 
 			function getRUID() {
-				var runtime, ctrl = fileDrop || fileInput;
+				var ctrl = fileDrop || fileInput;
 				if (ctrl) {
-					runtime = ctrl.getRuntime();
-					if (runtime.type === 'html5') {
-						return runtime.uid;
-					}
+					return ctrl.getRuntime().uid;
 				}
 				return false;
 			}
