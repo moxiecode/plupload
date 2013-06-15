@@ -12,12 +12,13 @@
 <!-- testrunner -->
 <script src="../js/reporter.js"></script>
 <script src="../scriptloader.js"></script>
-<script src="../FileHash.js"></script>
+<script src="../tools/FileHash.js"></script>
 
 <script type="text/javascript">
 
 QUnit.config.reorder = false;
 QUnit.config.autostart = false;
+QUnit.config.testTimeout = 10000;
 
 FileHash.init({
 	files: ['files/01.min.js', 'files/02.min.js'],
@@ -36,6 +37,7 @@ module("plupload.Uploader", {
 		$('#qunit-fixture').html('<div id="uploader" />');
 
 		options = this.options = {
+			runtimes: 'test',
 			browse_button: 'uploader',
 			container: 'qunit-fixture',
 			url: "Plupload/upload.php"
@@ -56,7 +58,6 @@ module("plupload.Uploader", {
 	}
 });
 
-// test initialization and options
 
 test('addFile()', function() {
 	expect(8);

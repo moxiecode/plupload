@@ -44,6 +44,7 @@ window.FileHash = new (function() {
 			, binStr = window.atob(fileData.data)
 			;
 
+			// add native file where possible
 			if (hasBlobConstructor) {
 				this.nativeFiles.push({
 					name: fileData.name,
@@ -56,6 +57,15 @@ window.FileHash = new (function() {
 					name: fileData.name,
 					blob: bb.getBlob(type)
 				});
+			}
+
+			// add runtime version
+			if (window.o && window.o.File) {
+				this.runtimeFiles.push(new o.File(null, {
+					name: fileData.name,
+					type: type,
+					data: binStr
+				}));
 			}
 
 			_filesAdded++;
