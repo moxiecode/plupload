@@ -54,7 +54,8 @@ function normalizeCaps(settings) {
 		caps.send_binary_string = true;
 	}
 
-	if (!settings.chunks.size) {
+	// 'chunks' used to be a reserved word in previous Plupload, so we need to get rid of it, if the size is 0 to avoid confusion
+	if (settings.chunks && !settings.chunks.size) {
 		delete settings.chunks;
 	}
 	
