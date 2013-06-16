@@ -54,7 +54,7 @@ function normalizeCaps(settings) {
 		caps.send_binary_string = true;
 	}
 
-	// 'chunks' used to be a reserved word in previous Plupload, so we need to get rid of it, if the size is 0 to avoid confusion
+	// 'chunks' used to be a reserved word in previous Plupload, so we need to get rid of it, if the size is 0, to avoid confusion
 	if (settings.chunks && !settings.chunks.size) {
 		delete settings.chunks;
 	}
@@ -567,15 +567,23 @@ var plupload = {
 
 	/**
 	 * A way to predict what runtime will be choosen in the current environment with the
-	 * specified settings or a list of features/caps.
+	 * specified settings.
 	 *
 	 * @method predictRuntime
 	 * @static
-	 * @param {Object|String} features List of settings/features/caps
+	 * @param {Object|String} config Plupload settings to check
+	 * @param {String} [runtimes] Comma-separated list of runtimes to check against
 	 * @return {String} Type of compatible runtime
 	 */
-	predictRuntime : function(features) {
-		return o.Runtime.thatCan(normalizeCaps(plupload.extend({}, features)));
+	predictRuntime : function(config, runtimes) {
+		var up, runtime; 
+		if (runtimes) {
+			config.runtimes = runtimes;
+		}
+		up = new plupload.Uploader(config);
+		runtime = up.runtime;
+		up.destroy();
+		return runtime;
 	}
 };
 
@@ -987,37 +995,6 @@ plupload.Uploader = function(settings) {
 	}
 
 
-	// Inital total state
-	total = new plupload.QueueProgress();
-
-	// Default settings
-	settings = plupload.extend({
-		runtimes: o.Runtime.order,
-		max_retries: 0,
-		multipart : true,
-		multi_selection : true,
-		file_data_name : 'file',
-		filters : [],
-		prevent_duplicates: false
-	}, settings);
-
-	// Resize defaults
-	if (settings.resize) {
-		settings.resize = plupload.extend({
-			preserve_headers: true,
-			crop: false
-		}, settings.resize);
-	}
-
-	// Alternative format for chunks
-	settings.chunks = plupload.extend({
-		size: settings.chunk_size || 0, 
-		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
-	}, settings.chunks);
-	
-	required_caps = normalizeCaps(plupload.extend({}, settings));
-
-
 	// Add public methods
 	plupload.extend(this, {
 
@@ -1047,6 +1024,14 @@ plupload.Uploader = function(settings) {
 		 * @type Object
 		 */
 		features : {},
+
+		/**
+		 * Current runtime name.
+		 *
+		 * @property runtime
+		 * @type String
+		 */
+		runtime: '',
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1081,10 +1066,6 @@ plupload.Uploader = function(settings) {
 		 */
 		init : function() {
 			var self = this;
-
-			// Convert settings
-			settings.chunks.size = plupload.parseSize(settings.chunks.size);
-			settings.max_file_size = plupload.parseSize(settings.max_file_size);
 
 			// Check if drop zone requested
 			settings.drop_element = o.get(settings.drop_element);
@@ -1442,9 +1423,7 @@ plupload.Uploader = function(settings) {
 
 			// some dependent scripts hook onto Init to alter configuration options, raw UI, etc (like Queue Widget),
 			// therefore we got to fire this one, before we dive into the actual initializaion
-			self.trigger('Init', {
-				runtime: "Generic" // we need to pass something for backward compatibility
-			});
+			self.trigger('Init', { runtime: this.runtime });
 
 			initControls.call(this);
 		},
@@ -1754,6 +1733,44 @@ plupload.Uploader = function(settings) {
 			events = null;
 		}
 	});
+
+
+	// Inital total state
+	total = new plupload.QueueProgress();
+
+	// Default settings
+	settings = plupload.extend({
+		runtimes: o.Runtime.order,
+		max_retries: 0,
+		multipart : true,
+		multi_selection : true,
+		file_data_name : 'file',
+		filters : [],
+		prevent_duplicates: false
+	}, settings);
+
+	// Resize defaults
+	if (settings.resize) {
+		settings.resize = plupload.extend({
+			preserve_headers: true,
+			crop: false
+		}, settings.resize);
+	}
+
+	// Alternative format for chunks
+	settings.chunks = plupload.extend({
+		size: settings.chunk_size || 0, 
+		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
+	}, settings.chunks);
+
+	// Convert settings
+	settings.chunks.size = plupload.parseSize(settings.chunks.size);
+	settings.max_file_size = plupload.parseSize(settings.max_file_size);
+	
+	required_caps = normalizeCaps(plupload.extend({}, settings));
+
+	// predict runtime
+	this.runtime = o.Runtime.thatCan(required_caps, settings.runtimes);
 };
 
 /**
