@@ -892,6 +892,7 @@ plupload.Uploader = function(settings) {
 					});
 
 					fileInput.bind('error runtimeerror', function() {
+						fileInput = null;
 						cb();
 					});
 
@@ -922,6 +923,7 @@ plupload.Uploader = function(settings) {
 					};
 
 					fileDrop.bind('error runtimeerror', function() {
+						fileDrop = null;
 						cb();
 					});
 
