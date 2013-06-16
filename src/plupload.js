@@ -1727,18 +1727,29 @@ plupload.Uploader = function(settings) {
 		destroy : function() {
 			this.stop();
 
+			// Purge the queue
+			plupload.each(files, function(file) {
+				file.destroy();
+			});
+			files = null;
+
 			if (fileInput) {
 				fileInput.destroy();
+				fileInput = null;
 			}
 
 			if (fileDrop) {
 				fileDrop.destroy();
+				fileDrop = null;
 			}
+
+			required_caps = startTime = total = disabled = xhr = null;
 
 			this.trigger('Destroy');
 
 			// Clean-up after uploader itself
 			this.unbindAll();
+			events = null;
 		}
 	});
 };
