@@ -1745,6 +1745,8 @@ plupload.Uploader = function(settings) {
 		multipart : true,
 		multi_selection : false,
 		file_data_name : 'file',
+		flash_swf_url : 'js/Moxie.swf',
+		silverlight_xap_url : 'js/Moxie.xap',
 		filters : [],
 		prevent_duplicates: false
 	}, settings);
