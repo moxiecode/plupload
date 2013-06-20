@@ -1743,7 +1743,7 @@ plupload.Uploader = function(settings) {
 		runtimes: o.Runtime.order,
 		max_retries: 0,
 		multipart : true,
-		multi_selection : true,
+		multi_selection : false,
 		file_data_name : 'file',
 		filters : [],
 		prevent_duplicates: false
