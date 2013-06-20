@@ -8,9 +8,71 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-// JSLint defined globals
-/*global plupload:false, jQuery:false, alert:false */
+/* global jQuery:true, alert:true */
 
+/**
+jQuery based implementation of the Plupload API - multi-runtime file uploading API.
+
+To use the widget you must include _jQuery_. It is not meant to be extended in any way and is provided to be
+used as it is.
+
+@example
+	<!-- Instantiating: -->
+	<div id="uploader">
+		<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
+	</div>
+
+	<script>
+		$('#uploader').pluploadQueue({
+			url : '../upload.php',
+			filters : [
+				{title : "Image files", extensions : "jpg,gif,png"}
+			],
+			rename: true,
+			flash_swf_url : '../../js/Moxie.swf',
+			silverlight_xap_url : '../../js/Moxie.xap',
+		});
+	</script>
+
+@example
+	// Retrieving a reference to plupload.Uploader object
+	var uploader = $('#uploader').pluploadQueue();
+
+	uploader.bind('FilesAdded', function() {
+		
+		// Autostart
+		setTimeout(uploader.start, 1); // "detach" from the main thread
+	});
+
+@class pluploadQueue
+@constructor
+@param {Object} settings For detailed information about each option check documentation.
+	@param {String} settings.url URL of the server-side upload handler.
+	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
+	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
+	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
+	@param {String} [settings.flash_swf_url] URL of the Flash swf.
+	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
+	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
+	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
+	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
+	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
+	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
+	@param {Boolean} [settings.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
+	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
+	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
+		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
+		@param {Number} [settings.resize.height] If image is bigger, it will be resized.
+		@param {Number} [settings.resize.quality=90] Compression quality for jpegs (1-100).
+		@param {Boolean} [settings.resize.crop=false] Whether to crop images to exact dimensions. By default they will be resized proportionally.
+	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
+	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
+	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
+
+	@param {Boolean} [settings.dragdrop=true] Enable ability to add file to the queue by drag'n'dropping them from the desktop.
+	@param {Boolean} [settings.rename=false] Enable ability to rename files in the queue.
+	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
+*/
 (function($) {
 	var uploaders = {};
 

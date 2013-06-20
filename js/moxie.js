@@ -307,6 +307,26 @@ define('moxie/core/utils/Basic', [], function() {
 		return diff.length ? diff : false;
 	};
 
+
+	/**
+	Find intersection of two arrays.
+
+	@private
+	@method arrayIntersect
+	@param {Array} array1
+	@param {Array} array2
+	@return {Array} Intersection of two arrays or null if there is none
+	*/
+	var arrayIntersect = function(array1, array2) {
+		var result = [];
+		each(array1, function(item) {
+			if (inArray(item, array2) !== -1) {
+				result.push(item);
+			}
+		});
+		return result.length ? result : null;
+	};
+	
 	
 	/**
 	Forces anything into an array.
@@ -411,6 +431,7 @@ define('moxie/core/utils/Basic', [], function() {
 		inSeries: inSeries,
 		inArray: inArray,
 		arrayDiff: arrayDiff,
+		arrayIntersect: arrayIntersect,
 		toArray: toArray,
 		trim: trim,
 		parseSizeStr: parseSizeStr
@@ -474,7 +495,7 @@ define("moxie/core/I18n", [
 		sprintf: function(str) {
 			var args = [].slice.call(arguments, 1), reStr = '';
 
-			str.split(/%[sdf]/).forEach(function(part) {
+			Basic.each(str.split(/%[sdf]/), function(part) {
 				reStr += part;
 				if (args.length) {
 					reStr += args.shift();
@@ -809,19 +830,20 @@ define("moxie/core/utils/Env", [
 				}()),
 
 				return_response_type: function(responseType) {
-					if (!window.XMLHttpRequest) {
-						return false;
-					}
 					try {
-						var xhr = new XMLHttpRequest();
-						if (Basic.typeOf(xhr.responseType) !== 'undefined') {
-							xhr.open('get', 'infinity-8.me'); // otherwise Gecko throws an exception
-							xhr.responseType = responseType;
-							// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
-							if (xhr.responseType !== responseType) {
-								return false;
-							}
+						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
 							return true;
+						} else if (window.XMLHttpRequest){
+							var xhr = new XMLHttpRequest();
+							xhr.open('get', '/'); // otherwise Gecko throws an exception
+							if ('responseType' in xhr) {
+								xhr.responseType = responseType;
+								// as of 23.0.1271.64, Chrome switched from throwing exception to merely logging it to the console (why? o why?)
+								if (xhr.responseType !== responseType) {
+									return false;
+								}
+								return true;
+							}
 						}
 					} catch (ex) {}
 					return false;
@@ -1496,7 +1518,7 @@ define('moxie/core/EventTarget', [
 					
 					if (Basic.typeOf(this[h]) === 'function') {
 						this.addEventListener(handlers[i], this[h]);
-					} else if (this[h] === undefined) {
+					} else if (Basic.typeOf(this[h]) === 'undefined') {
 						this[h] = null; // object must have defined event properties, even if it doesn't make use of them
 					}
 				}
@@ -1717,10 +1739,10 @@ define('moxie/runtime/Runtime', [
 	@param {Object} options
 	@param {String} type Sanitized name of the runtime
 	@param {Object} [caps] Set of capabilities that differentiate specified runtime
-	@param {Object} [clientCaps] Set of capabilities that implicitly switch the runtime to 'client' mode
+	@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
 	@param {String} [defaultMode='browser'] Default operational mode to choose if no required capabilities were requested
 	*/
-	function Runtime(options, type, caps, clientCaps, defaultMode) {
+	function Runtime(options, type, caps, modeCaps, defaultMode) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -1738,52 +1760,67 @@ define('moxie/runtime/Runtime', [
 		var self = this
 		, _shim
 		, _uid = Basic.guid(type + '_')
-		, _mode = null
 		;
+
 
 		/**
 		Runtime (not native one) may operate in browser or client mode.
 		
 		@method _setMode
 		@private
-		@param {Object} [clientCaps] Set of capabilities that require client mode
-		@param {Object} [defaultMode] The mode to switch to if clientCaps or requiredCaps are empty
+		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
+		@param {Object} [defaultMode] The mode to switch to if modeCaps or requiredCaps are empty
 		*/
-		function _setMode(clientCaps, defaultMode) {
-			var self = this
+		function _setMode(modeCaps, defaultMode) {
+			var mode = null
 			, rc = options && options.required_caps
 			;
 
+			defaultMode = defaultMode || 'browser';
+
 			// mode can be effectively set only once
-			if (_mode !== null) {
-				return _mode;
+			if (this.mode !== null) {
+				return this.mode;
 			}
 
-			if (rc && !Basic.isEmptyObj(clientCaps)) {
+			if (rc && !Basic.isEmptyObj(modeCaps)) {
 				// loop over required caps and check if they do require the same mode
 				Basic.each(rc, function(value, cap) {
-					if (clientCaps.hasOwnProperty(cap)) {
-						var capMode = self.can(cap, value, clientCaps) ? 'client' : 'browser';
-						// if cap requires conflicting mode - runtime cannot fulfill required caps
-						if (_mode && _mode !== capMode) {
-							return (_mode = false);
-						} else {
-							_mode = capMode;
+					if (modeCaps.hasOwnProperty(cap)) {
+						var capMode = modeCaps[cap](value);
+
+						// make sure we always have an array
+						if (typeof(capMode) === 'string') {
+							capMode = [capMode];
+						}
+						
+						if (!mode) {
+							mode = capMode;
+						} else if (!(mode = Basic.arrayIntersect(mode, capMode))) {
+							// if cap requires conflicting mode - runtime cannot fulfill required caps
+							return (mode = false);
 						}
 					}
 				});
+
+				if (mode) {
+					this.mode = Basic.inArray(defaultMode, mode) !== -1 ? defaultMode : mode[0];
+				} else if (mode === false) {
+					this.mode = false;
+				}
+			} 
+			
+			// if mode still not defined
+			if (this.mode === null) { 
+				this.mode = defaultMode;
 			} 
 
-			// if mode still not defined
-			if (_mode === null) {
-				_mode = defaultMode || 'browser';
-			}
-
 			// once we got the mode, test against all caps
-			if (_mode && rc && !this.can(rc)) {
-				_mode = false;
+			if (this.mode && rc && !this.can(rc)) {
+				this.mode = false;
 			}	
 		}
+
 
 		// register runtime in private hash
 		runtimes[_uid] = this;
@@ -1819,6 +1856,8 @@ define('moxie/runtime/Runtime', [
 			return_status_code: true,
 			// ... send custom http header with the request
 			send_custom_headers: false,
+			// ... pick up the files from a dialog
+			select_file: false,
 			// ... select whole folder in file browse dialog
 			select_folder: false,
 			// ... select multiple files at once in file browse dialog
@@ -1907,6 +1946,15 @@ define('moxie/runtime/Runtime', [
 			type: type,
 
 			/**
+			Runtime (not native one) may operate in browser or client mode.
+
+			@property mode
+			@private
+			@type {String|Boolean} current mode or false, if none possible
+			*/
+			mode: null,
+
+			/**
 			id of the DOM container for the runtime (if available)
 
 			@property shimid
@@ -1970,17 +2018,6 @@ define('moxie/runtime/Runtime', [
 				} else {
 					return (value === refCaps[cap]);
 				}
-			},
-
-
-			/**
-			Runtime (not native one) may operate in browser or client mode.
-
-			@method getMode
-			@return {String|Boolean} current mode or false, if none possible
-			*/
-			getMode: function() {
-				return _mode || false;
 			},
 
 
@@ -2081,11 +2118,11 @@ define('moxie/runtime/Runtime', [
 				this.unbindAll();
 				delete runtimes[this.uid];
 				this.uid = null; // mark this runtime as destroyed
-				_uid = self = _shim = _mode = shimContainer = null;
+				_uid = self = _shim = shimContainer = null;
 			}
 		});
 
-		_setMode.call(this, clientCaps, defaultMode);
+		_setMode.call(this, modeCaps, defaultMode);
 	}
 
 
@@ -2179,7 +2216,7 @@ define('moxie/runtime/Runtime', [
 			runtime = new constructor({
 				required_caps: caps
 			});
-			mode = runtime.getMode();
+			mode = runtime.mode;
 			runtime.destroy();
 			return !!mode;
 		}
@@ -2322,7 +2359,7 @@ define('moxie/runtime/RuntimeClient', [
 					/*runtime.bind('Exception', function() { });*/
 
 					// check if runtime managed to pick-up operational mode
-					if (!runtime.getMode()) {
+					if (!runtime.mode) {
 						runtime.trigger('Error');
 						return;
 					}
@@ -2428,8 +2465,9 @@ define('moxie/file/Blob', [
 			return blob;
 		}
 
-		if (ruid) {
-			RuntimeClient.call(this);
+		RuntimeClient.call(this);
+
+		if (ruid) {	
 			this.connectRuntime(ruid);
 		}
 
@@ -2907,7 +2945,11 @@ define('moxie/file/FileInput', [
 				});
 
 				// runtime needs: options.required_features, options.runtime_order and options.container
-				self.connectRuntime(options); // throws RuntimeError
+				self.connectRuntime(Basic.extend({}, options, {
+					required_caps: {
+						select_file: true
+					}
+				}));
 			},
 
 			/**
@@ -3701,8 +3743,6 @@ define("moxie/xhr/FormData", [
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*global ActiveXObject:true */
-
 define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
@@ -3921,8 +3961,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			_options = {},
 			_xhr,
 			_responseHeaders = '',
-			_responseHeadersBag,
-			_mode = NATIVE
+			_responseHeadersBag
 			;
 
 		
@@ -4218,32 +4257,29 @@ define("moxie/xhr/XMLHttpRequest", [
 					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 				}
 				
-				// 3
-				if  (!_canUseNativeXHR()) {
-					
-					// sending Blob
-					if (data instanceof Blob) {
-						_options.ruid = data.ruid;
-						_mimeType = data.type;
+				// 3					
+				// sending Blob
+				if (data instanceof Blob) {
+					_options.ruid = data.ruid;
+					_mimeType = data.type || 'application/octet-stream';
+				}
+				
+				// FormData
+				else if (data instanceof FormData) {
+					if (data.hasBlob()) {
+						var blob = data.getBlob();
+						_options.ruid = blob.ruid;
+						_mimeType = blob.type || 'application/octet-stream';
 					}
+				}
+				
+				// DOMString
+				else if (typeof data === 'string') {
+					_encoding = 'UTF-8';
+					_mimeType = 'text/plain;charset=UTF-8';
 					
-					// FormData
-					else if (data instanceof FormData) {
-						if (data.hasBlob()) {
-							var blob = data.getBlob();
-							_options.ruid = blob.ruid;
-							_mimeType = blob.type;
-						}
-					}
-					
-					// DOMString
-					else if (typeof data === 'string') {
-						_encoding = 'UTF-8';
-						_mimeType = 'text/plain;charset=UTF-8';
-						
-						// data should be converted to Unicode and encoded as UTF-8
-						data = Encode.utf8_encode(data);
-					}
+					// data should be converted to Unicode and encoded as UTF-8
+					data = Encode.utf8_encode(data);
 				}
 
 				// if withCredentials not set, but requested, set it automatically
@@ -4279,8 +4315,6 @@ define("moxie/xhr/XMLHttpRequest", [
 			@method abort
 			*/
 			abort: function() {
-				var runtime;
-
 				_error_flag = true;
 				_sync_flag = false;
 
@@ -4288,20 +4322,8 @@ define("moxie/xhr/XMLHttpRequest", [
 					_p('readyState', XMLHttpRequest.DONE);
 					_send_flag = false;
 
-					if (_mode === NATIVE) {
-						_xhr.abort();
-						this.dispatchEvent('readystatechange');
-						// this.dispatchEvent('progress');
-						this.dispatchEvent('abort');
-						this.dispatchEvent('loadend');
-
-						if (!_upload_complete_flag) {
-							// this.dispatchEvent('progress');
-							this.upload.dispatchEvent('abort');
-							this.upload.dispatchEvent('loadend');
-						}
-					} else if (Basic.typeOf(_xhr.getRuntime) === 'function' && (runtime = _xhr.getRuntime())) {
-						runtime.exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
+					if (_xhr) {
+						_xhr.getRuntime().exec.call(_xhr, 'XMLHttpRequest', 'abort', _upload_complete_flag);
 					} else {
 						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
 					}
@@ -4493,148 +4515,19 @@ define("moxie/xhr/XMLHttpRequest", [
 				}
 			}
 		}
-/*
+		
+		/*
 		function _toASCII(str, AllowUnassigned, UseSTD3ASCIIRules) {
 			// TODO: http://tools.ietf.org/html/rfc3490#section-4.1
 			return str.toLowerCase();
 		}
 		*/
 		
-		function _getNativeXHR() {
-			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
-				return new window.XMLHttpRequest();
-			} else {
-				return (function() {
-					var progIDs = ['Msxml2.XMLHTTP.6.0', 'Microsoft.XMLHTTP']; // if 6.0 available, use it, otherwise failback to default 3.0
-					for (var i = 0; i < progIDs.length; i++) {
-						try {
-							return new ActiveXObject(progIDs[i]);
-						} catch (ex) {}
-					}
-				})();
-			}
-		}
 		
-		// @credits Sergey Ilinsky	(http://www.ilinsky.com/)
-		function _getDocument(xhr) {
-			var rXML = xhr.responseXML;
-			var rText = xhr.responseText;
-			
-			// Try parsing responseText (@see: http://www.ilinsky.com/articles/XMLHttpRequest/#bugs-ie-responseXML-content-type)
-			if (Env.browser === 'IE' && rText && rXML && !rXML.documentElement && /[^\/]+\/[^\+]+\+xml/.test(xhr.getResponseHeader("Content-Type"))) {
-				rXML = new window.ActiveXObject("Microsoft.XMLDOM");
-				rXML.async = false;
-				rXML.validateOnParse = false;
-				rXML.loadXML(rText);
-			}
-	
-			// Check if there is no error in document
-			if (rXML) {
-				if ((Env.browser === 'IE' && rXML.parseError !== 0) || !rXML.documentElement || rXML.documentElement.tagName === "parsererror") {
-					return null;
-				}
-			}
-			return rXML;
-		}
-		
-		function _doNativeXHR() {
-			var self = this,
-				total = 0;
-			
-			_mode = NATIVE;
-			_xhr = _getNativeXHR();
-			
-			_xhr.onreadystatechange = function onRSC() {
-				
-				// although it is against spec, reading status property for readyState < 3 produces an exception
-				if (_p('readyState') > XMLHttpRequest.HEADERS_RECEIVED) {
-					_p('status', _xhr.status);
-					_p('statusText', _xhr.statusText);
-				}
-				
-				_p('readyState', _xhr.readyState);
-
-				if (_xhr.readyState !== XMLHttpRequest.OPENED) { // readystatechange for OPENED already fired in open()							
-					self.dispatchEvent('readystatechange');
-				}
-				
-				// fake Level 2 events
-				switch (_p('readyState')) {
-					
-					case XMLHttpRequest.OPENED:
-						// readystatechanged is fired twice for OPENED state (in IE and Mozilla), but only the second one signals that request has been sent
-						if (!onRSC.loadstartDispatched) {
-							self.dispatchEvent('loadstart');
-							onRSC.loadstartDispatched = true;
-						}
-						break;
-					
-					// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions), hence we can't really use it
-					case XMLHttpRequest.HEADERS_RECEIVED:
-						try {
-							if (_same_origin_flag) { // Content-Length not accessible for cross-domain on some browsers
-								total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
-							}
-						} catch(ex) {}
-						break;
-						
-					case XMLHttpRequest.LOADING:
-						// IEs lt 8 throw exception on accessing responseText for readyState < 4
-						var loaded = 0;
-						try {
-							if (_xhr.responseText) { // responseText was introduced in IE7
-								loaded = _xhr.responseText.length;
-							}
-						} catch (ex) {
-							loaded = 0;
-						}
-
-						self.dispatchEvent({
-							type: 'progress',
-							lengthComputable: !!total,
-							total: parseInt(total, 10),
-							loaded: loaded
-						});
-						break;
-						
-					case XMLHttpRequest.DONE:
-						// release readystatechange handler (mostly for IE)
-						_xhr.onreadystatechange = function() {};
-
-						// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-						if (_xhr.status === 0) {
-							_error_flag = true;
-							self.dispatchEvent('error');
-						} else {
-							_p('responseText', _xhr.responseText);
-							_p('responseXML', _getDocument(_xhr));
-							_p('response', (_p('responseType') === 'document' ? _p('responseXML') : _p('responseText')));
-							_responseHeaders = _xhr.getAllResponseHeaders();
-							self.dispatchEvent('load');
-						}
-						
-						_xhr = null;
-						self.dispatchEvent('loadend');
-						break;
-				}
-			};
-
-			_xhr.open(_method, _url, _async, _user, _password);
-			
-			// set request headers
-			if (!Basic.isEmptyObj(_headers)) {
-				Basic.each(_headers, function(value, header) {
-					_xhr.setRequestHeader(header, value);
-				});
-			}
-			
-			_xhr.send();
-		}
-		
-		function _doRuntimeXHR(data) {
+		function _doXHR(data) {
 			var self = this;
-				
-			_mode = RUNTIME;
+			
+			_start_time = new Date().getTime();
 
 			_xhr = new RuntimeTarget();
 
@@ -4736,6 +4629,15 @@ define("moxie/xhr/XMLHttpRequest", [
 				return_response_type: self.responseType
 			});
 
+			if (data instanceof FormData) {
+				_options.required_caps.send_multipart = true;
+			}
+
+			if (!_same_origin_flag) {
+				_options.required_caps.do_cors = true;
+			}
+			
+
 			if (_options.ruid) { // we do not need to wait if we can connect directly
 				exec(_xhr.connectRuntime(_options));
 			} else {
@@ -4748,25 +4650,7 @@ define("moxie/xhr/XMLHttpRequest", [
 				_xhr.connectRuntime(_options);
 			}
 		}
-		
-		function _doXHR(data) {
-			// mark down start time
-			_start_time = new Date().getTime();
-
-			// if we can use native XHR Level 1, do
-			if (_canUseNativeXHR.call(this)) {
-				_doNativeXHR.call(this, data);
-			} else {
-				_doRuntimeXHR.call(this, data);
-			}
-		}
-
-		function _canUseNativeXHR() {
-			return _same_origin_flag && 
-				(_method === 'HEAD' ||
-				(_method === 'GET' && !!~Basic.inArray(_p('responseType'), ["", "text", "document"])) ||
-				(_method === 'POST' && _headers['Content-Type'] === 'application/x-www-form-urlencoded'));
-		}
+	
 		
 		function _reset() {
 			_p('responseText', "");
@@ -5885,8 +5769,15 @@ define("moxie/runtime/html5/Runtime", [
 				resize_image: function() {
 					return I.can('access_binary') && Env.can('create_canvas');
 				},
-				select_folder: Test(Env.browser === 'Chrome' && Env.version >= 21),
-				select_multiple: Test(!(Env.browser === 'Safari' && Env.OS === 'Windows')),
+				select_file: function() {
+					return Env.can('use_fileinput') && window.File;
+				},
+				select_folder: function() {
+					return I.can('select_file') && Env.browser === 'Chrome' && Env.version >= 21;
+				},
+				select_multiple: function() {
+					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows');
+				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 				send_custom_headers: Test(window.XMLHttpRequest),
 				send_multipart: function() {
@@ -5909,13 +5800,10 @@ define("moxie/runtime/html5/Runtime", [
 
 		Runtime.call(this, options, (arguments[1] || type), caps);
 
+
 		Basic.extend(this, {
 
 			init : function() {
-				if (!window.File || !Env.can('use_fileinput')) { // minimal requirement
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 				this.trigger("Init");
 			},
 
@@ -6539,6 +6427,8 @@ define("moxie/runtime/html5/file/FileReader", [
  * Contributing: http://www.plupload.com/contributing
  */
 
+ /*global ActiveXObject:true */
+
 /**
 @class moxie/runtime/html5/xhr/XMLHttpRequest
 @private
@@ -6546,134 +6436,59 @@ define("moxie/runtime/html5/file/FileReader", [
 define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
+	"moxie/core/utils/Url",
 	"moxie/file/File",
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env",
 	"moxie/core/JSON"
-], function(extensions, Basic, File, Blob, FormData, x, Env, parseJSON) {
+], function(extensions, Basic, Url, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var self = this, _xhr2, _filename;
+		var self = this
+		, _xhr
+		, _filename
+		;
 
 		Basic.extend(this, {
 			send: function(meta, data) {
 				var target = this
-				, mustSendAsBinary = false
-				, fd
-				;
-
-				// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
-				// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
-				var blob, fr
 				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 && Env.version < 7)
 				, isAndroidBrowser = Env.browser === 'Android Browser'
+				, mustSendAsBinary = false
 				;
-				// here we go... ugly fix for ugly bug
-				if ((isGecko2_5_6 || isAndroidBrowser) && data instanceof FormData && data.hasBlob() && !data.getBlob().isDetached()) {
-					// get original blob
-					blob = data.getBlob().getSource();
-					// only Blobs have problem, Files seem ok
-					if (blob instanceof window.Blob && window.FileReader) {
-						// preload blob in memory to be sent as binary string
-						fr = new window.FileReader();
-						fr.onload = function() {
-							// overwrite original blob
-							data.append(data.getBlobName(), new Blob(null, {
-								type: blob.type,
-								data: fr.result
-							}));
-							// invoke send operation again
-							self.send.call(target, meta, data);
-						};
-						fr.readAsBinaryString(blob);
-						return; // do not proceed further
-					}
-				}
-
-				_xhr2 = new window.XMLHttpRequest();
 
 				// extract file name
 				_filename = meta.url.replace(/^.+?\/([\w\-\.]+)$/, '$1').toLowerCase();
 
-				_xhr2.open(meta.method, meta.url, meta.async, meta.user, meta.password);
-
-				// set request headers
-				if (!Basic.isEmptyObj(meta.headers)) {
-					Basic.each(meta.headers, function(value, header) {
-						_xhr2.setRequestHeader(header, value);
-					});
-				}
-
-				// request response type
-				if ("" !== meta.responseType) {
-					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
-						_xhr2.responseType = 'text';
-					} else {
-						_xhr2.responseType = meta.responseType;
-					}
-				}
-
-				if (meta.withCredentials) {
-					_xhr2.withCredentials = true;
-				}
-
-				// attach event handlers
-				(function() {
-					var events = ['loadstart', 'progress', 'abort', 'error', 'load', 'timeout'];
-
-					function reDispatch(e) {
-						target.trigger(e);
-					}
-
-					function dispatchUploadProgress(e) {
-						target.trigger({
-							type: 'UploadProgress',
-							loaded: e.loaded,
-							total: e.total
-						});
-					}
-
-					function removeEventListeners() {
-						Basic.each(events, function(name) {
-							_xhr2.removeEventListener(name, reDispatch);
-						});
-
-						_xhr2.removeEventListener('loadend', removeEventListeners);
-
-						if (_xhr2.upload) {
-							_xhr2.upload.removeEventListener('progress', dispatchUploadProgress);
-						}
-						_xhr2 = null;
-					}
-
-					Basic.each(events, function(name) {
-						_xhr2.addEventListener(name, reDispatch);
-					});
-
-					if (_xhr2.upload) {
-						_xhr2.upload.addEventListener('progress', dispatchUploadProgress);
-					}
-
-					_xhr2.addEventListener('loadend', removeEventListeners);
-				}());
+				_xhr = _getNativeXHR();
+				_xhr.open(meta.method, meta.url, meta.async, meta.user, meta.password);
 
 
-				// prepare data to be sent and convert if required
+				// prepare data to be sent
 				if (data instanceof Blob) {
 					if (data.isDetached()) {
 						mustSendAsBinary = true;
 					}
 					data = data.getSource();
 				} else if (data instanceof FormData) {
-					if (data.hasBlob() && data.getBlob().isDetached()) {
-						// ... and here too
-						data = _prepareMultipart.call(target, data);
-						mustSendAsBinary = true;
-					} else {
-						fd = new window.FormData();
 
+					if (data.hasBlob()) {
+						if (data.getBlob().isDetached()) {
+							data = _prepareMultipart.call(target, data); // _xhr must be instantiated and be in OPENED state
+							mustSendAsBinary = true;
+						} else if (isGecko2_5_6 || isAndroidBrowser) {
+							// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
+							// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
+							_preloadAndSend.call(target, meta, data);
+							return; // _preloadAndSend will reinvoke send() with transmutated FormData =%D
+						}	
+					}
+
+					// transfer fields to real FormData
+					if (data instanceof FormData) { // if still a FormData, e.g. not mangled by _prepareMultipart()
+						var fd = new window.FormData();
 						data.each(function(value, name) {
 							if (value instanceof Blob) {
 								fd.append(name, value.getSource());
@@ -6683,14 +6498,104 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						});
 						data = fd;
 					}
+				} 
+
+				_xhr.onreadystatechange = function onReadyStateChange() {
+					
+					// fake Level 2 events
+					switch (_xhr.readyState) {
+						
+						case 1: // XMLHttpRequest.OPENED
+							// readystatechanged is fired twice for OPENED state (in IE and Mozilla) - neu
+							break;
+						
+						// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions) - neu
+						case 2: // XMLHttpRequest.HEADERS_RECEIVED
+							break;
+							
+						case 3: // XMLHttpRequest.LOADING
+							if (!_xhr.upload) { 
+								// try to fire progress event for not XHR L2
+								var total, loaded;
+								
+								try {
+									if (Url.hasSameOrigin(meta.url)) { // Content-Length not accessible for cross-domain on some browsers
+										total = _xhr.getResponseHeader('Content-Length') || 0; // old Safari throws an exception here
+									}
+
+									if (_xhr.responseText) { // responseText was introduced in IE7
+										loaded = _xhr.responseText.length;
+									}
+								} catch(ex) {
+									total = loaded = 0;
+								}
+
+								target.trigger({
+									type: 'progress',
+									lengthComputable: !!total,
+									total: parseInt(total, 10),
+									loaded: loaded
+								});
+							}
+							break;
+							
+						case 4: // XMLHttpRequest.DONE
+							// release readystatechange handler (mostly for IE)
+							_xhr.onreadystatechange = function() {};
+
+							// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
+							if (_xhr.status === 0) {
+								target.trigger('error');
+							} else {
+								target.trigger('load');
+							}							
+							break;
+					}
+				};
+
+				// if XHR L2
+				if (_xhr.upload) {
+					if (meta.withCredentials) {
+						_xhr.withCredentials = true;
+					}
+
+					// additionally listen to progress events
+					_xhr.addEventListener('progress', function(e) {
+						target.trigger(e);
+					});
+
+					_xhr.upload.addEventListener('progress', function(e) {
+						target.trigger({
+							type: 'UploadProgress',
+							loaded: e.loaded,
+							total: e.total
+						});
+					});
+				}
+				
+
+				// set request headers
+				if (!Basic.isEmptyObj(meta.headers)) {
+					Basic.each(meta.headers, function(value, header) {
+						_xhr.setRequestHeader(header, value);
+					});
+				}
+
+				// request response type
+				if ("" !== meta.responseType && 'responseType' in _xhr) {
+					if ('json' === meta.responseType && !Env.can('return_response_type', 'json')) { // we can fake this one
+						_xhr.responseType = 'text';
+					} else {
+						_xhr.responseType = meta.responseType;
+					}
 				}
 
 				// send ...
 				if (!mustSendAsBinary) {
-					_xhr2.send(data);
+					_xhr.send(data);
 				} else {
-					if (_xhr2.sendAsBinary) { // Gecko
-						_xhr2.sendAsBinary(data);
+					if (_xhr.sendAsBinary) { // Gecko
+						_xhr.sendAsBinary(data);
 					} else { // other browsers having support for typed arrays
 						(function() {
 							// mimic Gecko's sendAsBinary
@@ -6698,63 +6603,71 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 							for (var i = 0; i < data.length; i++) {
 								ui8a[i] = (data.charCodeAt(i) & 0xff);
 							}
-							_xhr2.send(ui8a.buffer);
+							_xhr.send(ui8a.buffer);
 						}());
 					}
 				}
+
+				target.trigger('loadstart');
 			},
 
 			getStatus: function() {
+				// according to W3C spec it should return 0 for readyState < 3, but instead it throws an exception
 				try {
-					if (_xhr2) {
-						return _xhr2.status;
+					if (_xhr) {
+						return _xhr.status;
 					}
 				} catch(ex) {}
+				return 0;
 			},
 
 			getResponse: function(responseType) {
 				var I = this.getRuntime();
 
 				try {
-					if (_xhr2) {
-						if ('blob' === responseType) {
-							var file = new File(I.uid, _xhr2.response);
+					switch (responseType) {
+						case 'blob':
+							var file = new File(I.uid, _xhr.response);
 							
-							try { // it might be not allowed to access Content-Disposition (during CORS for example)
-								var disposition = _xhr2.getResponseHeader('Content-Disposition');
-								if (disposition) {
-									// extract filename from response header if available
-									var match = disposition.match(/filename=([\'\"'])([^\1]+)\1/);
-									if (match) {
-										_filename = match[2];
-									}
+							// try to extract file name from content-disposition if possible (might be - not, if CORS for example)	
+							var disposition = _xhr.getResponseHeader('Content-Disposition');
+							if (disposition) {
+								// extract filename from response header if available
+								var match = disposition.match(/filename=([\'\"'])([^\1]+)\1/);
+								if (match) {
+									_filename = match[2];
 								}
-							} catch(ex) {}
-
+							}
 							file.name = _filename;
 							return file;
-						} else if ('json' === responseType && !Env.can('return_response_type', 'json')) {
-							if (_xhr2.status === 200) {
-								return parseJSON(_xhr2.response);
-							} else {
-								return null;
+
+						case 'json':
+							if (!Env.can('return_response_type', 'json')) {
+								return _xhr.status === 200 ? parseJSON(_xhr.responseText) : null;
 							}
-						}
-						return _xhr2.response;
+							return _xhr.response;
+
+						case 'document':
+							return _getDocument(_xhr);
+
+						default:
+							return _xhr.responseText !== '' ? _xhr.responseText : null; // against the specs, but for consistency across the runtimes
 					}
-				} catch(ex) {}
+				} catch(ex) {
+					return null;
+				}				
 			},
 
 			getAllResponseHeaders: function() {
 				try {
-					return _xhr2.getAllResponseHeaders();
+					return _xhr.getAllResponseHeaders();
 				} catch(ex) {}
 				return '';
 			},
 
 			abort: function() {
-				if (_xhr2) {
-					_xhr2.abort();
+				if (_xhr) {
+					_xhr.abort();
 				}
 			},
 
@@ -6762,6 +6675,69 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				self = _filename = null;
 			}
 		});
+
+
+		// here we go... ugly fix for ugly bug
+		function _preloadAndSend(meta, data) {
+			var target = this, blob, fr;
+				
+			// get original blob
+			blob = data.getBlob().getSource();
+			// only Blobs have problem, Files seem ok
+			if (Basic.typeOf(blob) === 'blob' && window.FileReader) {
+				// preload blob in memory to be sent as binary string
+				fr = new window.FileReader();
+				fr.onload = function() {
+					// overwrite original blob
+					data.append(data.getBlobName(), new Blob(null, {
+						type: blob.type,
+						data: fr.result
+					}));
+					// invoke send operation again
+					self.send.call(target, meta, data);
+				};
+				fr.readAsBinaryString(blob);
+			}
+		}
+
+		
+		function _getNativeXHR() {
+			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
+				return new window.XMLHttpRequest();
+			} else {
+				return (function() {
+					var progIDs = ['Msxml2.XMLHTTP.6.0', 'Microsoft.XMLHTTP']; // if 6.0 available, use it, otherwise failback to default 3.0
+					for (var i = 0; i < progIDs.length; i++) {
+						try {
+							return new ActiveXObject(progIDs[i]);
+						} catch (ex) {}
+					}
+				})();
+			}
+		}
+		
+		// @credits Sergey Ilinsky	(http://www.ilinsky.com/)
+		function _getDocument(xhr) {
+			var rXML = xhr.responseXML;
+			var rText = xhr.responseText;
+			
+			// Try parsing responseText (@see: http://www.ilinsky.com/articles/XMLHttpRequest/#bugs-ie-responseXML-content-type)
+			if (Env.browser === 'IE' && rText && rXML && !rXML.documentElement && /[^\/]+\/[^\+]+\+xml/.test(xhr.getResponseHeader("Content-Type"))) {
+				rXML = new window.ActiveXObject("Microsoft.XMLDOM");
+				rXML.async = false;
+				rXML.validateOnParse = false;
+				rXML.loadXML(rText);
+			}
+	
+			// Check if there is no error in document
+			if (rXML) {
+				if ((Env.browser === 'IE' && rXML.parseError !== 0) || !rXML.documentElement || rXML.documentElement.tagName === "parsererror") {
+					return null;
+				}
+			}
+			return rXML;
+		}
+
 
 		function _prepareMultipart(fd) {
 			var boundary = '----moxieboundary' + new Date().getTime()
@@ -6775,7 +6751,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 			}
 
-			_xhr2.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
+			_xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
 
 			// append multipart parameters
 			fd.each(function(value, name) {
@@ -8445,6 +8421,30 @@ define("moxie/runtime/flash/Runtime", [
 	var type = 'flash', extensions = {};
 
 	/**
+	Get the version of the Flash Player
+
+	@method getShimVersion
+	@private
+	@return {Number} Flash Player version
+	*/
+	function getShimVersion() {
+		var version;
+
+		try {
+			version = navigator.plugins['Shockwave Flash'];
+			version = version.description;
+		} catch (e1) {
+			try {
+				version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
+			} catch (e2) {
+				version = '0.0';
+			}
+		}
+		version = version.match(/\d+/g);
+		return parseFloat(version[0] + '.' + version[1]);
+	}
+
+	/**
 	Constructor for the Flash Runtime
 
 	@class FlashRuntime
@@ -8457,65 +8457,87 @@ define("moxie/runtime/flash/Runtime", [
 
 		Runtime.call(this, options, type, {
 			access_binary: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			access_image_binary: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			display_media: Runtime.capTrue,
 			do_cors: Runtime.capTrue,
 			drag_and_drop: false,
 			report_upload_progress: function() {
-				return I.getMode() === 'client';
+				return I.mode === 'client';
 			},
 			resize_image: Runtime.capTrue,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.getMode() === 'browser';
+				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.mode === 'browser';
 			},
 			return_status_code: function(code) {
-				return I.getMode() === 'browser' || !Basic.arrayDiff(code, [200, 404]);
+				return I.mode === 'browser' || !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: Runtime.capTrue,
 			select_multiple: Runtime.capTrue,
 			send_binary_string: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_browser_cookies: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_custom_headers: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_multipart: Runtime.capTrue,
 			slice_blob: Runtime.capTrue,
 			stream_upload: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			summon_file_dialog: false,
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) <= 2097152 || I.getMode() === 'client';
+				return Basic.parseSizeStr(size) <= 2097152 || I.mode === 'client';
 			},
 			use_http_method: function(methods) {
 				return !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
-			// capabilities that implicitly switch the runtime into client mode
-			access_binary: false,
-			access_image_binary: false,
+			// capabilities that require specific mode
+			access_binary: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			access_image_binary: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			report_upload_progress: function(value) {
+				return value ? 'browser' : 'client';
+			},
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']);
+				return Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) ? 'browser' : ['client', 'browser'];
 			},
 			return_status_code: function(code) {
-				return !Basic.arrayDiff(code, [200, 404]);
+				return Basic.arrayDiff(code, [200, 404]) ? 'browser' : ['client', 'browser'];
 			},
-			send_binary_string: false,
-			send_browser_cookies: false,
-			send_custom_headers: false,
-			stream_upload: true,
+			send_binary_string: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_browser_cookies: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_custom_headers: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			stream_upload: function(value) {
+				return value ? 'client' : 'browser';
+			},
 			upload_filesize: function(size) {
-				return Basic.parseSizeStr(size) >= 2097152;
+				return Basic.parseSizeStr(size) >= 2097152 ? 'client' : 'browser';
 			}
 		}, 'client');
+
+
+		// minimal requirement Flash Player 10
+		if (getShimVersion() < 10) {
+			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
+		}
 
 
 		Basic.extend(this, {
@@ -8531,12 +8553,6 @@ define("moxie/runtime/flash/Runtime", [
 
 			init: function() {
 				var html, el, container;
-
-				// minimal requirement Flash Player 10
-				if (getShimVersion() < 10) {
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 
 				container = this.getShimContainer();
 
@@ -8590,30 +8606,6 @@ define("moxie/runtime/flash/Runtime", [
 			}(this.destroy))
 
 		}, extensions);
-
-		/**
-		Get the version of the Flash Player
-
-		@method getShimVersion
-		@private
-		@return {Number} Flash Player version
-		*/
-		function getShimVersion() {
-			var version;
-
-			try {
-				version = navigator.plugins['Shockwave Flash'];
-				version = version.description;
-			} catch (e1) {
-				try {
-					version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version');
-				} catch (e2) {
-					version = '0.0';
-				}
-			}
-			version = version.match(/\d+/g);
-			return parseFloat(version[0] + '.' + version[1]);
-		}
 	}
 
 	Runtime.addConstructor(type, FlashRuntime);
@@ -8846,9 +8838,10 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			var target = this, self = target.getRuntime();
 
 			function send() {
-				meta.transport = self.getMode();
+				meta.transport = self.mode;
 				self.shimExec.call(target, 'XMLHttpRequest', 'send', meta, data);
 			}
+
 
 			function appendBlob(name, blob) {
 				self.shimExec.call(target, 'XMLHttpRequest', 'appendBlob', name, blob.uid);
@@ -8856,11 +8849,12 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 				send();
 			}
 
-			function attachBlob(name, blob) {
+
+			function attachBlob(blob, cb) {
 				var tr = new Transporter();
 
 				tr.bind("TransportingComplete", function() {
-					appendBlob(name, this.result);
+					cb(this.result);
 				});
 
 				tr.transport(blob.getSource(), blob.type, {
@@ -8892,15 +8886,25 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 				} else {
 					var blob = data.getBlob();
 					if (blob.isDetached()) {
-						attachBlob(blobField, blob);
+						attachBlob(blob, function(attachedBlob) {
+							blob.destroy();
+							appendBlob(blobField, attachedBlob);		
+						});
 					} else {
 						appendBlob(blobField, blob);
 					}
 				}
 			} else if (data instanceof Blob) {
-				self.shimExec.call(target, 'XMLHttpRequest', 'setRequestHeader', 'Content-Type', data.type || 'application/octet-stream');
-				data = data.uid;
-				send();
+				if (data.isDetached()) {
+					attachBlob(data, function(attachedBlob) {
+						data.destroy();
+						data = attachedBlob.uid;
+						send();
+					});
+				} else {
+					data = data.uid;
+					send();
+				}
 			} else {
 				send();
 			}
@@ -9096,6 +9100,63 @@ define("moxie/runtime/silverlight/Runtime", [
 	
 	var type = "silverlight", extensions = {};
 
+	function isInstalled(version) {
+		var isVersionSupported = false, control = null, actualVer,
+			actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
+
+		try {
+			try {
+				control = new ActiveXObject('AgControl.AgControl');
+
+				if (control.IsVersionSupported(version)) {
+					isVersionSupported = true;
+				}
+
+				control = null;
+			} catch (e) {
+				var plugin = navigator.plugins["Silverlight Plug-In"];
+
+				if (plugin) {
+					actualVer = plugin.description;
+
+					if (actualVer === "1.0.30226.2") {
+						actualVer = "2.0.30226.2";
+					}
+
+					actualVerArray = actualVer.split(".");
+
+					while (actualVerArray.length > 3) {
+						actualVerArray.pop();
+					}
+
+					while ( actualVerArray.length < 4) {
+						actualVerArray.push(0);
+					}
+
+					reqVerArray = version.split(".");
+
+					while (reqVerArray.length > 4) {
+						reqVerArray.pop();
+					}
+
+					do {
+						requiredVersionPart = parseInt(reqVerArray[index], 10);
+						actualVersionPart = parseInt(actualVerArray[index], 10);
+						index++;
+					} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
+
+					if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
+						isVersionSupported = true;
+					}
+				}
+			}
+		} catch (e2) {
+			isVersionSupported = false;
+		}
+
+		return isVersionSupported;
+	}
+
 	/**
 	Constructor for the Silverlight Runtime
 
@@ -9116,19 +9177,20 @@ define("moxie/runtime/silverlight/Runtime", [
 			report_upload_progress: Runtime.capTrue,
 			resize_image: Runtime.capTrue,
 			return_response_headers: function(value) {
-				return value && I.getMode() === 'client';
+				return value && I.mode === 'client';
 			},
 			return_response_type: Runtime.capTrue,
 			return_status_code: function(code) {
-				return I.getMode() === 'client' || !Basic.arrayDiff(code, [200, 404]);
+				return I.mode === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: Runtime.capTrue,
 			select_multiple: Runtime.capTrue,
 			send_binary_string: Runtime.capTrue,
 			send_browser_cookies: function(value) {
-				return value && I.getMode() === 'browser';
+				return value && I.mode === 'browser';
 			},
 			send_custom_headers: function(value) {
-				return value && I.getMode() === 'client';
+				return value && I.mode === 'client';
 			},
 			send_multipart: Runtime.capTrue,
 			slice_blob: Runtime.capTrue,
@@ -9136,20 +9198,32 @@ define("moxie/runtime/silverlight/Runtime", [
 			summon_file_dialog: false,
 			upload_filesize: Runtime.capTrue,
 			use_http_method: function(methods) {
-				return I.getMode() === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
+				return I.mode === 'client' || !Basic.arrayDiff(methods, ['GET', 'POST']);
 			}
 		}, { 
-			// capabilities that implicitly switch the runtime into client mode
-			return_response_headers: true,
-			return_status_code: function(code) {
-				return Basic.arrayDiff(code, [200, 404]);
+			// capabilities that require specific mode
+			return_response_headers: function(value) {
+				return value ? 'client' : 'browser';
 			},
-			send_browser_cookies: false,
-			send_custom_headers: true,
+			return_status_code: function(code) {
+				return Basic.arrayDiff(code, [200, 404]) ? 'client' : ['client', 'browser'];
+			},
+			send_browser_cookies: function(value) {
+				return value ? 'browser' : 'client';
+			},
+			send_custom_headers: function(value) {
+				return value ? 'client' : 'browser';
+			},
 			use_http_method: function(methods) {
-				return Basic.arrayDiff(methods, ['GET', 'POST']);
+				return Basic.arrayDiff(methods, ['GET', 'POST']) ? 'client' : ['client', 'browser'];
 			}
 		});
+
+
+		// minimal requirement
+		if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
+			this.mode = false;
+		}
 
 
 		Basic.extend(this, {
@@ -9164,12 +9238,6 @@ define("moxie/runtime/silverlight/Runtime", [
 
 			init : function() {
 				var container;
-
-				// minimal requirement Flash Player 10
-				if (!isInstalled('2.0.31005.0') || Env.browser === 'Opera') {
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 
 				container = this.getShimContainer();
 
@@ -9198,64 +9266,6 @@ define("moxie/runtime/silverlight/Runtime", [
 			}(this.destroy))
 
 		}, extensions);
-
-		
-		function isInstalled(version) {
-			var isVersionSupported = false, control = null, actualVer,
-				actualVerArray, reqVerArray, requiredVersionPart, actualVersionPart, index = 0;
-
-			try {
-				try {
-					control = new ActiveXObject('AgControl.AgControl');
-
-					if (control.IsVersionSupported(version)) {
-						isVersionSupported = true;
-					}
-
-					control = null;
-				} catch (e) {
-					var plugin = navigator.plugins["Silverlight Plug-In"];
-
-					if (plugin) {
-						actualVer = plugin.description;
-
-						if (actualVer === "1.0.30226.2") {
-							actualVer = "2.0.30226.2";
-						}
-
-						actualVerArray = actualVer.split(".");
-
-						while (actualVerArray.length > 3) {
-							actualVerArray.pop();
-						}
-
-						while ( actualVerArray.length < 4) {
-							actualVerArray.push(0);
-						}
-
-						reqVerArray = version.split(".");
-
-						while (reqVerArray.length > 4) {
-							reqVerArray.pop();
-						}
-
-						do {
-							requiredVersionPart = parseInt(reqVerArray[index], 10);
-							actualVersionPart = parseInt(actualVerArray[index], 10);
-							index++;
-						} while (index < reqVerArray.length && requiredVersionPart === actualVersionPart);
-
-						if (requiredVersionPart <= actualVersionPart && !isNaN(requiredVersionPart)) {
-							isVersionSupported = true;
-						}
-					}
-				}
-			} catch (e2) {
-				isVersionSupported = false;
-			}
-
-			return isVersionSupported;
-		}
 	}
 
 	Runtime.addConstructor(type, SilverlightRuntime); 
@@ -9558,12 +9568,17 @@ define("moxie/runtime/html4/Runtime", [
 			return_status_code: function(code) {
 				return !Basic.arrayDiff(code, [200, 404]);
 			},
+			select_file: function() {
+				return Env.can('use_fileinput');
+			},
 			select_multiple: false,
 			send_binary_string: false,
 			send_custom_headers: false,
 			send_multipart: true,
 			slice_blob: false,
-			stream_upload: true,
+			stream_upload: function() {
+				return I.can('select_file');
+			},
 			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
 				return (Env.browser === 'Firefox' && Env.version >= 4) ||
 					(Env.browser === 'Opera' && Env.version >= 12) ||
@@ -9576,13 +9591,9 @@ define("moxie/runtime/html4/Runtime", [
 			}
 		});
 
-		Basic.extend(this, {
 
+		Basic.extend(this, {
 			init : function() {
-				if (!Env.can('use_fileinput')) { // minimal requirement
-					this.trigger("Error", new x.RuntimeError(x.RuntimeError.NOT_INIT_ERR));
-					return;
-				}
 				this.trigger("Init");
 			},
 

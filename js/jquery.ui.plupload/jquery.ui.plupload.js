@@ -722,6 +722,19 @@ $.widget("ui.plupload", {
 
 
 	/**
+	Trigger refresh procedure, specifically browse_button re-measure and re-position operations.
+	Might get handy, when UI Widget is placed within the popup, that is constantly hidden and shown
+	again - without calling this method after each show operation, dialog trigger might get displaced
+	and disfunctional.
+
+	@method refresh
+	*/
+	refresh: function() {
+		this.uploader.refresh();
+	},
+
+
+	/**
 	Display a message in notification area.
 
 	@method notify
