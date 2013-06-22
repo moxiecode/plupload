@@ -995,6 +995,43 @@ plupload.Uploader = function(settings) {
 	}
 
 
+	// Inital total state
+	total = new plupload.QueueProgress();
+
+	// Default settings
+	settings = plupload.extend({
+		runtimes: o.Runtime.order,
+		max_retries: 0,
+		multipart : true,
+		multi_selection : false,
+		file_data_name : 'file',
+		flash_swf_url : 'js/Moxie.swf',
+		silverlight_xap_url : 'js/Moxie.xap',
+		filters : [],
+		prevent_duplicates: false
+	}, settings);
+
+	// Resize defaults
+	if (settings.resize) {
+		settings.resize = plupload.extend({
+			preserve_headers: true,
+			crop: false
+		}, settings.resize);
+	}
+
+	// Alternative format for chunks
+	settings.chunks = plupload.extend({
+		size: settings.chunk_size || 0, 
+		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
+	}, settings.chunks);
+
+	// Convert settings
+	settings.chunks.size = plupload.parseSize(settings.chunks.size);
+	settings.max_file_size = plupload.parseSize(settings.max_file_size);
+	
+	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
+
+
 	// Add public methods
 	plupload.extend(this, {
 
@@ -1733,43 +1770,6 @@ plupload.Uploader = function(settings) {
 			events = null;
 		}
 	});
-
-
-	// Inital total state
-	total = new plupload.QueueProgress();
-
-	// Default settings
-	settings = plupload.extend({
-		runtimes: o.Runtime.order,
-		max_retries: 0,
-		multipart : true,
-		multi_selection : false,
-		file_data_name : 'file',
-		flash_swf_url : 'js/Moxie.swf',
-		silverlight_xap_url : 'js/Moxie.xap',
-		filters : [],
-		prevent_duplicates: false
-	}, settings);
-
-	// Resize defaults
-	if (settings.resize) {
-		settings.resize = plupload.extend({
-			preserve_headers: true,
-			crop: false
-		}, settings.resize);
-	}
-
-	// Alternative format for chunks
-	settings.chunks = plupload.extend({
-		size: settings.chunk_size || 0, 
-		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
-	}, settings.chunks);
-
-	// Convert settings
-	settings.chunks.size = plupload.parseSize(settings.chunks.size);
-	settings.max_file_size = plupload.parseSize(settings.max_file_size);
-	
-	required_caps = normalizeCaps(plupload.extend({}, settings));
 
 	// predict runtime
 	this.runtime = o.Runtime.thatCan(required_caps, settings.runtimes);
