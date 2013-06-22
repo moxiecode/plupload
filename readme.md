@@ -16,7 +16,7 @@ is built with the future of HTML5 in mind.
   * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
   * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
 * [Building Instructions](#build)
-* Getting Started
+* [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
 * [Frequently Asked Questions](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
 * [Support](#support)
