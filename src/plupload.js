@@ -1068,7 +1068,7 @@ plupload.Uploader = function(settings) {
 		 * @property runtime
 		 * @type String
 		 */
-		runtime: '',
+		runtime: o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1770,9 +1770,6 @@ plupload.Uploader = function(settings) {
 			events = null;
 		}
 	});
-
-	// predict runtime
-	this.runtime = o.Runtime.thatCan(required_caps, settings.runtimes);
 };
 
 /**
