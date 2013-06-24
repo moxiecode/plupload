@@ -400,7 +400,9 @@ $.widget("ui.plupload", {
 		// do not show UI if no runtime can be initialized
 		uploader.bind('Error', function(up, err) {
 			if (err.code === plupload.INIT_ERROR) {
-				self.destroy();
+				setTimeout(function() {
+					self.destroy();
+				}, 1);
 			}
 		});
 		
