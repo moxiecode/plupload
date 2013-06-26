@@ -1151,7 +1151,7 @@ plupload.Uploader = function(settings) {
 					}
 
 					// Invalid file size
-					if (file.size !== undef && file.size > settings.max_file_size) {
+					if (file.size !== undef && settings.max_file_size && file.size > settings.max_file_size) {
 						up.trigger('Error', {
 							code : plupload.FILE_SIZE_ERROR,
 							message : plupload.translate('File size error.'),
