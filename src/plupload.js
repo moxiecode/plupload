@@ -1102,6 +1102,17 @@ plupload.Uploader = function(settings) {
 		init : function() {
 			var self = this;
 
+			settings.browse_button = o.get(settings.browse_button);
+
+			// Check for required options
+			if (!settings.browse_button || !settings.url) {
+				this.trigger('Error', {
+					code : plupload.INIT_ERROR,
+					message : plupload.translate('Init error.')
+				});
+				return;
+			}
+
 			// Check if drop zone requested
 			settings.drop_element = o.get(settings.drop_element);
 
