@@ -50,21 +50,20 @@ function normalizeCaps(settings) {
 		plupload.each(features, function(value, feature) {
 			resolve(feature, value);
 		});
-	}
-
-	// check settings for required features
-	if (!settings.multipart) { // special care for multipart: false
-		caps.send_binary_string = true;
-	}
+	} else if (features === true) {
+		// check settings for required features
+		if (!settings.multipart) { // special care for multipart: false
+			caps.send_binary_string = true;
+		}
 
 		if (settings.chunk_size > 0) {
 			caps.slice_blob = true;
 		}
+		
+		plupload.each(settings, function(value, feature) {
+			resolve(feature, !!value, true); // strict check
+		});
 	}
-	
-	plupload.each(settings, function(value, feature) {
-		resolve(feature, !!value, true); // strict check
-	});
 	
 	return caps;
 }
@@ -1171,7 +1170,6 @@ plupload.Uploader = function(settings) {
 							message : plupload.translate('File size error.'),
 							file : file
 						});
-
 						continue;
 					}
 
