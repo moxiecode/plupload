@@ -27,9 +27,12 @@ function normalizeCaps(settings) {
 			pngresize: 'send_binary_string',
 			progress: 'report_upload_progress',
 			multi_selection: 'select_multiple',
-			canSendBinary: 'send_binary'
-			//dragdrop: 'drag_and_drop',
-			//triggerDialog: 'summon_file_dialog'
+			max_file_size: 'access_binary',
+			dragdrop: 'drag_and_drop',
+			drop_element: 'drag_and_drop',
+			headers: 'send_custom_headers',
+			canSendBinary: 'send_binary',
+			triggerDialog: 'summon_file_dialog'
 		};
 
 		if (map[feature]) {
@@ -47,21 +50,20 @@ function normalizeCaps(settings) {
 		plupload.each(features, function(value, feature) {
 			resolve(feature, value);
 		});
-	}
+	} else if (features === true) {
+		// check settings for required features
+		if (!settings.multipart) { // special care for multipart: false
+			caps.send_binary_string = true;
+		}
 
-	// check settings for required features
-	if (!settings.multipart) { // special care for multipart: false
-		caps.send_binary_string = true;
+		if (settings.chunk_size > 0) {
+			caps.slice_blob = true;
+		}
+		
+		plupload.each(settings, function(value, feature) {
+			resolve(feature, !!value, true); // strict check
+		});
 	}
-
-	// 'chunks' used to be a reserved word in previous Plupload, so we need to get rid of it, if the size is 0, to avoid confusion
-	if (settings.chunks && !settings.chunks.size) {
-		delete settings.chunks;
-	}
-	
-	plupload.each(settings, function(value, feature) {
-		resolve(feature, !!value, true); // strict check
-	});
 	
 	return caps;
 }
@@ -942,16 +944,16 @@ plupload.Uploader = function(settings) {
 			}
 		],
 		function() {
+			if (typeof(settings.init) == "function") {
+				settings.init(self);
+			} else {
+				plupload.each(settings.init, function(func, name) {
+					self.bind(name, func);
+				});
+			}
+
 			if (initialized) {
 				self.trigger('PostInit');
-
-				if (typeof(settings.init) == "function") {
-					settings.init(self);
-				} else {
-					plupload.each(settings.init, function(func, name) {
-						self.bind(name, func);
-					});
-				}
 			} else {
 				self.trigger('Error', {
 					code : plupload.INIT_ERROR,
@@ -995,6 +997,38 @@ plupload.Uploader = function(settings) {
 	}
 
 
+	// Inital total state
+	total = new plupload.QueueProgress();
+
+	// Default settings
+	settings = plupload.extend({
+		runtimes: o.Runtime.order,
+		max_retries: 0,
+		multipart : true,
+		multi_selection : true,
+		file_data_name : 'file',
+		flash_swf_url : 'js/Moxie.swf',
+		silverlight_xap_url : 'js/Moxie.xap',
+		filters : [],
+		prevent_duplicates: false,
+		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
+	}, settings);
+
+	// Resize defaults
+	if (settings.resize) {
+		settings.resize = plupload.extend({
+			preserve_headers: true,
+			crop: false
+		}, settings.resize);
+	}
+
+	// Convert settings
+	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
+	settings.max_file_size = plupload.parseSize(settings.max_file_size) || 0;
+	
+	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
+
+
 	// Add public methods
 	plupload.extend(this, {
 
@@ -1031,7 +1065,7 @@ plupload.Uploader = function(settings) {
 		 * @property runtime
 		 * @type String
 		 */
-		runtime: '',
+		runtime : o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1067,6 +1101,8 @@ plupload.Uploader = function(settings) {
 		init : function() {
 			var self = this;
 
+			settings.browse_button = o.get(settings.browse_button);
+			
 			// Check if drop zone requested
 			settings.drop_element = o.get(settings.drop_element);
 
@@ -1077,6 +1113,16 @@ plupload.Uploader = function(settings) {
 				plupload.each(settings.preinit, function(func, name) {
 					self.bind(name, func);
 				});
+			}
+
+
+			// Check for required options
+			if (!settings.browse_button || !settings.url) {
+				this.trigger('Error', {
+					code : plupload.INIT_ERROR,
+					message : plupload.translate('Init error.')
+				});
+				return;
 			}
 
 			// Add files to queue
@@ -1119,13 +1165,12 @@ plupload.Uploader = function(settings) {
 					}
 
 					// Invalid file size
-					if (file.size !== undef && file.size > settings.max_file_size) {
+					if (file.size !== undef && settings.max_file_size && file.size > settings.max_file_size) {
 						up.trigger('Error', {
 							code : plupload.FILE_SIZE_ERROR,
 							message : plupload.translate('File size error.'),
 							file : file
 						});
-
 						continue;
 					}
 
@@ -1181,7 +1226,7 @@ plupload.Uploader = function(settings) {
 			}
 
 			self.bind("UploadFile", function(up, file) {
-				var url = up.settings.url, features = up.features, chunkSize = settings.chunks.size,
+				var url = up.settings.url, features = up.features, chunkSize = settings.chunk_size,
 					retries = settings.max_retries,
 					blob, offset = 0;
 
@@ -1225,10 +1270,10 @@ plupload.Uploader = function(settings) {
 						chunkBlob = blob.slice(offset, offset + curChunkSize);
 
 						// Setup query string arguments
-						if (settings.chunks.send_chunk_number) {
+						if (settings.send_chunk_number) {
 							args.chunk = Math.ceil(offset / chunkSize);
 							args.chunks = Math.ceil(blob.size / chunkSize);
-						} else {
+						} else { // keep support for experimental chunk format, just in case
 							args.offset = offset;
 							args.total = blob.size;
 						}
@@ -1435,7 +1480,9 @@ plupload.Uploader = function(settings) {
 		 * @method refresh
 		 */
 		refresh : function() {
-			fileInput.trigger("Refresh");
+			if (fileInput) {
+				fileInput.trigger("Refresh");
+			}
 			this.trigger("Refresh");
 		},
 
@@ -1712,7 +1759,7 @@ plupload.Uploader = function(settings) {
 			plupload.each(files, function(file) {
 				file.destroy();
 			});
-			files = null;
+			files = [];
 
 			if (fileInput) {
 				fileInput.destroy();
@@ -1724,53 +1771,16 @@ plupload.Uploader = function(settings) {
 				fileDrop = null;
 			}
 
-			required_caps = startTime = total = disabled = xhr = null;
+			required_caps = {};
+			startTime = total = disabled = xhr = null;
 
 			this.trigger('Destroy');
 
 			// Clean-up after uploader itself
 			this.unbindAll();
-			events = null;
+			events = {};
 		}
 	});
-
-
-	// Inital total state
-	total = new plupload.QueueProgress();
-
-	// Default settings
-	settings = plupload.extend({
-		runtimes: o.Runtime.order,
-		max_retries: 0,
-		multipart : true,
-		multi_selection : true,
-		file_data_name : 'file',
-		filters : [],
-		prevent_duplicates: false
-	}, settings);
-
-	// Resize defaults
-	if (settings.resize) {
-		settings.resize = plupload.extend({
-			preserve_headers: true,
-			crop: false
-		}, settings.resize);
-	}
-
-	// Alternative format for chunks
-	settings.chunks = plupload.extend({
-		size: settings.chunk_size || 0, 
-		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
-	}, settings.chunks);
-
-	// Convert settings
-	settings.chunks.size = plupload.parseSize(settings.chunks.size);
-	settings.max_file_size = plupload.parseSize(settings.max_file_size);
-	
-	required_caps = normalizeCaps(plupload.extend({}, settings));
-
-	// predict runtime
-	this.runtime = o.Runtime.thatCan(required_caps, settings.runtimes);
 };
 
 /**

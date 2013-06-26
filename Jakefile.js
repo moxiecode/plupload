@@ -43,7 +43,7 @@ task("moxie", [], function (params) {
 
 
 desc("Minify JS files");
-task("mkjs", ["moxie"], function (params) {
+task("mkjs", [], function (params) {
 	var targetDir = "./js", moxieDir = "src/moxie";
 	
 	// Clear previous versions
@@ -65,7 +65,7 @@ task("mkjs", ["moxie"], function (params) {
 	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
 	tools.copySync(moxieDir + "/bin/silverlight/Moxie.xap", "js/Moxie.xap");
 	tools.copySync(moxieDir + "/bin/js/moxie.min.js", "js/moxie.min.js");
-	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.dev.js");
+	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
 
 	// Copy UI Plupload
 	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});

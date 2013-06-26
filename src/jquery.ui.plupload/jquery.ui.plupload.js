@@ -397,12 +397,60 @@ $.widget("ui.plupload", {
 
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
-		// do not show UI if no runtime can be initialized
-		uploader.bind('Error', function(up, err) {
+		uploader.bind('Error', function(up, err) {			
+			var message, details;
+
+			message = '<strong>' + err.message + '</strong>';
+				
+			switch (err.code) {
+				case plupload.FILE_EXTENSION_ERROR:
+					details = o.sprintf(_("File: %s"), err.file.name);
+					break;
+				
+				case plupload.FILE_SIZE_ERROR:
+					details = o.sprintf(_("File: %f, size: %s, max file size: %m"), err.file.name, err.file.size, plupload.parseSize(self.options.max_file_size));
+					break;
+
+				case plupload.FILE_DUPLICATE_ERROR:
+					details = o.sprintf(_("%s already present in the queue."), err.file.name);
+					break;
+					
+				case self.FILE_COUNT_ERROR:
+					details = o.sprintf(_("Upload element accepts only %d file(s) at a time. Extra files were stripped."), self.options.max_file_count);
+					break;
+				
+				case plupload.IMAGE_FORMAT_ERROR :
+					details = _("Image format either wrong or not supported.");
+					break;	
+				
+				case plupload.IMAGE_MEMORY_ERROR :
+					details = _("Runtime ran out of available memory.");
+					break;
+				
+				/* // This needs a review
+				case plupload.IMAGE_DIMENSIONS_ERROR :
+					details = o.sprintf(_('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.'), up.runtime, up.features.maxWidth, up.features.maxHeight);
+					break;	*/
+											
+				case plupload.HTTP_ERROR:
+					details = _("Upload URL might be wrong or doesn't exist.");
+					break;
+			}
+
+			message += " <br /><i>" + details + "</i>";
+
+			self._trigger('error', null, { up: up, error: err } );
+
+			// do not show UI if no runtime can be initialized
 			if (err.code === plupload.INIT_ERROR) {
-				self.destroy();
+				setTimeout(function() {
+					self.destroy();
+				}, 1);
+			} else {
+				self.notify('error', message);
 			}
 		});
+
 		
 		uploader.bind('PostInit', function(up) {	
 			// all buttons are optional, so they can be disabled and hidden
@@ -513,71 +561,6 @@ $.widget("ui.plupload", {
 		
 		uploader.bind('UploadComplete', function(up, files) {			
 			self._trigger('complete', null, { up: up, files: files } );
-		});
-		
-		uploader.bind('Error', function(up, err) {			
-			var file = err.file, message, details;
-
-			if (file) {
-				message = '<strong>' + err.message + '</strong>';
-				details = err.details;
-				
-				if (details) {
-					message += " <br /><i>" + err.details + "</i>";
-				} else {
-					
-					switch (err.code) {
-						case plupload.FILE_EXTENSION_ERROR:
-							details = _("File: %s").replace('%s', file.name);
-							break;
-						
-						case plupload.FILE_SIZE_ERROR:
-							details = _("File: %f, size: %s, max file size: %m").replace(/%([fsm])/g, function($0, $1) {
-								switch ($1) {
-									case 'f': return file.name;
-									case 's': return file.size;	
-									case 'm': return plupload.parseSize(self.options.max_file_size);
-								}
-							});
-							break;
-
-						case plupload.FILE_DUPLICATE_ERROR:
-							details = _("%s already present in the queue.").replace(/%s/, file.name);
-							break;
-							
-						case self.FILE_COUNT_ERROR:
-							details = _("Upload element accepts only %d file(s) at a time. Extra files were stripped.").replace('%d', self.options.max_file_count);
-							break;
-						
-						case plupload.IMAGE_FORMAT_ERROR :
-							details = _("Image format either wrong or not supported.");
-							break;	
-						
-						case plupload.IMAGE_MEMORY_ERROR :
-							details = _("Runtime ran out of available memory.");
-							break;
-						
-						/* // This needs a review
-						case plupload.IMAGE_DIMENSIONS_ERROR :
-							details = _('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.').replace(/%([swh])/g, function($0, $1) {
-								switch ($1) {
-									case 's': return up.runtime;
-									case 'w': return up.features.maxWidth;	
-									case 'h': return up.features.maxHeight;
-								}
-							});
-							break;	*/
-													
-						case plupload.HTTP_ERROR:
-							details = _("Upload URL might be wrong or doesn't exist.");
-							break;
-					}
-					message += " <br /><i>" + details + "</i>";
-				}
-				
-				self.notify('error', message);
-				self._trigger('error', null, { up: up, error: message, file: file } );
-			}
 		});
 	},
 
@@ -815,10 +798,7 @@ $.widget("ui.plupload", {
 				.add('.plupload_started')
 					.removeClass('plupload_hidden');
 							
-			$('.plupload_upload_status', self.element).html(
-				_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length)
-			);
-			
+			$('.plupload_upload_status', self.element).html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
 			$('.plupload_header_content', self.element).addClass('plupload_header_content_bw');
 		
 		} else {
@@ -930,7 +910,7 @@ $.widget("ui.plupload", {
 		if (up.total.queued === 0) {
 			$('.ui-button-text', this.browse_button).html(_('Add Files'));
 		} else {
-			$('.ui-button-text', this.browse_button).html(_('%d files queued').replace('%d', up.total.queued));
+			$('.ui-button-text', this.browse_button).html(o.sprintf(_('%d files queued'), up.total.queued));
 		}
 
 		up.refresh();
@@ -955,7 +935,7 @@ $.widget("ui.plupload", {
 				.html(plupload.formatSize(up.total.size))
 				.end()
 			.find('.plupload_upload_status')
-				.html(_('Uploaded %d/%d files').replace('%d/%d', up.total.uploaded+'/'+up.files.length));
+				.html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
 	},
 
 
