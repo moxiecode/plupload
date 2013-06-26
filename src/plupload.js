@@ -27,9 +27,12 @@ function normalizeCaps(settings) {
 			pngresize: 'send_binary_string',
 			progress: 'report_upload_progress',
 			multi_selection: 'select_multiple',
-			canSendBinary: 'send_binary'
-			//dragdrop: 'drag_and_drop',
-			//triggerDialog: 'summon_file_dialog'
+			max_file_size: 'access_binary',
+			dragdrop: 'drag_and_drop',
+			drop_element: 'drag_and_drop',
+			headers: 'send_custom_headers',
+			canSendBinary: 'send_binary',
+			triggerDialog: 'summon_file_dialog'
 		};
 
 		if (map[feature]) {
