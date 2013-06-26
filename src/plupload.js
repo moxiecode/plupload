@@ -944,16 +944,16 @@ plupload.Uploader = function(settings) {
 			}
 		],
 		function() {
+			if (typeof(settings.init) == "function") {
+				settings.init(self);
+			} else {
+				plupload.each(settings.init, function(func, name) {
+					self.bind(name, func);
+				});
+			}
+
 			if (initialized) {
 				self.trigger('PostInit');
-
-				if (typeof(settings.init) == "function") {
-					settings.init(self);
-				} else {
-					plupload.each(settings.init, function(func, name) {
-						self.bind(name, func);
-					});
-				}
 			} else {
 				self.trigger('Error', {
 					code : plupload.INIT_ERROR,
@@ -1102,16 +1102,7 @@ plupload.Uploader = function(settings) {
 			var self = this;
 
 			settings.browse_button = o.get(settings.browse_button);
-
-			// Check for required options
-			if (!settings.browse_button || !settings.url) {
-				this.trigger('Error', {
-					code : plupload.INIT_ERROR,
-					message : plupload.translate('Init error.')
-				});
-				return;
-			}
-
+			
 			// Check if drop zone requested
 			settings.drop_element = o.get(settings.drop_element);
 
@@ -1122,6 +1113,16 @@ plupload.Uploader = function(settings) {
 				plupload.each(settings.preinit, function(func, name) {
 					self.bind(name, func);
 				});
+			}
+
+
+			// Check for required options
+			if (!settings.browse_button || !settings.url) {
+				this.trigger('Error', {
+					code : plupload.INIT_ERROR,
+					message : plupload.translate('Init error.')
+				});
+				return;
 			}
 
 			// Add files to queue
