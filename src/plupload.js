@@ -1470,7 +1470,9 @@ plupload.Uploader = function(settings) {
 		 * @method refresh
 		 */
 		refresh : function() {
-			fileInput.trigger("Refresh");
+			if (fileInput) {
+				fileInput.trigger("Refresh");
+			}
 			this.trigger("Refresh");
 		},
 
