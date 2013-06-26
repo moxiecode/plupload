@@ -1006,7 +1006,7 @@ plupload.Uploader = function(settings) {
 		runtimes: o.Runtime.order,
 		max_retries: 0,
 		multipart : true,
-		multi_selection : false,
+		multi_selection : true,
 		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
