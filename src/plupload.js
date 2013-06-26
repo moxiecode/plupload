@@ -54,9 +54,9 @@ function normalizeCaps(settings) {
 		caps.send_binary_string = true;
 	}
 
-	// 'chunks' used to be a reserved word in previous Plupload, so we need to get rid of it, if the size is 0, to avoid confusion
-	if (settings.chunks && !settings.chunks.size) {
-		delete settings.chunks;
+		if (settings.chunk_size > 0) {
+			caps.slice_blob = true;
+		}
 	}
 	
 	plupload.each(settings, function(value, feature) {
@@ -1008,7 +1008,8 @@ plupload.Uploader = function(settings) {
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
 		filters : [],
-		prevent_duplicates: false
+		prevent_duplicates: false,
+		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	}, settings);
 
 	// Resize defaults
@@ -1019,15 +1020,9 @@ plupload.Uploader = function(settings) {
 		}, settings.resize);
 	}
 
-	// Alternative format for chunks
-	settings.chunks = plupload.extend({
-		size: settings.chunk_size || 0, 
-		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
-	}, settings.chunks);
-
 	// Convert settings
-	settings.chunks.size = plupload.parseSize(settings.chunks.size);
-	settings.max_file_size = plupload.parseSize(settings.max_file_size);
+	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
+	settings.max_file_size = plupload.parseSize(settings.max_file_size) || 0;
 	
 	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
 
@@ -1068,7 +1063,7 @@ plupload.Uploader = function(settings) {
 		 * @property runtime
 		 * @type String
 		 */
-		runtime: o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
+		runtime : o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1218,7 +1213,7 @@ plupload.Uploader = function(settings) {
 			}
 
 			self.bind("UploadFile", function(up, file) {
-				var url = up.settings.url, features = up.features, chunkSize = settings.chunks.size,
+				var url = up.settings.url, features = up.features, chunkSize = settings.chunk_size,
 					retries = settings.max_retries,
 					blob, offset = 0;
 
@@ -1262,10 +1257,10 @@ plupload.Uploader = function(settings) {
 						chunkBlob = blob.slice(offset, offset + curChunkSize);
 
 						// Setup query string arguments
-						if (settings.chunks.send_chunk_number) {
+						if (settings.send_chunk_number) {
 							args.chunk = Math.ceil(offset / chunkSize);
 							args.chunks = Math.ceil(blob.size / chunkSize);
-						} else {
+						} else { // keep support for experimental chunk format, just in case
 							args.offset = offset;
 							args.total = blob.size;
 						}
