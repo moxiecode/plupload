@@ -1760,7 +1760,7 @@ plupload.Uploader = function(settings) {
 			plupload.each(files, function(file) {
 				file.destroy();
 			});
-			files = null;
+			files = [];
 
 			if (fileInput) {
 				fileInput.destroy();
@@ -1772,13 +1772,14 @@ plupload.Uploader = function(settings) {
 				fileDrop = null;
 			}
 
-			required_caps = startTime = total = disabled = xhr = null;
+			required_caps = {};
+			startTime = total = disabled = xhr = null;
 
 			this.trigger('Destroy');
 
 			// Clean-up after uploader itself
 			this.unbindAll();
-			events = null;
+			events = {};
 		}
 	});
 };
