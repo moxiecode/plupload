@@ -37,7 +37,6 @@ module("plupload.Uploader", {
 		$('#qunit-fixture').html('<div id="uploader" />');
 
 		options = this.options = {
-			runtimes: 'test',
 			browse_button: 'uploader',
 			container: 'qunit-fixture',
 			url: "Plupload/upload.php"
@@ -60,27 +59,27 @@ module("plupload.Uploader", {
 
 
 test('addFile()', function() {
-	expect(8);
 	
-	var file, files = FileHash.nativeFiles;
-	// window.Blob
-	this.up.addFile(files[0].blob, files[0].name);
-	equal(this.up.files.length, 1, "window.Blob added.");
-	equal(this.up.files[0].name, files[0].name, "File name set properly through the second, optional argument.");
+	var file, files = FileHash.getRuntimeFiles(), nFiles = FileHash.getNativeFiles();
 
-	// o.Blob
-	file = new o.Blob(null, files[0].blob);
-	this.up.addFile(file, files[0].name);
-	equal(this.up.files.length, 2, "o.Blob added (file name: " + this.up.files[1].name  + ").");
+	if (nFiles.length) {
+		// window.Blob
+		this.up.addFile(nFiles[0].blob, nFiles[0].name);
+		equal(this.up.files.length, 1, "window.Blob added.");
+		
+		// o.Blob
+		file = new o.Blob(null, files[0].getSource());
+		this.up.addFile(file, files[0].name);
+		equal(this.up.files[0].name, files[0].name, "File name set properly through the second, optional argument.");
+		equal(this.up.files.length, 2, "o.Blob added (file name: " + this.up.files[1].name  + ").");
+	}
 
 	// o.File
-	file = new o.File(null, files[1].blob);
-	file.name = files[1].name;
-	this.up.addFile(file);
+	this.up.addFile(files[0]);
 	equal(this.up.files.length, 3, "o.File added (file name: " + this.up.files[2].name  + ").");
 
 	// plupload.File
-	file = new plupload.File(new o.File(null, files[1].blob));
+	file = new plupload.File(files[1]);
 	this.up.addFile(file);
 	equal(this.up.files.length, 4, "plupload.File added (file name: " + this.up.files[3].name  + ").");
 
@@ -89,12 +88,21 @@ test('addFile()', function() {
 	});
 
 	// array of file objects
-	this.up.addFile([
-		files[0].blob,
-		new o.Blob(null, files[0].blob),
-		new o.File(null, files[1].blob),
-		new plupload.File(new o.File(null, files[1].blob))
-	], files[0].name);
+	var mixedArr = [];
+
+	if (nFiles.length) {
+		[].push.apply(mixedArr, [
+			nFiles[0].blob,
+			new o.Blob(null, nFiles[0].blob)
+		]);
+	}
+
+	[].push.apply(mixedArr, [
+		files[0],
+		new plupload.File(files[1])
+	]);
+
+	this.up.addFile(mixedArr, files[0].name);
 	equal(this.up.files.length, 8, "Mixed array of various file objects added.");
 	notEqual(this.up.files[7].name, files[0].name, "Second parameter (fileName) properly ignored, when first one is an array.");
 });
@@ -103,30 +111,27 @@ test('addFile()', function() {
 test('getFile()', function() {
 	expect(1);
 
-	var file, files = FileHash.nativeFiles;
+	var files = FileHash.getRuntimeFiles();
 
-	this.up.addFile([
-		files[0].blob,
-		new o.Blob(null, files[0].blob),
-		new o.File(null, files[1].blob),
-		new plupload.File(new o.File(null, files[1].blob))
-	]);
+	this.up.bind('FilesAdded', function(up, files) {
+		var file = up.getFile(files[0].id);
+		deepEqual(file, files[0], "File retrieved by id with getFile().");
+	});
 
-	file = this.up.getFile(this.up.files[0].id);
-	deepEqual(file, this.up.files[0], "File retrieved by id with getFile().");
+	this.up.addFile(files);
 });
 
 
 test('removeFile() / splice()', function() {
 	expect(5);
 
-	var countFiles, files = FileHash.nativeFiles;
+	var countFiles, files = FileHash.getRuntimeFiles();
 
 	this.up.addFile([
-		files[0].blob,
-		new o.Blob(null, files[0].blob),
-		new o.File(null, files[1].blob),
-		new plupload.File(new o.File(null, files[1].blob))
+		new o.File(null, files[0]),
+		new o.File(null, files[1]),
+		new plupload.File(files[0]),
+		new plupload.File(files[1])
 	]);
 
 	countFiles = this.up.files.length;
@@ -145,6 +150,7 @@ test('removeFile() / splice()', function() {
 	this.up.bind('QueueChanged', function(up) {
 		ok(true, "QueueChanged triggered.");
 	});
+
 	this.up.splice(0, 2);
 	equal(this.up.files.length, 0, "Two files removed simultaneously with splice().");
 });
@@ -154,7 +160,7 @@ test('removeFile() / splice()', function() {
 test('options.filters', function() {
 	expect(3);
 
-	var files = FileHash.nativeFiles;
+	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
 	var up = new plupload.Uploader(o.extend({
@@ -167,12 +173,12 @@ test('options.filters', function() {
 	up.bind('PostInit', function() {
 		start();
 
-		up.addFile(files[1].blob, files[1].name);
+		up.addFile(files[1]);
 		equal(up.files.length, 0, "No files were added to the queue.");
 
 		// add asterisk wildcard
 		up.settings.filters.push({title: "All files", extensions: "*"});
-		up.addFile(files[1].blob, files[1].name);
+		up.addFile(files[1]);
 		equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
 
 		up.destroy();
@@ -190,7 +196,7 @@ test('options.filters', function() {
 test('options.max_file_size', function() {
 	expect(2);
 
-	var files = FileHash.nativeFiles;
+	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
 	var up = new plupload.Uploader(o.extend({
@@ -201,7 +207,7 @@ test('options.max_file_size', function() {
 	up.bind('PostInit', function() {
 		start();
 
-		up.addFile(files[1].blob, files[1].name);
+		up.addFile(files[1]);
 		equal(up.files.length, 0, "No files were added to the queue.");
 
 		up.destroy();
@@ -219,7 +225,7 @@ test('options.max_file_size', function() {
 test('options.prevent_duplicates', function() {
 	expect(4);
 
-	var files = FileHash.nativeFiles;
+	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
 	var up = new plupload.Uploader(o.extend({
@@ -230,15 +236,15 @@ test('options.prevent_duplicates', function() {
 	up.bind('PostInit', function() {
 		start();
 
-		up.addFile(files[1].blob, files[1].name);
-		up.addFile(files[0].blob, files[1].name); // another file but with the same name
+		up.addFile(files[1]);
+		up.addFile(files[0], files[1].name); // another file but with the same name
 		equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
 
-		up.addFile(files[0].blob, files[0].name);
+		up.addFile(files[0]);
 		equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
 
-		up.addFile(files[0].blob, files[0].name);
-		equal(up.files.length, 3, "File ignored, 'cause a file with the same and size already in the queue.");
+		up.addFile(files[0]);
+		equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
 
 		up.destroy();
 	});

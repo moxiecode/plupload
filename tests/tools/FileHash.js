@@ -15,13 +15,13 @@ var BlobBuilder = (function() {
 
 
 window.FileHash = new (function() {
-	var _options = {}, _filesAdded = 0;
+	var _options = {}
+	, _filesAdded = 0
+	, _nativeFiles = []
+	, _runtimeFiles = []
+	;
 	
 	return  {
-		nativeFiles: [],
-
-		runtimeFiles: [],
-
 
 		init: function(options) {
 			var scripts = '';
@@ -46,14 +46,14 @@ window.FileHash = new (function() {
 
 			// add native file where possible
 			if (hasBlobConstructor) {
-				this.nativeFiles.push({
+				_nativeFiles.push({
 					name: fileData.name,
 					blob: new Blob([binStr], { type: type })
 				});
 			} else if (BlobBuilder) {
 				var bb = new BlobBuilder();
 				bb.append(binStr);
-				this.nativeFiles.push({
+				_nativeFiles.push({
 					name: fileData.name,
 					blob: bb.getBlob(type)
 				});
@@ -61,7 +61,7 @@ window.FileHash = new (function() {
 
 			// add runtime version
 			if (window.o && window.o.File) {
-				this.runtimeFiles.push(new o.File(null, {
+				_runtimeFiles.push(new o.File(null, {
 					name: fileData.name,
 					type: type,
 					data: binStr
@@ -73,6 +73,24 @@ window.FileHash = new (function() {
 			if (_filesAdded == _options.files.length && _options.onready) {
 				_options.onready.call(this);
 			}
+		},
+
+
+		getNativeFiles: function() {
+			return _nativeFiles;
+		},
+
+
+		getRuntimeFiles: function() {
+			var files = [];
+			// return fresh set
+			o.each(_runtimeFiles, function(file) {
+				files.push(new o.File(null, {
+					name: file.name,
+					data: file.getSource()
+				}));
+			});
+			return files;
 		}
 	};
 });
