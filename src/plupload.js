@@ -815,20 +815,6 @@ plupload.Uploader = function(settings) {
 		}
 	}
 
-	function addSelectedFiles(native_files) {
-		var i, files = [];
-
-		// Add the selected files to the file queue
-		for (i = 0; i < native_files.length; i++) {
-			files.push(new plupload.File(native_files[i]));
-		}
-
-		// Trigger FilesAdded event if we added any
-		if (files.length) {
-			this.trigger("FilesAdded", files);
-		}
-	}
-
 	function initControls() {
 		var self = this, initialized = 0;
 
@@ -874,7 +860,7 @@ plupload.Uploader = function(settings) {
 					};
 
 					fileInput.onchange = function() {
-						addSelectedFiles.call(self, this.files);
+						self.addFile(this.files);
 					};
 
 					fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
@@ -929,7 +915,7 @@ plupload.Uploader = function(settings) {
 					};
 
 					fileDrop.ondrop = function() {
-						addSelectedFiles.call(self, this.files);
+						self.addFile(this.files);
 					};
 
 					fileDrop.bind('error runtimeerror', function() {
@@ -1556,8 +1542,7 @@ plupload.Uploader = function(settings) {
 		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
 		addFile : function(file, fileName) {
-			var self = this
-			, files = []
+			var files = []
 			, ruid
 			;
 
@@ -1572,7 +1557,7 @@ plupload.Uploader = function(settings) {
 			function resolveFile(file) {
 				var type = o.typeOf(file);
 
-				if (file instanceof o.File) { // final step for other branches
+				if (file instanceof o.File) { 
 					if (!file.ruid) {
 						if (!ruid) { // weird case
 							return false;
@@ -1580,15 +1565,15 @@ plupload.Uploader = function(settings) {
 						file.ruid = ruid;
 						file.connectRuntime(ruid);
 					}
-					files.push(file);
-					if (fileName) {
-						files[files.length - 1].name = fileName;
-					}
+					resolveFile(new plupload.File(file));
 				} else if (file instanceof o.Blob) {
 					resolveFile(file.getSource());
 					file.destroy();
-				} else if (file instanceof plupload.File) {
-					resolveFile(file.getSource());
+				} else if (file instanceof plupload.File) { // final step for other branches
+					if (fileName) {
+						file.name = fileName;
+					}
+					files.push(file);
 				} else if (o.inArray(type, ['file', 'blob']) !== -1) {
 					resolveFile(new o.File(null, file));
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
@@ -1604,7 +1589,10 @@ plupload.Uploader = function(settings) {
 			ruid = getRUID();
 
 			resolveFile(file);
-			addSelectedFiles.call(self, files);
+			// Trigger FilesAdded event if we added any
+			if (files.length) {
+				this.trigger("FilesAdded", files);
+			}
 		},
 
 		/**
