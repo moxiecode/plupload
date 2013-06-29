@@ -201,7 +201,9 @@ function _(str) {
 	return plupload.translate(str) || str;
 }
 
-function renderUI(obj) {		
+function renderUI(obj) {
+	obj.id = obj.attr('id');
+
 	obj.html(
 		'<div class="plupload_wrapper">' +
 			'<div class="ui-widget-content plupload_container">' +
@@ -211,9 +213,9 @@ function renderUI(obj) {
 						'<div class="plupload_header_title">' + _('Select files') + '</div>' +
 						'<div class="plupload_header_text">' + _('Add files to the upload queue and click the start button.') + '</div>' +
 						'<div class="plupload_view_switch">' +
-							'<input type="radio" id="plupload_view_list" name="view_mode" checked="checked" /> <label class="plupload_button" for="plupload_view_list">List</label>' +
+							'<input type="radio" id="'+obj.id+'_view_list" name="view_mode" checked="checked" /> <label class="plupload_button" for="'+obj.id+'_view_list" data-view="list">List</label>' +
 							//'<input type="radio" id="plupload_view_thumblist" name="view_mode" /> <label class="plupload_button" for="plupload_view_thumblist">Thumb List</label>' +
-							'<input type="radio" id="plupload_view_thumbs" name="view_mode" /> <label class="plupload_button"  for="plupload_view_thumbs">Thumbnails</label>' +
+							'<input type="radio" id="'+obj.id+'_view_thumbs" name="view_mode" /> <label class="plupload_button"  for="'+obj.id+'_view_thumbs" data-view="thumbs">Thumbnails</label>' +
 						'</div>' +
 					'</div>' +
 				'</div>' +
@@ -335,7 +337,9 @@ $.widget("ui.plupload", {
 		this.browse_button = $('.plupload_add', this.container).attr('id', id + '_browse');
 		this.start_button = $('.plupload_start', this.container).attr('id', id + '_start');
 		this.stop_button = $('.plupload_stop', this.container).attr('id', id + '_stop');
-		
+		this.thumbs_switcher = $('#' + id + '_view_thumbs');
+		this.list_switcher = $('#' + id + '_view_list');
+
 		if ($.ui.button) {
 			this.browse_button.button({
 				icons: { primary: 'ui-icon-circle-plus' },
@@ -349,6 +353,13 @@ $.widget("ui.plupload", {
 			
 			this.stop_button.button({
 				icons: { primary: 'ui-icon-circle-close' }
+			});
+			this.list_switcher.button({
+				icons: { primary: "ui-icon-grip-dotted-horizontal" }
+			});
+	
+			this.thumbs_switcher.button({
+				icons: { secondary: "ui-icon-image" }
 			});
 		}
 		
@@ -1103,8 +1114,9 @@ $.widget("ui.plupload", {
 		;
 
 		plupload.each(['list', 'thumbs'], function(view) {
+
 			if (!self.options.views[view]) {
-				switcher.find('[for="plupload_view_' + view + '"], #plupload_view_' + view).remove();
+				switcher.find('[for="' + self.id + '_view_' + view + '"], #'+ self.id +'_view_' + view).remove();
 			}
 		});
 
@@ -1113,7 +1125,7 @@ $.widget("ui.plupload", {
 
 		if (buttons.length === 1) {
 			switcher.hide();
-			view = buttons.attr('for').replace(/^plupload_view_/, '');
+			view = buttons.eq(0).data('view');
 			this._viewChanged(view);
 			return;
 		} else if ($.ui.button && buttons.length > 1) {
@@ -1126,7 +1138,8 @@ $.widget("ui.plupload", {
 		}
 
 		switcher.find('.plupload_button').click(function() {
-			view = $(this).attr('for').replace(/^plupload_view_/, '');
+			
+			view = $(this).data('view');
 			self._viewChanged(view);
 		});
 
@@ -1140,7 +1153,7 @@ $.widget("ui.plupload", {
 		}
 
 		// if view not active - happens when switcher wasn't clicked manually
-		button = switcher.find('[for="plupload_view_'+view+'"]');
+		button = switcher.find('[for="' + self.id + '_view_'+view+'"]');
 		if (button.length) {
 			button.trigger('click');
 			return; 
