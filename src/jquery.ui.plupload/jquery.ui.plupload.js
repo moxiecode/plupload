@@ -1002,6 +1002,7 @@ $.widget("ui.plupload", {
 					};
 
 					img.onembedded = function() {
+						$('#' + file.id + ' .plupload_file_thumb', self.filelist).addClass('plupload_file_thumb_loaded');
 						img.destroy();
 					};
 

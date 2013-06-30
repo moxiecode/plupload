@@ -110,6 +110,10 @@
 	background: #eee url(../img/loading.gif) center no-repeat;
 }
 
+.plupload_file_thumb_loaded {
+	background-image: none;
+}
+
 .plupload_file_name {
 	overflow: hidden;
 	text-overflow: ellipsis;
