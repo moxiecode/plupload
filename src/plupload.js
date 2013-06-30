@@ -1439,12 +1439,7 @@ plupload.Uploader = function(settings) {
 				}
 			});
 
-			self.bind("FileUploaded", function(up, file) {
-				file.status = plupload.DONE;
-				file.loaded = file.size;
-
-				calcFile(file);
-
+			self.bind("FileUploaded", function() {
 				// Upload next file but detach it from the error event
 				// since other custom listeners might want to stop the queue
 				delay(function() {
