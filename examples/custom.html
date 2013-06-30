@@ -47,31 +47,32 @@ var uploader = new plupload.Uploader({
 	filters : [
 		{title : "Image files", extensions : "jpg,gif,png"},
 		{title : "Zip files", extensions : "zip"}
-	]
-});
+	],
 
+	init: {
+		PostInit: function() {
+			$('filelist').innerHTML = '';
 
-uploader.bind('PostInit', function() {
-	$('filelist').innerHTML = '';
-});
+			$('uploadfiles').onclick = function() {
+				uploader.start();
+				return false;
+			};
+		},
 
+		FilesAdded: function(up, files) {
+			for (var i in files) {
+				$('filelist').innerHTML += '<div id="' + files[i].id + '">' + files[i].name + ' (' + plupload.formatSize(files[i].size) + ') <b></b></div>';
+			}
+		},
 
-uploader.bind('FilesAdded', function(up, files) {
-	for (var i in files) {
-		$('filelist').innerHTML += '<div id="' + files[i].id + '">' + files[i].name + ' (' + plupload.formatSize(files[i].size) + ') <b></b></div>';
+		UploadProgress: function(up, file) {
+			$(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+		}
 	}
 });
 
-uploader.bind('UploadProgress', function(up, file) {
-	$(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
-});
-
-$('uploadfiles').onclick = function() {
-	uploader.start();
-	return false;
-};
-
 uploader.init();
+
 </script>
 </body>
 </html>
