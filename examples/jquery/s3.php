@@ -90,12 +90,12 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 
 <!-- debug 
 <script type="text/javascript" src="../../js/moxie.js"></script>
-<script type="text/javascript" src="../../js/plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.dev.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 -->
 
 </head>
-<body style="font:13px Verdana;background:url(../bg.jpg);color:#333">
+<body style="font: 13px Verdana; background: #eee; color: #333">
 
 <h1>Plupload to Amazon S3 Example</h1>
 

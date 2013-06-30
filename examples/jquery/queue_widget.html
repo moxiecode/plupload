@@ -15,13 +15,13 @@
 
 <!-- debug 
 <script type="text/javascript" src="../../js/moxie.js"></script>
-<script type="text/javascript" src="../../js/plupload.js"></script>
+<script type="text/javascript" src="../../js/plupload.dev.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 -->
 
 
 </head>
-<body style="font:13px Verdana;background:url(../bg.jpg);color:#333">
+<body style="font: 13px Verdana; background: #eee; color: #333">
 
 <form method="post" action="dump.php">	
 	<div id="uploader">
@@ -39,7 +39,6 @@ $(function() {
 		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
 		max_file_size : '10mb',
-		multi_selection: false, // if set to true, html4 will always fail, since it can't select multiple files
 		chunks : {
 			size: '1mb',
 			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
