@@ -141,7 +141,7 @@ used as it is.
 	$.fn.pluploadQueue = function(settings) {
 		if (settings) {
 			this.each(function() {
-				var uploader, target, id;
+				var uploader, target, id, contents_bak;
 
 				target = $(this);
 				id = target.attr('id');
@@ -151,7 +151,9 @@ used as it is.
 					target.attr('id', id);
 				}
 
+				contents_bak = target.html();
 				renderUI(id, target);
+
 				uploader = new plupload.Uploader($.extend({
 					dragdrop : true,
 					browse_button : id + '_browser',
@@ -254,6 +256,13 @@ used as it is.
 					}
 				}
 
+				function destroy() {
+					delete uploaders[id];
+					uploader.destroy();
+					target.html(contents_bak);
+					uploader = target = contents_bak = null;
+				}
+
 				uploader.bind("UploadFile", function(up, file) {
 					$('#' + file.id).addClass('plupload_current_file');
 				});
@@ -316,15 +325,6 @@ used as it is.
 					$('a.plupload_start', target).addClass('plupload_disabled');
 				});
 
-				uploader.bind("PostInit", function(up) {
-					// features are populated only after input components are fully instantiated
-					if (up.settings.dragdrop && up.features.dragdrop) {
-						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
-					}
-				});
-
-				uploader.init();
-
 				uploader.bind("Error", function(up, err) {
 					var file = err.file, message;
 
@@ -346,7 +346,22 @@ used as it is.
 						file.hint = message;
 						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
+
+					if (err.code === plupload.INIT_ERROR) {
+						setTimeout(function() {
+							destroy();
+						}, 1);
+					}
 				});
+
+				uploader.bind("PostInit", function(up) {
+					// features are populated only after input components are fully instantiated
+					if (up.settings.dragdrop && up.features.dragdrop) {
+						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
+					}
+				});
+
+				uploader.init();
 
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
