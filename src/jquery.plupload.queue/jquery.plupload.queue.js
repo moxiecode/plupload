@@ -156,7 +156,7 @@ used as it is.
 
 				uploader = new plupload.Uploader($.extend({
 					dragdrop : true,
-					browse_button : id + '_browser',
+					browse_button : id + '_browse',
 					container : id
 				}, settings));
 
