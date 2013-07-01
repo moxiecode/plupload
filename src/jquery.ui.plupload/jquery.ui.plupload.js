@@ -821,8 +821,14 @@ $.widget("ui.plupload", {
 			
 			if (self.options.multiple_queues) {
 				$(self.start_button).button('enable');
-						
 				$('.plupload_header_content', self.element).removeClass('plupload_header_content_bw');
+			} else {
+				$([])
+					.add(self.browse_button)
+					.add(self.start_button)
+						.button('disable');
+						
+				up.disableBrowse();
 			}
 
 			self._updateTotalProgress();
@@ -929,10 +935,9 @@ $.widget("ui.plupload", {
 
 		if (up.files.length === (up.total.uploaded + up.total.failed)) {
 			this.start_button.button('disable');
-		} else {
+		} else if (!this.options.multiple_queues) {
 			this.start_button.button('enable');
 		}
-
 
 		// Scroll to end of file list
 		this.filelist[0].scrollTop = this.filelist[0].scrollHeight;
