@@ -1200,13 +1200,11 @@ plupload.Uploader = function(settings) {
 
 			// Generate unique target filenames
 			if (settings.unique_names) {
-				self.bind("UploadFile", function(up, file) {
+				self.bind("BeforeUpload", function(up, file) {
 					var matches = file.name.match(/\.([^.]+)$/), ext = "part";
-
 					if (matches) {
 						ext = matches[1];
 					}
-
 					file.target_name = file.id + '.' + ext;
 				});
 			}
