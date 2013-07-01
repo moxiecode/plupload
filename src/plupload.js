@@ -1303,8 +1303,6 @@ plupload.Uploader = function(settings) {
 							file.loaded = file.size;
 						}
 
-						up.trigger('UploadProgress', file);
-
 						chunkBlob = formData = null; // Free memory
 
 						// Check if file is uploaded
@@ -1316,6 +1314,8 @@ plupload.Uploader = function(settings) {
 							}
 
 							file.status = plupload.DONE;
+
+							up.trigger('UploadProgress', file);
 
 							up.trigger('FileUploaded', file, {
 								response : xhr.responseText,
