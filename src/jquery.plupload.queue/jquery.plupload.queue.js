@@ -115,7 +115,7 @@ used as it is.
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
 									'<div class="plupload_buttons">' +
-										'<a href="#" class="plupload_button plupload_add">' + _('Add Files') + '</a>' +
+										'<a href="#" class="plupload_button plupload_add" id="' + id + '_browse">' + _('Add Files') + '</a>' +
 										'<a href="#" class="plupload_button plupload_start">' + _('Start Upload') + '</a>' +
 									'</div>' +
 									'<span class="plupload_upload_status"></span>' +
@@ -151,8 +151,10 @@ used as it is.
 					target.attr('id', id);
 				}
 
+				renderUI(id, target);
 				uploader = new plupload.Uploader($.extend({
 					dragdrop : true,
+					browse_button : id + '_browser',
 					container : id
 				}, settings));
 
@@ -257,8 +259,6 @@ used as it is.
 				});
 
 				uploader.bind('Init', function(up, res) {
-					renderUI(id, target);
-
 					// Enable rename support
 					if (!settings.unique_names && settings.rename) {
 						target.on('click', '#' + id + '_filelist div.plupload_file_name span', function(e) {
@@ -292,9 +292,6 @@ used as it is.
 						});
 					}
 
-					$('a.plupload_add', target).attr('id', id + '_browse');
-
-					up.settings.browse_button = id + '_browse';
 
 					// Enable drag/drop (see PostInit handler as well)
 					if (up.settings.dragdrop) {
