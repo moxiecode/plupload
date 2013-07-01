@@ -376,6 +376,12 @@ used as it is.
 						updateList();
 						$('a.plupload_stop,div.plupload_progress', target).hide();
 						$('a.plupload_delete', target).css('display', 'block');
+
+						if (settings.multiple_queues && uploader.total.uploaded + uploader.total.failed == uploader.files.length) {
+							$(".plupload_buttons,.plupload_upload_status", target).css("display", "inline");
+							$(".plupload_start", target).addClass("plupload_disabled");
+							$('span.plupload_total_status,span.plupload_total_file_size', target).hide();
+						}
 					}
 				});
 
@@ -391,12 +397,6 @@ used as it is.
 
 					handleStatus(file);
 					updateTotalProgress();
-
-					if (settings.multiple_queues && uploader.total.uploaded + uploader.total.failed == uploader.files.length) {
-						$(".plupload_buttons,.plupload_upload_status", target).css("display", "inline");
-						$(".plupload_start", target).addClass("plupload_disabled");
-						$('span.plupload_total_status,span.plupload_total_file_size', target).hide();
-					}
 				});
 
 				// Call setup function
