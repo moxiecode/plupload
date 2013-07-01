@@ -512,16 +512,16 @@ $.widget("ui.plupload", {
 			self.options.multiple_queues = false; // one go only
 
 			uploader.bind('FilesAdded', function(up, selectedFiles) {
-				var removed = [], selectedCount = selectedFiles.length;
-				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
+				var selectedCount = selectedFiles.length
+				, extraCount = up.files.length + selectedCount - self.options.max_file_count
+				;
 				
 				if (extraCount > 0) {
-					removed = selectedFiles.splice(selectedCount - extraCount, extraCount);
+					selectedFiles.splice(selectedCount - extraCount, extraCount);
 					
 					up.trigger('Error', {
 						code : self.FILE_COUNT_ERROR,
-						message : _('File count error.'),
-						file : removed
+						message : _('File count error.')
 					});
 				}
 			});
@@ -827,7 +827,7 @@ $.widget("ui.plupload", {
 					.add(self.browse_button)
 					.add(self.start_button)
 						.button('disable');
-						
+
 				up.disableBrowse();
 			}
 

@@ -22,7 +22,8 @@
 .plupload_file {border-width: 0 0 1px 0}
 .plupload_container .plupload_header {border-width: 0 0 1px 0; position: relative;}
 
-.plupload_file .ui-icon {
+.plupload_delete .ui-icon, 
+.plupload_done .ui-icon {
 	cursor:pointer;	
 }
 
