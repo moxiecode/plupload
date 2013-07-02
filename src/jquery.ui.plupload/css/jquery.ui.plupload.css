@@ -23,7 +23,8 @@
 .plupload_container .plupload_header {border-width: 0 0 1px 0; position: relative;}
 
 .plupload_delete .ui-icon, 
-.plupload_done .ui-icon {
+.plupload_done .ui-icon,
+.plupload_failed .ui-icon {
 	cursor:pointer;	
 }
 

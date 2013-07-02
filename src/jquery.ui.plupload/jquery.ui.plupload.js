@@ -913,7 +913,7 @@ $.widget("ui.plupload", {
 			.find('.ui-icon')
 				.attr('class', iconClass)
 				.end()
-			.filter('.plupload_delete, .plupload_done')
+			.filter('.plupload_delete, .plupload_done, .plupload_failed')
 				.find('.ui-icon')
 					.click(function(e) {
 						self._removeFiles(file);
