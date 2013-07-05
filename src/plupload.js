@@ -1247,12 +1247,16 @@ plupload.Uploader = function(settings) {
 					// Standard arguments
 					args = {name : file.target_name || file.name};
 
-					// Only add chunking args if needed
 					if (chunkSize && features.chunks && blob.size > chunkSize) { // blob will be of type string if it was loaded in memory 
 						curChunkSize = Math.min(chunkSize, blob.size - offset);
-
 						chunkBlob = blob.slice(offset, offset + curChunkSize);
+					} else {
+						curChunkSize = blob.size;
+						chunkBlob = blob;
+					}
 
+					// If chunking is enabled add corresponding args, no matter if file is bigger than chunk or smaller
+					if (chunkSize && features.chunks) {
 						// Setup query string arguments
 						if (settings.send_chunk_number) {
 							args.chunk = Math.ceil(offset / chunkSize);
@@ -1261,9 +1265,6 @@ plupload.Uploader = function(settings) {
 							args.offset = offset;
 							args.total = blob.size;
 						}
-					} else {
-						curChunkSize = blob.size;
-						chunkBlob = blob;
 					}
 
 					xhr = new o.XMLHttpRequest();
