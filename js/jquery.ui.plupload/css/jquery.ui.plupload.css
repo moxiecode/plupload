@@ -22,7 +22,9 @@
 .plupload_file {border-width: 0 0 1px 0}
 .plupload_container .plupload_header {border-width: 0 0 1px 0; position: relative;}
 
-.plupload_file .ui-icon {
+.plupload_delete .ui-icon, 
+.plupload_done .ui-icon,
+.plupload_failed .ui-icon {
 	cursor:pointer;	
 }
 
@@ -108,6 +110,10 @@
 	left: 6px;
 	top: 6px;
 	background: #eee url(../img/loading.gif) center no-repeat;
+}
+
+.plupload_file_thumb_loaded {
+	background-image: none;
 }
 
 .plupload_file_name {

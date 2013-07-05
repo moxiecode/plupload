@@ -495,7 +495,7 @@ define("moxie/core/I18n", [
 		sprintf: function(str) {
 			var args = [].slice.call(arguments, 1), reStr = '';
 
-			Basic.each(str.split(/%[sdf]/), function(part) {
+			Basic.each(str.split(/%[a-z]/), function(part) {
 				reStr += part;
 				if (args.length) {
 					reStr += args.shift();
@@ -1146,7 +1146,8 @@ define('moxie/core/Exceptions', [
 
 		ImageError: (function() {
 			var namecodes = {
-				WRONG_FORMAT: 1
+				WRONG_FORMAT: 1,
+				MAX_RESOLUTION_ERR: 2
 			};
 
 			function ImageError(code) {
@@ -4541,6 +4542,7 @@ define("moxie/xhr/XMLHttpRequest", [
 			function exec(runtime) {
 				_xhr.bind('LoadStart', function(e) {
 					_p('readyState', XMLHttpRequest.LOADING);
+					self.dispatchEvent('readystatechange');
 
 					self.dispatchEvent(e);
 					
@@ -4550,8 +4552,10 @@ define("moxie/xhr/XMLHttpRequest", [
 				});
 				
 				_xhr.bind('Progress', function(e) {
-					_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
-					self.dispatchEvent('readystatechange');
+					if (_p('readyState') !== XMLHttpRequest.LOADING) {
+						_p('readyState', XMLHttpRequest.LOADING); // LoadStart unreliable (in Flash for example)
+						self.dispatchEvent('readystatechange');
+					}
 					self.dispatchEvent(e);
 				});
 				
@@ -5331,21 +5335,30 @@ define("moxie/image/Image", [
 			@param {Boolean} [preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 			*/
 			downsize: function(width, height, crop, preserveHeaders) {
+				try {
+					if (!this.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
 
-				if (!this.size) { // only preloaded image objects can be used as source
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					// no way to reliably intercept the crash due to high resolution, so we simply avoid it
+					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
+
+					if (!width && !height || Basic.typeOf(crop) === 'undefined') {
+						crop = false;
+					}
+
+					width = width || this.width;
+					height = height || this.height;
+
+					preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
+
+					this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
+				} catch(ex) {
+					// for now simply trigger error event
+					this.trigger('error', ex);
 				}
-
-				if (!width && !height || Basic.typeOf(crop) === 'undefined') {
-					crop = false;
-				}
-
-				width = width || this.width;
-				height = height || this.height;
-
-				preserveHeaders = (Basic.typeOf(preserveHeaders) === 'undefined' ? true : !!preserveHeaders);
-
-				this.getRuntime().exec.call(this, 'Image', 'downsize', width, height, crop, preserveHeaders);
 			},
 
 			/**
@@ -5508,45 +5521,53 @@ define("moxie/image/Image", [
 					}
 				}
 
-				if (!(el = Dom.get(el))) {
-					throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
-				}
-
-				if (!this.size) { // only preloaded image objects can be used as source
-					throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
-				}
-
-
-				type = options.type || this.type || 'image/jpeg';
-				quality = options.quality || 90;
-				crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
-
-				// figure out dimensions for the thumb
-				if (options.width) {
-					width = options.width;
-					height = options.height || width;
-				} else {
-					// if container element has > 0 dimensions, take them
-					var dimensions = Dom.getSize(el);
-					if (dimensions.w && dimensions.h) { // both should be > 0
-						width = dimensions.w;
-						height = dimensions.h;
+				try {
+					if (!(el = Dom.get(el))) {
+						throw new x.DOMException(x.DOMException.INVALID_NODE_TYPE_ERR);
 					}
+
+					if (!this.size) { // only preloaded image objects can be used as source
+						throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+					}
+
+					if (this.width > Image.MAX_RESIZE_WIDTH || this.height > Image.MAX_RESIZE_HEIGHT) {
+						throw new x.ImageError(x.ImageError.MAX_RESOLUTION_ERR);
+					}
+
+					type = options.type || this.type || 'image/jpeg';
+					quality = options.quality || 90;
+					crop = Basic.typeOf(options.crop) !== 'undefined' ? options.crop : false;
+
+					// figure out dimensions for the thumb
+					if (options.width) {
+						width = options.width;
+						height = options.height || width;
+					} else {
+						// if container element has > 0 dimensions, take them
+						var dimensions = Dom.getSize(el);
+						if (dimensions.w && dimensions.h) { // both should be > 0
+							width = dimensions.w;
+							height = dimensions.h;
+						}
+					}
+
+					imgCopy = new Image();
+
+					imgCopy.bind("Resize", function() {
+						onResize.call(self);
+					});
+
+					imgCopy.bind("Load", function() {
+						imgCopy.downsize(width, height, crop, false);
+					});
+
+					imgCopy.clone(this, false);
+
+					return imgCopy;
+				} catch(ex) {
+					// for now simply trigger error event
+					this.trigger('error', ex);
 				}
-
-				imgCopy = new Image();
-
-				imgCopy.bind("Resize", function() {
-					onResize.call(self);
-				});
-
-				imgCopy.bind("Load", function() {
-					imgCopy.downsize(width, height, crop, false);
-				});
-
-				imgCopy.clone(this, false);
-
-				return imgCopy;
 			},
 
 			/**
@@ -5626,7 +5647,7 @@ define("moxie/image/Image", [
 					}
 				}
 				// if source seems to be an img node
-				else if (srcType === 'node' && src.nodeName === 'img') {
+				else if (srcType === 'node' && src.nodeName.toLowerCase() === 'img') {
 					_load.call(this, src.src, arguments[1]);
 				}
 				else {
@@ -5634,7 +5655,7 @@ define("moxie/image/Image", [
 				}
 			} catch(ex) {
 				// for now simply trigger error event
-				this.trigger('error');
+				this.trigger('error', ex);
 			}
 		}
 
@@ -5703,6 +5724,10 @@ define("moxie/image/Image", [
 			xhr.send(null, options);
 		}
 	}
+
+	// virtual world will crash on you if image has a resolution higher than this:
+	Image.MAX_RESIZE_WIDTH = 6500;
+	Image.MAX_RESIZE_HEIGHT = 6500; 
 
 	Image.prototype = EventTarget.instance;
 
@@ -6498,23 +6523,51 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						});
 						data = fd;
 					}
-				} 
+				}
 
-				_xhr.onreadystatechange = function onReadyStateChange() {
-					
-					// fake Level 2 events
-					switch (_xhr.readyState) {
+
+				// if XHR L2
+				if (_xhr.upload) {
+					if (meta.withCredentials) {
+						_xhr.withCredentials = true;
+					}
+
+					_xhr.addEventListener('load', function(e) {
+						target.trigger(e);
+					});
+
+					_xhr.addEventListener('error', function(e) {
+						target.trigger(e);
+					});
+
+					// additionally listen to progress events
+					_xhr.addEventListener('progress', function(e) {
+						target.trigger(e);
+					});
+
+					_xhr.upload.addEventListener('progress', function(e) {
+						target.trigger({
+							type: 'UploadProgress',
+							loaded: e.loaded,
+							total: e.total
+						});
+					});
+				// ... otherwise simulate XHR L2
+				} else {
+					_xhr.onreadystatechange = function onReadyStateChange() {
 						
-						case 1: // XMLHttpRequest.OPENED
-							// readystatechanged is fired twice for OPENED state (in IE and Mozilla) - neu
-							break;
-						
-						// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions) - neu
-						case 2: // XMLHttpRequest.HEADERS_RECEIVED
-							break;
+						// fake Level 2 events
+						switch (_xhr.readyState) {
 							
-						case 3: // XMLHttpRequest.LOADING
-							if (!_xhr.upload) { 
+							case 1: // XMLHttpRequest.OPENED
+								// readystatechanged is fired twice for OPENED state (in IE and Mozilla) - neu
+								break;
+							
+							// looks like HEADERS_RECEIVED (state 2) is not reported in Opera (or it's old versions) - neu
+							case 2: // XMLHttpRequest.HEADERS_RECEIVED
+								break;
+								
+							case 3: // XMLHttpRequest.LOADING 
 								// try to fire progress event for not XHR L2
 								var total, loaded;
 								
@@ -6536,41 +6589,21 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 									total: parseInt(total, 10),
 									loaded: loaded
 								});
-							}
-							break;
-							
-						case 4: // XMLHttpRequest.DONE
-							// release readystatechange handler (mostly for IE)
-							_xhr.onreadystatechange = function() {};
+								break;
+								
+							case 4: // XMLHttpRequest.DONE
+								// release readystatechange handler (mostly for IE)
+								_xhr.onreadystatechange = function() {};
 
-							// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
-							if (_xhr.status === 0) {
-								target.trigger('error');
-							} else {
-								target.trigger('load');
-							}							
-							break;
-					}
-				};
-
-				// if XHR L2
-				if (_xhr.upload) {
-					if (meta.withCredentials) {
-						_xhr.withCredentials = true;
-					}
-
-					// additionally listen to progress events
-					_xhr.addEventListener('progress', function(e) {
-						target.trigger(e);
-					});
-
-					_xhr.upload.addEventListener('progress', function(e) {
-						target.trigger({
-							type: 'UploadProgress',
-							loaded: e.loaded,
-							total: e.total
-						});
-					});
+								// usually status 0 is returned when server is unreachable, but FF also fails to status 0 for 408 timeout
+								if (_xhr.status === 0) {
+									target.trigger('error');
+								} else {
+									target.trigger('load');
+								}							
+								break;
+						}
+					};
 				}
 				
 

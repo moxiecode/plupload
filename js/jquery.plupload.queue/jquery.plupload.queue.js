@@ -115,7 +115,7 @@ used as it is.
 							'<div class="plupload_filelist_footer">' +
 								'<div class="plupload_file_name">' +
 									'<div class="plupload_buttons">' +
-										'<a href="#" class="plupload_button plupload_add">' + _('Add Files') + '</a>' +
+										'<a href="#" class="plupload_button plupload_add" id="' + id + '_browse">' + _('Add Files') + '</a>' +
 										'<a href="#" class="plupload_button plupload_start">' + _('Start Upload') + '</a>' +
 									'</div>' +
 									'<span class="plupload_upload_status"></span>' +
@@ -141,7 +141,7 @@ used as it is.
 	$.fn.pluploadQueue = function(settings) {
 		if (settings) {
 			this.each(function() {
-				var uploader, target, id;
+				var uploader, target, id, contents_bak;
 
 				target = $(this);
 				id = target.attr('id');
@@ -151,8 +151,12 @@ used as it is.
 					target.attr('id', id);
 				}
 
+				contents_bak = target.html();
+				renderUI(id, target);
+
 				uploader = new plupload.Uploader($.extend({
 					dragdrop : true,
+					browse_button : id + '_browse',
 					container : id
 				}, settings));
 
@@ -252,13 +256,18 @@ used as it is.
 					}
 				}
 
+				function destroy() {
+					delete uploaders[id];
+					uploader.destroy();
+					target.html(contents_bak);
+					uploader = target = contents_bak = null;
+				}
+
 				uploader.bind("UploadFile", function(up, file) {
 					$('#' + file.id).addClass('plupload_current_file');
 				});
 
 				uploader.bind('Init', function(up, res) {
-					renderUI(id, target);
-
 					// Enable rename support
 					if (!settings.unique_names && settings.rename) {
 						target.on('click', '#' + id + '_filelist div.plupload_file_name span', function(e) {
@@ -292,9 +301,6 @@ used as it is.
 						});
 					}
 
-					$('a.plupload_add', target).attr('id', id + '_browse');
-
-					up.settings.browse_button = id + '_browse';
 
 					// Enable drag/drop (see PostInit handler as well)
 					if (up.settings.dragdrop) {
@@ -319,15 +325,6 @@ used as it is.
 					$('a.plupload_start', target).addClass('plupload_disabled');
 				});
 
-				uploader.bind("PostInit", function(up) {
-					// features are populated only after input components are fully instantiated
-					if (up.settings.dragdrop && up.features.dragdrop) {
-						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
-					}
-				});
-
-				uploader.init();
-
 				uploader.bind("Error", function(up, err) {
 					var file = err.file, message;
 
@@ -349,7 +346,22 @@ used as it is.
 						file.hint = message;
 						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
+
+					if (err.code === plupload.INIT_ERROR) {
+						setTimeout(function() {
+							destroy();
+						}, 1);
+					}
 				});
+
+				uploader.bind("PostInit", function(up) {
+					// features are populated only after input components are fully instantiated
+					if (up.settings.dragdrop && up.features.dragdrop) {
+						$('#' + id + '_filelist').append('<li class="plupload_droptext">' + _("Drag files here.") + '</li>');
+					}
+				});
+
+				uploader.init();
 
 				uploader.bind('StateChanged', function() {
 					if (uploader.state === plupload.STARTED) {
@@ -364,6 +376,12 @@ used as it is.
 						updateList();
 						$('a.plupload_stop,div.plupload_progress', target).hide();
 						$('a.plupload_delete', target).css('display', 'block');
+
+						if (settings.multiple_queues && uploader.total.uploaded + uploader.total.failed == uploader.files.length) {
+							$(".plupload_buttons,.plupload_upload_status", target).css("display", "inline");
+							$(".plupload_start", target).addClass("plupload_disabled");
+							$('span.plupload_total_status,span.plupload_total_file_size', target).hide();
+						}
 					}
 				});
 
@@ -379,12 +397,6 @@ used as it is.
 
 					handleStatus(file);
 					updateTotalProgress();
-
-					if (settings.multiple_queues && uploader.total.uploaded + uploader.total.failed == uploader.files.length) {
-						$(".plupload_buttons,.plupload_upload_status", target).css("display", "inline");
-						$(".plupload_start", target).addClass("plupload_disabled");
-						$('span.plupload_total_status,span.plupload_total_file_size', target).hide();
-					}
 				});
 
 				// Call setup function
