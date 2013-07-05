@@ -624,7 +624,7 @@
 						
 
 					function uploadNextChunk() {
-						var chunkBlob, br, chunks, args, chunkSize, curChunkSize, mimeType, url = up.settings.url;	
+						var chunkBlob, br, chunks = 1, args, chunkSize, curChunkSize, mimeType, url = up.settings.url;	
 
 						function sendAsBinaryString(bin) {
 							if (xhr.sendAsBinary) { // Gecko
@@ -819,13 +819,16 @@
 								// Slice the chunk
 								chunkBlob = w3cBlobSlice(blob, chunk * chunkSize, chunk * chunkSize + curChunkSize);
 							}
-
-							// Setup query string arguments
-							args.chunk = chunk;
-							args.chunks = chunks;
 						} else {
 							curChunkSize = file.size;
 							chunkBlob = blob;
+						}
+
+						// If chunking is enabled add corresponding args, no matter if file is bigger than chunk or smaller
+						if (settings.chunk_size && features.chunks) {
+							// Setup query string arguments
+							args.chunk = chunk;
+							args.chunks = chunks;
 						}
 						
 						// workaround for Android and Gecko 2,5,6 FormData+Blob bug: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
