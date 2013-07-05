@@ -1323,9 +1323,9 @@ plupload.Uploader = function(settings) {
 								blob = null;
 							}
 
-							file.status = plupload.DONE;
-
 							up.trigger('UploadProgress', file);
+
+							file.status = plupload.DONE;
 
 							up.trigger('FileUploaded', file, {
 								response : xhr.responseText,
@@ -1450,6 +1450,8 @@ plupload.Uploader = function(settings) {
 			});
 
 			self.bind("FileUploaded", function() {
+				calc();
+
 				// Upload next file but detach it from the error event
 				// since other custom listeners might want to stop the queue
 				delay(function() {
