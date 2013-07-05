@@ -1,6 +1,8 @@
 bin
 js
 obj
+libs
+wiki
 tmp
 docs
 src/moxie
@@ -18,3 +20,4 @@ jslint.xml
 *.suo
 *.user
 .DS_Store
+node_modules
