@@ -29,6 +29,9 @@
     <a id="uploadfiles" href="javascript:;">[Upload files]</a>
 </div>
 
+<br />
+<pre id="console"></pre>
+
 
 <script type="text/javascript">
 // Custom example logic
@@ -67,6 +70,10 @@ var uploader = new plupload.Uploader({
 
 		UploadProgress: function(up, file) {
 			$(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+		},
+
+		Error: function(up, err) {
+			$('console').innerHTML += "\nError #" + err.code + ": " + err.message;
 		}
 	}
 });
