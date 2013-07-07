@@ -12,7 +12,9 @@
 
 ;(function(window, o, undef) {
 
-var delay = window.setTimeout;
+var delay = window.setTimeout
+, fileFilters = {}
+;
 
 // convert plupload features to caps acceptable by mOxie
 function normalizeCaps(settings) {		
@@ -586,8 +588,88 @@ var plupload = {
 		runtime = up.runtime;
 		up.destroy();
 		return runtime;
+	},
+
+
+	addFileFilter: function(name, cb) {
+		fileFilters[name] = cb;
 	}
+
 };
+
+
+plupload.addFileFilter('mime_types', (function() {
+	var extRegExp;
+
+	// Convert extensions to regexp
+	function getExtRegExp(filters) {
+		var extensionsRegExp = [];
+
+		plupload.each(filters, function(filter) {
+			plupload.each(filter.extensions.split(/,/), function(ext) {
+				if (/^\s*\*\s*$/.test(ext)) {
+					extensionsRegExp.push('\\.*');
+				} else {
+					extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
+				}
+			});
+		});
+
+		return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
+	}
+
+	return function(filters, i, files) {
+		if (!extRegExp) { // make sure we do it only once
+			extRegExp = getExtRegExp(filters);
+		}
+
+		if (!extRegExp.test(files[i].name)) {
+			this.trigger('Error', {
+				code : plupload.FILE_EXTENSION_ERROR,
+				message : plupload.translate('File extension error.'),
+				file : files[i]
+			});
+			return false;
+		}
+		return true;
+	};
+}()));
+
+
+plupload.addFileFilter('max_file_size', function(maxSize, i, files) {
+	var undef;
+
+	// Invalid file size
+	if (files[i].size !== undef && maxSize && files[i].size > maxSize) {
+		this.trigger('Error', {
+			code : plupload.FILE_SIZE_ERROR,
+			message : plupload.translate('File size error.'),
+			file : files[i]
+		});
+		return false;
+	}
+	return true;
+});
+
+
+plupload.addFileFilter('prevent_duplicates', function(value, i, files) {
+	if (value) {
+		var file = files[i], ii = files.length;
+		
+		while (ii--) {
+			// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
+			if (ii !== i && file.name === files[ii].name && file.size === files[ii].size) {
+				this.trigger('Error', {
+					code : plupload.FILE_DUPLICATE_ERROR,
+					message : plupload.translate('Duplicate file error.'),
+					file : file
+				});
+				return false;
+			}
+		}
+	}
+	return true;
+});
 
 
 /**
@@ -982,6 +1064,22 @@ plupload.Uploader = function(settings) {
 		}
 	}
 
+	function filterFiles(files, rules) {
+		var filteredFiles, i, name;
+
+		for (name in rules) {
+			filteredFiles = [];
+			for (i = 0, length = files.length; i < length; i++) {
+				if (fileFilters[name] && !fileFilters[name].call(this, rules[name], i, files)) {
+					continue;
+				}
+				filteredFiles.push(files[i]);
+			}
+			files = filteredFiles;
+		}
+		return files;
+	}
+
 
 	// Inital total state
 	total = new plupload.QueueProgress();
@@ -995,8 +1093,6 @@ plupload.Uploader = function(settings) {
 		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
-		filters : [],
-		prevent_duplicates: false,
 		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	}, settings);
 
@@ -1011,6 +1107,18 @@ plupload.Uploader = function(settings) {
 	// Convert settings
 	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
 	settings.max_file_size = plupload.parseSize(settings.max_file_size) || 0;
+
+	// Set file filters
+	if (plupload.typeOf(settings.filters) === 'array') {
+		settings.filters = {
+			mime_types: settings.filters
+		};
+	}
+	settings.filters = plupload.extend({
+		prevent_duplicates: !!settings.prevent_duplicates,
+		max_file_size: settings.max_file_size || 0
+	}, settings.filters);
+
 	
 	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
 
@@ -1111,85 +1219,14 @@ plupload.Uploader = function(settings) {
 				return;
 			}
 
-			// Add files to queue
-			self.bind('FilesAdded', function(up, selected_files) {
-				var i, ii, file, count = 0, extensionsRegExp, filters = settings.filters;
+			self.bind('FilesAdded', function(up, filteredFiles) {
+				// Add files to queue				
+				[].push.apply(files, filteredFiles);
 
-				// Convert extensions to regexp
-				if (filters && filters.length) {
-					extensionsRegExp = [];
-
-					plupload.each(filters, function(filter) {
-						plupload.each(filter.extensions.split(/,/), function(ext) {
-							if (/^\s*\*\s*$/.test(ext)) {
-								extensionsRegExp.push('\\.*');
-							} else {
-								extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
-							}
-						});
-					});
-
-					extensionsRegExp = new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
-				}
-
-				next_file:
-				for (i = 0; i < selected_files.length; i++) {
-					file = selected_files[i];
-					file.loaded = 0;
-					file.percent = 0;
-					file.status = plupload.QUEUED;
-
-					// Invalid file extension
-					if (extensionsRegExp && !extensionsRegExp.test(file.name)) {
-						up.trigger('Error', {
-							code : plupload.FILE_EXTENSION_ERROR,
-							message : plupload.translate('File extension error.'),
-							file : file
-						});
-
-						continue;
-					}
-
-					// Invalid file size
-					if (file.size !== undef && settings.max_file_size && file.size > settings.max_file_size) {
-						up.trigger('Error', {
-							code : plupload.FILE_SIZE_ERROR,
-							message : plupload.translate('File size error.'),
-							file : file
-						});
-						continue;
-					}
-
-					// Bypass duplicates
-					if (settings.prevent_duplicates) {
-						ii = up.files.length;
-						while (ii--) {
-							// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
-							if (file.name === up.files[ii].name && file.size === up.files[ii].size) {
-								up.trigger('Error', {
-									code : plupload.FILE_DUPLICATE_ERROR,
-									message : plupload.translate('Duplicate file error.'),
-									file : file
-								});
-								continue next_file;
-							}
-						}
-					}
-
-					// Add valid file to list
-					files.push(file);
-					count++;
-				}
-
-				// Only trigger QueueChanged event if any files where added
-				if (count) {
-					delay(function() {
-						self.trigger("QueueChanged");
-						self.refresh();
-					}, 1);
-				} else {
-					return false; // Stop the FilesAdded event from immediate propagation
-				}
+				delay(function() {
+					self.trigger("QueueChanged");
+					self.refresh();
+				}, 1);		
 			});
 
 			self.bind("CancelUpload", function() {
@@ -1585,6 +1622,10 @@ plupload.Uploader = function(settings) {
 			ruid = getRUID();
 
 			resolveFile(file);
+
+			// Filter files according to the specified rules
+			files = filterFiles.call(this, files, settings.filters);
+
 			// Trigger FilesAdded event if we added any
 			if (files.length) {
 				this.trigger("FilesAdded", files);
@@ -1847,7 +1888,7 @@ plupload.File = (function() {
 			 * @type Number
 			 * @see plupload
 			 */
-			status: 0,
+			status: plupload.QUEUED,
 
 			/**
 			 * Returns native window.File object, when it's available.
