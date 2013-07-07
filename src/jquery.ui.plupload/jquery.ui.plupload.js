@@ -935,7 +935,7 @@ $.widget("ui.plupload", {
 
 		if (up.files.length === (up.total.uploaded + up.total.failed)) {
 			this.start_button.button('disable');
-		} else if (!this.options.multiple_queues) {
+		} else {
 			this.start_button.button('enable');
 		}
 
