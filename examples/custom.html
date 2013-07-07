@@ -63,9 +63,9 @@ var uploader = new plupload.Uploader({
 		},
 
 		FilesAdded: function(up, files) {
-			for (var i in files) {
-				$('filelist').innerHTML += '<div id="' + files[i].id + '">' + files[i].name + ' (' + plupload.formatSize(files[i].size) + ') <b></b></div>';
-			}
+			plupload.each(files, function(file) {
+				$('filelist').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ') <b></b></div>';
+			});
 		},
 
 		UploadProgress: function(up, file) {
