@@ -571,7 +571,8 @@ $.widget("ui.plupload", {
 			self._trigger('progress', null, { up: up, file: file } );
 		});
 		
-		uploader.bind('UploadComplete', function(up, files) {			
+		uploader.bind('UploadComplete', function(up, files) {
+			self._addFormFields();		
 			self._trigger('complete', null, { up: up, files: files } );
 		});
 	},
@@ -844,34 +845,15 @@ $.widget("ui.plupload", {
 			return;	
 		}
 
-
-		function addFields() {
-			var fields = ''
-			, count = parseInt(self.counter.val() || 0, 10)
-			, id = self.id + '_' + count
-			;
-
-			if (file.target_name) {
-				fields += '<input type="hidden" name="' + id + '_tmpname" value="'+plupload.xmlEncode(file.target_name)+'" />';
-			}
-			fields += '<input type="hidden" name="' + id + '_name" value="'+plupload.xmlEncode(file.name)+'" />';
-			fields += '<input type="hidden" name="' + id + '_status" value="' + (file.status === plupload.DONE ? 'done' : 'failed') + '" />';
-
-			$('#' + file.id).find('.plupload_file_fields').html(fields);
-			self.counter.val(++count);
-		}
-
 		switch (file.status) {
 			case plupload.DONE: 
 				actionClass = 'plupload_done';
 				iconClass = 'ui-icon ui-icon-circle-check';
-				addFields();
 				break;
 			
 			case plupload.FAILED:
 				actionClass = 'ui-state-error plupload_failed';
 				iconClass = 'ui-icon ui-icon-alert';
-				addFields();
 				break;
 
 			case plupload.QUEUED:
@@ -960,16 +942,16 @@ $.widget("ui.plupload", {
 		var self = this, file_html, queue = [];
 
 		file_html = '<li class="plupload_file ui-state-default" id="%id%">' +
-						'<div class="plupload_file_thumb"> </div>' +
-						'<div class="plupload_file_name" title="%name%"><span class="plupload_file_namespan">%name%</span></div>' +						
-						'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
-						'<div class="plupload_file_size">%size% </div>' +
-						'<div class="plupload_file_status">' +
-							'<div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div>' + 
-							'<span class="plupload_file_percent">%percent% </span>' +
-						'</div>' +
-						'<div class="plupload_clear plupload_file_fields"> </div>' +
-					'</li>';
+			'<div class="plupload_file_thumb"> </div>' +
+			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_namespan">%name%</span></div>' +						
+			'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
+			'<div class="plupload_file_size">%size% </div>' +
+			'<div class="plupload_file_status">' +
+				'<div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div>' + 
+				'<span class="plupload_file_percent">%percent% </span>' +
+			'</div>' +
+			'<div class="plupload_clear plupload_file_fields"> </div>' +
+		'</li>';
 
 		if (plupload.typeOf(files) !== 'array') {
 			files = [files];
@@ -1070,6 +1052,31 @@ $.widget("ui.plupload", {
 		}
 
 		this._trigger('updatelist', null, { filelist: this.filelist });
+	},
+
+
+	_addFormFields: function() {
+		var self = this;
+
+		// re-add from fresh
+		$('.plupload_file_fields', this.filelist).html('');
+
+		plupload.each(this.uploader.files, function(file, count) {
+			var fields = ''
+			, id = self.id + '_' + count
+			;
+
+			if (file.target_name) {
+				fields += '<input type="hidden" name="' + id + '_tmpname" value="'+plupload.xmlEncode(file.target_name)+'" />';
+			}
+			fields += '<input type="hidden" name="' + id + '_name" value="'+plupload.xmlEncode(file.name)+'" />';
+			fields += '<input type="hidden" name="' + id + '_status" value="' + (file.status === plupload.DONE ? 'done' : 'failed') + '" />';
+
+			$('#' + file.id).find('.plupload_file_fields').html(fields);
+			self.counter.val(++count);
+		});
+
+		self.counter.val(this.uploader.files.length);
 	},
 	
 
