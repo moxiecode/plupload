@@ -567,7 +567,6 @@ $.widget("ui.plupload", {
 		uploader.bind('UploadProgress', function(up, file) {
 			self._handleFileStatus(file);
 			self._updateTotalProgress();
-			
 			self._trigger('progress', null, { up: up, file: file } );
 		});
 		
@@ -1073,10 +1072,9 @@ $.widget("ui.plupload", {
 			fields += '<input type="hidden" name="' + id + '_status" value="' + (file.status === plupload.DONE ? 'done' : 'failed') + '" />';
 
 			$('#' + file.id).find('.plupload_file_fields').html(fields);
-			self.counter.val(++count);
 		});
 
-		self.counter.val(this.uploader.files.length);
+		this.counter.val(this.uploader.files.length);
 	},
 	
 
