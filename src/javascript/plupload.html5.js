@@ -416,12 +416,20 @@
 					});
 				}
 				
-				inputFile.onchange = function() {
+				inputFile.onchange = function onChange() {
 					// Add the selected files from file input
 					addSelectedFiles(this.files);
 					
 					// Clearing the value enables the user to select the same file again if they want to
-					this.value = '';
+					if (!plupload.ua.ie) {
+						this.value = '';
+					} else {
+						// in IE input[type="file"] is read-only so the only way to reset it is to re-insert it
+						var inputFile = this.cloneNode(true);
+						this.parentNode.replaceChild(inputFile, this);
+						inputFile.onchange = onChange;
+						inputFile = null;
+					}	
 				};
 				
 				/* Since we have to place input[type=file] on top of the browse_button for some browsers (FF, Opera),
