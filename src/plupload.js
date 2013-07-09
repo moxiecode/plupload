@@ -1065,7 +1065,7 @@ plupload.Uploader = function(settings) {
 	}
 
 	function filterFiles(files, rules) {
-		var filteredFiles, i, name;
+		var filteredFiles, i, length, name;
 
 		for (name in rules) {
 			filteredFiles = [];
