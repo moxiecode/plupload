@@ -459,7 +459,7 @@ $.widget("ui.plupload", {
 
 			message += " <br /><i>" + details + "</i>";
 			
-			if (err.file.status === plupload.SKIPPED) self._handleFileStatus(err.file);
+			if (err.file && err.file.status === plupload.SKIPPED) self._handleFileStatus(err.file);
 
 			self._trigger('error', null, { up: up, error: err } );
 

@@ -6377,13 +6377,12 @@ define("moxie/runtime/html5/file/FileDrop", [
 			if (entry.isFile) {
 				entry.file(function(file) {
 					if (_isAcceptable(file)) {
+						file.relativePath = _fullPath || null;  // expose relativePath to file
 						_files.push(file);
-												
 						/*
-						 * add files_added_chunking to FileDrop _readEntry()
+						 * add chunking to FileDrop _readEntry()
 						 */
-						var chunksize = _options.files_added_chunksize;						
-						if ((_files.length % chunksize) == 0) {
+						if (_options.files_added_chunksize && (_files.length % _options.files_added_chunksize) == 0) {
 // console.log("moxie.js: readEntry reached files_added_chunksize, _files.length="+_files.length);
 							// call drop handler, override getFiles() to limit to chunksize, continue _readEntry	
 							setTimeout(function(){
@@ -6391,9 +6390,8 @@ define("moxie/runtime/html5/file/FileDrop", [
 							}, 1)
 						}
 						/*
-						 * 
+						 *  end, FilesDrop chunking
 						 */
-						
 					}
 					cb();
 				}, function() {

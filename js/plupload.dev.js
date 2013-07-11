@@ -649,6 +649,8 @@ var plupload = {
 	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
 	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
+	@param {Number} [settings.files_added_chunksize=false] Limit the number of files added the UI adds in each iteration
+
 */
 plupload.Uploader = function(settings) {
 	/**
@@ -865,7 +867,7 @@ plupload.Uploader = function(settings) {
 		});
 		
 		// add chunksize to options so html5 FileDrop can access
-		options.files_added_chunksize = settings.files_added_chunksize || 0;
+		options.files_added_chunksize = settings.files_added_chunksize || false;
 
 		o.inSeries([
 			function(cb) {
