@@ -945,11 +945,7 @@ $.widget("ui.plupload", {
 			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_namespan">%name%</span></div>' +						
 			'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
 			'<div class="plupload_file_size">%size% </div>' +
-			'<div class="plupload_file_status">' +
-				'<div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div>' + 
-				'<span class="plupload_file_percent">%percent% </span>' +
-			'</div>' +
-			'<div class="plupload_clear plupload_file_fields"> </div>' +
+			'<div class="plupload_file_fields"> </div>' +
 		'</li>';
 
 		if (plupload.typeOf(files) !== 'array') {
