@@ -17,6 +17,7 @@ is built with the future of HTML5 in mind.
   * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
 * [Building Instructions](#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
+  * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
   * [Chunking](https://github.com/moxiecode/plupload/wiki/Chunking) 
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
 * [Frequently Asked Questions](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
