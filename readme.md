@@ -11,7 +11,7 @@ is built with the future of HTML5 in mind.
 ## Table of Contents
 * [Backstory](#backstory)
 * [Structure](#structure)
-  * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie)
+  * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie/blob/master/README.md)
   * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
   * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
   * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
