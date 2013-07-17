@@ -973,27 +973,27 @@ $.widget("ui.plupload", {
 					var img = new o.Image();
 
 					img.onload = function() {
-						img.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
+						this.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
 							width: 100, 
 							height: 60, 
 							crop: true,
 							swf_url: mOxie.resolveUrl(self.options.flash_swf_url),
 							xap_url: mOxie.resolveUrl(self.options.silverlight_xap_url)
 						});
-						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 					};
 
 					img.onembedded = function() {
 						$('#' + file.id + ' .plupload_file_thumb', self.filelist).addClass('plupload_file_thumb_loaded');
-						img.destroy();
+						this.destroy();
+						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 					};
 
 					img.onerror = function() {
 						var ext = file.name.match(/\.([^\.]{1,7})$/);
 						$('#' + file.id + ' .plupload_file_thumb', self.filelist)
 							.html('<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">' + (ext ? ext[1] : 'none') + '</span></div>');
-						img.destroy();
-						cb();
+						this.destroy();
+						setTimeout(cb, 1);
 					};
 					img.load(file.getSource());
 				});
