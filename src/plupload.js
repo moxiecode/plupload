@@ -590,16 +590,26 @@ var plupload = {
 		return runtime;
 	},
 
-
+	/**
+	 * Registers a filter that will be executed for each file added to the queue.
+	 * If callback returns false, file will not be added.
+	 *
+	 * Callback receives two arguments: a value for the filter as it was specified in settings.filters
+	 * and a file to be filtered. Callback is executed in the context of uploader instance.
+	 *
+	 * @method addFileFilter
+	 * @static
+	 * @param {String} name Name of the filter by which it can be referenced in settings.filters
+	 * @param {String} cb Callback - the actual routine that every added file must pass
+	 */
 	addFileFilter: function(name, cb) {
 		fileFilters[name] = cb;
 	}
-
 };
 
 
 plupload.addFileFilter('mime_types', (function() {
-	var extRegExp;
+	var _filters, _extRegExp;
 
 	// Convert extensions to regexp
 	function getExtRegExp(filters) {
@@ -618,16 +628,17 @@ plupload.addFileFilter('mime_types', (function() {
 		return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
 	}
 
-	return function(filters, i, files) {
-		if (!extRegExp) { // make sure we do it only once
-			extRegExp = getExtRegExp(filters);
+	return function(filters, file) {
+		if (!_extRegExp || filters != _filters) { // make sure we do it only once, unless filters got changed
+			_extRegExp = getExtRegExp(filters);
+			_filters = [].slice.call(filters);
 		}
 
-		if (!extRegExp.test(files[i].name)) {
+		if (!_extRegExp.test(file.name)) {
 			this.trigger('Error', {
 				code : plupload.FILE_EXTENSION_ERROR,
 				message : plupload.translate('File extension error.'),
-				file : files[i]
+				file : file
 			});
 			return false;
 		}
@@ -636,15 +647,15 @@ plupload.addFileFilter('mime_types', (function() {
 }()));
 
 
-plupload.addFileFilter('max_file_size', function(maxSize, i, files) {
+plupload.addFileFilter('max_file_size', function(maxSize, file) {
 	var undef;
 
 	// Invalid file size
-	if (files[i].size !== undef && maxSize && files[i].size > maxSize) {
+	if (file.size !== undef && maxSize && file.size > maxSize) {
 		this.trigger('Error', {
 			code : plupload.FILE_SIZE_ERROR,
 			message : plupload.translate('File size error.'),
-			file : files[i]
+			file : file
 		});
 		return false;
 	}
@@ -652,13 +663,12 @@ plupload.addFileFilter('max_file_size', function(maxSize, i, files) {
 });
 
 
-plupload.addFileFilter('prevent_duplicates', function(value, i, files) {
+plupload.addFileFilter('prevent_duplicates', function(value, file) {
 	if (value) {
-		var file = files[i], ii = files.length;
-		
+		var ii = this.files.length;
 		while (ii--) {
 			// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
-			if (ii !== i && file.name === files[ii].name && file.size === files[ii].size) {
+			if (file.name === this.files[ii].name && file.size === this.files[ii].size) {
 				this.trigger('Error', {
 					code : plupload.FILE_DUPLICATE_ERROR,
 					message : plupload.translate('Duplicate file error.'),
@@ -771,12 +781,20 @@ plupload.Uploader = function(settings) {
 	 * @param {Array} files Array of files that got removed.
 	 */
 
-	/**
+	 /**
 	 * Fires while when the user selects files to upload.
+	 *
+	 * @event BeforeAdd
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File that is being added to the queue.
+	 */
+
+	/**
+	 * Fires after files were filtered and added to the queue.
 	 *
 	 * @event FilesAdded
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of file objects that was added to queue/selected by the user.
+	 * @param {Array} files Array of file objects that were added to queue by the user.
 	 */
 
 	/**
@@ -1064,22 +1082,6 @@ plupload.Uploader = function(settings) {
 		}
 	}
 
-	function filterFiles(files, rules) {
-		var filteredFiles, i, length, name;
-
-		for (name in rules) {
-			filteredFiles = [];
-			for (i = 0, length = files.length; i < length; i++) {
-				if (fileFilters[name] && !fileFilters[name].call(this, rules[name], i, files)) {
-					continue;
-				}
-				filteredFiles.push(files[i]);
-			}
-			files = filteredFiles;
-		}
-		return files;
-	}
-
 
 	// Inital total state
 	total = new plupload.QueueProgress();
@@ -1106,7 +1108,6 @@ plupload.Uploader = function(settings) {
 
 	// Convert settings
 	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
-	settings.max_file_size = plupload.parseSize(settings.max_file_size) || 0;
 
 	// Set file filters
 	if (plupload.typeOf(settings.filters) === 'array') {
@@ -1116,7 +1117,7 @@ plupload.Uploader = function(settings) {
 	}
 	settings.filters = plupload.extend({
 		prevent_duplicates: !!settings.prevent_duplicates,
-		max_file_size: settings.max_file_size || 0
+		max_file_size: plupload.parseSize(settings.max_file_size) || 0
 	}, settings.filters);
 
 	
@@ -1219,7 +1220,18 @@ plupload.Uploader = function(settings) {
 				return;
 			}
 
-			self.bind('FilesAdded', function(up, filteredFiles) {
+
+			self.bind("BeforeAdd", function(up, file) {
+				var name, rules = up.settings.filters;
+				for (name in rules) {
+					if (fileFilters[name] && !fileFilters[name].call(this, rules[name], file)) {
+						return false;
+					}
+				}
+			});
+
+
+			self.bind("FilesAdded", function(up, filteredFiles) {
 				// Add files to queue				
 				[].push.apply(files, filteredFiles);
 
@@ -1575,7 +1587,8 @@ plupload.Uploader = function(settings) {
 		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
 		addFile : function(file, fileName) {
-			var files = []
+			var self = this 
+			, files = []
 			, ruid
 			;
 
@@ -1606,7 +1619,10 @@ plupload.Uploader = function(settings) {
 					if (fileName) {
 						file.name = fileName;
 					}
-					files.push(file);
+					// run through the internal and user-defined filters if any
+					if (self.trigger("BeforeAdd", file)) {
+						files.push(file);
+					}
 				} else if (o.inArray(type, ['file', 'blob']) !== -1) {
 					resolveFile(new o.File(null, file));
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
@@ -1622,9 +1638,6 @@ plupload.Uploader = function(settings) {
 			ruid = getRUID();
 
 			resolveFile(file);
-
-			// Filter files according to the specified rules
-			files = filterFiles.call(this, files, settings.filters);
 
 			// Trigger FilesAdded event if we added any
 			if (files.length) {
