@@ -158,7 +158,7 @@ test('removeFile() / splice()', function() {
 
 // test internal filters
 test('options.filters', function() {
-	expect(3);
+	expect(4);
 
 	var files = FileHash.getRuntimeFiles();
 
@@ -177,7 +177,9 @@ test('options.filters', function() {
 		equal(up.files.length, 0, "No files were added to the queue.");
 
 		// add asterisk wildcard
-		up.settings.filters.push({title: "All files", extensions: "*"});
+		equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+
+		up.settings.filters.mime_types.push({title: "All files", extensions: "*"});
 		up.addFile(files[1]);
 		equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
 

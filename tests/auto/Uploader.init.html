@@ -199,10 +199,11 @@ test("Test how default values are assigned to missing options", function() {
 		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
-		filters : [],
-		prevent_duplicates: false,
+		filters : {
+			prevent_duplicates: false,
+			max_file_size: 0
+		},
 		chunk_size: 0,
-		max_file_size: 0,
 		required_features: {},
 		send_chunk_number: true
 	}, "Proper defaults set.");
