@@ -1,5 +1,4 @@
 bin
-js
 obj
 libs
 wiki
@@ -14,9 +13,6 @@ jslint.xml
 *.patch
 *.bak
 *.log
-*.min.js
-*.xap
-*.swf
 *.suo
 *.user
 .DS_Store
