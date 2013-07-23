@@ -15,6 +15,7 @@ is built with the future of HTML5 in mind.
   * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
   * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
   * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
+* [Demos](https://github.com/jayarjo/plupload-demos/blob/master/README.md)
 * [Building Instructions](#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
   * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
