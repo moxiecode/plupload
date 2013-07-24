@@ -21,8 +21,9 @@ is built with the future of HTML5 in mind.
   * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
   * [Chunking](https://github.com/moxiecode/plupload/wiki/Chunking) 
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
-* [Frequently Asked Questions](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
+* [FAQ](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
 * [Support](#support)
+  * [Provide a case online](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle)
 * [Contributing](#contribute)
 * [License](#license)
 * [Contact Us](http://www.moxiecode.com/contact.php)
@@ -113,6 +114,9 @@ In addition to dedicated support for those who dare to buy our OEM licenses, we 
 [discussion boards](http://www.plupload.com/punbb/index.php), which is like an enormous FAQ, 
 covering every possible application case. Of course, you are welcome to file a bug report or feature request, 
 here on [GitHub](https://github.com/moxiecode/plupload/issues).
+
+Sometimes it is easier to notice the problem when bug report is accompained by the actual code. Consider providing 
+[a Plupload fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle) for the troublesome code.
 
 <a name="contribute" />
 ### Contributing
