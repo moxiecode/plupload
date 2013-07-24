@@ -23,7 +23,7 @@ is built with the future of HTML5 in mind.
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
 * [FAQ](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
 * [Support](#support)
-  * [Provide a case online](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle)
+  * [Create a Fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle)
 * [Contributing](#contribute)
 * [License](#license)
 * [Contact Us](http://www.moxiecode.com/contact.php)
