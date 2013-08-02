@@ -385,6 +385,7 @@
 							break no_type_restriction;
 						}
 						
+						mimes.push('.' + ext[y]);
 						type = plupload.mimeTypes[ext[y]];
 
 						if (type && plupload.inArray(type, mimes) === -1) {
