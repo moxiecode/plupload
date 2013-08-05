@@ -16,6 +16,9 @@
         "uglify-js": "1.x",
         "amdlc": "0.1.x",
         "coverjs": "0.0.x",
-        "bunyip": "https://github.com/jayarjo/bunyip/tarball/master"
+        "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
+        "dateformat": "1.x",
+        "request": "2.25.x",
+        "async": "0.2.x"
     }
 }

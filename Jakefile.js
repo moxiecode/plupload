@@ -3,9 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
-var Instrument = require('coverjs').Instrument;
 var tools = require('./build/BuildTools');
-var uglify = tools.uglify;
 var less = tools.less;
 var yuidoc = tools.yuidoc;
 var jshint = tools.jshint;
@@ -13,6 +11,7 @@ var zip = tools.zip;
 
 var utils = require('./src/moxie/build/utils');
 var wiki = require('./src/moxie/build/wiki');
+
 
 function exit(message) {
 	if (message) {
@@ -22,11 +21,15 @@ function exit(message) {
 	process.exit(arguments[1] || 0);
 }
 
+
 desc("Default build task");
 task("default", ["mkjs", "docs"], function (params) {});
 
+
+
 desc("Build release package");
 task("release", ["default", "package"], function (params) {});
+
 
 
 desc("Build mOxie");
@@ -40,6 +43,7 @@ task("moxie", [], function (params) {
 		}
 	});
 }, true);
+
 
 
 desc("Minify JS files");
@@ -104,6 +108,35 @@ task("mkjs", [], function (params) {
 });
 
 
+
+desc("Language tools");
+task("i18n", [], function(params) {
+	var i18n = require('./build/i18n');
+
+	switch (params) {
+		case 'extract':
+			var from = process.env.from || ['./src/plupload.js', './src/jquery.ui.plupload/jquery.ui.plupload.js', './src/jquery.plupload.queue/jquery.plupload.queue.js'];
+			var to = process.env.to || './tmp/en.po';
+			i18n.extract(from, to);
+			break;
+
+		case 'toPO':
+			var from = process.env.from;
+			var to = process.env.to || './tmp/i18n';
+			i18n.toPot(from, to);
+			break;
+
+		case 'pull':
+		default:
+			var auth = process.env.auth.split(':');
+			var to = process.env.to || './tmp/i18n';
+			i18n.pull(utils.format("https://%s:%s@www.transifex.com/api/2/project/plupload/resource/core/", auth[0], auth[1]), to, complete);
+	}
+
+}, true);
+
+
+
 desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
 	yuidoc(["src", "src/jquery.plupload.queue", "src/jquery.ui.plupload"], "docs", {
@@ -111,10 +144,14 @@ task("docs", [], function (params) {
 	});
 }, true);
 
+
+
 desc("Generate wiki pages");
 task("wiki", ["docs"], function() {
 	wiki("git@github.com:moxiecode/plupload.wiki.git", "wiki", "docs");
 });
+
+
 
 desc("Runs JSHint on source files");
 task("jshint", [], function (params) {
@@ -122,6 +159,7 @@ task("jshint", [], function (params) {
 		curly: true
 	});
 });
+
 
 
 desc("Package library");
