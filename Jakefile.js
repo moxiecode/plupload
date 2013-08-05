@@ -131,8 +131,10 @@ task("i18n", [], function(params) {
 			var auth = process.env.auth.split(':');
 			var to = process.env.to || './tmp/i18n';
 			i18n.pull(utils.format("https://%s:%s@www.transifex.com/api/2/project/plupload/resource/core/", auth[0], auth[1]), to, complete);
+			return;
 	}
 
+	complete(); // call complete manually
 }, true);
 
 
