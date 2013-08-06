@@ -4,7 +4,7 @@ var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
 
-var tools = require('./src/moxie/build/BuildTools');
+var tools = require('./src/moxie/build/tools');
 var utils = require('./src/moxie/build/utils');
 var wiki = require('./src/moxie/build/wiki');
 
@@ -24,17 +24,8 @@ var copyright = [
 ].join("\n");
 
 
-function exit(message) {
-	if (message) {
-		console.info(message);
-	}
-	complete();
-	process.exit(arguments[1] || 0);
-}
-
-
 desc("Default build task");
-task("default", ["mkjs", "docs"], function (params) {});
+task("default", ["moxie", "mkjs", "docs"], function (params) {});
 
 
 
@@ -46,12 +37,11 @@ task("release", ["default", "package"], function (params) {});
 desc("Build mOxie");
 task("moxie", [], function (params) {
 	var moxieDir = "src/moxie";
-	exec("cd " + moxieDir + "; jake lib; cd ../..;", function(error, stdout, stderr) {
-		if (!error) {
-			complete();
-		} else {
-			exit("mOxie: Build process failed.", 1);
+	exec("cd " + moxieDir + "; jake; cd ../..;", function(error, stdout, stderr) {
+		if (error) {
+			console.info("mOxie: Build process failed.");
 		}
+		complete();
 	});
 }, true);
 
