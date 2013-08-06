@@ -932,7 +932,7 @@ plupload.Uploader = function(settings) {
 
 		// common settings
 		var options = {
-			accept: settings.filters,
+			accept: settings.filters.mime_types,
 			runtime_order: settings.runtimes,
 			required_caps: required_caps,
 			swf_url: settings.flash_swf_url,
@@ -1128,6 +1128,7 @@ plupload.Uploader = function(settings) {
 		};
 	}
 	settings.filters = plupload.extend({
+		mime_types: [],
 		prevent_duplicates: !!settings.prevent_duplicates,
 		max_file_size: plupload.parseSize(settings.max_file_size) || 0
 	}, settings.filters);
