@@ -198,7 +198,7 @@ task("package", [], function (params) {
 	}
 	fs.mkdirSync(tmpDir, 0755);
 
-	var suffix = info.version.replace(/\./, '_');
+	var suffix = info.version.replace(/\./g, '_');
 	if (/(?:beta|alpha)/.test(suffix)) {
 		var dateFormat = require('dateformat');
 		// If some public test build, append build number
