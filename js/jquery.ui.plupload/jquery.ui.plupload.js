@@ -213,8 +213,8 @@ function renderUI(obj) {
 						'<div class="plupload_header_title">' + _('Select files') + '</div>' +
 						'<div class="plupload_header_text">' + _('Add files to the upload queue and click the start button.') + '</div>' +
 						'<div class="plupload_view_switch">' +
-							'<input type="radio" id="'+obj.id+'_view_list" name="view_mode_'+obj.id+'" checked="checked" /> <label class="plupload_button" for="'+obj.id+'_view_list" data-view="list">List</label>' +
-							'<input type="radio" id="'+obj.id+'_view_thumbs" name="view_mode_'+obj.id+'" /> <label class="plupload_button"  for="'+obj.id+'_view_thumbs" data-view="thumbs">Thumbnails</label>' +
+							'<input type="radio" id="'+obj.id+'_view_list" name="view_mode_'+obj.id+'" checked="checked" /> <label class="plupload_button" for="'+obj.id+'_view_list" data-view="list">' + _('List') + '</label>' +
+							'<input type="radio" id="'+obj.id+'_view_thumbs" name="view_mode_'+obj.id+'" /> <label class="plupload_button"  for="'+obj.id+'_view_thumbs" data-view="thumbs">' + _('Thumbnails') + '</label>' +
 						'</div>' +
 					'</div>' +
 				'</div>' +
@@ -355,10 +355,12 @@ $.widget("ui.plupload", {
 			});
       
 			this.list_switcher.button({
-				icons: { primary: "ui-icon-grip-dotted-horizontal" }
+				text: false,
+				icons: { secondary: "ui-icon-grip-dotted-horizontal" }
 			});
 
 			this.thumbs_switcher.button({
+				text: false,
 				icons: { secondary: "ui-icon-image" }
 			});
 		}
@@ -1111,35 +1113,34 @@ $.widget("ui.plupload", {
 			switcher.hide();
 			view = buttons.eq(0).data('view');
 			this._viewChanged(view);
-			return;
 		} else if ($.ui.button && buttons.length > 1) {
-			switcher.show();
-			switcher.buttonset();
+			if (this.options.views.remember && $.cookie) {
+				view = $.cookie('plupload_ui_view');
+			}
+
+			// if wierd case, bail out to default
+			if (!~plupload.inArray(view, ['list', 'thumbs'])) {
+				view = this.options.views.active;
+			}
+
+			switcher
+				.show()
+				.buttonset()
+				.find('.ui-button')
+					.click(function(e) {
+						view = $(this).data('view');
+						self._viewChanged(view);
+						e.preventDefault(); // avoid auto scrolling to widget in IE and FF (see #850)
+					});
+
+			// if view not active - happens when switcher wasn't clicked manually
+			button = switcher.find('[for="' + self.id + '_view_'+view+'"]');
+			if (button.length) {
+				button.trigger('click');
+			}
 		} else {
 			switcher.show();
 			this._viewChanged(this.options.views.active);
-			return;
-		}
-
-		switcher.find('.plupload_button').click(function() {
-			view = $(this).data('view');
-			self._viewChanged(view);
-		});
-
-		if (this.options.views.remember && $.cookie) {
-			view = $.cookie('plupload_ui_view');
-		}
-
-		// if wierd case, bail out to default
-		if (!~plupload.inArray(view, ['list', 'thumbs'])) {
-			view = this.options.views.active;
-		}
-
-		// if view not active - happens when switcher wasn't clicked manually
-		button = switcher.find('[for="' + self.id + '_view_'+view+'"]');
-		if (button.length) {
-			button.trigger('click');
-			return; 
 		}
 	},
 	
