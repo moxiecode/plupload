@@ -1,6 +1,6 @@
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.0a
+ * v1.0.0alpha
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -1993,15 +1993,7 @@ define('moxie/runtime/Runtime', [
 
 				// if cap var is a comma-separated list of caps, convert it to object (key/value)
 				if (Basic.typeOf(cap) === 'string' && Basic.typeOf(value) === 'undefined') {
-					cap = (function(arr) {
-						var obj = {};
-
-						Basic.each(arr, function(key) {
-							obj[key] = true; // since no value supplied, we assume user meant it to be - true
-						});
-
-						return obj;
-					}(cap.split(',')));
+					cap = Runtime.parseCaps(cap);
 				}
 
 				if (Basic.typeOf(cap) === 'object') {
@@ -2020,7 +2012,6 @@ define('moxie/runtime/Runtime', [
 					return (value === refCaps[cap]);
 				}
 			},
-
 
 			/**
 			Returns container for the runtime as DOM element
@@ -2193,10 +2184,35 @@ define('moxie/runtime/Runtime', [
 			return {
 				uid: runtime.uid,
 				type: runtime.type,
-				can: runtime.can
+				can: function() {
+					return runtime.can.apply(runtime, arguments);
+				}
 			};
 		}
 		return null;
+	};
+
+
+	/**
+	Convert caps represented by a comma-separated string to the object representation.
+
+	@method parseCaps
+	@static
+	@param {String} capStr Comma-separated list of capabilities
+	@return {Object}
+	*/
+	Runtime.parseCaps = function(capStr) {
+		var capObj = {};
+
+		if (Basic.typeOf(capStr) !== 'string') {
+			return capStr || {};
+		}
+
+		Basic.each(capStr.split(','), function(key) {
+			capObj[key] = true; // we assume it to be - true
+		});
+
+		return capObj;
 	};
 
 	/**
@@ -2708,8 +2724,9 @@ define('moxie/file/FileInput', [
 	'moxie/core/EventTarget',
 	'moxie/core/I18n',
 	'moxie/file/File',
+	'moxie/runtime/Runtime',
 	'moxie/runtime/RuntimeClient'
-], function(Basic, Mime, Dom, x, EventTarget, I18n, File, RuntimeClient) {
+], function(Basic, Mime, Dom, x, EventTarget, I18n, File, Runtime, RuntimeClient) {
 	/**
 	Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
 	converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
@@ -2842,7 +2859,12 @@ define('moxie/file/FileInput', [
 			container: browseButton.parentNode || document.body
 		};
 		
-		options = typeof(options) === 'object' ? Basic.extend({}, defaults, options) : defaults;
+		options = Basic.extend({}, defaults, options);
+
+		// convert to object representation
+		if (typeof(options.required_caps) === 'string') {
+			options.required_caps = Runtime.parseCaps(options.required_caps);
+		}
 					
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
@@ -3187,6 +3209,48 @@ define('moxie/file/FileDrop', [
 	return FileDrop;
 });
 
+// Included from: src/javascript/runtime/RuntimeTarget.js
+
+/**
+ * RuntimeTarget.js
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ */
+
+define('moxie/runtime/RuntimeTarget', [
+	'moxie/core/utils/Basic',
+	'moxie/runtime/RuntimeClient',
+	"moxie/core/EventTarget"
+], function(Basic, RuntimeClient, EventTarget) {
+	/**
+	Instance of this class can be used as a target for the events dispatched by shims,
+	when allowing them onto components is for either reason inappropriate
+
+	@class RuntimeTarget
+	@constructor
+	@protected
+	@extends EventTarget
+	*/
+	function RuntimeTarget() {
+		this.uid = Basic.guid('uid_');
+		
+		RuntimeClient.call(this);
+
+		this.destroy = function() {
+			this.disconnectRuntime();
+			this.unbindAll();
+		};
+	}
+
+	RuntimeTarget.prototype = EventTarget.instance;
+
+	return RuntimeTarget;
+});
+
 // Included from: src/javascript/file/FileReader.js
 
 /**
@@ -3201,10 +3265,13 @@ define('moxie/file/FileDrop', [
 
 define('moxie/file/FileReader', [
 	'moxie/core/utils/Basic',
+	'moxie/core/utils/Encode',
 	'moxie/core/Exceptions',
 	'moxie/core/EventTarget',
-	'moxie/runtime/RuntimeClient'
-], function(Basic, x, EventTarget, RuntimeClient) {
+	'moxie/file/Blob',
+	'moxie/file/File',
+	'moxie/runtime/RuntimeTarget'
+], function(Basic, Encode, x, EventTarget, Blob, File, RuntimeTarget) {
 	/**
 	Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 	interface. Where possible uses native FileReader, where - not falls back to shims.
@@ -3214,18 +3281,72 @@ define('moxie/file/FileReader', [
 	@extends EventTarget
 	@uses RuntimeClient
 	*/
-	var dispatches = ['loadstart', 'progress', 'load', 'abort', 'error', 'loadend'];
+	var dispatches = [
+
+		/** 
+		Dispatched when the read starts.
+
+		@event loadstart
+		@param {Object} event
+		*/
+		'loadstart', 
+
+		/** 
+		Dispatched while reading (and decoding) blob, and reporting partial Blob data (progess.loaded/progress.total).
+
+		@event progress
+		@param {Object} event
+		*/
+		'progress', 
+
+		/** 
+		Dispatched when the read has successfully completed.
+
+		@event load
+		@param {Object} event
+		*/
+		'load', 
+
+		/** 
+		Dispatched when the read has been aborted. For instance, by invoking the abort() method.
+
+		@event abort
+		@param {Object} event
+		*/
+		'abort', 
+
+		/** 
+		Dispatched when the read has failed.
+
+		@event error
+		@param {Object} event
+		*/
+		'error', 
+
+		/** 
+		Dispatched when the request has completed (either in success or failure).
+
+		@event loadend
+		@param {Object} event
+		*/
+		'loadend'
+	];
 	
 	function FileReader() {
+		var self = this, _fr;
 				
-		RuntimeClient.call(this);
-
 		Basic.extend(this, {
+			/**
+			UID of the component instance.
+
+			@property uid
+			@type {String}
+			*/
 			uid: Basic.guid('uid_'),
 
 			/**
-			Contains current state of o.FileReader object. Can take values of o.FileReader.EMPTY, o.FileReader.LOADING
-			and o.FileReader.DONE.
+			Contains current state of FileReader object. Can take values of FileReader.EMPTY, FileReader.LOADING
+			and FileReader.DONE.
 
 			@property readyState
 			@type {Number}
@@ -3233,23 +3354,34 @@ define('moxie/file/FileReader', [
 			*/
 			readyState: FileReader.EMPTY,
 			
+			/**
+			Result of the successful read operation.
+
+			@property result
+			@type {String}
+			*/
 			result: null,
 			
+			/**
+			Stores the error of failed asynchronous read operation.
+
+			@property error
+			@type {DOMError}
+			*/
 			error: null,
 			
 			/**
-			Initiates reading of o.File/o.Blob object contents to binary string.
+			Initiates reading of File/Blob object contents to binary string.
 
 			@method readAsBinaryString
 			@param {Blob|File} blob Object to preload
 			*/
 			readAsBinaryString: function(blob) {
-				this.result = '';
 				_read.call(this, 'readAsBinaryString', blob);
 			},
 			
 			/**
-			Initiates reading of o.File/o.Blob object contents to dataURL string.
+			Initiates reading of File/Blob object contents to dataURL string.
 
 			@method readAsDataURL
 			@param {Blob|File} blob Object to preload
@@ -3258,12 +3390,8 @@ define('moxie/file/FileReader', [
 				_read.call(this, 'readAsDataURL', blob);
 			},
 			
-			readAsArrayBuffer: function(blob) {
-				_read.call(this, 'readAsArrayBuffer', blob);
-			},
-			
 			/**
-			Initiates reading of o.File/o.Blob object contents to string.
+			Initiates reading of File/Blob object contents to string.
 
 			@method readAsText
 			@param {Blob|File} blob Object to preload
@@ -3280,20 +3408,18 @@ define('moxie/file/FileReader', [
 			abort: function() {
 				this.result = null;
 				
-				if (!!~Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE])) {
+				if (Basic.inArray(this.readyState, [FileReader.EMPTY, FileReader.DONE]) !== -1) {
 					return;
 				} else if (this.readyState === FileReader.LOADING) {
 					this.readyState = FileReader.DONE;
 				}
 
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileReader', 'abort');
+				if (_fr) {
+					_fr.getRuntime().exec.call(this, 'FileReader', 'abort');
 				}
 				
-				this.bind('Abort', function() {
-					this.trigger('loadend');
-				});
+				this.trigger('abort');
+				this.trigger('loadend');
 			},
 
 			/**
@@ -3304,43 +3430,83 @@ define('moxie/file/FileReader', [
 			destroy: function() {
 				this.abort();
 
-				var runtime = this.getRuntime();
-				if (runtime) {
-					runtime.exec.call(this, 'FileReader', 'destroy');
-					this.disconnectRuntime();
+				if (_fr) {
+					_fr.getRuntime().exec.call(this, 'FileReader', 'destroy');
+					_fr.disconnectRuntime();
 				}
+
+				self = _fr = null;
 			}
 		});
 		
 		
 		function _read(op, blob) {
-			this.readyState = FileReader.EMPTY;
-			this.error = null;
+			_fr = new RuntimeTarget();
 
-			if (this.readyState === FileReader.LOADING || !blob.ruid || !blob.uid) {
-				throw new x.DOMException(x.DOMException.INVALID_STATE_ERR);
+			function error(err) {
+				self.readyState = FileReader.DONE;
+				self.error = err;
+				self.trigger('error');
+				loadEnd();
 			}
-			
-			this.convertEventPropsToHandlers(dispatches);
-						
-			this.bind('Error', function(e, error) {
-				this.readyState = FileReader.DONE;
-				this.result = null;
-				this.error = error;
-				this.trigger('loadend');
-			}, 999);
-			
-			
-			this.bind('LoadStart', function() {
-				this.readyState = FileReader.LOADING;
-			}, 999);
-			
-			this.bind('Load', function() {
-				this.readyState = FileReader.DONE;
-				this.trigger('loadend');
-			}, 999);
 
-			this.connectRuntime(blob.ruid).exec.call(this, 'FileReader', 'read', op, blob);
+			function loadEnd() {
+				_fr.destroy();
+				_fr = null;
+				self.trigger('loadend');
+			}
+
+			function exec(runtime) {
+				_fr.bind('Error', function(e, err) {
+					error(err);
+				});
+
+				_fr.bind('Progress', function(e) {
+					self.result = runtime.exec.call(_fr, 'FileReader', 'getResult');
+					self.trigger(e);
+				});
+				
+				_fr.bind('Load', function(e) {
+					self.readyState = FileReader.DONE;
+					self.result = runtime.exec.call(_fr, 'FileReader', 'getResult');
+					self.trigger(e);
+					loadEnd();
+				});
+
+				runtime.exec.call(_fr, 'FileReader', 'read', op, blob);
+			}
+
+			this.convertEventPropsToHandlers(dispatches);
+
+			if (this.readyState === FileReader.LOADING) {
+				return error(new x.DOMException(x.DOMException.INVALID_STATE_ERR));
+			}
+
+			this.readyState = FileReader.LOADING;
+			this.trigger('loadstart');
+
+			// if source is o.Blob/o.File
+			if (blob instanceof Blob) {
+				if (blob.isDetached()) {
+					var src = blob.getSource();
+					switch (op) {
+						case 'readAsText':
+						case 'readAsBinaryString':
+							this.result = src;
+							break;
+						case 'readAsDataURL':
+							this.result = 'data:' + blob.type + ';base64,' + Encode.btoa(src);
+							break;
+					}
+					this.readyState = FileReader.DONE;
+					this.trigger('load');
+					loadEnd();
+				} else {
+					exec(_fr.connectRuntime(blob.ruid));
+				}
+			} else {
+				error(new x.DOMException(x.DOMException.NOT_FOUND_ERR));
+			}
 		}
 	}
 	
@@ -3497,48 +3663,6 @@ define('moxie/core/utils/Url', [], function() {
 		resolveUrl: resolveUrl,
 		hasSameOrigin: hasSameOrigin
 	};
-});
-
-// Included from: src/javascript/runtime/RuntimeTarget.js
-
-/**
- * RuntimeTarget.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-define('moxie/runtime/RuntimeTarget', [
-	'moxie/core/utils/Basic',
-	'moxie/runtime/RuntimeClient',
-	"moxie/core/EventTarget"
-], function(Basic, RuntimeClient, EventTarget) {
-	/**
-	Instance of this class can be used as a target for the events dispatched by shims,
-	when allowing them onto components is for either reason inappropriate
-
-	@class RuntimeTarget
-	@constructor
-	@protected
-	@extends EventTarget
-	*/
-	function RuntimeTarget() {
-		this.uid = Basic.guid('uid_');
-		
-		RuntimeClient.call(this);
-
-		this.destroy = function() {
-			this.disconnectRuntime();
-			this.unbindAll();
-		};
-	}
-
-	RuntimeTarget.prototype = EventTarget.instance;
-
-	return RuntimeTarget;
 });
 
 // Included from: src/javascript/file/FileReaderSync.js
@@ -3750,13 +3874,14 @@ define("moxie/xhr/XMLHttpRequest", [
 	"moxie/core/EventTarget",
 	"moxie/core/utils/Encode",
 	"moxie/core/utils/Url",
+	"moxie/runtime/Runtime",
 	"moxie/runtime/RuntimeTarget",
 	"moxie/file/Blob",
 	"moxie/file/FileReaderSync",
 	"moxie/xhr/FormData",
 	"moxie/core/utils/Env",
 	"moxie/core/utils/Mime"
-], function(Basic, x, EventTarget, Encode, Url, RuntimeTarget, Blob, FileReaderSync, FormData, Env, Mime) {
+], function(Basic, x, EventTarget, Encode, Url, Runtime, RuntimeTarget, Blob, FileReaderSync, FormData, Env, Mime) {
 
 	var httpCode = {
 		100: 'Continue',
@@ -4629,6 +4754,10 @@ define("moxie/xhr/XMLHttpRequest", [
 			}
 
 			// clarify our requirements
+			if (typeof(_options.required_caps) === 'string') {
+				_options.required_caps = Runtime.parseCaps(_options.required_caps);
+			}
+
 			_options.required_caps = Basic.extend({}, _options.required_caps, {
 				return_response_type: self.responseType
 			});
@@ -5155,6 +5284,7 @@ define("moxie/image/Image", [
 	"moxie/core/Exceptions",
 	"moxie/file/FileReaderSync",
 	"moxie/xhr/XMLHttpRequest",
+	"moxie/runtime/Runtime",
 	"moxie/runtime/RuntimeClient",
 	"moxie/runtime/Transporter",
 	"moxie/core/utils/Env",
@@ -5163,7 +5293,7 @@ define("moxie/image/Image", [
 	"moxie/file/File",
 	"moxie/core/utils/Encode",
 	"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -5681,6 +5811,12 @@ define("moxie/image/Image", [
 				this.bind('RuntimeInit', function(e, runtime) {
 					exec(runtime);
 				});
+
+				// convert to object representation
+				if (options && typeof(options.required_caps) === 'string') {
+					options.required_caps = Runtime.parseCaps(options.required_caps);
+				}
+
 				this.connectRuntime(Basic.extend({
 					required_caps: {
 						access_image_binary: true,
@@ -6091,15 +6227,16 @@ define("moxie/runtime/html5/file/FileInput", [
 	"moxie/core/utils/Basic",
 	"moxie/core/utils/Dom",
 	"moxie/core/utils/Events",
-	"moxie/core/utils/Mime"
-], function(extensions, Basic, Dom, Events, Mime) {
+	"moxie/core/utils/Mime",
+	"moxie/core/utils/Env"
+], function(extensions, Basic, Dom, Events, Mime, Env) {
 	
 	function FileInput() {
 		var _files = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
-				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes;
+				var comp = this, I = comp.getRuntime(), input, shimContainer, mimes, browseButton, zIndex, top;
 
 				_options = options;
 				_files = [];
@@ -6125,53 +6262,51 @@ define("moxie/runtime/html5/file/FileInput", [
 					height: '100%'
 				});
 
-				(function() {
-					var browseButton, zIndex, top;
 
-					browseButton = Dom.get(_options.browse_button);
+				browseButton = Dom.get(_options.browse_button);
 
-					// Route click event to the input[type=file] element for browsers that support such behavior
-					if (I.can('summon_file_dialog')) {
-						if (Dom.getStyle(browseButton, 'position') === 'static') {
-							browseButton.style.position = 'relative';
-						}
-
-						zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
-
-						browseButton.style.zIndex = zIndex;
-						shimContainer.style.zIndex = zIndex - 1;
-
-						Events.addEvent(browseButton, 'click', function(e) {
-							if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
-								input.click();
-							}
-							e.preventDefault();
-						}, comp.uid);
+				// Route click event to the input[type=file] element for browsers that support such behavior
+				if (I.can('summon_file_dialog')) {
+					if (Dom.getStyle(browseButton, 'position') === 'static') {
+						browseButton.style.position = 'relative';
 					}
 
-					/* Since we have to place input[type=file] on top of the browse_button for some browsers,
-					browse_button loses interactivity, so we restore it here */
-					top = I.can('summon_file_dialog') ? browseButton : shimContainer;
+					zIndex = parseInt(Dom.getStyle(browseButton, 'z-index'), 10) || 1;
 
-					Events.addEvent(top, 'mouseover', function() {
-						comp.trigger('mouseenter');
+					browseButton.style.zIndex = zIndex;
+					shimContainer.style.zIndex = zIndex - 1;
+
+					Events.addEvent(browseButton, 'click', function(e) {
+						var input = Dom.get(I.uid);
+						if (input && !input.disabled) { // for some reason FF (up to 8.0.1 so far) lets to click disabled input[type=file]
+							input.click();
+						}
+						e.preventDefault();
 					}, comp.uid);
+				}
 
-					Events.addEvent(top, 'mouseout', function() {
-						comp.trigger('mouseleave');
-					}, comp.uid);
+				/* Since we have to place input[type=file] on top of the browse_button for some browsers,
+				browse_button loses interactivity, so we restore it here */
+				top = I.can('summon_file_dialog') ? browseButton : shimContainer;
 
-					Events.addEvent(top, 'mousedown', function() {
-						comp.trigger('mousedown');
-					}, comp.uid);
+				Events.addEvent(top, 'mouseover', function() {
+					comp.trigger('mouseenter');
+				}, comp.uid);
 
-					Events.addEvent(Dom.get(_options.container), 'mouseup', function() {
-						comp.trigger('mouseup');
-					}, comp.uid);
+				Events.addEvent(top, 'mouseout', function() {
+					comp.trigger('mouseleave');
+				}, comp.uid);
 
-				}());
+				Events.addEvent(top, 'mousedown', function() {
+					comp.trigger('mousedown');
+				}, comp.uid);
 
-				input.onchange = function() { // there should be only one handler for this
+				Events.addEvent(Dom.get(_options.container), 'mouseup', function() {
+					comp.trigger('mouseup');
+				}, comp.uid);
+
+
+				input.onchange = function onChange() { // there should be only one handler for this
 					_files = [];
 
 					if (_options.directory) {
@@ -6186,7 +6321,14 @@ define("moxie/runtime/html5/file/FileInput", [
 					}
 
 					// clearing the value enables the user to select the same file again if they want to
-					this.value = '';
+					if (Env.browser !== 'IE') {
+						this.value = '';
+					} else {
+						// in IE input[type="file"] is read-only so the only way to reset it is to re-insert it
+						var clone = this.cloneNode(true);
+						this.parentNode.replaceChild(clone, this);
+						clone.onchange = onChange;
+					}
 					comp.trigger('change');
 				};
 
@@ -6195,6 +6337,8 @@ define("moxie/runtime/html5/file/FileInput", [
 					type: 'ready',
 					async: true
 				});
+
+				shimContainer = null;
 			},
 
 			getFiles: function() {
@@ -6400,41 +6544,63 @@ define("moxie/runtime/html5/file/FileDrop", [
 */
 define("moxie/runtime/html5/file/FileReader", [
 	"moxie/runtime/html5/Runtime",
+	"moxie/core/utils/Encode",
 	"moxie/core/utils/Basic"
-], function(extensions, Basic) {
+], function(extensions, Encode, Basic) {
 	
 	function FileReader() {
-		
-		this.read = function(op, blob) {
-			var target = this, fr = new window.FileReader();
+		var _fr, _convertToBinary = false;
 
-			(function() {
-				var events = ['loadstart', 'progress', 'load', 'abort', 'error'];
+		Basic.extend(this, {
 
-				function reDispatch(e) {
-					if (!!~Basic.inArray(e.type, ['progress', 'load'])) {
-						target.result = fr.result;
-					}
+			read: function(op, blob) {
+				var target = this;
+
+				_fr = new window.FileReader();
+
+				_fr.addEventListener('progress', function(e) {
 					target.trigger(e);
-				}
-
-				function removeEventListeners() {
-					Basic.each(events, function(name) {
-						fr.removeEventListener(name, reDispatch);
-					});
-					fr.removeEventListener('loadend', removeEventListeners);
-				}
-
-				Basic.each(events, function(name) {
-					fr.addEventListener(name, reDispatch);
 				});
-				fr.addEventListener('loadend', removeEventListeners);
-			}());
 
-			if (Basic.typeOf(fr[op]) === 'function') {
-				fr[op](blob.getSource());
+				_fr.addEventListener('load', function(e) {
+					target.trigger(e);
+				});
+
+				_fr.addEventListener('error', function(e) {
+					target.trigger(e, _fr.error);
+				});
+
+				_fr.addEventListener('loadend', function() {
+					_fr = null;
+				});
+
+				if (Basic.typeOf(_fr[op]) === 'function') {
+					_convertToBinary = false;
+					_fr[op](blob.getSource());
+				} else if (op === 'readAsBinaryString') { // readAsBinaryString is depricated in general and never existed in IE10+
+					_convertToBinary = true;
+					_fr.readAsDataURL(blob.getSource());
+				}
+			},
+
+			getResult: function() {
+				return _fr && _fr.result ? (_convertToBinary ? _toBinary(_fr.result) : _fr.result) : null;
+			},
+
+			abort: function() {
+				if (_fr) {
+					_fr.abort();
+				}
+			},
+
+			destroy: function() {
+				_fr = null;
 			}
-		};
+		});
+
+		function _toBinary(str) {
+			return Encode.atob(str.substring(str.indexOf('base64,') + 7));
+		}
 	}
 
 	return (extensions.FileReader = FileReader);
@@ -8068,7 +8234,7 @@ define("moxie/runtime/html5/image/Image", [
 					return;
 				} else {
 					_srcBlob = blob.getSource();
-					_readAsDataUrl(_srcBlob, function(dataUrl) {
+					_readAsDataUrl.call(this, _srcBlob, function(dataUrl) {
 						if (asBinary) {
 							_binStr = _toBinary(dataUrl);
 						}
@@ -8238,7 +8404,7 @@ define("moxie/runtime/html5/image/Image", [
 			_img = new Image();
 			_img.onerror = function() {
 				_purge.call(this);
-				throw new x.ImageError(x.ImageError.WRONG_FORMAT);
+				comp.trigger('error', new x.ImageError(x.ImageError.WRONG_FORMAT));
 			};
 			_img.onload = function() {
 				comp.trigger('load');
@@ -8249,13 +8415,16 @@ define("moxie/runtime/html5/image/Image", [
 
 
 		function _readAsDataUrl(file, callback) {
-			var fr;
+			var comp = this, fr;
 
 			// use FileReader if it's available
 			if (window.FileReader) {
 				fr = new FileReader();
 				fr.onload = function() {
 					callback(this.result);
+				};
+				fr.onerror = function() {
+					comp.trigger('error', new x.FileException(x.FileException.NOT_READABLE_ERR));
 				};
 				fr.readAsDataURL(file);
 			} else {
@@ -8750,6 +8919,8 @@ define("moxie/runtime/flash/file/FileReader", [
 	"moxie/core/utils/Encode"
 ], function(extensions, Encode) {
 
+	var _result = '';
+
 	function _formatData(data, op) {
 		switch (op) {
 			case 'readAsText':
@@ -8764,20 +8935,28 @@ define("moxie/runtime/flash/file/FileReader", [
 
 	var FileReader = {
 		read: function(op, blob) {
-			var comp = this, self = comp.getRuntime();
+			var target = this, self = target.getRuntime();
 
 			// special prefix for DataURL read mode
 			if (op === 'readAsDataURL') {
-				comp.result = 'data:' + (blob.type || '') + ';base64,';
+				_result = 'data:' + (blob.type || '') + ';base64,';
 			}
 
-			comp.bind('Progress', function(e, data) {
+			target.bind('Progress', function(e, data) {
 				if (data) {
-					comp.result += _formatData(data, op);
+					_result += _formatData(data, op);
 				}
-			}, 999);
+			});
 
 			return self.shimExec.call(this, 'FileReader', 'readAsBase64', blob.uid);
+		},
+
+		getResult: function() {
+			return _result;
+		},
+
+		destroy: function() {
+			_result = null;
 		}
 	};
 
@@ -10171,7 +10350,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/file/FileReader","moxie/core/utils/Url","moxie/runtime/RuntimeTarget","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/runtime/RuntimeTarget","moxie/file/FileReader","moxie/core/utils/Url","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
 })(this);/**
  * o.js
  *

@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.0a
+ * v2.0.0beta
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -24,7 +24,9 @@
 
 ;(function(window, o, undef) {
 
-var delay = window.setTimeout;
+var delay = window.setTimeout
+, fileFilters = {}
+;
 
 // convert plupload features to caps acceptable by mOxie
 function normalizeCaps(settings) {		
@@ -93,7 +95,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.0a',
+	VERSION : '2.0.0beta',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -598,8 +600,98 @@ var plupload = {
 		runtime = up.runtime;
 		up.destroy();
 		return runtime;
+	},
+
+	/**
+	 * Registers a filter that will be executed for each file added to the queue.
+	 * If callback returns false, file will not be added.
+	 *
+	 * Callback receives two arguments: a value for the filter as it was specified in settings.filters
+	 * and a file to be filtered. Callback is executed in the context of uploader instance.
+	 *
+	 * @method addFileFilter
+	 * @static
+	 * @param {String} name Name of the filter by which it can be referenced in settings.filters
+	 * @param {String} cb Callback - the actual routine that every added file must pass
+	 */
+	addFileFilter: function(name, cb) {
+		fileFilters[name] = cb;
 	}
 };
+
+
+plupload.addFileFilter('mime_types', (function() {
+	var _filters, _extRegExp;
+
+	// Convert extensions to regexp
+	function getExtRegExp(filters) {
+		var extensionsRegExp = [];
+
+		plupload.each(filters, function(filter) {
+			plupload.each(filter.extensions.split(/,/), function(ext) {
+				if (/^\s*\*\s*$/.test(ext)) {
+					extensionsRegExp.push('\\.*');
+				} else {
+					extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
+				}
+			});
+		});
+
+		return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
+	}
+
+	return function(filters, file) {
+		if (!_extRegExp || filters != _filters) { // make sure we do it only once, unless filters got changed
+			_extRegExp = getExtRegExp(filters);
+			_filters = [].slice.call(filters);
+		}
+
+		if (!_extRegExp.test(file.name)) {
+			this.trigger('Error', {
+				code : plupload.FILE_EXTENSION_ERROR,
+				message : plupload.translate('File extension error.'),
+				file : file
+			});
+			return false;
+		}
+		return true;
+	};
+}()));
+
+
+plupload.addFileFilter('max_file_size', function(maxSize, file) {
+	var undef;
+
+	// Invalid file size
+	if (file.size !== undef && maxSize && file.size > maxSize) {
+		this.trigger('Error', {
+			code : plupload.FILE_SIZE_ERROR,
+			message : plupload.translate('File size error.'),
+			file : file
+		});
+		return false;
+	}
+	return true;
+});
+
+
+plupload.addFileFilter('prevent_duplicates', function(value, file) {
+	if (value) {
+		var ii = this.files.length;
+		while (ii--) {
+			// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
+			if (file.name === this.files[ii].name && file.size === this.files[ii].size) {
+				this.trigger('Error', {
+					code : plupload.FILE_DUPLICATE_ERROR,
+					message : plupload.translate('Duplicate file error.'),
+					file : file
+				});
+				return false;
+			}
+		}
+	}
+	return true;
+});
 
 
 /**
@@ -701,12 +793,20 @@ plupload.Uploader = function(settings) {
 	 * @param {Array} files Array of files that got removed.
 	 */
 
-	/**
+	 /**
 	 * Fires while when the user selects files to upload.
+	 *
+	 * @event BeforeAdd
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File that is being added to the queue.
+	 */
+
+	/**
+	 * Fires after files were filtered and added to the queue.
 	 *
 	 * @event FilesAdded
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of file objects that was added to queue/selected by the user.
+	 * @param {Array} files Array of file objects that were added to queue by the user.
 	 */
 
 	/**
@@ -1007,8 +1107,6 @@ plupload.Uploader = function(settings) {
 		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
-		filters : [],
-		prevent_duplicates: false,
 		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	}, settings);
 
@@ -1022,7 +1120,18 @@ plupload.Uploader = function(settings) {
 
 	// Convert settings
 	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
-	settings.max_file_size = plupload.parseSize(settings.max_file_size) || 0;
+
+	// Set file filters
+	if (plupload.typeOf(settings.filters) === 'array') {
+		settings.filters = {
+			mime_types: settings.filters
+		};
+	}
+	settings.filters = plupload.extend({
+		prevent_duplicates: !!settings.prevent_duplicates,
+		max_file_size: plupload.parseSize(settings.max_file_size) || 0
+	}, settings.filters);
+
 	
 	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
 
@@ -1123,85 +1232,25 @@ plupload.Uploader = function(settings) {
 				return;
 			}
 
-			// Add files to queue
-			self.bind('FilesAdded', function(up, selected_files) {
-				var i, ii, file, count = 0, extensionsRegExp, filters = settings.filters;
 
-				// Convert extensions to regexp
-				if (filters && filters.length) {
-					extensionsRegExp = [];
-
-					plupload.each(filters, function(filter) {
-						plupload.each(filter.extensions.split(/,/), function(ext) {
-							if (/^\s*\*\s*$/.test(ext)) {
-								extensionsRegExp.push('\\.*');
-							} else {
-								extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
-							}
-						});
-					});
-
-					extensionsRegExp = new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
-				}
-
-				next_file:
-				for (i = 0; i < selected_files.length; i++) {
-					file = selected_files[i];
-					file.loaded = 0;
-					file.percent = 0;
-					file.status = plupload.QUEUED;
-
-					// Invalid file extension
-					if (extensionsRegExp && !extensionsRegExp.test(file.name)) {
-						up.trigger('Error', {
-							code : plupload.FILE_EXTENSION_ERROR,
-							message : plupload.translate('File extension error.'),
-							file : file
-						});
-
-						continue;
+			self.bind("BeforeAdd", function(up, file) {
+				var name, rules = up.settings.filters;
+				for (name in rules) {
+					if (fileFilters[name] && !fileFilters[name].call(this, rules[name], file)) {
+						return false;
 					}
-
-					// Invalid file size
-					if (file.size !== undef && settings.max_file_size && file.size > settings.max_file_size) {
-						up.trigger('Error', {
-							code : plupload.FILE_SIZE_ERROR,
-							message : plupload.translate('File size error.'),
-							file : file
-						});
-						continue;
-					}
-
-					// Bypass duplicates
-					if (settings.prevent_duplicates) {
-						ii = up.files.length;
-						while (ii--) {
-							// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
-							if (file.name === up.files[ii].name && file.size === up.files[ii].size) {
-								up.trigger('Error', {
-									code : plupload.FILE_DUPLICATE_ERROR,
-									message : plupload.translate('Duplicate file error.'),
-									file : file
-								});
-								continue next_file;
-							}
-						}
-					}
-
-					// Add valid file to list
-					files.push(file);
-					count++;
 				}
+			});
 
-				// Only trigger QueueChanged event if any files where added
-				if (count) {
-					delay(function() {
-						self.trigger("QueueChanged");
-						self.refresh();
-					}, 1);
-				} else {
-					return false; // Stop the FilesAdded event from immediate propagation
-				}
+
+			self.bind("FilesAdded", function(up, filteredFiles) {
+				// Add files to queue				
+				[].push.apply(files, filteredFiles);
+
+				delay(function() {
+					self.trigger("QueueChanged");
+					self.refresh();
+				}, 1);		
 			});
 
 			self.bind("CancelUpload", function() {
@@ -1259,12 +1308,16 @@ plupload.Uploader = function(settings) {
 					// Standard arguments
 					args = {name : file.target_name || file.name};
 
-					// Only add chunking args if needed
 					if (chunkSize && features.chunks && blob.size > chunkSize) { // blob will be of type string if it was loaded in memory 
 						curChunkSize = Math.min(chunkSize, blob.size - offset);
-
 						chunkBlob = blob.slice(offset, offset + curChunkSize);
+					} else {
+						curChunkSize = blob.size;
+						chunkBlob = blob;
+					}
 
+					// If chunking is enabled add corresponding args, no matter if file is bigger than chunk or smaller
+					if (chunkSize && features.chunks) {
 						// Setup query string arguments
 						if (settings.send_chunk_number) {
 							args.chunk = Math.ceil(offset / chunkSize);
@@ -1273,9 +1326,6 @@ plupload.Uploader = function(settings) {
 							args.offset = offset;
 							args.total = blob.size;
 						}
-					} else {
-						curChunkSize = blob.size;
-						chunkBlob = blob;
 					}
 
 					xhr = new o.XMLHttpRequest();
@@ -1549,7 +1599,8 @@ plupload.Uploader = function(settings) {
 		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
 		addFile : function(file, fileName) {
-			var files = []
+			var self = this 
+			, files = []
 			, ruid
 			;
 
@@ -1580,7 +1631,10 @@ plupload.Uploader = function(settings) {
 					if (fileName) {
 						file.name = fileName;
 					}
-					files.push(file);
+					// run through the internal and user-defined filters if any
+					if (self.trigger("BeforeAdd", file)) {
+						files.push(file);
+					}
 				} else if (o.inArray(type, ['file', 'blob']) !== -1) {
 					resolveFile(new o.File(null, file));
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
@@ -1596,6 +1650,7 @@ plupload.Uploader = function(settings) {
 			ruid = getRUID();
 
 			resolveFile(file);
+
 			// Trigger FilesAdded event if we added any
 			if (files.length) {
 				this.trigger("FilesAdded", files);
@@ -1858,7 +1913,7 @@ plupload.File = (function() {
 			 * @type Number
 			 * @see plupload
 			 */
-			status: 0,
+			status: plupload.QUEUED,
 
 			/**
 			 * Returns native window.File object, when it's available.
