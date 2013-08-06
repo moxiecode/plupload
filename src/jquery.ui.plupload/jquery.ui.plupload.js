@@ -1113,35 +1113,34 @@ $.widget("ui.plupload", {
 			switcher.hide();
 			view = buttons.eq(0).data('view');
 			this._viewChanged(view);
-			return;
 		} else if ($.ui.button && buttons.length > 1) {
-			switcher.show();
-			switcher.buttonset();
+			if (this.options.views.remember && $.cookie) {
+				view = $.cookie('plupload_ui_view');
+			}
+
+			// if wierd case, bail out to default
+			if (!~plupload.inArray(view, ['list', 'thumbs'])) {
+				view = this.options.views.active;
+			}
+
+			switcher
+				.show()
+				.buttonset()
+				.find('.ui-button')
+					.click(function(e) {
+						view = $(this).data('view');
+						self._viewChanged(view);
+						e.preventDefault(); // avoid auto scrolling to widget in IE and FF (see #850)
+					});
+
+			// if view not active - happens when switcher wasn't clicked manually
+			button = switcher.find('[for="' + self.id + '_view_'+view+'"]');
+			if (button.length) {
+				button.trigger('click');
+			}
 		} else {
 			switcher.show();
 			this._viewChanged(this.options.views.active);
-			return;
-		}
-
-		switcher.find('.plupload_button').click(function() {
-			view = $(this).data('view');
-			self._viewChanged(view);
-		});
-
-		if (this.options.views.remember && $.cookie) {
-			view = $.cookie('plupload_ui_view');
-		}
-
-		// if wierd case, bail out to default
-		if (!~plupload.inArray(view, ['list', 'thumbs'])) {
-			view = this.options.views.active;
-		}
-
-		// if view not active - happens when switcher wasn't clicked manually
-		button = switcher.find('[for="' + self.id + '_view_'+view+'"]');
-		if (button.length) {
-			button.trigger('click');
-			return; 
 		}
 	},
 	
