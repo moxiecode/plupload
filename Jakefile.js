@@ -3,9 +3,8 @@
 var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
-var tools = require('./build/BuildTools');
 
-
+var tools = require('./src/moxie/build/BuildTools');
 var utils = require('./src/moxie/build/utils');
 var wiki = require('./src/moxie/build/wiki');
 
