@@ -36,11 +36,15 @@ task("release", ["default", "package"], function (params) {});
 
 desc("Build mOxie");
 task("moxie", [], function (params) {
-	var moxieDir = "src/moxie";
-	exec("cd " + moxieDir + "; jake; cd ../..;", function(error, stdout, stderr) {
+	var moxieDir = "./src/moxie";
+	var currentDir = process.cwd();
+	
+	process.chdir(moxieDir);
+	exec("jake", function(error, stdout, stderr) {
 		if (error) {
-			console.info("mOxie: Build process failed.");
+			console.info(error);
 		}
+		process.chdir(currentDir);
 		complete();
 	});
 }, true);
@@ -55,7 +59,7 @@ task("mkjs", [], function (params) {
 	var targetDir = "./js", moxieDir = "src/moxie";
 	
 	// Clear previous versions
-	if (path.existsSync(targetDir)) {
+	if (fs.existsSync(targetDir)) {
 		jake.rmRf(targetDir);
 	}
 	fs.mkdirSync(targetDir, 0755);
