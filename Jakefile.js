@@ -4,13 +4,25 @@ var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
 var tools = require('./build/BuildTools');
-var less = tools.less;
-var yuidoc = tools.yuidoc;
-var jshint = tools.jshint;
-var zip = tools.zip;
+
 
 var utils = require('./src/moxie/build/utils');
 var wiki = require('./src/moxie/build/wiki');
+
+var copyright = [
+	"/**",
+	" * Plupload - multi-runtime File Uploader",
+	" * v@@version@@",
+	" *",
+	" * Copyright 2013, Moxiecode Systems AB",
+	" * Released under GPL License.",
+	" *",
+	" * License: http://www.plupload.com/license",
+	" * Contributing: http://www.plupload.com/contributing",
+	" *",
+	" * Date: @@releasedate@@",
+	" */"
+].join("\n");
 
 
 function exit(message) {
@@ -48,6 +60,9 @@ task("moxie", [], function (params) {
 
 desc("Minify JS files");
 task("mkjs", [], function (params) {
+	var Instrument = require('coverjs').Instrument;
+	var uglify = tools.uglify;
+
 	var targetDir = "./js", moxieDir = "src/moxie";
 	
 	// Clear previous versions
@@ -96,15 +111,21 @@ task("mkjs", [], function (params) {
 		sourceBase: 'src/'
 	});
 
-	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
-	tools.addReleaseDetailsTo(targetDir + "/plupload.dev.js", releaseInfo);
-	tools.addReleaseDetailsTo(targetDir + "/plupload.min.js", releaseInfo);
+	var info = require("./package.json");
+	info.copyright = copyright;
+	tools.addReleaseDetailsTo(targetDir + "/plupload.dev.js", info);
+	tools.addReleaseDetailsTo(targetDir + "/plupload.min.js", info);
 
 	var code = "";
 	code += fs.readFileSync(targetDir + "/moxie.min.js") + "\n";
 	code += fs.readFileSync(targetDir + "/plupload.min.js");
 
 	fs.writeFileSync(targetDir + "/plupload.full.min.js", code);
+
+	// Add I18n files
+	process.env.auth = "moxieuser:12345";
+	process.env.to = "./js/i18n";
+	jake.Task['i18n'].invoke();
 });
 
 
@@ -141,6 +162,7 @@ task("i18n", [], function(params) {
 
 desc("Generate documentation using YUIDoc");
 task("docs", [], function (params) {
+	var yuidoc = tools.yuidoc;
 	yuidoc(["src", "src/jquery.plupload.queue", "src/jquery.ui.plupload"], "docs", {
 		norecurse: true
 	});
@@ -157,6 +179,7 @@ task("wiki", ["docs"], function() {
 
 desc("Runs JSHint on source files");
 task("jshint", [], function (params) {
+	var jshint = tools.jshint;
 	jshint("src", {
 		curly: true
 	});
@@ -166,40 +189,37 @@ task("jshint", [], function (params) {
 
 desc("Package library");
 task("package", [], function (params) {
-	var releaseInfo = tools.getReleaseInfo("./changelog.txt");
+	var zip = tools.zip;
+	var info = require("./package.json");
 
 	var tmpDir = "./tmp";
-	if (path.existsSync(tmpDir)) {
+	if (fs.existsSync(tmpDir)) {
 		jake.rmRf(tmpDir);
 	}
 	fs.mkdirSync(tmpDir, 0755);
 
+	var suffix = info.version.replace(/\./, '_');
+	if (/(?:beta|alpha)/.test(suffix)) {
+		var dateFormat = require('dateformat');
+		// If some public test build, append build number
+		suffix += "." + dateFormat(new Date(), "yymmddHHMM", true);
+	}
 
-	// User package
-	utils.inSeries([
-		function(cb) {
-			zip([
-				"js",
-				"examples",
-				["readme.md", "readme.txt"],
-				"changelog.txt",
-				"license.txt"
-			], path.join(tmpDir, "plupload_" + releaseInfo.fileVersion + ".zip"), cb);
-		},
-		function(cb) {
-			zip([
-				"src",
-				"js",
-				"examples",
-				//"tests",
-				"build",
-				"Jakefile.js",		
-				["readme.md", "readme.txt"],
-				"changelog.txt",
-				"license.txt"
-			], path.join(tmpDir, "plupload_" + releaseInfo.fileVersion + "_dev.zip"), cb);
-		}
-	], function() {
-		complete();
-	});
+	zip([
+		"js/**/*",
+		"examples/**/*",
+		"README.md",
+		"LICENSE.txt"
+	], path.join(tmpDir, utils.format("plupload_%s.zip", suffix)), complete);
 }, true);
+
+
+
+
+
+
+
+
+
+
+

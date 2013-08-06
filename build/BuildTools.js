@@ -184,43 +184,24 @@ exports.jshint = function (sourceDir, options) {
 	process(sourceDir);
 }
 
-exports.zip = function (sourceFiles, zipFile, cb) {
-	var ZipWriter = require("moxie-zip").ZipWriter;
+exports.zip = function (include, zipFile, cb) {
+	var fileset = require('fileset');
+	var ZipWriter = require('moxie-zip').ZipWriter;
+
 	var zip = new ZipWriter();
 
-	var files = [];
+	// Exclude files according to .gitignore
+	var exclude = fs.readFileSync('./.gitignore').toString().trim().split(/\n/);
 
-	function processFile(filePath, zipFilePath) {
-		var stat = fs.statSync(filePath);
-
-		zipFilePath = zipFilePath || filePath;
-
-		if (stat.isFile()) {
-			files.push({ name: zipFilePath, path: filePath });
-		} else if (stat.isDirectory()) {
-			fs.readdirSync(filePath).forEach(function(fileName) {
-				if (/^[^\.]/.test(fileName)) {
-					processFile(path.join(filePath, fileName), path.join(zipFilePath, fileName));
+	fileset(include, exclude)
+		.on('end', function(files) {
+			files.forEach(function(file) {
+				if (fs.statSync(file).isFile()) {
+					zip.addFile(file, file);
 				}
-			});
-		}
-	}
-
-	sourceFiles.forEach(function(filePath) {
-		if (filePath instanceof Array) {
-			processFile(filePath[0], filePath[1]);
-		} else {
-			processFile(filePath);			
-		}
-	});
-
-	files.forEach(function(file) {
-		zip.addFile(file.name, file.path);
-	});
-
-	zip.saveAs(zipFile, function() {
-		cb();
-	});
+			});		
+			zip.saveAs(zipFile, cb);	
+		});	
 }
 
 exports.copySync = function(from, to) {
@@ -277,36 +258,15 @@ exports.rmDir = function(dirPath) {
 	fs.rmdirSync(dirPath);
 }
 
-// extract version details from chengelog.txt
-exports.getReleaseInfo = function (srcPath) {
-	if (!fs.existsSync(srcPath)) {
-		console.info(srcPath + " cannot be found.");
-		process.exit(1);
-	} 
-	
-	var src = fs.readFileSync(srcPath).toString();
-
-	var info = src.match(/Version ([0-9xabrc\.]+)[^\(]+\(([^\)]+)\)/);
-	if (!info) {
-		console.info("Error: Version cannot be extracted.");
-		process.exit(1);
-	}
-
-	return {
-		version: info[1],
-		releaseDate: info[2],
-		fileVersion: info[1].replace(/\./g, '_')
-	}
-}
 
 // inject version details and copyright header if available to all js files in specified directory
 exports.addReleaseDetailsTo = function (destPath, info) {
-	var self = this, headNote, headNotePath = "./build/headnote.txt";
+	var self = this;
 
 	function processFile(filePath) {
 
-		if (headNote) {
-			contents = headNote + "\n" + fs.readFileSync(filePath);
+		if (info.copyright) {
+			contents = info.copyright + "\n" + fs.readFileSync(filePath);
 		}
 
 		contents = contents.replace(/@@([^@]+)@@/g, function($0, $1) {
@@ -323,10 +283,6 @@ exports.addReleaseDetailsTo = function (destPath, info) {
 		return /\.(js|txt)$/.filePath;
 	}
 	
-	if (fs.existsSync(headNotePath)) {
-		headNote = fs.readFileSync(headNotePath).toString();
-	}
-
 	var stat = fs.statSync(destPath);
 
 	if (stat.isFile()) {
