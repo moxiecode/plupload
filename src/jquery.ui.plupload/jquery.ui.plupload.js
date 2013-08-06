@@ -355,10 +355,12 @@ $.widget("ui.plupload", {
 			});
       
 			this.list_switcher.button({
-				icons: { primary: "ui-icon-grip-dotted-horizontal" }
+				text: false,
+				icons: { secondary: "ui-icon-grip-dotted-horizontal" }
 			});
 
 			this.thumbs_switcher.button({
+				text: false,
 				icons: { secondary: "ui-icon-image" }
 			});
 		}
