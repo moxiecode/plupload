@@ -1905,6 +1905,14 @@ plupload.File = (function() {
 			status: plupload.QUEUED,
 
 			/**
+			 * Date of last modification.
+			 *
+			 * @property lastModifiedDate
+			 * @type {String}
+			 */
+			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
+
+			/**
 			 * Returns native window.File object, when it's available.
 			 *
 			 * @method getNative
