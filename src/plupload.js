@@ -689,6 +689,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file) {
 @param {Object} settings For detailed information about each option check documentation.
 	@param {String|DOMElement} settings.browse_button id of the DOM element or DOM element itself to use as file dialog trigger.
 	@param {String} settings.url URL of the server-side upload handler.
+	@param {String} settings.method The method to use when uploading data
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
 	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
 	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
@@ -1095,7 +1096,8 @@ plupload.Uploader = function(settings) {
 		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
-		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
+		send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
+		method : 'post'
 	}, settings);
 
 	// Resize defaults
@@ -1391,7 +1393,7 @@ plupload.Uploader = function(settings) {
 
 						args.name = file.target_name || file.name;
 
-						xhr.open("post", url, true);
+						xhr.open(up.settings.method, url, true);
 
 						// Set custom headers
 						plupload.each(up.settings.headers, function(value, name) {
@@ -1417,7 +1419,7 @@ plupload.Uploader = function(settings) {
 						// if no multipart, send as binary stream
 						url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
 
-						xhr.open("post", url, true);
+						xhr.open(up.settings.method, url, true);
 
 						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
 
