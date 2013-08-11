@@ -601,25 +601,28 @@ define("moxie/core/utils/Mime", [
 			}
 		},
 
-		extList2mimes: function (filters) {
+		extList2mimes: function (filters, addMissingExtensions) {
 			var self = this, ext, i, ii, type, mimes = [];
 			
-			// Convert extensions to mime types list
-			no_type_restriction:
+			// convert extensions to mime types list
 			for (i = 0; i < filters.length; i++) {
 				ext = filters[i].extensions.split(/\s*,\s*/);
 
 				for (ii = 0; ii < ext.length; ii++) {
 					
-					// If there's an asterisk in the list, then accept attribute is not required
+					// if there's an asterisk in the list, then accept attribute is not required
 					if (ext[ii] === '*') {
-						mimes = [];
-						break no_type_restriction;
+						return [];
 					}
 					
 					type = self.mimes[ext[ii]];
-
-					if (type && !~Basic.inArray(type, mimes)) {
+					if (!type) {
+						if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
+							mimes.push('.' + ext[ii]);
+						} else {
+							return []; // accept all
+						}
+					} else if (Basic.inArray(type, mimes) === -1) {
 						mimes.push(type);
 					}
 				}
@@ -1834,51 +1837,54 @@ define('moxie/runtime/Runtime', [
 		@type Object
 		*/
 		caps = Basic.extend({
-			// Runtime can provide access to raw binary data of the file
+			// Runtime can: 
+			// provide access to raw binary data of the file
 			access_binary: false,
-			// ... provide access to raw binary data of the image (image extension is optional) 
+			// provide access to raw binary data of the image (image extension is optional) 
 			access_image_binary: false,
-			// ... display binary data as thumbs for example
+			// display binary data as thumbs for example
 			display_media: false,
-			// ... make cross-domain requests
+			// make cross-domain requests
 			do_cors: false,
-			// ... accept files dragged and dropped from the desktop
+			// accept files dragged and dropped from the desktop
 			drag_and_drop: false,
-			// ... resize image (and manipulate it raw data of any file in general)
+			// filter files in selection dialog by their extensions
+			filter_by_extension: true,
+			// resize image (and manipulate it raw data of any file in general)
 			resize_image: false,
-			// ... periodically report how many bytes of total in the file were uploaded (loaded)
+			// periodically report how many bytes of total in the file were uploaded (loaded)
 			report_upload_progress: false,
-			// ... provide access to the headers of http response 
+			// provide access to the headers of http response 
 			return_response_headers: false,
-			// ... support response of specific type, which should be passed as an argument
+			// support response of specific type, which should be passed as an argument
 			// e.g. runtime.can('return_response_type', 'blob')
 			return_response_type: false,
-			// ... return http status code of the response
+			// return http status code of the response
 			return_status_code: true,
-			// ... send custom http header with the request
+			// send custom http header with the request
 			send_custom_headers: false,
-			// ... pick up the files from a dialog
+			// pick up the files from a dialog
 			select_file: false,
-			// ... select whole folder in file browse dialog
+			// select whole folder in file browse dialog
 			select_folder: false,
-			// ... select multiple files at once in file browse dialog
+			// select multiple files at once in file browse dialog
 			select_multiple: true,
-			// ... send raw binary data, that is generated after image resizing or manipulation of other kind
+			// send raw binary data, that is generated after image resizing or manipulation of other kind
 			send_binary_string: false,
-			// ... send cookies with http request and therefore retain session
+			// send cookies with http request and therefore retain session
 			send_browser_cookies: true,
-			// ... send data formatted as multipart/form-data
+			// send data formatted as multipart/form-data
 			send_multipart: true,
-			// ... slice the file or blob to smaller parts
+			// slice the file or blob to smaller parts
 			slice_blob: false,
-			// ... upload file without preloading it to memory, stream it out directly from disk
+			// upload file without preloading it to memory, stream it out directly from disk
 			stream_upload: false,
-			// ... programmatically trigger file browse dialog
+			// programmatically trigger file browse dialog
 			summon_file_dialog: false,
-			// ... upload file of specific size, size should be passed as argument
+			// upload file of specific size, size should be passed as argument
 			// e.g. runtime.can('upload_filesize', '500mb')
 			upload_filesize: true,
-			// ... initiate http request with specific http method, method should be passed as argument
+			// initiate http request with specific http method, method should be passed as argument
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
@@ -5918,6 +5924,9 @@ define("moxie/runtime/html5/Runtime", [
 					// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
 					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
 				}()),
+				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
+					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10);
+				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
 					if (responseType === 'json') {
@@ -6242,14 +6251,14 @@ define("moxie/runtime/html5/file/FileInput", [
 				_files = [];
 
 				// figure out accept string
-				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept);
+				mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept, I.can('filter_by_extension'));
 
 				shimContainer = I.getShimContainer();
 
 				shimContainer.innerHTML = '<input id="' + I.uid +'" type="file" style="font-size:999px;opacity:0;"' +
 					(_options.multiple && I.can('select_multiple') ? 'multiple' : '') + 
 					(_options.directory && I.can('select_folder') ? 'webkitdirectory directory' : '') + // Chrome 11+
-					' accept="' + mimes.join(',') + '" />';
+					(mimes ? ' accept="' + mimes.join(',') + '"' : '') + ' />';
 
 				input = Dom.get(I.uid);
 
@@ -6669,7 +6678,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 						if (data.getBlob().isDetached()) {
 							data = _prepareMultipart.call(target, data); // _xhr must be instantiated and be in OPENED state
 							mustSendAsBinary = true;
-						} else if (isGecko2_5_6 || isAndroidBrowser) {
+						} else if ((isGecko2_5_6 || isAndroidBrowser) && Basic.typeOf(data.getBlob().getSource()) === 'blob' && window.FileReader) {
 							// Gecko 2/5/6 can't send blob in FormData: https://bugzilla.mozilla.org/show_bug.cgi?id=649150
 							// Android browsers (default one and Dolphin) seem to have the same issue, see: #613
 							_preloadAndSend.call(target, meta, data);
@@ -6882,21 +6891,19 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 				
 			// get original blob
 			blob = data.getBlob().getSource();
-			// only Blobs have problem, Files seem ok
-			if (Basic.typeOf(blob) === 'blob' && window.FileReader) {
-				// preload blob in memory to be sent as binary string
-				fr = new window.FileReader();
-				fr.onload = function() {
-					// overwrite original blob
-					data.append(data.getBlobName(), new Blob(null, {
-						type: blob.type,
-						data: fr.result
-					}));
-					// invoke send operation again
-					self.send.call(target, meta, data);
-				};
-				fr.readAsBinaryString(blob);
-			}
+			
+			// preload blob in memory to be sent as binary string
+			fr = new window.FileReader();
+			fr.onload = function() {
+				// overwrite original blob
+				data.append(data.getBlobName(), new Blob(null, {
+					type: blob.type,
+					data: fr.result
+				}));
+				// invoke send operation again
+				self.send.call(target, meta, data);
+			};
+			fr.readAsBinaryString(blob);
 		}
 
 		
@@ -9769,6 +9776,9 @@ define("moxie/runtime/html4/Runtime", [
 			display_media: Test(extensions.Image && (Env.can('create_canvas') || Env.can('use_data_uri_over32kb'))),
 			do_cors: false,
 			drag_and_drop: false,
+			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
+				return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10);
+			}()),
 			resize_image: function() {
 				return extensions.Image && I.can('access_binary') && Env.can('create_canvas');
 			},
@@ -9982,7 +9992,7 @@ define("moxie/runtime/html4/file/FileInput", [
 
 				// figure out accept string
 				_options = options;
-				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept);
+				_mimes = options.accept.mimes || Mime.extList2mimes(options.accept, I.can('filter_by_extension'));
 
 				shimContainer = I.getShimContainer();
 
