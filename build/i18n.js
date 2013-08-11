@@ -162,11 +162,11 @@ var toPot = function(from, to) {
 		input = path.resolve(input);
 		fileName = path.basename(input, '.js');
 
-		srcItems = fs.readFileSync(process.env.srcLang).toString().split(/msgstr \"/);
+		srcItems = fs.readFileSync(process.env.srcLang).toString().split(/msgstr \"[^\"]*/);
 
 		// extract hash of strings only
-		json = JSON.parse(fs.readFileSync(input).toString().replace(/^[\s\S]+?plupload.addI18n\((\{[^\}]+\})\);[\s\S]*$/, '$1'));
-			
+		json = JSON.parse(fs.readFileSync(input).toString().replace(/^[\s\S]*plupload.addI18n\((\{[^\}]+\})\);[\s\S]*$/, '$1'));
+
 		srcItems.forEach(function(srcItem, idx) {
 			var m = srcItem.match(/msgid \"([\s\S]*?[^\\]|)\"/);
 			if (m) { 

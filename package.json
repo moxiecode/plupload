@@ -35,6 +35,7 @@
     },
     "dependencies": {
         "jake": "0.5.x",
+        "glob": "3.2.x",
         "jshint": "2.1.x",
         "yuidocjs": "0.3.x",
         "handlebars": "1.0.x"
