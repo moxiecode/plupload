@@ -142,7 +142,7 @@ task("i18n", [], function(params) {
 
 		case 'pull':
 		default:
-			var auth = process.env.auth.split(':');
+			var auth = (process.env.auth || "moxieuser:12345").split(':');
 			var to = process.env.to || './tmp/i18n';
 			i18n.pull(utils.format("https://%s:%s@www.transifex.com/api/2/project/plupload/resource/core/", auth[0], auth[1]), to, complete);
 			return;
