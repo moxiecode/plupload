@@ -1348,6 +1348,12 @@ plupload.Uploader = function(settings) {
 								status : xhr.status,
 								responseHeaders: xhr.getAllResponseHeaders()
 							});
+
+							// stock Android browser doesn't fire upload progress events, but in chunking mode we can fake them
+							if (o.Env.browser === 'Android Browser') {
+								// doesn't harm in general, but is not required anywhere else
+								up.trigger('UploadProgress', file);
+							} 
 						} else {
 							file.loaded = file.size;
 						}
