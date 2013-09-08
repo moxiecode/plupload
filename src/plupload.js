@@ -628,7 +628,7 @@ plupload.addFileFilter('mime_types', (function() {
 		return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
 	}
 
-	return function(filters, file) {
+	return function(filters, file, cb) {
 		if (!_extRegExp || filters != _filters) { // make sure we do it only once, unless filters got changed
 			_extRegExp = getExtRegExp(filters);
 			_filters = [].slice.call(filters);
@@ -640,14 +640,15 @@ plupload.addFileFilter('mime_types', (function() {
 				message : plupload.translate('File extension error.'),
 				file : file
 			});
-			return false;
+			cb(false);
+		} else {
+			cb(true);
 		}
-		return true;
 	};
 }()));
 
 
-plupload.addFileFilter('max_file_size', function(maxSize, file) {
+plupload.addFileFilter('max_file_size', function(maxSize, file, cb) {
 	var undef;
 
 	// Invalid file size
@@ -657,13 +658,14 @@ plupload.addFileFilter('max_file_size', function(maxSize, file) {
 			message : plupload.translate('File size error.'),
 			file : file
 		});
-		return false;
+		cb(false);
+	} else {
+		cb(true);
 	}
-	return true;
 });
 
 
-plupload.addFileFilter('prevent_duplicates', function(value, file) {
+plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	if (value) {
 		var ii = this.files.length;
 		while (ii--) {
@@ -674,11 +676,12 @@ plupload.addFileFilter('prevent_duplicates', function(value, file) {
 					message : plupload.translate('Duplicate file error.'),
 					file : file
 				});
-				return false;
+				cb(false);
+				return;
 			}
 		}
 	}
-	return true;
+	cb(true);
 });
 
 
@@ -693,15 +696,16 @@ plupload.addFileFilter('prevent_duplicates', function(value, file) {
 	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
 	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
-	@param {Array} [settings.filters=[]] Set of file type filters, each one defined by hash of title and extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
+	@param {Object} [settings.filters={}] Set of file type filters.
+		@param {Array} [settings.filters.mime_types=[]] List of file types to accept, each one defined by title and list of extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
+		@param {String|Number} [settings.filters.max_file_size=0] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
+		@param {Boolean} [settings.filters.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
 	@param {String} [settings.flash_swf_url] URL of the Flash swf.
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
-	@param {Number|String} [settings.max_file_size] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
 	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
 	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
-	@param {Boolean} [settings.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
 	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
 	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
 		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
@@ -779,14 +783,6 @@ plupload.Uploader = function(settings) {
 	 * @event FilesRemoved
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {Array} files Array of files that got removed.
-	 */
-
-	 /**
-	 * Fires while when the user selects files to upload.
-	 *
-	 * @event BeforeAdd
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File that is being added to the queue.
 	 */
 
 	/**
@@ -1222,16 +1218,6 @@ plupload.Uploader = function(settings) {
 			}
 
 
-			self.bind("BeforeAdd", function(up, file) {
-				var name, rules = up.settings.filters;
-				for (name in rules) {
-					if (fileFilters[name] && !fileFilters[name].call(this, rules[name], file)) {
-						return false;
-					}
-				}
-			});
-
-
 			self.bind("FilesAdded", function(up, filteredFiles) {
 				// Add files to queue				
 				[].push.apply(files, filteredFiles);
@@ -1594,7 +1580,8 @@ plupload.Uploader = function(settings) {
 		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
 		addFile : function(file, fileName) {
-			var self = this 
+			var self = this
+			, queue = [] 
 			, files = []
 			, ruid
 			;
@@ -1607,9 +1594,29 @@ plupload.Uploader = function(settings) {
 				return false;
 			}
 
+			function filterFile(file, cb) {
+				var queue = [];
+				o.each(self.settings.filters, function(rule, name) {
+					if (fileFilters[name]) {
+						queue.push(function(cb) {
+							fileFilters[name].call(self, rule, file, function(res) {
+								cb(!res);
+							});
+						});
+					}
+				});
+				o.inSeries(queue, cb);
+			}
+
+			/**
+			 * @method resolveFile
+			 * @private
+			 * @param {o.File|o.Blob|plupload.File|File|Blob|input[type="file"]} file
+			 */
 			function resolveFile(file) {
 				var type = o.typeOf(file);
 
+				// o.File
 				if (file instanceof o.File) { 
 					if (!file.ruid) {
 						if (!ruid) { // weird case
@@ -1619,36 +1626,55 @@ plupload.Uploader = function(settings) {
 						file.connectRuntime(ruid);
 					}
 					resolveFile(new plupload.File(file));
-				} else if (file instanceof o.Blob) {
+				}
+				// o.Blob 
+				else if (file instanceof o.Blob) {
 					resolveFile(file.getSource());
 					file.destroy();
-				} else if (file instanceof plupload.File) { // final step for other branches
+				} 
+				// plupload.File - final step for other branches
+				else if (file instanceof plupload.File) {
 					if (fileName) {
 						file.name = fileName;
 					}
-					// run through the internal and user-defined filters if any
-					if (self.trigger("BeforeAdd", file)) {
-						files.push(file);
-					}
-				} else if (o.inArray(type, ['file', 'blob']) !== -1) {
+					
+					queue.push(function(cb) {
+						// run through the internal and user-defined filters, if any
+						filterFile(file, function(err) {
+							if (!err) {
+								files.push(file);
+							}
+							cb();
+						});
+					});
+				} 
+				// native File or blob
+				else if (o.inArray(type, ['file', 'blob']) !== -1) {
 					resolveFile(new o.File(null, file));
-				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
+				} 
+				// input[type="file"]
+				else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
 					// if we are dealing with input[type="file"]
 					o.each(file.files, resolveFile);
-				} else if (type === 'array') {
-					// mixed array
+				} 
+				// mixed array of any supported types (see above)
+				else if (type === 'array') {
 					fileName = null; // should never happen, but unset anyway to avoid funny situations
 					o.each(file, resolveFile);
 				}
 			}
 
 			ruid = getRUID();
-
+			
 			resolveFile(file);
 
-			// Trigger FilesAdded event if we added any
-			if (files.length) {
-				this.trigger("FilesAdded", files);
+			if (queue.length) {
+				o.inSeries(queue, function() {
+					// if any files left after filtration, trigger FilesAdded
+					if (files.length) {
+						self.trigger("FilesAdded", files);
+					}
+				});
 			}
 		},
 
