@@ -8,7 +8,7 @@ like Flash, Silverlight and Java (still in development). It is meant to provide 
 will work anywhere and in any case, in one way or another. While having very solid fallbacks, Plupload 
 is built with the future of HTML5 in mind.
 
-## Table of Contents
+### Table of Contents
 * [Backstory](#backstory)
 * [Structure](#structure)
   * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie/blob/master/README.md)
@@ -18,6 +18,7 @@ is built with the future of HTML5 in mind.
 * [Demos](https://github.com/jayarjo/plupload-demos/blob/master/README.md)
 * [Building Instructions](#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
+  * [File Filters](https://github.com/moxiecode/plupload/wiki/File-Filters) 
   * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
   * [Chunking](https://github.com/moxiecode/plupload/wiki/Chunking) 
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
