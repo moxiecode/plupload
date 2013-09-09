@@ -411,7 +411,7 @@ $.widget("ui.plupload", {
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
 		uploader.bind('Error', function(up, err) {			
-			var message, details;
+			var message, details = "";
 
 			message = '<strong>' + err.message + '</strong>';
 				
