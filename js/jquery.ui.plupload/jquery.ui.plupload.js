@@ -411,7 +411,7 @@ $.widget("ui.plupload", {
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
 		uploader.bind('Error', function(up, err) {			
-			var message, details;
+			var message, details = "";
 
 			message = '<strong>' + err.message + '</strong>';
 				
@@ -533,7 +533,6 @@ $.widget("ui.plupload", {
 		
 		uploader.bind('FilesAdded', function(up, files) {
 			self._addFiles(files);
-
 			self._trigger('selected', null, { up: up, files: files } );
 			
 			if (self.options.autostart) {
@@ -549,6 +548,7 @@ $.widget("ui.plupload", {
 		});
 		
 		uploader.bind('QueueChanged', function() {
+			self._handleState();
 			self._updateTotalProgress();
 		});
 		
@@ -801,39 +801,51 @@ $.widget("ui.plupload", {
 	
 	
 	_handleState: function() {
-		var self = this, up = this.uploader;
+		var up = this.uploader;
 						
 		if (up.state === plupload.STARTED) {
-			$(self.start_button).button('disable');
+			$(this.start_button).button('disable');
 								
 			$([])
-				.add(self.stop_button)
+				.add(this.stop_button)
 				.add('.plupload_started')
 					.removeClass('plupload_hidden');
 							
-			$('.plupload_upload_status', self.element).html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
-			$('.plupload_header_content', self.element).addClass('plupload_header_content_bw');
-		
-		} else {
+			$('.plupload_upload_status', this.element).html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
+			$('.plupload_header_content', this.element).addClass('plupload_header_content_bw');
+		} else if (up.state === plupload.STOPPED) {
 			$([])
-				.add(self.stop_button)
+				.add(this.stop_button)
 				.add('.plupload_started')
 					.addClass('plupload_hidden');
 			
-			if (self.options.multiple_queues) {
-				$(self.start_button).button('enable');
-				$('.plupload_header_content', self.element).removeClass('plupload_header_content_bw');
+			if (this.options.multiple_queues) {
+				$('.plupload_header_content', this.element).removeClass('plupload_header_content_bw');
 			} else {
 				$([])
-					.add(self.browse_button)
-					.add(self.start_button)
+					.add(this.browse_button)
+					.add(this.start_button)
 						.button('disable');
 
 				up.disableBrowse();
 			}
 
-			self._updateTotalProgress();
+			if (up.files.length === (up.total.uploaded + up.total.failed)) {
+				this.start_button.button('disable');
+			} else {
+				this.start_button.button('enable');
+			}
+
+			this._updateTotalProgress();
 		}
+
+		if (up.total.queued === 0) {
+			$('.ui-button-text', this.browse_button).html(_('Add Files'));
+		} else {
+			$('.ui-button-text', this.browse_button).html(o.sprintf(_('%d files queued'), up.total.queued));
+		}
+
+		up.refresh();
 	},
 	
 	
@@ -906,20 +918,6 @@ $.widget("ui.plupload", {
 	
 	_updateTotalProgress: function() {
 		var up = this.uploader;
-
-		if (up.total.queued === 0) {
-			$('.ui-button-text', this.browse_button).html(_('Add Files'));
-		} else {
-			$('.ui-button-text', this.browse_button).html(o.sprintf(_('%d files queued'), up.total.queued));
-		}
-
-		up.refresh();
-
-		if (up.files.length === (up.total.uploaded + up.total.failed)) {
-			this.start_button.button('disable');
-		} else {
-			this.start_button.button('enable');
-		}
 
 		// Scroll to end of file list
 		this.filelist[0].scrollTop = this.filelist[0].scrollHeight;

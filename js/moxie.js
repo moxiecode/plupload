@@ -601,6 +601,7 @@ define("moxie/core/utils/Mime", [
 			}
 		},
 
+
 		extList2mimes: function (filters, addMissingExtensions) {
 			var self = this, ext, i, ii, type, mimes = [];
 			
@@ -631,29 +632,42 @@ define("moxie/core/utils/Mime", [
 		},
 
 
-		mimes2extList: function(mimes) {
-			var self = this, exts = [], accept = [];
+		mimes2exts: function(mimes) {
+			var self = this, exts = [];
 			
-			mimes = Basic.trim(mimes).split(/\s*,\s*/);
-			
-			if (mimes !== '*') {
-				Basic.each(mimes, function(mime) {
-					// check if this thing looks like mime type
-					var m = mime.match(/^(\w+)\/(\*|\w+)$/);
-					if (m) {
-						if (m[2] === '*') { 
-							// wildcard mime type detected
-							Basic.each(self.extensions, function(arr, mime) {
-								if ((new RegExp('^' + m[1] + '/')).test(mime)) {
-									[].push.apply(exts, self.extensions[mime]);
-								}
-							});
-						} else if (self.extensions[mime]) {
-							[].push.apply(exts, self.extensions[mime]);
-						}
+			Basic.each(mimes, function(mime) {
+				if (mime === '*') {
+					exts = [];
+					return false;
+				}
+
+				// check if this thing looks like mime type
+				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+				if (m) {
+					if (m[2] === '*') { 
+						// wildcard mime type detected
+						Basic.each(self.extensions, function(arr, mime) {
+							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
+								[].push.apply(exts, self.extensions[mime]);
+							}
+						});
+					} else if (self.extensions[mime]) {
+						[].push.apply(exts, self.extensions[mime]);
 					}
-				});
+				}
+			});
+			return exts;
+		},
+
+
+		mimes2extList: function(mimes) {
+			var accept = [], exts = [];
+
+			if (Basic.typeOf(mimes) === 'string') {
+				mimes = Basic.trim(mimes).split(/\s*,\s*/);
 			}
+
+			exts = this.mimes2exts(mimes);
 			
 			accept.push({
 				title: I18n.translate('Files'),
@@ -662,9 +676,10 @@ define("moxie/core/utils/Mime", [
 			
 			// save original mimes string
 			accept.mimes = mimes;
-							
+
 			return accept;
 		},
+
 
 		getFileExtension: function(fileName) {
 			var matches = fileName && fileName.match(/\.([^.]+)$/);
@@ -2943,6 +2958,10 @@ define('moxie/file/FileInput', [
 						self.files = [];
 
 						Basic.each(files, function(file) {
+							// ignore empty files (IE10 for example hangs if you try to send them via XHR)
+							if (file.size === 0) {
+								return true; 
+							}
 							self.files.push(new File(self.ruid, file));
 						});
 					}, 999);
@@ -6405,13 +6424,14 @@ define("moxie/runtime/html5/file/FileDrop", [
 ], function(extensions, Basic, Dom, Events, Mime) {
 	
 	function FileDrop() {
-		var _files = [], _options;
+		var _files = [], _allowedExts = [], _options;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, dropZone;
 
 				_options = options;
+				_allowedExts = _extractExts(_options.accept);
 				dropZone = _options.container;
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
@@ -6464,21 +6484,25 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 			destroy: function() {
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
-				_files = _options = null;
+				_files = _allowedExts = _options = null;
 			}
 		});
 
+		
+		function _extractExts(accept) {
+			var exts = [];
+			for (var i = 0; i < accept.length; i++) {
+				[].push.apply(exts, accept[i].extensions.split(/\s*,\s*/));
+			}
+			return Basic.inArray('*', exts) === -1 ? exts : [];
+		}
+
 
 		function _isAcceptable(file) {
-			var mimes = _options.accept.mimes || Mime.extList2mimes(_options.accept)
-			, type = file.type || Mime.getFileMime(file.name) || ''
-			;
-
-			if (!mimes.length || Basic.inArray(type, mimes) !== -1) {
-				return true;
-			}
-			return false;
+			var ext = Mime.getFileExtension(file.name);
+			return !ext || !_allowedExts.length || Basic.inArray(ext, _allowedExts) !== -1;
 		}
+
 
 		function _readEntries(entries, cb) {
 			var queue = [];
