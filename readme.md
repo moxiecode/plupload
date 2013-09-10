@@ -132,6 +132,8 @@ want to consider first.
 
 These basic rules help us earn a living and ensure that code remains Open Source and compatible with LGPL license. All contributions will be added to the changelog and appear in every release and on the site. 
 
+An easy place to start is to [translate Plupload to your language](https://github.com/moxiecode/plupload/wiki/Plupload-in-Your-Language#contribute).
+
 You can read more about how to contribute at: [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
 
 <a name="license" />
