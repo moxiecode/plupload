@@ -1618,7 +1618,7 @@ plupload.Uploader = function(settings) {
 
 				// o.File
 				if (file instanceof o.File) { 
-					if (!file.ruid) {
+					if (!file.ruid && !file.isDetached()) {
 						if (!ruid) { // weird case
 							return false;
 						}
