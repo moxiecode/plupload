@@ -9,24 +9,25 @@ will work anywhere and in any case, in one way or another. While having very sol
 is built with the future of HTML5 in mind.
 
 ### Table of Contents
-* [Backstory](#backstory)
-* [Structure](#structure)
+* [Backstory](https://github.com/moxiecode/plupload/blob/master/readme.md#backstory)
+* [Structure](https://github.com/moxiecode/plupload/blob/master/readme.md#structure)
   * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie/blob/master/README.md)
   * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
   * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
   * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
 * [Demos](https://github.com/jayarjo/plupload-demos/blob/master/README.md)
-* [Building Instructions](#build)
+* [Building Instructions](https://github.com/moxiecode/plupload/blob/master/readme.md#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
+  * [Plupload in Your Language](https://github.com/moxiecode/plupload/wiki/Plupload-in-Your-Language)
   * [File Filters](https://github.com/moxiecode/plupload/wiki/File-Filters) 
   * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
   * [Chunking](https://github.com/moxiecode/plupload/wiki/Chunking) 
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
 * [FAQ](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
-* [Support](#support)
+* [Support](https://github.com/moxiecode/plupload/blob/master/readme.md##support)
   * [Create a Fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle)
-* [Contributing](#contribute)
-* [License](#license)
+* [Contributing](https://github.com/moxiecode/plupload/blob/master/readme.md#contribute)
+* [License](https://github.com/moxiecode/plupload/blob/master/readme.md#license)
 * [Contact Us](http://www.moxiecode.com/contact.php)
 
 <a name="backstory" />
