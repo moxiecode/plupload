@@ -1102,9 +1102,6 @@ plupload.Uploader = function(settings) {
 		}, settings.resize);
 	}
 
-	// Convert settings
-	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
-
 	// Set file filters
 	if (plupload.typeOf(settings.filters) === 'array') {
 		settings.filters = {
@@ -1114,10 +1111,15 @@ plupload.Uploader = function(settings) {
 	settings.filters = plupload.extend({
 		mime_types: [],
 		prevent_duplicates: !!settings.prevent_duplicates,
-		max_file_size: plupload.parseSize(settings.max_file_size) || 0
+		max_file_size: settings.max_file_size
 	}, settings.filters);
 
-	
+
+	// Convert settings
+	settings.filters.max_file_size = plupload.parseSize(settings.filters.max_file_size) || 0;
+	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
+
+	// Normalize the list of required capabilities
 	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
 
 
