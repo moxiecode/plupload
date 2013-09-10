@@ -109,7 +109,6 @@ $(function() {
 	$("#uploader").plupload({
 		runtimes : 'html5,flash,silverlight',
 		url : 'http://<?php echo $bucket; ?>.s3.amazonaws.com/',
-		max_file_size : '10mb',
 		
 		multipart: true,
 		multipart_params: {
@@ -130,10 +129,14 @@ $(function() {
 		// optional, but better be specified directly
 		file_data_name: 'file',
 
-		// Specify what files to browse for
-		filters : [
-			{title : "JPEG files", extensions : "jpg"}
-		],
+		filters : {
+			// Maximum file size
+			max_file_size : '10mb',
+			// Specify what files to browse for
+			mime_types: [
+				{title : "Image files", extensions : "jpg,jpeg"}
+			]
+		},
 
 		// Flash settings
 		flash_swf_url : '../../js/Moxie.swf',

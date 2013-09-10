@@ -44,9 +44,6 @@ $(function() {
 		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
 
-		// Maximum file size
-		max_file_size : '1000mb',
-
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 20,
 		
@@ -59,12 +56,16 @@ $(function() {
 			quality : 90,
 			crop: true // crop to exact dimensions
 		},
-
-		// Specify what files to browse for
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip,avi"}
-		],
+		
+		filters : {
+			// Maximum file size
+			max_file_size : '1000mb',
+			// Specify what files to browse for
+			mime_types: [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip"}
+			]
+		},
 
 		// Rename files by clicking on their titles
 		rename: true,

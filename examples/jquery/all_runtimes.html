@@ -55,13 +55,16 @@ $(function() {
 		// General settings
 		runtimes : 'flash',
 		url : '../upload.php',
-		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip"}
-		],
+		
+		filters : {
+			max_file_size : '10mb',
+			mime_types: [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip"}
+			]
+		},
 
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90},
@@ -76,13 +79,16 @@ $(function() {
 		// General settings
 		runtimes : 'silverlight',
 		url : '../upload.php',
-		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip"}
-		],
+		
+		filters : {
+			max_file_size : '10mb',
+			mime_types: [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip"}
+			]
+		},
 
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90},
@@ -96,13 +102,16 @@ $(function() {
 		// General settings
 		runtimes : 'html5',
 		url : '../upload.php',
-		max_file_size : '10mb',
 		chunk_size : '1mb',
 		unique_names : true,
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip"}
-		],
+		
+		filters : {
+			max_file_size : '10mb',
+			mime_types: [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip"}
+			]
+		},
 
 		// Resize images on clientside if we can
 		resize : {width : 320, height : 240, quality : 90}
@@ -115,10 +124,13 @@ $(function() {
 		runtimes : 'html4',
 		url : '../upload.php',
 		unique_names : true,
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			{title : "Zip files", extensions : "zip"}
-		]
+		
+		filters : {
+			mime_types: [
+				{title : "Image files", extensions : "jpg,gif,png"},
+				{title : "Zip files", extensions : "zip"}
+			]
+		},
 	});
 });
 </script>
