@@ -38,10 +38,7 @@ $(function() {
 		// General settings
 		runtimes : 'html5,flash,silverlight,html4',
 		url : '../upload.php',
-		chunks : {
-			size: '1mb',
-			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
-		},
+		chunk_size: '1mb',
 		rename : true,
 		dragdrop: true,
 		
