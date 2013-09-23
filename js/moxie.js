@@ -1,6 +1,6 @@
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.0.0alpha
+ * v1.0.0
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2012-11-13
+ * Date: 2013-09-23
  */
 /**
  * Compiled inline version. (Library mode)
@@ -5954,6 +5954,7 @@ define("moxie/runtime/html5/Runtime", [
 						return Env.can('return_response_type', responseType);
 					}
 				},
+				return_status_code: True,
 				report_upload_progress: Test(window.XMLHttpRequest && new XMLHttpRequest().upload),
 				resize_image: function() {
 					return I.can('access_binary') && Env.can('create_canvas');
@@ -6651,7 +6652,7 @@ define("moxie/runtime/html5/file/FileReader", [
  * Contributing: http://www.plupload.com/contributing
  */
 
- /*global ActiveXObject:true */
+/*global ActiveXObject:true */
 
 /**
 @class moxie/runtime/html5/xhr/XMLHttpRequest
@@ -6660,6 +6661,7 @@ define("moxie/runtime/html5/file/FileReader", [
 define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/runtime/html5/Runtime",
 	"moxie/core/utils/Basic",
+	"moxie/core/utils/Mime",
 	"moxie/core/utils/Url",
 	"moxie/file/File",
 	"moxie/file/Blob",
@@ -6667,11 +6669,10 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Env",
 	"moxie/core/JSON"
-], function(extensions, Basic, Url, File, Blob, FormData, x, Env, parseJSON) {
+], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env, parseJSON) {
 	
 	function XMLHttpRequest() {
-		var self = this
-		, _xhr
+		var _xhr
 		, _filename
 		;
 
@@ -6871,6 +6872,11 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 								}
 							}
 							file.name = _filename;
+
+							// pre-webkit Opera doesn't set type property on the blob response
+							if (!file.type) {
+								file.type = Mime.getFileMime(_filename);
+							}
 							return file;
 
 						case 'json':
@@ -8239,7 +8245,7 @@ define("moxie/runtime/html5/image/Image", [
 	
 	function HTML5Image() {
 		var me = this
-		, _img, _imgInfo, _canvas, _binStr, _srcBlob
+		, _img, _imgInfo, _canvas, _binStr, _blob
 		, _modified = false // is set true whenever image is modified
 		, _preserveHeaders = true
 		;
@@ -8254,18 +8260,14 @@ define("moxie/runtime/html5/image/Image", [
 					throw new x.RuntimeError(x.RuntimeError.NOT_SUPPORTED_ERR);
 				}
 
+				_blob = blob;
+
 				if (blob.isDetached()) {
-					_srcBlob = {
-						name: blob.name,
-						size: blob.size,
-						type: blob.type
-					};
 					_binStr = blob.getSource();
 					_preload.call(this, _binStr);
 					return;
 				} else {
-					_srcBlob = blob.getSource();
-					_readAsDataUrl.call(this, _srcBlob, function(dataUrl) {
+					_readAsDataUrl.call(this, blob.getSource(), function(dataUrl) {
 						if (asBinary) {
 							_binStr = _toBinary(dataUrl);
 						}
@@ -8277,11 +8279,11 @@ define("moxie/runtime/html5/image/Image", [
 			loadFromImage: function(img, exact) {
 				this.meta = img.meta;
 
-				_srcBlob = {
+				_blob = new Blob(null, {
 					name: img.name,
 					size: img.size,
 					type: img.type
-				};
+				});
 
 				_preload.call(this, exact ? (_binStr = img.getAsBinaryString()) : img.getAsDataURL());
 			},
@@ -8296,9 +8298,9 @@ define("moxie/runtime/html5/image/Image", [
 				info = {
 					width: _getImg().width || 0,
 					height: _getImg().height || 0,
-					type: _srcBlob.type || Mime.getFileMime(_srcBlob.name),
-					size: _binStr && _binStr.length || _srcBlob.size || 0,
-					name: _srcBlob.name || '',
+					type: _blob.type || Mime.getFileMime(_blob.name),
+					size: _binStr && _binStr.length || _blob.size || 0,
+					name: _blob.name || '',
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}
 				};
 
@@ -8441,7 +8443,7 @@ define("moxie/runtime/html5/image/Image", [
 				comp.trigger('load');
 			};
 
-			_img.src = /^data:[^;]*;base64,/.test(str) ? str : _toDataUrl(str, _srcBlob.type);
+			_img.src = /^data:[^;]*;base64,/.test(str) ? str : _toDataUrl(str, _blob.type);
 		}
 
 
@@ -8615,7 +8617,7 @@ define("moxie/runtime/html5/image/Image", [
 				_imgInfo.purge();
 				_imgInfo = null;
 			}
-			_binStr = _img = _canvas = null;
+			_binStr = _img = _canvas = _blob = null;
 			_modified = false;
 		}
 	}
