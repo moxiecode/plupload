@@ -833,7 +833,8 @@ plupload.Uploader = function(settings) {
 	 * @event Destroy
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
-	var files = [], events = {}, required_caps = {},
+	var uid = plupload.guid(),
+		files = [], required_caps = {},
 		startTime, total, disabled = false,
 		fileInput, fileDrop, xhr;
 
@@ -1132,7 +1133,8 @@ plupload.Uploader = function(settings) {
 		 * @property id
 		 * @type String
 		 */
-		id : plupload.guid(),
+		id : uid,
+		uid : uid, // mOxie uses this to differentiate between event targets
 
 		/**
 		 * Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
@@ -1727,27 +1729,6 @@ plupload.Uploader = function(settings) {
 		 * @param {String} name Event name to fire.
 		 * @param {Object..} Multiple arguments to pass along to the listener functions.
 		 */
-		trigger : function(name) {
-			var list = events[name.toLowerCase()], i, args;
-
-			// console.log(name, arguments);
-
-			if (list) {
-				// Replace name with sender in args
-				args = Array.prototype.slice.call(arguments);
-				args[0] = this;
-
-				// Dispatch event to all listeners
-				for (i = 0; i < list.length; i++) {
-					// Fire event, break chain if false is returned
-					if (list[i].func.apply(list[i].scope, args) === false) {
-						return false;
-					}
-				}
-			}
-
-			return true;
-		},
 
 		/**
 		 * Check whether uploader has any listeners to the specified event.
@@ -1755,9 +1736,7 @@ plupload.Uploader = function(settings) {
 		 * @method hasEventListener
 		 * @param {String} name Event name to check for.
 		 */
-		hasEventListener : function(name) {
-			return !!events[name.toLowerCase()];
-		},
+
 
 		/**
 		 * Adds an event listener by name.
@@ -1768,12 +1747,13 @@ plupload.Uploader = function(settings) {
 		 * @param {Object} scope Optional scope to execute the specified function in.
 		 */
 		bind : function(name, func, scope) {
-			var list;
-
-			name = name.toLowerCase();
-			list = events[name] || [];
-			list.push({func : func, scope : scope || this});
-			events[name] = list;
+			var self = this;
+			// adapt moxie EventTarget style to Plupload-like
+			plupload.Uploader.prototype.bind.call(this, name, function() {
+				var args = [].slice.call(arguments);
+				args.splice(0, 1, self); // replace event object with uploader instance
+				func.apply(this, args);
+			}, 0, scope);
 		},
 
 		/**
@@ -1783,42 +1763,13 @@ plupload.Uploader = function(settings) {
 		 * @param {String} name Name of event to remove.
 		 * @param {function} func Function to remove from listener.
 		 */
-		unbind : function(name) {
-			name = name.toLowerCase();
-
-			var list = events[name], i, func = arguments[1];
-
-			if (list) {
-				if (func !== undef) {
-					for (i = list.length - 1; i >= 0; i--) {
-						if (list[i].func === func) {
-							list.splice(i, 1);
-								break;
-						}
-					}
-				} else {
-					list = [];
-				}
-
-				// delete event list if it has become empty
-				if (!list.length) {
-					delete events[name];
-				}
-			}
-		},
 
 		/**
 		 * Removes all event listeners.
 		 *
 		 * @method unbindAll
 		 */
-		unbindAll : function() {
-			var self = this;
 
-			plupload.each(events, function(list, name) {
-				self.unbind(name);
-			});
-		},
 
 		/**
 		 * Destroys Plupload instance and cleans after itself.
@@ -1851,10 +1802,11 @@ plupload.Uploader = function(settings) {
 
 			// Clean-up after uploader itself
 			this.unbindAll();
-			events = {};
 		}
 	});
 };
+
+plupload.Uploader.prototype = mOxie.EventTarget.instance;
 
 /**
  * Constructs a new file instance.
