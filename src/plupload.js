@@ -1805,7 +1805,7 @@ plupload.Uploader = function(settings) {
 	});
 };
 
-plupload.Uploader.prototype = mOxie.EventTarget.instance;
+plupload.Uploader.prototype = o.EventTarget.instance;
 
 /**
  * Constructs a new file instance.
