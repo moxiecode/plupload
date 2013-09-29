@@ -1647,7 +1647,7 @@ plupload.Uploader = function(settings) {
 							if (!err) {
 								files.push(file);
 							}
-							cb();
+							delay(cb, 1); // do not build up recursions or eventually we might hit the limits
 						});
 					});
 				} 
