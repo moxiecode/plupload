@@ -609,7 +609,7 @@ var plupload = {
 
 
 plupload.addFileFilter('mime_types', (function() {
-	var _filters, _extRegExp;
+	var _extRegExp;
 
 	// Convert extensions to regexp
 	function getExtRegExp(filters) {
@@ -629,9 +629,8 @@ plupload.addFileFilter('mime_types', (function() {
 	}
 
 	return function(filters, file, cb) {
-		if (!_extRegExp || filters != _filters) { // make sure we do it only once, unless filters got changed
+		if (!_extRegExp) { // make sure we do it only once, unless filters got changed
 			_extRegExp = getExtRegExp(filters);
-			_filters = [].slice.call(filters);
 		}
 
 		if (!_extRegExp.test(file.name)) {
