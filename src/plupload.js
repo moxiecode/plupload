@@ -777,11 +777,19 @@ plupload.Uploader = function(settings) {
 	 */
 
 	/**
-	 * Fires while a file was removed from queue.
+	 * Fires when file is removed from the queue.
 	 *
 	 * @event FilesRemoved
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {Array} files Array of files that got removed.
+	 */
+
+	/**
+	 * Fires for every filtered file before it is added to the queue.
+	 * 
+	 * @event FileFiltered
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file Another file that has to be added to the queue.
 	 */
 
 	/**
@@ -1646,6 +1654,7 @@ plupload.Uploader = function(settings) {
 						filterFile(file, function(err) {
 							if (!err) {
 								files.push(file);
+								self.trigger("FileFiltered", file);
 							}
 							delay(cb, 1); // do not build up recursions or eventually we might hit the limits
 						});
