@@ -290,6 +290,32 @@ var plupload = {
 	guid : o.guid,
 
 	/**
+	 * Get array of DOM Elements by their ids.
+	 * 
+	 * @method get
+	 * @for Utils
+	 * @param {String} id Identifier of the DOM Element
+	 * @return {Array}
+	*/
+	get : function get(ids) {
+		var els = [], el;
+
+		if (o.typeOf(ids) !== 'array') {
+			ids = [ids];
+		}
+
+		var i = ids.length;
+		while (i--) {
+			el = o.get(ids[i]);
+			if (el) {
+				els.push(el);
+			}
+		}
+
+		return els.length ? els : null;
+	},
+
+	/**
 	 * Executes the callback function for each item in array/object. If you return false in the
 	 * callback it will break the loop.
 	 *
@@ -843,7 +869,7 @@ plupload.Uploader = function(settings) {
 	var uid = plupload.guid(),
 		files = [], required_caps = {},
 		startTime, total, disabled = false,
-		fileInput, fileDrop, xhr;
+		fileInputs = [], fileDrops = [], xhr;
 
 
 	// Private methods
@@ -920,7 +946,7 @@ plupload.Uploader = function(settings) {
 	}
 
 	function initControls() {
-		var self = this, initialized = 0;
+		var self = this, initialized = 0, queue = [];
 
 		// common settings
 		var options = {
@@ -938,15 +964,15 @@ plupload.Uploader = function(settings) {
 			}
 		});
 
-		o.inSeries([
-			function(cb) {
-				// Initialize file dialog trigger
-				if (settings.browse_button) {
-					fileInput = new o.FileInput(plupload.extend({}, options, {
+		// initialize file pickers - there can be many
+		if (settings.browse_button) {
+			plupload.each(settings.browse_button, function(el) {
+				queue.push(function(cb) {
+					var fileInput = new o.FileInput(plupload.extend({}, options, {
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
 						container: settings.container,
-						browse_button: settings.browse_button
+						browse_button: el
 					}));
 
 					fileInput.onready = function() {
@@ -960,6 +986,7 @@ plupload.Uploader = function(settings) {
 						});
 
 						initialized++;
+						fileInputs.push(this);
 						cb();
 					};
 
@@ -997,16 +1024,16 @@ plupload.Uploader = function(settings) {
 					});
 
 					fileInput.init();
-				} else {
-					cb();
-				}
-			},
+				});
+			});
+		}
 
-			function(cb) {
-				// Initialize drag/drop interface if requested
-				if (settings.drop_element) {
-					fileDrop = new o.FileDrop(plupload.extend({}, options, {
-						drop_zone: settings.drop_element
+		// initialize drop zones
+		if (settings.drop_element) {
+			plupload.each(settings.drop_element, function(el) {
+				queue.push(function(cb) {
+					var fileDrop = new o.FileDrop(plupload.extend({}, options, {
+						drop_zone: el
 					}));
 
 					fileDrop.onready = function() {
@@ -1015,6 +1042,7 @@ plupload.Uploader = function(settings) {
 						self.features.dragdrop = info.can('drag_and_drop');
 
 						initialized++;
+						fileDrops.push(this);
 						cb();
 					};
 
@@ -1028,12 +1056,12 @@ plupload.Uploader = function(settings) {
 					});
 
 					fileDrop.init();
-				} else {
-					cb();
-				}
-			}
-		],
-		function() {
+				});
+			});
+		}
+
+
+		o.inSeries(queue, function() {
 			if (typeof(settings.init) == "function") {
 				settings.init(self);
 			} else {
@@ -1204,10 +1232,10 @@ plupload.Uploader = function(settings) {
 		init : function() {
 			var self = this;
 
-			settings.browse_button = o.get(settings.browse_button);
+			settings.browse_button = plupload.get(settings.browse_button);
 			
 			// Check if drop zone requested
-			settings.drop_element = o.get(settings.drop_element);
+			settings.drop_element = plupload.get(settings.drop_element);
 
 
 			if (typeof(settings.preinit) == "function") {
@@ -1515,8 +1543,10 @@ plupload.Uploader = function(settings) {
 		 * @method refresh
 		 */
 		refresh : function() {
-			if (fileInput) {
-				fileInput.trigger("Refresh");
+			if (fileInputs.length) {
+				plupload.each(fileInputs, function(fileInput) {
+					fileInput.trigger("Refresh");
+				});
 			}
 			this.trigger("Refresh");
 		},
@@ -1558,8 +1588,10 @@ plupload.Uploader = function(settings) {
 		disableBrowse : function() {
 			disabled = arguments[0] !== undef ? arguments[0] : true;
 
-			if (fileInput) {
-				fileInput.disable(disabled);
+			if (fileInputs.length) {
+				plupload.each(fileInputs, function(fileInput) {
+					fileInput.disable(disabled);
+				});
 			}
 
 			this.trigger("DisableBrowse", disabled);
@@ -1598,7 +1630,7 @@ plupload.Uploader = function(settings) {
 			;
 
 			function getRUID() {
-				var ctrl = fileDrop || fileInput;
+				var ctrl = fileInputs[0] || fileDrops[0];
 				if (ctrl) {
 					return ctrl.getRuntime().uid;
 				}
@@ -1793,14 +1825,18 @@ plupload.Uploader = function(settings) {
 			});
 			files = [];
 
-			if (fileInput) {
-				fileInput.destroy();
-				fileInput = null;
+			if (fileInputs.length) {
+				plupload.each(fileInputs, function(fileInput) {
+					fileInput.destroy();
+				});
+				fileInputs = [];
 			}
 
-			if (fileDrop) {
-				fileDrop.destroy();
-				fileDrop = null;
+			if (fileDrops.length) {
+				plupload.each(fileDrops, function(fileDrop) {
+					fileDrop.destroy();
+				});
+				fileDrops = [];
 			}
 
 			required_caps = {};
