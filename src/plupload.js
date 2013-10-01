@@ -996,24 +996,20 @@ plupload.Uploader = function(settings) {
 
 					fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
 						if (!disabled) {
-							var bButton = o.get(settings.browse_button);
-							if (bButton) {
-								if (settings.browse_button_hover) {
-									if ('mouseenter' === e.type) {
-										o.addClass(bButton, settings.browse_button_hover);
-									} else if ('mouseleave' === e.type) {
-										o.removeClass(bButton, settings.browse_button_hover);
-									}
+							if (settings.browse_button_hover) {
+								if ('mouseenter' === e.type) {
+									o.addClass(el, settings.browse_button_hover);
+								} else if ('mouseleave' === e.type) {
+									o.removeClass(el, settings.browse_button_hover);
 								}
+							}
 
-								if (settings.browse_button_active) {
-									if ('mousedown' === e.type) {
-										o.addClass(bButton, settings.browse_button_active);
-									} else if ('mouseup' === e.type) {
-										o.removeClass(bButton, settings.browse_button_active);
-									}
+							if (settings.browse_button_active) {
+								if ('mousedown' === e.type) {
+									o.addClass(el, settings.browse_button_active);
+								} else if ('mouseup' === e.type) {
+									o.removeClass(el, settings.browse_button_active);
 								}
-								bButton = null;
 							}
 						}
 					});
