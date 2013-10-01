@@ -1749,12 +1749,14 @@ plupload.Uploader = function(settings) {
 			var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
 			this.trigger("FilesRemoved", removed);
-			this.trigger("QueueChanged");
 
 			// Dispose any resources allocated by those files
 			plupload.each(removed, function(file) {
 				file.destroy();
 			});
+
+			this.trigger("QueueChanged");
+			this.refresh();
 
 			return removed;
 		},
