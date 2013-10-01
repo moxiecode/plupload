@@ -400,15 +400,12 @@ $.widget("ui.plupload", {
 			options.drop_element = this.id + '_dropbox';
 		}
 
+		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
+
 		if (self.options.views.thumbs) {
-			if (o.typeOf(self.options.required_features) === 'string') {
-				self.options.required_features += ",display_media";
-			} else {
-				self.options.required_features = "display_media";
-			}
+			uploader.settings.required_features.display_media = true;
 		}
 
-		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
 		uploader.bind('Error', function(up, err) {			
 			var message, details = "";
