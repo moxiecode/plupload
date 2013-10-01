@@ -1039,7 +1039,7 @@ plupload.Uploader = function(settings) {
 					fileDrop.onready = function() {
 						var info = o.Runtime.getInfo(this.ruid);
 
-						self.features.dragdrop = info.can('drag_and_drop');
+						self.features.dragdrop = info.can('drag_and_drop'); // for backward compatibility
 
 						initialized++;
 						fileDrops.push(this);
@@ -1071,6 +1071,8 @@ plupload.Uploader = function(settings) {
 			}
 
 			if (initialized) {
+				self.runtime = o.Runtime.getInfo(getRUID()).type;
+				self.trigger('Init', { runtime: self.runtime });
 				self.trigger('PostInit');
 			} else {
 				self.trigger('Error', {
@@ -1079,6 +1081,14 @@ plupload.Uploader = function(settings) {
 				});
 			}
 		});
+	}
+
+	function getRUID() {
+		var ctrl = fileInputs[0] || fileDrops[0];
+		if (ctrl) {
+			return ctrl.getRuntime().uid;
+		}
+		return false;
 	}
 
 	function runtimeCan(file, cap) {
@@ -1196,7 +1206,7 @@ plupload.Uploader = function(settings) {
 		 * @property runtime
 		 * @type String
 		 */
-		runtime : o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
+		runtime : null,
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1529,10 +1539,6 @@ plupload.Uploader = function(settings) {
 				}, 1);
 			});
 
-			// some dependent scripts hook onto Init to alter configuration options, raw UI, etc (like Queue Widget),
-			// therefore we got to fire this one, before we dive into the actual initializaion
-			self.trigger('Init', { runtime: this.runtime });
-
 			initControls.call(this);
 		},
 
@@ -1628,14 +1634,6 @@ plupload.Uploader = function(settings) {
 			, files = []
 			, ruid
 			;
-
-			function getRUID() {
-				var ctrl = fileInputs[0] || fileDrops[0];
-				if (ctrl) {
-					return ctrl.getRuntime().uid;
-				}
-				return false;
-			}
 
 			function filterFile(file, cb) {
 				var queue = [];
