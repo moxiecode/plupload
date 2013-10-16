@@ -71,7 +71,7 @@ used as it is.
 
 	@param {Boolean} [settings.dragdrop=true] Enable ability to add file to the queue by drag'n'dropping them from the desktop.
 	@param {Boolean} [settings.rename=false] Enable ability to rename files in the queue.
-	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
+	@param {Boolean} [settings.multiple_queues=false] Re-activate the widget after each upload procedure.
 */
 (function($) {
 	var uploaders = {};
