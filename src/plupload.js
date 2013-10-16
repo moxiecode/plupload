@@ -867,7 +867,7 @@ plupload.Uploader = function(settings) {
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
 	var uid = plupload.guid(),
-		files = [], required_caps = {},
+		files = [], preferred_caps = {},
 		startTime, total, disabled = false,
 		fileInputs = [], fileDrops = [], xhr;
 
@@ -952,7 +952,8 @@ plupload.Uploader = function(settings) {
 		var options = {
 			accept: settings.filters.mime_types,
 			runtime_order: settings.runtimes,
-			required_caps: required_caps,
+			required_caps: settings.required_features,
+			preferred_caps: preferred_caps,
 			swf_url: settings.flash_swf_url,
 			xap_url: settings.silverlight_xap_url
 		};
@@ -1162,7 +1163,12 @@ plupload.Uploader = function(settings) {
 	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
 
 	// Normalize the list of required capabilities
-	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
+	settings.required_features = normalizeCaps(plupload.extend({}, settings));
+
+	// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
+	preferred_caps = normalizeCaps(plupload.extend({}, settings, {
+		required_features: true
+	}));
 
 
 	// Add public methods
@@ -1446,7 +1452,8 @@ plupload.Uploader = function(settings) {
 						formData.append(up.settings.file_data_name, chunkBlob);
 						xhr.send(formData, {
 							runtime_order: up.settings.runtimes,
-							required_caps: required_caps,
+							required_caps: up.settings.required_features,
+							preferred_caps: preferred_caps,
 							swf_url: up.settings.flash_swf_url,
 							xap_url: up.settings.silverlight_xap_url
 						});
@@ -1465,7 +1472,8 @@ plupload.Uploader = function(settings) {
 
 						xhr.send(chunkBlob, {
 							runtime_order: up.settings.runtimes,
-							required_caps: required_caps,
+							required_caps: up.settings.required_features,
+							preferred_caps: preferred_caps,
 							swf_url: up.settings.flash_swf_url,
 							xap_url: up.settings.silverlight_xap_url
 						});
@@ -1835,7 +1843,7 @@ plupload.Uploader = function(settings) {
 				fileDrops = [];
 			}
 
-			required_caps = {};
+			preferred_caps = {};
 			startTime = total = disabled = xhr = null;
 
 			this.trigger('Destroy');
