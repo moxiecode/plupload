@@ -400,15 +400,12 @@ $.widget("ui.plupload", {
 			options.drop_element = this.id + '_dropbox';
 		}
 
+		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
+
 		if (self.options.views.thumbs) {
-			if (o.typeOf(self.options.required_features) === 'string') {
-				self.options.required_features += ",display_media";
-			} else {
-				self.options.required_features = "display_media";
-			}
+			uploader.settings.required_features.display_media = true;
 		}
 
-		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
 		uploader.bind('Error', function(up, err) {			
 			var message, details = "";
@@ -530,10 +527,20 @@ $.widget("ui.plupload", {
 		
 		// uploader internal events must run first 
 		uploader.init();
+
+		uploader.bind('FileFiltered', function(up, file) {
+			self._addFiles(file);
+		});
 		
 		uploader.bind('FilesAdded', function(up, files) {
-			self._addFiles(files);
 			self._trigger('selected', null, { up: up, files: files } );
+
+			// re-enable sortable
+			if (self.options.sortable && $.ui.sortable) {
+				self._enableSortingList();	
+			}
+
+			self._trigger('updatelist', null, { filelist: self.filelist });
 			
 			if (self.options.autostart) {
 				// set a little delay to make sure that QueueChanged triggered by the core has time to complete
@@ -547,12 +554,7 @@ $.widget("ui.plupload", {
 			self._trigger('removed', null, { up: up, files: files } );
 		});
 		
-		uploader.bind('QueueChanged', function() {
-			self._handleState();
-			self._updateTotalProgress();
-		});
-		
-		uploader.bind('StateChanged', function() {
+		uploader.bind('QueueChanged StateChanged', function() {
 			self._handleState();
 		});
 		
@@ -951,11 +953,6 @@ $.widget("ui.plupload", {
 			files = [files];
 		}
 
-		// destroy sortable if enabled
-		if ($.ui.sortable && this.options.sortable) {
-			$('tbody', self.filelist).sortable('destroy');	
-		}
-
 		// loop over files to add
 		$.each(files, function(i, file) {
 
@@ -1004,13 +1001,6 @@ $.widget("ui.plupload", {
 		if (queue.length) {
 			o.inSeries(queue);
 		}
-
-		// re-enable sortable
-		if (this.options.sortable && $.ui.sortable) {
-			this._enableSortingList();	
-		}
-
-		this._trigger('updatelist', null, { filelist: this.filelist });
 	},
 
 
@@ -1185,13 +1175,17 @@ $.widget("ui.plupload", {
 	
 	
 	_enableSortingList: function() {
-		var self = this, filelist = $('.plupload_filelist_content', this.element);
+		var self = this;
 		
-		if ($('.plupload_file', filelist).length < 2) {
+		if ($('.plupload_file', this.filelist).length < 2) {
 			return;	
 		}
+
+		// destroy sortable if enabled
+		$('tbody', this.filelist).sortable('destroy');	
 		
-		filelist.sortable({
+		// enable		
+		this.filelist.sortable({
 			items: '.plupload_delete',
 			
 			cancel: 'object, .plupload_clearer',

@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.0.0beta
+ * v2.0.0
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2012-11-30
+ * Date: 2013-09-23
  */
 /**
  * Plupload.js
@@ -95,7 +95,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.0.0beta',
+	VERSION : '2.0.0',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -300,6 +300,32 @@ var plupload = {
 	 * @return {String} Virtually unique id.
 	 */
 	guid : o.guid,
+
+	/**
+	 * Get array of DOM Elements by their ids.
+	 * 
+	 * @method get
+	 * @for Utils
+	 * @param {String} id Identifier of the DOM Element
+	 * @return {Array}
+	*/
+	get : function get(ids) {
+		var els = [], el;
+
+		if (o.typeOf(ids) !== 'array') {
+			ids = [ids];
+		}
+
+		var i = ids.length;
+		while (i--) {
+			el = o.get(ids[i]);
+			if (el) {
+				els.push(el);
+			}
+		}
+
+		return els.length ? els : null;
+	},
 
 	/**
 	 * Executes the callback function for each item in array/object. If you return false in the
@@ -621,7 +647,7 @@ var plupload = {
 
 
 plupload.addFileFilter('mime_types', (function() {
-	var _filters, _extRegExp;
+	var _extRegExp;
 
 	// Convert extensions to regexp
 	function getExtRegExp(filters) {
@@ -641,9 +667,8 @@ plupload.addFileFilter('mime_types', (function() {
 	}
 
 	return function(filters, file, cb) {
-		if (!_extRegExp || filters != _filters) { // make sure we do it only once, unless filters got changed
+		if (!_extRegExp) { // make sure we do it only once, unless filters got changed
 			_extRegExp = getExtRegExp(filters);
-			_filters = [].slice.call(filters);
 		}
 
 		if (!_extRegExp.test(file.name)) {
@@ -790,11 +815,19 @@ plupload.Uploader = function(settings) {
 	 */
 
 	/**
-	 * Fires while a file was removed from queue.
+	 * Fires when file is removed from the queue.
 	 *
 	 * @event FilesRemoved
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {Array} files Array of files that got removed.
+	 */
+
+	/**
+	 * Fires for every filtered file before it is added to the queue.
+	 * 
+	 * @event FileFiltered
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file Another file that has to be added to the queue.
 	 */
 
 	/**
@@ -845,9 +878,10 @@ plupload.Uploader = function(settings) {
 	 * @event Destroy
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
-	var files = [], events = {}, required_caps = {},
+	var uid = plupload.guid(),
+		files = [], preferred_caps = {},
 		startTime, total, disabled = false,
-		fileInput, fileDrop, xhr;
+		fileInputs = [], fileDrops = [], xhr;
 
 
 	// Private methods
@@ -924,13 +958,14 @@ plupload.Uploader = function(settings) {
 	}
 
 	function initControls() {
-		var self = this, initialized = 0;
+		var self = this, initialized = 0, queue = [];
 
 		// common settings
 		var options = {
 			accept: settings.filters.mime_types,
 			runtime_order: settings.runtimes,
-			required_caps: required_caps,
+			required_caps: settings.required_features,
+			preferred_caps: preferred_caps,
 			swf_url: settings.flash_swf_url,
 			xap_url: settings.silverlight_xap_url
 		};
@@ -942,15 +977,15 @@ plupload.Uploader = function(settings) {
 			}
 		});
 
-		o.inSeries([
-			function(cb) {
-				// Initialize file dialog trigger
-				if (settings.browse_button) {
-					fileInput = new o.FileInput(plupload.extend({}, options, {
+		// initialize file pickers - there can be many
+		if (settings.browse_button) {
+			plupload.each(settings.browse_button, function(el) {
+				queue.push(function(cb) {
+					var fileInput = new o.FileInput(plupload.extend({}, options, {
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
 						container: settings.container,
-						browse_button: settings.browse_button
+						browse_button: el
 					}));
 
 					fileInput.onready = function() {
@@ -964,6 +999,7 @@ plupload.Uploader = function(settings) {
 						});
 
 						initialized++;
+						fileInputs.push(this);
 						cb();
 					};
 
@@ -973,24 +1009,20 @@ plupload.Uploader = function(settings) {
 
 					fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
 						if (!disabled) {
-							var bButton = o.get(settings.browse_button);
-							if (bButton) {
-								if (settings.browse_button_hover) {
-									if ('mouseenter' === e.type) {
-										o.addClass(bButton, settings.browse_button_hover);
-									} else if ('mouseleave' === e.type) {
-										o.removeClass(bButton, settings.browse_button_hover);
-									}
+							if (settings.browse_button_hover) {
+								if ('mouseenter' === e.type) {
+									o.addClass(el, settings.browse_button_hover);
+								} else if ('mouseleave' === e.type) {
+									o.removeClass(el, settings.browse_button_hover);
 								}
+							}
 
-								if (settings.browse_button_active) {
-									if ('mousedown' === e.type) {
-										o.addClass(bButton, settings.browse_button_active);
-									} else if ('mouseup' === e.type) {
-										o.removeClass(bButton, settings.browse_button_active);
-									}
+							if (settings.browse_button_active) {
+								if ('mousedown' === e.type) {
+									o.addClass(el, settings.browse_button_active);
+								} else if ('mouseup' === e.type) {
+									o.removeClass(el, settings.browse_button_active);
 								}
-								bButton = null;
 							}
 						}
 					});
@@ -1001,24 +1033,25 @@ plupload.Uploader = function(settings) {
 					});
 
 					fileInput.init();
-				} else {
-					cb();
-				}
-			},
+				});
+			});
+		}
 
-			function(cb) {
-				// Initialize drag/drop interface if requested
-				if (settings.drop_element) {
-					fileDrop = new o.FileDrop(plupload.extend({}, options, {
-						drop_zone: settings.drop_element
+		// initialize drop zones
+		if (settings.drop_element) {
+			plupload.each(settings.drop_element, function(el) {
+				queue.push(function(cb) {
+					var fileDrop = new o.FileDrop(plupload.extend({}, options, {
+						drop_zone: el
 					}));
 
 					fileDrop.onready = function() {
 						var info = o.Runtime.getInfo(this.ruid);
 
-						self.features.dragdrop = info.can('drag_and_drop');
+						self.features.dragdrop = info.can('drag_and_drop'); // for backward compatibility
 
 						initialized++;
+						fileDrops.push(this);
 						cb();
 					};
 
@@ -1032,12 +1065,12 @@ plupload.Uploader = function(settings) {
 					});
 
 					fileDrop.init();
-				} else {
-					cb();
-				}
-			}
-		],
-		function() {
+				});
+			});
+		}
+
+
+		o.inSeries(queue, function() {
 			if (typeof(settings.init) == "function") {
 				settings.init(self);
 			} else {
@@ -1047,6 +1080,8 @@ plupload.Uploader = function(settings) {
 			}
 
 			if (initialized) {
+				self.runtime = o.Runtime.getInfo(getRUID()).type;
+				self.trigger('Init', { runtime: self.runtime });
 				self.trigger('PostInit');
 			} else {
 				self.trigger('Error', {
@@ -1055,6 +1090,14 @@ plupload.Uploader = function(settings) {
 				});
 			}
 		});
+	}
+
+	function getRUID() {
+		var ctrl = fileInputs[0] || fileDrops[0];
+		if (ctrl) {
+			return ctrl.getRuntime().uid;
+		}
+		return false;
 	}
 
 	function runtimeCan(file, cap) {
@@ -1132,7 +1175,12 @@ plupload.Uploader = function(settings) {
 	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
 
 	// Normalize the list of required capabilities
-	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
+	settings.required_features = normalizeCaps(plupload.extend({}, settings));
+
+	// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
+	preferred_caps = normalizeCaps(plupload.extend({}, settings, {
+		required_features: true
+	}));
 
 
 	// Add public methods
@@ -1144,7 +1192,8 @@ plupload.Uploader = function(settings) {
 		 * @property id
 		 * @type String
 		 */
-		id : plupload.guid(),
+		id : uid,
+		uid : uid, // mOxie uses this to differentiate between event targets
 
 		/**
 		 * Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
@@ -1171,7 +1220,7 @@ plupload.Uploader = function(settings) {
 		 * @property runtime
 		 * @type String
 		 */
-		runtime : o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
+		runtime : null,
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1207,10 +1256,10 @@ plupload.Uploader = function(settings) {
 		init : function() {
 			var self = this;
 
-			settings.browse_button = o.get(settings.browse_button);
+			settings.browse_button = plupload.get(settings.browse_button);
 			
 			// Check if drop zone requested
-			settings.drop_element = o.get(settings.drop_element);
+			settings.drop_element = plupload.get(settings.drop_element);
 
 
 			if (typeof(settings.preinit) == "function") {
@@ -1415,7 +1464,8 @@ plupload.Uploader = function(settings) {
 						formData.append(up.settings.file_data_name, chunkBlob);
 						xhr.send(formData, {
 							runtime_order: up.settings.runtimes,
-							required_caps: required_caps,
+							required_caps: up.settings.required_features,
+							preferred_caps: preferred_caps,
 							swf_url: up.settings.flash_swf_url,
 							xap_url: up.settings.silverlight_xap_url
 						});
@@ -1434,7 +1484,8 @@ plupload.Uploader = function(settings) {
 
 						xhr.send(chunkBlob, {
 							runtime_order: up.settings.runtimes,
-							required_caps: required_caps,
+							required_caps: up.settings.required_features,
+							preferred_caps: preferred_caps,
 							swf_url: up.settings.flash_swf_url,
 							xap_url: up.settings.silverlight_xap_url
 						});
@@ -1504,10 +1555,6 @@ plupload.Uploader = function(settings) {
 				}, 1);
 			});
 
-			// some dependent scripts hook onto Init to alter configuration options, raw UI, etc (like Queue Widget),
-			// therefore we got to fire this one, before we dive into the actual initializaion
-			self.trigger('Init', { runtime: this.runtime });
-
 			initControls.call(this);
 		},
 
@@ -1518,8 +1565,10 @@ plupload.Uploader = function(settings) {
 		 * @method refresh
 		 */
 		refresh : function() {
-			if (fileInput) {
-				fileInput.trigger("Refresh");
+			if (fileInputs.length) {
+				plupload.each(fileInputs, function(fileInput) {
+					fileInput.trigger("Refresh");
+				});
 			}
 			this.trigger("Refresh");
 		},
@@ -1561,8 +1610,10 @@ plupload.Uploader = function(settings) {
 		disableBrowse : function() {
 			disabled = arguments[0] !== undef ? arguments[0] : true;
 
-			if (fileInput) {
-				fileInput.disable(disabled);
+			if (fileInputs.length) {
+				plupload.each(fileInputs, function(fileInput) {
+					fileInput.disable(disabled);
+				});
 			}
 
 			this.trigger("DisableBrowse", disabled);
@@ -1599,14 +1650,6 @@ plupload.Uploader = function(settings) {
 			, files = []
 			, ruid
 			;
-
-			function getRUID() {
-				var ctrl = fileDrop || fileInput;
-				if (ctrl) {
-					return ctrl.getRuntime().uid;
-				}
-				return false;
-			}
 
 			function filterFile(file, cb) {
 				var queue = [];
@@ -1657,8 +1700,9 @@ plupload.Uploader = function(settings) {
 						filterFile(file, function(err) {
 							if (!err) {
 								files.push(file);
+								self.trigger("FileFiltered", file);
 							}
-							cb();
+							delay(cb, 1); // do not build up recursions or eventually we might hit the limits
 						});
 					});
 				} 
@@ -1721,12 +1765,14 @@ plupload.Uploader = function(settings) {
 			var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
 			this.trigger("FilesRemoved", removed);
-			this.trigger("QueueChanged");
 
 			// Dispose any resources allocated by those files
 			plupload.each(removed, function(file) {
 				file.destroy();
 			});
+
+			this.trigger("QueueChanged");
+			this.refresh();
 
 			return removed;
 		},
@@ -1739,27 +1785,6 @@ plupload.Uploader = function(settings) {
 		 * @param {String} name Event name to fire.
 		 * @param {Object..} Multiple arguments to pass along to the listener functions.
 		 */
-		trigger : function(name) {
-			var list = events[name.toLowerCase()], i, args;
-
-			// console.log(name, arguments);
-
-			if (list) {
-				// Replace name with sender in args
-				args = Array.prototype.slice.call(arguments);
-				args[0] = this;
-
-				// Dispatch event to all listeners
-				for (i = 0; i < list.length; i++) {
-					// Fire event, break chain if false is returned
-					if (list[i].func.apply(list[i].scope, args) === false) {
-						return false;
-					}
-				}
-			}
-
-			return true;
-		},
 
 		/**
 		 * Check whether uploader has any listeners to the specified event.
@@ -1767,9 +1792,7 @@ plupload.Uploader = function(settings) {
 		 * @method hasEventListener
 		 * @param {String} name Event name to check for.
 		 */
-		hasEventListener : function(name) {
-			return !!events[name.toLowerCase()];
-		},
+
 
 		/**
 		 * Adds an event listener by name.
@@ -1780,12 +1803,13 @@ plupload.Uploader = function(settings) {
 		 * @param {Object} scope Optional scope to execute the specified function in.
 		 */
 		bind : function(name, func, scope) {
-			var list;
-
-			name = name.toLowerCase();
-			list = events[name] || [];
-			list.push({func : func, scope : scope || this});
-			events[name] = list;
+			var self = this;
+			// adapt moxie EventTarget style to Plupload-like
+			plupload.Uploader.prototype.bind.call(this, name, function() {
+				var args = [].slice.call(arguments);
+				args.splice(0, 1, self); // replace event object with uploader instance
+				func.apply(this, args);
+			}, 0, scope);
 		},
 
 		/**
@@ -1795,42 +1819,13 @@ plupload.Uploader = function(settings) {
 		 * @param {String} name Name of event to remove.
 		 * @param {function} func Function to remove from listener.
 		 */
-		unbind : function(name) {
-			name = name.toLowerCase();
-
-			var list = events[name], i, func = arguments[1];
-
-			if (list) {
-				if (func !== undef) {
-					for (i = list.length - 1; i >= 0; i--) {
-						if (list[i].func === func) {
-							list.splice(i, 1);
-								break;
-						}
-					}
-				} else {
-					list = [];
-				}
-
-				// delete event list if it has become empty
-				if (!list.length) {
-					delete events[name];
-				}
-			}
-		},
 
 		/**
 		 * Removes all event listeners.
 		 *
 		 * @method unbindAll
 		 */
-		unbindAll : function() {
-			var self = this;
 
-			plupload.each(events, function(list, name) {
-				self.unbind(name);
-			});
-		},
 
 		/**
 		 * Destroys Plupload instance and cleans after itself.
@@ -1846,27 +1841,32 @@ plupload.Uploader = function(settings) {
 			});
 			files = [];
 
-			if (fileInput) {
-				fileInput.destroy();
-				fileInput = null;
+			if (fileInputs.length) {
+				plupload.each(fileInputs, function(fileInput) {
+					fileInput.destroy();
+				});
+				fileInputs = [];
 			}
 
-			if (fileDrop) {
-				fileDrop.destroy();
-				fileDrop = null;
+			if (fileDrops.length) {
+				plupload.each(fileDrops, function(fileDrop) {
+					fileDrop.destroy();
+				});
+				fileDrops = [];
 			}
 
-			required_caps = {};
+			preferred_caps = {};
 			startTime = total = disabled = xhr = null;
 
 			this.trigger('Destroy');
 
 			// Clean-up after uploader itself
 			this.unbindAll();
-			events = {};
 		}
 	});
 };
+
+plupload.Uploader.prototype = o.EventTarget.instance;
 
 /**
  * Constructs a new file instance.
