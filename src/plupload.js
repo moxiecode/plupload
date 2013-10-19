@@ -1269,17 +1269,17 @@ plupload.Uploader = function(settings) {
 			}
 
 
-			self.bind("FilesAdded", function(up, filteredFiles) {
+			self.bind('FilesAdded', function(up, filteredFiles) {
 				// Add files to queue				
 				[].push.apply(files, filteredFiles);
 
 				delay(function() {
-					self.trigger("QueueChanged");
+					self.trigger('QueueChanged');
 					self.refresh();
 				}, 1);		
 			});
 
-			self.bind("CancelUpload", function() {
+			self.bind('CancelUpload', function() {
 				if (xhr) {
 					xhr.abort();
 				}
@@ -1287,7 +1287,7 @@ plupload.Uploader = function(settings) {
 
 			// Generate unique target filenames
 			if (settings.unique_names) {
-				self.bind("BeforeUpload", function(up, file) {
+				self.bind('BeforeUpload', function(up, file) {
 					var matches = file.name.match(/\.([^.]+)$/), ext = "part";
 					if (matches) {
 						ext = matches[1];
@@ -1296,7 +1296,7 @@ plupload.Uploader = function(settings) {
 				});
 			}
 
-			self.bind("UploadFile", function(up, file) {
+			self.bind('UploadFile', function(up, file) {
 				var url = up.settings.url, features = up.features, chunkSize = settings.chunk_size,
 					retries = settings.max_retries,
 					blob, offset = 0;
@@ -1516,7 +1516,7 @@ plupload.Uploader = function(settings) {
 
 			self.bind('QueueChanged', calc);
 
-			self.bind("Error", function(up, err) {
+			self.bind('Error', function(up, err) {
 				// Set failed status if an error occured on a file
 				if (err.file) {
 					err.file.status = plupload.FAILED;
@@ -1533,7 +1533,7 @@ plupload.Uploader = function(settings) {
 				}
 			});
 
-			self.bind("FileUploaded", function() {
+			self.bind('FileUploaded', function() {
 				calc();
 
 				// Upload next file but detach it from the error event
@@ -1555,10 +1555,10 @@ plupload.Uploader = function(settings) {
 		refresh : function() {
 			if (fileInputs.length) {
 				plupload.each(fileInputs, function(fileInput) {
-					fileInput.trigger("Refresh");
+					fileInput.trigger('Refresh');
 				});
 			}
-			this.trigger("Refresh");
+			this.trigger('Refresh');
 		},
 
 		/**
@@ -1569,7 +1569,7 @@ plupload.Uploader = function(settings) {
 		start : function() {
 			if (this.state != plupload.STARTED) {
 				this.state = plupload.STARTED;
-				this.trigger("StateChanged");
+				this.trigger('StateChanged');
 
 				uploadNext.call(this);
 			}
@@ -1583,8 +1583,8 @@ plupload.Uploader = function(settings) {
 		stop : function() {
 			if (this.state != plupload.STOPPED) {
 				this.state = plupload.STOPPED;
-				this.trigger("StateChanged");
-				this.trigger("CancelUpload");
+				this.trigger('StateChanged');
+				this.trigger('CancelUpload');
 			}
 		},
 
@@ -1604,7 +1604,7 @@ plupload.Uploader = function(settings) {
 				});
 			}
 
-			this.trigger("DisableBrowse", disabled);
+			this.trigger('DisableBrowse', disabled);
 		},
 
 		/**
