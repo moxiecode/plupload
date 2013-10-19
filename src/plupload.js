@@ -1520,12 +1520,12 @@ plupload.Uploader = function(settings) {
 				// Set failed status if an error occured on a file
 				if (err.file) {
 					err.file.status = plupload.FAILED;
-
 					calcFile(err.file);
 
 					// Upload next file but detach it from the error event
 					// since other custom listeners might want to stop the queue
-					if (up.state == plupload.STARTED) {
+					if (up.state == plupload.STARTED) { // upload in progress
+						up.trigger('CancelUpload');
 						delay(function() {
 							uploadNext.call(self);
 						}, 1);
