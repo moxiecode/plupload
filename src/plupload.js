@@ -1308,7 +1308,7 @@ plupload.Uploader = function(settings) {
 
 				function handleError() {
 					if (retries-- > 0) {
-						delay(uploadNextChunk, 1);
+						delay(uploadNextChunk, 1000);
 					} else {
 						file.loaded = offset; // reset all progress
 
@@ -1370,7 +1370,7 @@ plupload.Uploader = function(settings) {
 							handleError();
 							return;
 						}
-
+						retries = settings.max_retries;
 						// Handle chunk response
 						if (curChunkSize < blob.size) {
 							chunkBlob.destroy();
@@ -1796,7 +1796,7 @@ plupload.Uploader = function(settings) {
 			plupload.Uploader.prototype.bind.call(this, name, function() {
 				var args = [].slice.call(arguments);
 				args.splice(0, 1, self); // replace event object with uploader instance
-				func.apply(this, args);
+				return func.apply(this, args);
 			}, 0, scope);
 		},
 
