@@ -162,6 +162,11 @@ used as it is.
 
 				uploaders[id] = uploader;
 
+			    // Enable drag/drop (see PostInit handler as well)
+				if (uploader.settings.dragdrop) {
+				    uploader.settings.drop_element = id + '_filelist';
+				}
+
 				function handleStatus(file) {
 					var actionClass;
 
@@ -299,12 +304,6 @@ used as it is.
 								}
 							});
 						});
-					}
-
-
-					// Enable drag/drop (see PostInit handler as well)
-					if (up.settings.dragdrop) {
-						up.settings.drop_element = id + '_filelist';
 					}
 
 					$('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);
