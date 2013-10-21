@@ -1796,7 +1796,7 @@ plupload.Uploader = function(settings) {
 			plupload.Uploader.prototype.bind.call(this, name, function() {
 				var args = [].slice.call(arguments);
 				args.splice(0, 1, self); // replace event object with uploader instance
-				func.apply(this, args);
+				return func.apply(this, args);
 			}, 0, scope);
 		},
 
