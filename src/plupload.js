@@ -1295,9 +1295,13 @@ plupload.Uploader = function(settings) {
 			}
 
 			self.bind('UploadFile', function(up, file) {
-				var url = up.settings.url, features = up.features, chunkSize = settings.chunk_size,
-					retries = settings.max_retries,
-					blob, offset = 0;
+				var url = up.settings.url
+				, chunkSize = up.settings.chunk_size
+				, retries = up.settings.max_retries
+				, features = up.features
+				, offset = 0
+				, blob
+				;
 
 				// make sure we start at a predictable offset
 				if (file.loaded) {
@@ -1343,7 +1347,7 @@ plupload.Uploader = function(settings) {
 					// If chunking is enabled add corresponding args, no matter if file is bigger than chunk or smaller
 					if (chunkSize && features.chunks) {
 						// Setup query string arguments
-						if (settings.send_chunk_number) {
+						if (up.settings.send_chunk_number) {
 							args.chunk = Math.ceil(offset / chunkSize);
 							args.chunks = Math.ceil(blob.size / chunkSize);
 						} else { // keep support for experimental chunk format, just in case
