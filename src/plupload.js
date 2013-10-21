@@ -1273,10 +1273,8 @@ plupload.Uploader = function(settings) {
 				// Add files to queue				
 				[].push.apply(files, filteredFiles);
 
-				delay(function() {
-					self.trigger('QueueChanged');
-					self.refresh();
-				}, 1);		
+				up.trigger('QueueChanged');
+				up.refresh();
 			});
 
 			self.bind('CancelUpload', function() {
