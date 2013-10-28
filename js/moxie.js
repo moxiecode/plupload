@@ -856,7 +856,7 @@ define("moxie/core/utils/Env", [
 					try {
 						if (Basic.inArray(responseType, ['', 'text', 'document']) !== -1) {
 							return true;
-						} else if (window.XMLHttpRequest){
+						} else if (window.XMLHttpRequest) {
 							var xhr = new XMLHttpRequest();
 							xhr.open('get', '/'); // otherwise Gecko throws an exception
 							if ('responseType' in xhr) {
@@ -1763,9 +1763,9 @@ define('moxie/runtime/Runtime', [
 	@param {String} type Sanitized name of the runtime
 	@param {Object} [caps] Set of capabilities that differentiate specified runtime
 	@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
-	@param {String} [defaultMode='browser'] Default operational mode to choose if no required capabilities were requested
+	@param {String} [preferredMode='browser'] Preferred operational mode to choose if no required capabilities were requested
 	*/
-	function Runtime(options, type, caps, modeCaps, defaultMode) {
+	function Runtime(options, type, caps, modeCaps, preferredMode) {
 		/**
 		Dispatched when runtime is initialized and ready.
 		Results in RuntimeInit on a connected component.
@@ -1783,7 +1783,10 @@ define('moxie/runtime/Runtime', [
 		var self = this
 		, _shim
 		, _uid = Basic.guid(type + '_')
+		, defaultMode = preferredMode || 'browser'
 		;
+
+		options = options || {};
 
 		// register runtime in private hash
 		runtimes[_uid] = this;
@@ -1847,16 +1850,12 @@ define('moxie/runtime/Runtime', [
 			// e.g. runtime.can('use_http_method', 'put')
 			use_http_method: true
 		}, caps);
+			
 	
-				
-		if (Basic.typeOf(defaultMode) === 'undefined') {
-			defaultMode = 'browser';
-			// default to the mode that is compatible with preferred caps
-			if (options.preferred_caps) {
-				defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
-			}
+		// default to the mode that is compatible with preferred caps
+		if (options.preferred_caps) {
+			defaultMode = Runtime.getMode(modeCaps, options.preferred_caps, defaultMode);
 		}
-
 		
 		// small extension factory here (is meant to be extended with actual extensions constructors)
 		_shim = (function() {
@@ -1927,7 +1926,7 @@ define('moxie/runtime/Runtime', [
 			@private
 			@type {String|Boolean} current mode or false, if none possible
 			*/
-			mode: Runtime.getMode(modeCaps, (options && options.required_caps), defaultMode),
+			mode: Runtime.getMode(modeCaps, (options.required_caps), defaultMode),
 
 			/**
 			id of the DOM container for the runtime (if available)
@@ -2089,7 +2088,7 @@ define('moxie/runtime/Runtime', [
 		});
 
 		// once we got the mode, test against all caps
-		if (this.mode && options && options.required_caps && !this.can(options.required_caps)) {
+		if (this.mode && options.required_caps && !this.can(options.required_caps)) {
 			this.mode = false;
 		}	
 	}
@@ -3606,10 +3605,10 @@ define('moxie/core/utils/Url', [], function() {
 	@method parseUrl
 	@for Utils
 	@static
-	@param {String} str Url to parse (defaults to empty string if undefined)
+	@param {String} url Url to parse (defaults to empty string if undefined)
 	@return {Object} Hash containing extracted uri components
 	*/
-	var parseUrl = function(str) {
+	var parseUrl = function(url, currentUrl) {
 		var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment']
 		, i = key.length
 		, ports = {
@@ -3618,7 +3617,7 @@ define('moxie/core/utils/Url', [], function() {
 		}
 		, uri = {}
 		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
-		, m = regex.exec(str || '') // default to empty string if undefined
+		, m = regex.exec(url || '')
 		;
 					
 		while (i--) {
@@ -3627,34 +3626,43 @@ define('moxie/core/utils/Url', [], function() {
 			}
 		}
 
-		if (/^[^\/]/.test(uri.path) && !uri.scheme) { // when url is relative, we need to figure out the path ourselves
-			var path = document.location.pathname;
-			// if path ends with a filename, strip it
-			if (!/(\/|\/[^\.]+)$/.test(path)) {
-				path = path.replace(/[^\/]+$/, '');
+		// when url is relative, we set the origin and the path ourselves
+		if (!uri.scheme) {
+			// come up with defaults
+			if (!currentUrl || typeof(currentUrl) === 'string') {
+				currentUrl = parseUrl(currentUrl || document.location.href);
 			}
-			uri.host = document.location.hostname;
+
+			uri.scheme = currentUrl.scheme;
+			uri.host = currentUrl.host;
+			uri.port = currentUrl.port;
+
+			var path = '';
+			// for urls without trailing slash we need to figure out the path
+			if (/^[^\/]/.test(uri.path)) {
+				path = currentUrl.path;
+				// if path ends with a filename, strip it
+				if (!/(\/|\/[^\.]+)$/.test(path)) {
+					path = path.replace(/\/[^\/]+$/, '/');
+				} else {
+					path += '/';
+				}
+			}
 			uri.path = path + (uri.path || ''); // site may reside at domain.com or domain.com/subdir
 		}
 
-		if (!uri.scheme) {
-			uri.scheme = document.location.protocol.replace(/:$/, '');
-		}
-
-		if (!uri.host) {
-			uri.host = document.location.hostname;
-		}
-
 		if (!uri.port) {
-			uri.port = document.location.port || ports[uri.scheme] || 80;
+			uri.port = ports[uri.scheme] || 80;
 		} 
+		
 		uri.port = parseInt(uri.port, 10);
 
 		if (!uri.path) {
 			uri.path = "/";
 		}
-											
+
 		delete uri.source;
+
 		return uri;
 	};
 
@@ -3800,7 +3808,7 @@ define("moxie/xhr/FormData", [
 	@constructor
 	*/
 	function FormData() {
-		var _blobField, _fields = {}, _name = "";
+		var _blob, _fields = [];
 
 		Basic.extend(this, {
 			/**
@@ -3813,29 +3821,29 @@ define("moxie/xhr/FormData", [
 			append: function(name, value) {
 				var self = this, valueType = Basic.typeOf(value);
 
+				// according to specs value might be either Blob or String
 				if (value instanceof Blob) {
-					if (_blobField) { 
-						delete _fields[_blobField];
-					}
-					_blobField = name; 
-					_fields[name] = [value]; // unfortunately we can only send single Blob in one FormData
+					_blob = {
+						name: name,
+						value: value // unfortunately we can only send single Blob in one FormData
+					};
 				} else if ('array' === valueType) {
 					name += '[]';
 
 					Basic.each(value, function(value) {
-						self.append.call(self, name, value);
+						self.append(name, value);
 					});
 				} else if ('object' === valueType) {
 					Basic.each(value, function(value, key) {
-						self.append.call(self, name + '[' + key + ']', value);
+						self.append(name + '[' + key + ']', value);
 					});
+				} else if ('null' === valueType || 'undefined' === valueType || 'number' === valueType && isNaN(value)) {
+					self.append(name, "false");
 				} else {
-					value = (value || false).toString(); // according to specs value might be either Blob or String
-
-					if (!_fields[name]) {
-						_fields[name] = [];
-					} 
-					_fields[name].push(value);
+					_fields.push({
+						name: name,
+						value: value.toString()
+					});
 				}
 			},
 
@@ -3846,7 +3854,7 @@ define("moxie/xhr/FormData", [
 			@return {Boolean}
 			*/
 			hasBlob: function() {
-				return !!_blobField;
+				return !!this.getBlob();
 			},
 
 			/**
@@ -3856,7 +3864,7 @@ define("moxie/xhr/FormData", [
 			@return {Object} Either Blob if found or null
 			*/
 			getBlob: function() {
-				return _fields[_blobField] && _fields[_blobField][0] || null;
+				return _blob && _blob.value || null;
 			},
 
 			/**
@@ -3866,7 +3874,7 @@ define("moxie/xhr/FormData", [
 			@return {String} Either Blob field name or null
 			*/
 			getBlobName: function() {
-				return _blobField || null;
+				return _blob && _blob.name || null;
 			},
 
 			/**
@@ -3876,17 +3884,18 @@ define("moxie/xhr/FormData", [
 			@param {Function} cb Callback to call for each field
 			*/
 			each: function(cb) {
-				Basic.each(_fields, function(value, name) {
-					Basic.each(value, function(value) {
-						cb(value, name);
-					});
+				Basic.each(_fields, function(field) {
+					cb(field.value, field.name);
 				});
+
+				if (_blob) {
+					cb(_blob.value, _blob.name);
+				}
 			},
 
 			destroy: function() {
-				_blobField = null;
-				_name = "";
-				_fields = {};
+				_blob = null;
+				_fields = [];
 			}
 		});
 	}
@@ -4981,329 +4990,6 @@ define("moxie/runtime/Transporter", [
 	return Transporter;
 });
 
-// Included from: src/javascript/core/JSON.js
-
-/**
- * JSON.js
- *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
- *
- * License: http://www.plupload.com/license
- * Contributing: http://www.plupload.com/contributing
- */
-
-/*jshint smarttabs:true */
-
-define("moxie/core/JSON", [], function() {
-	/**
-	Parse string into the JSON object in a safe way
-	@credits Douglas Crockford: https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js
-
-	@method parse
-	@static
-	@protected
-	@param {Object} obj Object to add property to
-	@param {String} prop Property name
-	@param {Object} desc Set of key-value pairs defining descriptor for the property
-	*/
-	return !!window.JSON && JSON.parse || (function() {
-	    "use strict";
-
-	// This is a function that can parse a JSON text, producing a JavaScript
-	// data structure. It is a simple, recursive descent parser. It does not use
-	// eval or regular expressions, so it can be used as a model for implementing
-	// a JSON parser in other languages.
-
-	// We are defining the function inside of another function to avoid 
-	// creating global variables.
-
-	    var at,     // The index of the current character
-	        ch,     // The current character
-	        escapee = {
-	            '"':  '"',
-	            '\\': '\\',
-	            '/':  '/',
-	            b:    '\b',
-	            f:    '\f',
-	            n:    '\n',
-	            r:    '\r',
-	            t:    '\t'
-	        },
-	        text,
-
-	        error = function (m) {
-
-	// Call error when something is wrong.
-
-	            throw {
-	                name:    'SyntaxError',
-	                message: m,
-	                at:      at,
-	                text:    text
-	            };
-	        },
-
-	        next = function (c) {
-
-	// If a c parameter is provided, verify that it matches the current character.
-
-	            if (c && c !== ch) {
-	                error("Expected '" + c + "' instead of '" + ch + "'");
-	            }
-
-	// Get the next character. When there are no more characters,
-	// return the empty string.
-
-	            ch = text.charAt(at);
-	            at += 1;
-	            return ch;
-	        },
-
-	        number = function () {
-
-	// Parse a number value.
-
-	            var number,
-	                string = '';
-
-	            if (ch === '-') {
-	                string = '-';
-	                next('-');
-	            }
-	            while (ch >= '0' && ch <= '9') {
-	                string += ch;
-	                next();
-	            }
-	            if (ch === '.') {
-	                string += '.';
-	                while (next() && ch >= '0' && ch <= '9') {
-	                    string += ch;
-	                }
-	            }
-	            if (ch === 'e' || ch === 'E') {
-	                string += ch;
-	                next();
-	                if (ch === '-' || ch === '+') {
-	                    string += ch;
-	                    next();
-	                }
-	                while (ch >= '0' && ch <= '9') {
-	                    string += ch;
-	                    next();
-	                }
-	            }
-	            number = +string;
-	            if (!isFinite(number)) {
-	                error("Bad number");
-	            } else {
-	                return number;
-	            }
-	        },
-
-	        string = function () {
-
-	// Parse a string value.
-
-	            var hex,
-	                i,
-	                string = '',
-	                uffff;
-
-	// When parsing for string values, we must look for " and \ characters.
-
-	            if (ch === '"') {
-	                while (next()) {
-	                    if (ch === '"') {
-	                        next();
-	                        return string;
-	                    } else if (ch === '\\') {
-	                        next();
-	                        if (ch === 'u') {
-	                            uffff = 0;
-	                            for (i = 0; i < 4; i += 1) {
-	                                hex = parseInt(next(), 16);
-	                                if (!isFinite(hex)) {
-	                                    break;
-	                                }
-	                                uffff = uffff * 16 + hex;
-	                            }
-	                            string += String.fromCharCode(uffff);
-	                        } else if (typeof escapee[ch] === 'string') {
-	                            string += escapee[ch];
-	                        } else {
-	                            break;
-	                        }
-	                    } else {
-	                        string += ch;
-	                    }
-	                }
-	            }
-	            error("Bad string");
-	        },
-
-	        white = function () {
-
-	// Skip whitespace.
-
-	            while (ch && ch <= ' ') {
-	                next();
-	            }
-	        },
-
-	        word = function () {
-
-	// true, false, or null.
-
-	            switch (ch) {
-	            case 't':
-	                next('t');
-	                next('r');
-	                next('u');
-	                next('e');
-	                return true;
-	            case 'f':
-	                next('f');
-	                next('a');
-	                next('l');
-	                next('s');
-	                next('e');
-	                return false;
-	            case 'n':
-	                next('n');
-	                next('u');
-	                next('l');
-	                next('l');
-	                return null;
-	            }
-	            error("Unexpected '" + ch + "'");
-	        },
-
-	        value,  // Place holder for the value function.
-
-	        array = function () {
-
-	// Parse an array value.
-
-	            var array = [];
-
-	            if (ch === '[') {
-	                next('[');
-	                white();
-	                if (ch === ']') {
-	                    next(']');
-	                    return array;   // empty array
-	                }
-	                while (ch) {
-	                    array.push(value());
-	                    white();
-	                    if (ch === ']') {
-	                        next(']');
-	                        return array;
-	                    }
-	                    next(',');
-	                    white();
-	                }
-	            }
-	            error("Bad array");
-	        },
-
-	        object = function () {
-
-	// Parse an object value.
-
-	            var key,
-	                object = {};
-
-	            if (ch === '{') {
-	                next('{');
-	                white();
-	                if (ch === '}') {
-	                    next('}');
-	                    return object;   // empty object
-	                }
-	                while (ch) {
-	                    key = string();
-	                    white();
-	                    next(':');
-	                    if (Object.hasOwnProperty.call(object, key)) {
-	                        error('Duplicate key "' + key + '"');
-	                    }
-	                    object[key] = value();
-	                    white();
-	                    if (ch === '}') {
-	                        next('}');
-	                        return object;
-	                    }
-	                    next(',');
-	                    white();
-	                }
-	            }
-	            error("Bad object");
-	        };
-
-	    value = function () {
-
-	// Parse a JSON value. It could be an object, an array, a string, a number,
-	// or a word.
-
-	        white();
-	        switch (ch) {
-	        case '{':
-	            return object();
-	        case '[':
-	            return array();
-	        case '"':
-	            return string();
-	        case '-':
-	            return number();
-	        default:
-	            return ch >= '0' && ch <= '9' ? number() : word();
-	        }
-	    };
-
-	// Return the json_parse function. It will have access to all of the above
-	// functions and variables.
-
-	    return function (source, reviver) {
-	        var result;
-
-	        text = source;
-	        at = 0;
-	        ch = ' ';
-	        result = value();
-	        white();
-	        if (ch) {
-	            error("Syntax error");
-	        }
-
-	// If there is a reviver function, we recursively walk the new structure,
-	// passing each name/value pair to the reviver function for possible
-	// transformation, starting with a temporary root object that holds the result
-	// in an empty key. If there is not a reviver function, we simply return the
-	// result.
-
-	        return typeof reviver === 'function' ? (function walk(holder, key) {
-	            var k, v, value = holder[key];
-	            if (value && typeof value === 'object') {
-	                for (k in value) {
-	                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-	                        v = walk(value, k);
-	                        if (v !== undefined) {
-	                            value[k] = v;
-	                        } else {
-	                            delete value[k];
-	                        }
-	                    }
-	                }
-	            }
-	            return reviver.call(holder, key, value);
-	        }({'': result}, '')) : result;
-	    };
-	}());
-
-});
-
 // Included from: src/javascript/image/Image.js
 
 /**
@@ -5329,9 +5015,8 @@ define("moxie/image/Image", [
 	"moxie/core/EventTarget",
 	"moxie/file/Blob",
 	"moxie/file/File",
-	"moxie/core/utils/Encode",
-	"moxie/core/JSON"
-], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode, parseJSON) {
+	"moxie/core/utils/Encode"
+], function(Basic, Dom, x, FileReaderSync, XMLHttpRequest, Runtime, RuntimeClient, Transporter, Env, EventTarget, Blob, File, Encode) {
 	/**
 	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
@@ -5758,28 +5443,18 @@ define("moxie/image/Image", [
 				info = this.getRuntime().exec.call(this, 'Image', 'getInfo');
 			}
 
-			if (info) {
-				if (Basic.typeOf(info.meta) === 'string') { // might be a JSON string
-					try {
-						this.meta = parseJSON(info.meta);
-					} catch(ex) {}
-				} else {
-					this.meta = info.meta;
-				}
-			}
-
-			Basic.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
-				size: parseInt(info.size, 10),
-				width: parseInt(info.width, 10),
-				height: parseInt(info.height, 10),
-				type: info.type
-			});
+			this.size = info.size;
+			this.width = info.width;
+			this.height = info.height;
+			this.type = info.type;
+			this.meta = info.meta;
 
 			// update file name, only if empty
 			if (this.name === '') {
 				this.name = info.name;
 			}
 		}
+		
 
 		function _load(src) {
 			var srcType = Basic.typeOf(src);
@@ -5961,11 +5636,10 @@ define("moxie/runtime/html5/Runtime", [
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
-					if (responseType === 'json') {
-						return true; // we can fake this one even if it's not supported
-					} else {
-						return Env.can('return_response_type', responseType);
-					}
+					if (responseType === 'json' && !!window.JSON) { // we can fake this one even if it's not supported
+						return true;
+					} 
+					return Env.can('return_response_type', responseType);
 				},
 				return_status_code: True,
 				report_upload_progress: Test(window.XMLHttpRequest && new XMLHttpRequest().upload),
@@ -6397,7 +6071,10 @@ define("moxie/runtime/html5/file/FileInput", [
 			},
 
 			destroy: function() {
-				var I = this.getRuntime(), shimContainer = I.getShimContainer();
+				var I = this.getRuntime()
+				, shim = I.getShim()
+				, shimContainer = I.getShimContainer()
+				;
 				
 				Events.removeAllEvents(shimContainer, this.uid);
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
@@ -6406,7 +6083,10 @@ define("moxie/runtime/html5/file/FileInput", [
 				if (shimContainer) {
 					shimContainer.innerHTML = '';
 				}
-				_files = _options = null;
+
+				shim.removeInstance(this.uid);
+
+				_files = _options = shimContainer = shim = null;
 			}
 		});
 	}
@@ -6681,9 +6361,8 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 	"moxie/file/Blob",
 	"moxie/xhr/FormData",
 	"moxie/core/Exceptions",
-	"moxie/core/utils/Env",
-	"moxie/core/JSON"
-], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env, parseJSON) {
+	"moxie/core/utils/Env"
+], function(extensions, Basic, Mime, Url, File, Blob, FormData, x, Env) {
 	
 	function XMLHttpRequest() {
 		var self = this
@@ -6896,7 +6575,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 						case 'json':
 							if (!Env.can('return_response_type', 'json')) {
-								return _xhr.status === 200 ? parseJSON(_xhr.responseText) : null;
+								return _xhr.status === 200 && !!window.JSON ? JSON.parse(_xhr.responseText) : null;
 							}
 							return _xhr.response;
 
@@ -8736,7 +8415,10 @@ define("moxie/runtime/flash/Runtime", [
 			resize_image: Runtime.capTrue,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !Basic.arrayDiff(responseType, ['', 'text', 'json', 'document']) || I.mode === 'browser';
+				if (responseType === 'json' && !!window.JSON) {
+					return true;
+				} 
+				return !Basic.arrayDiff(responseType, ['', 'text', 'document']) || I.mode === 'browser';
 			},
 			return_status_code: function(code) {
 				return I.mode === 'browser' || !Basic.arrayDiff(code, [200, 404]);
@@ -8796,7 +8478,7 @@ define("moxie/runtime/flash/Runtime", [
 			upload_filesize: function(size) {
 				return Basic.parseSizeStr(size) >= 2097152 ? 'client' : 'browser';
 			}
-		});
+		}, 'client');
 
 
 		// minimal requirement for Flash Player version
@@ -9103,9 +8785,8 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 	"moxie/file/File",
 	"moxie/file/FileReaderSync",
 	"moxie/xhr/FormData",
-	"moxie/runtime/Transporter",
-	"moxie/core/JSON"
-], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter, parseJSON) {
+	"moxie/runtime/Transporter"
+], function(extensions, Basic, Blob, File, FileReaderSync, FormData, Transporter) {
 	
 	var XMLHttpRequest = {
 
@@ -9202,14 +8883,11 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 					// do something
 
-				} else if ('json' === responseType) {
+				} else if ('json' === responseType && !!window.JSON) {
 					frs = new FileReaderSync();
-					
 					try {
-						return parseJSON(frs.readAsText(blob));
-					} catch (ex) {
-						return null;
-					}
+						return JSON.parse(frs.readAsText(blob));
+					} catch (ex) {}
 				}
 			}
 
@@ -9454,7 +9132,13 @@ define("moxie/runtime/silverlight/Runtime", [
 			return_response_headers: function(value) {
 				return value && I.mode === 'client';
 			},
-			return_response_type: Runtime.capTrue,
+			return_response_type: function(responseType) {
+				if (responseType !== 'json') {
+					return true;
+				} else {
+					return !!window.JSON;
+				}
+			},
 			return_status_code: function(code) {
 				return I.mode === 'client' || !Basic.arrayDiff(code, [200, 404]);
 			},
@@ -9788,7 +9472,51 @@ define("moxie/runtime/silverlight/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/runtime/flash/image/Image"
 ], function(extensions, Basic, Image) {
-	return (extensions.Image = Basic.extend({}, Image));
+	return (extensions.Image = Basic.extend({}, Image, {
+
+		getInfo: function() {
+			var self = this.getRuntime()
+			, grps = ['tiff', 'exif', 'gps']
+			, info = { meta: {} }
+			, rawInfo = self.shimExec.call(this, 'Image', 'getInfo')
+			;
+
+			if (rawInfo.meta) {
+				Basic.each(grps, function(grp) {
+					var meta = rawInfo.meta[grp]
+					, tag
+					, i
+					, length
+					, value
+					;
+					if (meta && meta.keys) {
+						info.meta[grp] = {};
+						for (i = 0, length = meta.keys.length; i < length; i++) {
+							tag = meta.keys[i];
+							value = meta[tag];
+							if (value) {
+								// convert numbers
+								if (/^(\d|[1-9]\d+)$/.test(value)) { // integer (make sure doesn't start with zero)
+									value = parseInt(value, 10);
+								} else if (/^\d*\.\d+$/.test(value)) { // double
+									value = parseFloat(value);
+								}
+								info.meta[grp][tag] = value;
+							}
+						}
+					}
+				});
+			}
+
+			info.width = parseInt(rawInfo.width, 10);
+			info.height = parseInt(rawInfo.height, 10);
+			info.size = parseInt(rawInfo.size, 10);
+			info.type = rawInfo.type;
+			info.name = rawInfo.name;
+
+			return info;
+		}
+	}));
 });
 
 // Included from: src/javascript/runtime/html4/Runtime.js
@@ -9841,7 +9569,10 @@ define("moxie/runtime/html4/Runtime", [
 			report_upload_progress: false,
 			return_response_headers: false,
 			return_response_type: function(responseType) {
-				return !!~Basic.inArray(responseType, ['json', 'text', 'document', '']);
+				if (responseType === 'json' && !!window.JSON) {
+					return true;
+				} 
+				return !!~Basic.inArray(responseType, ['text', 'document', '']);
 			},
 			return_status_code: function(code) {
 				return !Basic.arrayDiff(code, [200, 404]);
@@ -9860,7 +9591,6 @@ define("moxie/runtime/html4/Runtime", [
 			summon_file_dialog: Test(function() { // yeah... some dirty sniffing here...
 				return (Env.browser === 'Firefox' && Env.version >= 4) ||
 					(Env.browser === 'Opera' && Env.version >= 12) ||
-					(Env.browser === 'IE' && Env.version >= 10) ||
 					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari']);
 			}()),
 			upload_filesize: True,
@@ -9952,7 +9682,7 @@ define("moxie/runtime/html4/file/FileInput", [
 			input = document.createElement('input');
 			input.setAttribute('id', uid);
 			input.setAttribute('type', 'file');
-			input.setAttribute('name', 'Filedata');
+			input.setAttribute('name', _options.name || 'Filedata');
 			input.setAttribute('accept', _mimes.join(','));
 
 			Basic.extend(input.style, {
@@ -9999,8 +9729,10 @@ define("moxie/runtime/html4/file/FileInput", [
 				addInput.call(comp);
 
 				// after file is initialized as o.File, we need to update form and input ids
-				comp.bind('change', function() {
+				comp.bind('change', function onChange() {
 					var input = Dom.get(uid), form = Dom.get(uid + '_form'), file;
+
+					comp.unbind('change', onChange);
 
 					if (comp.files.length && input && form) {
 						file = comp.files[0];
@@ -10034,12 +9766,6 @@ define("moxie/runtime/html4/file/FileInput", [
 			_uid = uid;
 
 			shimContainer = currForm = browseButton = null;
-
-			// trigger ready event asynchronously
-			comp.trigger({
-				type: 'ready',
-				async: true
-			});
 		}
 
 		Basic.extend(this, {
@@ -10095,6 +9821,12 @@ define("moxie/runtime/html4/file/FileInput", [
 				addInput.call(this);
 
 				shimContainer = null;
+
+				// trigger ready event asynchronously
+				comp.trigger({
+					type: 'ready',
+					async: true
+				});
 			},
 
 			getFiles: function() {
@@ -10110,7 +9842,10 @@ define("moxie/runtime/html4/file/FileInput", [
 			},
 
 			destroy: function() {
-				var I = this.getRuntime(), shimContainer = I.getShimContainer();
+				var I = this.getRuntime()
+				, shim = I.getShim()
+				, shimContainer = I.getShimContainer()
+				;
 				
 				Events.removeAllEvents(shimContainer, this.uid);
 				Events.removeAllEvents(_options && Dom.get(_options.container), this.uid);
@@ -10119,7 +9854,10 @@ define("moxie/runtime/html4/file/FileInput", [
 				if (shimContainer) {
 					shimContainer.innerHTML = '';
 				}
-				_uid = _files = _mimes = _options = null;
+
+				shim.removeInstance(this.uid);
+
+				_uid = _files = _mimes = _options = shimContainer = shim = null;
 			}
 		});
 	}
@@ -10174,9 +9912,8 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Events",
 	"moxie/file/Blob",
-	"moxie/xhr/FormData",
-	"moxie/core/JSON"
-], function(extensions, Basic, Dom, Url, x, Events, Blob, FormData, parseJSON) {
+	"moxie/xhr/FormData"
+], function(extensions, Basic, Dom, Url, x, Events, Blob, FormData) {
 	
 	function XMLHttpRequest() {
 		var _status, _response, _iframe;
@@ -10258,7 +9995,7 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 							el = _iframe.contentWindow.document || _iframe.contentDocument || window.frames[_iframe.id].document;
 
 							// try to detect some standard error pages
-							if (/^4\d{2}\s/.test(el.title) && el.getElementsByTagName('address').length) { // standard Apache style
+							if (/^4(0[0-9]|1[0-7]|2[2346])\s/.test(el.title)) { // test if title starts with 4xx HTTP error
 								_status = el.title.replace(/^(\d+).*$/, '$1');
 							} else {
 								_status = 200;
@@ -10336,7 +10073,12 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 								value : value
 							});
 
-							form.appendChild(hidden);
+							// make sure that input[type="file"], if it's there, comes last
+							if (input) {
+								form.insertBefore(hidden, input);
+							} else {
+								form.appendChild(hidden);
+							}
 						}
 					});
 				}
@@ -10356,9 +10098,9 @@ define("moxie/runtime/html4/xhr/XMLHttpRequest", [
 			getResponse: function(responseType) {
 				if ('json' === responseType) {
 					// strip off <pre>..</pre> tags that might be enclosing the response
-					if (Basic.typeOf(_response) === 'string') {
+					if (Basic.typeOf(_response) === 'string' && !!window.JSON) {
 						try {
-							return parseJSON(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
+							return JSON.parse(_response.replace(/^\s*<pre[^>]*>/, '').replace(/<\/pre>\s*$/, ''));
 						} catch (ex) {
 							return null;
 						}
@@ -10416,7 +10158,7 @@ define("moxie/runtime/html4/image/Image", [
 	return (extensions.Image = Image);
 });
 
-expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/runtime/RuntimeTarget","moxie/file/FileReader","moxie/core/utils/Url","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/core/JSON","moxie/image/Image","moxie/core/utils/Events"]);
+expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Mime","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/Exceptions","moxie/core/EventTarget","moxie/core/utils/Encode","moxie/runtime/Runtime","moxie/runtime/RuntimeClient","moxie/file/Blob","moxie/file/File","moxie/file/FileInput","moxie/file/FileDrop","moxie/runtime/RuntimeTarget","moxie/file/FileReader","moxie/core/utils/Url","moxie/file/FileReaderSync","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","moxie/runtime/Transporter","moxie/image/Image","moxie/core/utils/Events"]);
 })(this);/**
  * o.js
  *

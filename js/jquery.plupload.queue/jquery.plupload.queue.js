@@ -71,7 +71,7 @@ used as it is.
 
 	@param {Boolean} [settings.dragdrop=true] Enable ability to add file to the queue by drag'n'dropping them from the desktop.
 	@param {Boolean} [settings.rename=false] Enable ability to rename files in the queue.
-	@param {Boolean} [settings.multiple_queues=false] Re-activate the widget after each upload procedure.
+	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
 */
 (function($) {
 	var uploaders = {};
@@ -161,6 +161,11 @@ used as it is.
 				}, settings));
 
 				uploaders[id] = uploader;
+
+			    // Enable drag/drop (see PostInit handler as well)
+				if (uploader.settings.dragdrop) {
+				    uploader.settings.drop_element = id + '_filelist';
+				}
 
 				function handleStatus(file) {
 					var actionClass;
@@ -299,12 +304,6 @@ used as it is.
 								}
 							});
 						});
-					}
-
-
-					// Enable drag/drop (see PostInit handler as well)
-					if (up.settings.dragdrop) {
-						up.settings.drop_element = id + '_filelist';
 					}
 
 					$('#' + id + '_container').attr('title', 'Using runtime: ' + res.runtime);
