@@ -135,6 +135,7 @@ task("i18n", [], function(params) {
 			break;
 
 		case 'toPO':
+			// srcLang is required here, e.g.: jake i18n[toPO] srcLang=tmp/en.pot from=js/i18n/*.js
 			var from = process.env.from;
 			var to = process.env.to || './tmp/i18n';
 			i18n.toPot(from, to);
