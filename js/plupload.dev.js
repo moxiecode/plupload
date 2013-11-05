@@ -1702,7 +1702,6 @@ plupload.Uploader = function(options) {
 
 			bindEventListeners.call(this);
 
-
 			initControls.call(this, settings, function(inited) {
 				if (typeof(settings.init) == "function") {
 					settings.init(self);
@@ -1734,7 +1733,7 @@ plupload.Uploader = function(options) {
 		 * @param {Mixed} [value] Value for the option (is ignored, if first argument is object)
 		 */
 		setOption: function(option, value) {
-			setOption.call(this, option, value);
+			setOption.call(this, option, value, !this.runtime); // until runtime not set we do not need to reinitialize
 		},
 
 		/**
