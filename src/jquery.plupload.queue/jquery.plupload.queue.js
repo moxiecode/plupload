@@ -154,18 +154,20 @@ used as it is.
 				contents_bak = target.html();
 				renderUI(id, target);
 
-				uploader = new plupload.Uploader($.extend({
+				settings = $.extend({
 					dragdrop : true,
 					browse_button : id + '_browse',
 					container : id
-				}, settings));
+				}, settings);
+
+				// Enable drag/drop (see PostInit handler as well)
+				if (settings.dragdrop) {
+					settings.drop_element = id + '_filelist';
+				}
+
+				uploader = new plupload.Uploader(settings);
 
 				uploaders[id] = uploader;
-
-			    // Enable drag/drop (see PostInit handler as well)
-				if (uploader.settings.dragdrop) {
-				    uploader.settings.drop_element = id + '_filelist';
-				}
 
 				function handleStatus(file) {
 					var actionClass;
