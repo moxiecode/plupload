@@ -58,44 +58,26 @@ test("Sequence of event handlers", function() {
 
 	up.bind('SomeEvent', function() {
 		seq.push(2);
+		deepEqual(seq, [1,2], "Event handlers run in sequence.");
 	});
 
 	up.bind('SomeEvent', function() {
 		seq.push(3);
-	});
-
-	up.bind('TestComplete', function() {
-		deepEqual(seq, [1,2,3], "Event handlers run in sequence.");
-	});
-
-	up.trigger('SomeEvent');
-	up.trigger('TestComplete');
-});
-
-
-test("Cancel consequent handlers", function() {
-	var up = this.up, seq = [];
-
-	up.bind('SomeEvent', function() {
-		seq.push(1);
-	});
-
-	up.bind('SomeEvent', function() {
-		seq.push(2);
 		return false;
 	});
 
 	up.bind('SomeEvent', function() {
-		seq.push(3);
+		seq.push(4);
 	});
 
 	up.bind('TestComplete', function() {
-		deepEqual(seq, [1,2], "Consequent event handlers canceled by returning false.");
+		deepEqual(seq, [1,2,3], "Consequent event handlers canceled by returning false.");
 	});
 
 	up.trigger('SomeEvent');
 	up.trigger('TestComplete');
 });
+
 
 // test upload
 

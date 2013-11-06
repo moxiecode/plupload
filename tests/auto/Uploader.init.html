@@ -189,7 +189,7 @@ test("Test how default values are assigned to missing options", function() {
 	this.up = new plupload.Uploader(this.options);
 
 	deepEqual(this.up.settings, {
-		browse_button: 'uploader',
+		browse_button: plupload.get('uploader'),
 		container: 'qunit-fixture',
 		url: "Plupload/upload.php",
 		runtimes: o.Runtime.order,
@@ -201,7 +201,13 @@ test("Test how default values are assigned to missing options", function() {
 		silverlight_xap_url : 'js/Moxie.xap',
 		filters : {
 			prevent_duplicates: false,
-			max_file_size: 0
+			max_file_size: 0,
+			mime_types: []
+		},
+		resize: {
+			enabled: false,
+			preserve_headers: true,
+			crop: false
 		},
 		chunk_size: 0,
 		required_features: {},
@@ -219,6 +225,7 @@ test("Test how defaults are set for resize object", function() {
 	}));
 
 	deepEqual(this.up.settings.resize, {
+		enabled: true,
 		width: 100,
 		height: 60,
 		crop: false,
@@ -257,8 +264,8 @@ test("Test preinit and init callbacks", function() {
 			eventOrder.push(1);
 		},
 		init: function() {
-			eventOrder.push(3);
 			start();
+			eventOrder.push(3);
 			deepEqual(eventOrder, [1, 2, 3], "preinit callback runs first, then Init handler and finally init callback.");
 		}
 	}));

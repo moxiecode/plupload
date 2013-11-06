@@ -50,6 +50,15 @@ module("plupload.Uploader", {
 
 		QUnit.stop();
 		up.init();
+
+		// introduce special event that can be binded or unbinded without problems
+		up.bind('FilesAdded', function(up, files) {
+			up.trigger('TestFilesAdded', files);
+		});
+
+		up.bind('QueueChanged', function(up) {
+			up.trigger('TestQueueChanged');
+		});
 	},
 
 	teardown: function() {
@@ -58,53 +67,104 @@ module("plupload.Uploader", {
 });
 
 
-test('addFile()', function() {
+test('addFile()', function() {	
+	var up = this.up
+	, file
+	, files = FileHash.getRuntimeFiles()
+	, nFiles = FileHash.getNativeFiles()
+	, queue = []
+	;
+
+	if (nFiles.length) {
+		queue.push(
+			// window.Blob
+			function(cb) {
+				up.bind('TestFilesAdded', function(up) {
+					equal(up.files.length, 1, "window.Blob added.");
+					up.unbind('TestFilesAdded');
+					cb();
+				});
+				up.addFile(nFiles[0].blob, nFiles[0].name);
+			},
+			
+			// o.Blob
+			function(cb) {
+				file = new o.Blob(null, files[0].getSource());
+				up.bind('TestFilesAdded', function(up) {
+					equal(up.files[0].name, files[0].name, "File name set properly through the second, optional argument.");
+					equal(up.files.length, 2, "o.Blob added (file name: " + up.files[1].name  + ").");
+					up.unbind('TestFilesAdded');
+					cb();
+				});
+				up.addFile(file, files[0].name);
+			}
+		);
+	}
+
 	
-	var file, files = FileHash.getRuntimeFiles(), nFiles = FileHash.getNativeFiles();
+	queue.push(
+		// o.File
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 3, "o.File added (file name: " + up.files[2].name  + ").");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+			up.addFile(files[0]);
+		},
 
-	if (nFiles.length) {
-		// window.Blob
-		this.up.addFile(nFiles[0].blob, nFiles[0].name);
-		equal(this.up.files.length, 1, "window.Blob added.");
-		
-		// o.Blob
-		file = new o.Blob(null, files[0].getSource());
-		this.up.addFile(file, files[0].name);
-		equal(this.up.files[0].name, files[0].name, "File name set properly through the second, optional argument.");
-		equal(this.up.files.length, 2, "o.Blob added (file name: " + this.up.files[1].name  + ").");
-	}
+		// plupload.File
+		function(cb) {
+			file = new plupload.File(files[1]);
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 4, "plupload.File added (file name: " + up.files[3].name  + ").");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
 
-	// o.File
-	this.up.addFile(files[0]);
-	equal(this.up.files.length, 3, "o.File added (file name: " + this.up.files[2].name  + ").");
+			up.addFile(file);
+		},
 
-	// plupload.File
-	file = new plupload.File(files[1]);
-	this.up.addFile(file);
-	equal(this.up.files.length, 4, "plupload.File added (file name: " + this.up.files[3].name  + ").");
+		// array of file objects
+		function(cb) {
+			var mixedArr = [];
 
-	this.up.bind('FilesAdded', function(up, files) {
-		equal(files.length, 4, "FilesAdded triggered, " + files.length + " files were passed to listener.");
+			if (nFiles.length) {
+				[].push.apply(mixedArr, [
+					nFiles[0].blob,
+					new o.Blob(null, nFiles[0].blob)
+				]);
+			}
+
+			[].push.apply(mixedArr, [
+				files[0],
+				new plupload.File(files[1])
+			]);
+
+			up.bind('TestQueueChanged', function() {
+				ok(true, "QueueChanged triggered.");
+				up.unbind('TestQueueChanged');
+			});
+
+			up.bind('Refresh', function() {
+				ok(true, "Refresh triggered.");
+			});
+
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 8, "Mixed array of various file objects added.");
+				notEqual(up.files[7].name, files[0].name, "Second parameter (fileName) properly ignored, when first one is an array.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(mixedArr, files[0].name);
+		}
+	);
+
+	stop();
+	o.inSeries(queue, function() {
+		start();
 	});
-
-	// array of file objects
-	var mixedArr = [];
-
-	if (nFiles.length) {
-		[].push.apply(mixedArr, [
-			nFiles[0].blob,
-			new o.Blob(null, nFiles[0].blob)
-		]);
-	}
-
-	[].push.apply(mixedArr, [
-		files[0],
-		new plupload.File(files[1])
-	]);
-
-	this.up.addFile(mixedArr, files[0].name);
-	equal(this.up.files.length, 8, "Mixed array of various file objects added.");
-	notEqual(this.up.files[7].name, files[0].name, "Second parameter (fileName) properly ignored, when first one is an array.");
 });
 
 
@@ -113,11 +173,14 @@ test('getFile()', function() {
 
 	var files = FileHash.getRuntimeFiles();
 
-	this.up.bind('FilesAdded', function(up, files) {
+	this.up.bind('TestFilesAdded', function(up, files) {
+		start();
 		var file = up.getFile(files[0].id);
 		deepEqual(file, files[0], "File retrieved by id with getFile().");
+		up.unbind('TestFilesAdded');
 	});
 
+	stop();
 	this.up.addFile(files);
 });
 
@@ -127,32 +190,37 @@ test('removeFile() / splice()', function() {
 
 	var countFiles, files = FileHash.getRuntimeFiles();
 
+	this.up.bind('TestFilesAdded', function(up, files) {
+		start();
+		countFiles = up.files.length;
+
+		up.removeFile(up.files[0]);
+		equal(up.files.length, --countFiles, "File removed from the queue by passing a plupload.File object.");
+
+		up.removeFile(up.files[0].id);
+		equal(up.files.length, --countFiles, "File removed from the queue by passing file id.");
+
+		up.bind('FilesRemoved', function(up, files) {
+			equal(files.length, 2, "FilesRemoved triggred, " + files.length + " removed.");
+		});
+
+		up.bind('QueueChanged', function(up) {
+			ok(true, "QueueChanged triggered.");
+		});
+
+		up.splice(0, 2);
+		equal(up.files.length, 0, "Two files removed simultaneously with splice().");
+
+		up.unbind('TestFilesAdded');
+	});
+
+	stop();
 	this.up.addFile([
 		new o.File(null, files[0]),
 		new o.File(null, files[1]),
 		new plupload.File(files[0]),
 		new plupload.File(files[1])
 	]);
-
-	countFiles = this.up.files.length;
-
-	this.up.removeFile(this.up.files[0]);
-	equal(this.up.files.length, --countFiles, "File removed from the queue by passing a plupload.File object.");
-
-	this.up.removeFile(this.up.files[0].id);
-	equal(this.up.files.length, --countFiles, "File removed from the queue by passing file id.");
-
-
-	this.up.bind('FilesRemoved', function(up, files) {
-		equal(files.length, 2, "FilesRemoved triggred, " + files.length + " removed.");
-	});
-
-	this.up.bind('QueueChanged', function(up) {
-		ok(true, "QueueChanged triggered.");
-	});
-
-	this.up.splice(0, 2);
-	equal(this.up.files.length, 0, "Two files removed simultaneously with splice().");
 });
 
 
@@ -169,29 +237,61 @@ test('options.filters', function() {
 		]
 	}, this.options));
 
+	var queue = [];
+
+	queue.push(
+		// o.File
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
+				equal(up.files.length, 0, "No files were added to the queue.");
+				equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+				up.unbind('TestError');
+				cb();
+			});
+			up.addFile(files[1]); // adding "03.jpg.zip"
+		},
+
+		// plupload.File
+		function(cb) {
+			file = new plupload.File(files[1]);
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.bind('TestError', function(up, err) {
+				ok(false, "Format not accepted despite of the asterisk wildcard.");
+				cb();
+			});
+
+			var filters = up.getOption('filters');
+			filters.mime_types.push({title: "All files", extensions: "*"});
+
+			up.setOption('filters', filters);
+			up.addFile(files[1]);
+		}
+	);
+
 
 	up.bind('PostInit', function() {
-		start();
-
-		up.addFile(files[1]);
-		equal(up.files.length, 0, "No files were added to the queue.");
-
-		// add asterisk wildcard
-		equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
-
-		up.settings.filters.mime_types.push({title: "All files", extensions: "*"});
-		up.addFile(files[1]);
-		equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
-
-		up.destroy();
+		o.inSeries(queue, function() {
+			start();
+		});
 	});
 
-	up.bind('Error', function(up, error) {
-		equal(error.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
 	});
 
 	stop();
 	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
 });
 
 
@@ -206,17 +306,14 @@ test('options.max_file_size', function() {
 	}, this.options));
 
 
-	up.bind('PostInit', function() {
-		start();
-
+	up.bind('PostInit', function(up) {	
 		up.addFile(files[1]);
-		equal(up.files.length, 0, "No files were added to the queue.");
-
-		up.destroy();
 	});
 
 	up.bind('Error', function(up, error) {
+		start();
 		equal(error.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
+		equal(up.files.length, 0, "No files were added to the queue.");
 	});
 
 	stop();
@@ -234,32 +331,71 @@ test('options.prevent_duplicates', function() {
 		prevent_duplicates: true
 	}, this.options));
 
+	var queue = [];
+
+	queue.push(
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[1]);
+		},
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0], files[1].name); // another file but with the same name
+		},
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		},
+
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
+				equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
+				up.unbind('TestError');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		}
+	);
+
 
 	up.bind('PostInit', function() {
-		start();
-
-		up.addFile(files[1]);
-		up.addFile(files[0], files[1].name); // another file but with the same name
-		equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
-
-		up.addFile(files[0]);
-		equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
-
-		up.addFile(files[0]);
-		equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
-
-		up.destroy();
-	});
-
-	up.bind('Error', function(up, error) {
-		equal(error.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
+		o.inSeries(queue, function() {
+			start();
+		});
 	});
 
 	stop();
 	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
 });
 
-// test upload
 
 </script>
 </head>
