@@ -24,7 +24,6 @@ function normalizeCaps(settings) {
 		// Feature notation is deprecated, use caps (this thing here is required for backward compatibility)
 		var map = { 
 			chunks: 'slice_blob',
-			resize: 'send_binary_string',
 			jpgresize: 'send_binary_string',
 			pngresize: 'send_binary_string',
 			progress: 'report_upload_progress',
@@ -60,6 +59,10 @@ function normalizeCaps(settings) {
 
 		if (settings.chunk_size > 0) {
 			caps.slice_blob = true;
+		}
+
+		if (settings.resize.enabled) {
+			caps.send_binary_string = true;
 		}
 		
 		plupload.each(settings, function(value, feature) {
