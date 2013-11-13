@@ -18,6 +18,7 @@ is built with the future of HTML5 in mind.
 * [Demos](https://github.com/jayarjo/plupload-demos/blob/master/README.md)
 * [Building Instructions](https://github.com/moxiecode/plupload/blob/master/readme.md#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
+  * [Options](https://github.com/moxiecode/plupload/wiki/Options)
   * [Plupload in Your Language](https://github.com/moxiecode/plupload/wiki/Plupload-in-Your-Language)
   * [File Filters](https://github.com/moxiecode/plupload/wiki/File-Filters) 
   * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
