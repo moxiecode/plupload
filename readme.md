@@ -19,6 +19,8 @@ is built with the future of HTML5 in mind.
 * [Building Instructions](https://github.com/moxiecode/plupload/blob/master/readme.md#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
   * [Options](https://github.com/moxiecode/plupload/wiki/Options)
+  * [Events](https://github.com/moxiecode/plupload/wiki/Uploader#wiki-events)
+  * [Methods](https://github.com/moxiecode/plupload/wiki/Uploader#wiki-methods)
   * [Plupload in Your Language](https://github.com/moxiecode/plupload/wiki/Plupload-in-Your-Language)
   * [File Filters](https://github.com/moxiecode/plupload/wiki/File-Filters) 
   * [Image Resizing on Client-Side](https://github.com/moxiecode/plupload/wiki/Image-Resizing-on-Client-Side) 
