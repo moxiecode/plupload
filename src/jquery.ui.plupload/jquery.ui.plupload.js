@@ -416,7 +416,7 @@ $.widget("ui.plupload", {
 					break;
 				
 				case plupload.FILE_SIZE_ERROR:
-					details = o.sprintf(_("File: %f, size: %s, max file size: %m"), err.file.name, err.file.size, plupload.parseSize(self.options.max_file_size));
+					details = o.sprintf(_("File: %s, size: %d, max file size: %d"), err.file.name, err.file.size, plupload.parseSize(self.options.max_file_size));
 					break;
 
 				case plupload.FILE_DUPLICATE_ERROR:
@@ -1079,7 +1079,7 @@ $.widget("ui.plupload", {
 			'<div class="plupload_file_status">' +
 				'<div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div>' + 
 				'<span class="plupload_file_percent">%percent% </span>' +
-            '</div>' +
+			'</div>' +
 			'<div class="plupload_file_fields"> </div>' +
 		'</li>';
 
