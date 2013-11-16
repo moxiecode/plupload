@@ -936,8 +936,138 @@ $.widget("ui.plupload", {
 	},
 
 
+	_displayThumbs: function() {
+		var self = this
+		, tw, th // thumb width/height
+		, cols
+		, num = 0 // number of simultaneously visible thumbs
+		, thumbs = [] // array of thumbs to preload at any given moment
+		, loading = false
+		;
+
+		if (!this.options.views.thumbs) {
+			return;
+		}
+
+
+		function onLast(el, eventName, cb) {
+			var timer;
+			
+			el.on(eventName, function() {
+				clearTimeout(timer);
+				timer = setTimeout(function() {
+					clearTimeout(timer);
+					cb();
+				}, 300);
+			});
+		}
+
+
+		// calculate number of simultaneously visible thumbs
+		function measure() {
+			if (!tw || !th) {
+				var wrapper = $('.plupload_file:eq(0)', self.filelist);
+				tw = wrapper.outerWidth(true);
+				th = wrapper.outerHeight(true);
+			}
+
+			var aw = self.content.width(), ah = self.content.height();
+			cols = Math.floor(aw / tw);
+			num =  cols * (Math.ceil(ah / th) + 1);
+		}
+
+
+		function pickThumbsToLoad() {
+			// calculate index of virst visible thumb
+			var startIdx = Math.floor(self.content.scrollTop() / th) * cols;
+			// get potentially visible thumbs that are not yet visible
+			thumbs = $('.plupload_file', self.filelist)
+				.slice(startIdx, startIdx + num)
+				.filter(':not(.plupload_file_thumb_loaded)')
+				.get();
+		}
+		
+
+		function init() {
+			function mpl() {
+				if (self.view_mode !== 'thumbs') {
+					return;
+				}
+				measure();
+				pickThumbsToLoad();
+				lazyLoad();
+			}
+
+			if ($.fn.resizable) {
+				onLast(self.container, 'resize', mpl);
+			}
+
+			onLast(self.window, 'resize', mpl);
+			onLast(self.content, 'scroll',  mpl);
+
+			self.element.on('viewchanged selected', mpl);
+
+			mpl();
+		}
+
+
+		function preloadThumb(file, cb) {
+			var img = new o.Image();
+
+			img.onload = function() {
+				var thumb = $('#' + file.id + ' .plupload_file_thumb', self.filelist).html('');
+				this.embed(thumb[0], { 
+					width: 100, 
+					height: 60, 
+					crop: true,
+					swf_url: mOxie.resolveUrl(self.options.flash_swf_url),
+					xap_url: mOxie.resolveUrl(self.options.silverlight_xap_url)
+				});
+			};
+
+			img.onembedded = function() {
+				$('#' + file.id, self.filelist).addClass('plupload_file_thumb_loaded');
+				this.destroy();
+				setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
+			};
+
+			img.onerror = function() {
+				this.destroy();
+				setTimeout(cb, 1);
+			};
+
+			img.load(file.getSource());
+		}
+
+
+		function lazyLoad() {
+			if (self.view_mode !== 'thumbs' || loading) {
+				return;
+			}	
+
+			pickThumbsToLoad();
+			if (!thumbs.length) {
+				return;
+			}
+
+			loading = true;
+
+			preloadThumb(self.getFile($(thumbs.shift()).attr('id')), function() {
+				loading = false;
+				lazyLoad();
+			});
+		}
+
+		// this has to run only once to measure structures and bind listeners
+		this.element.on('selected', function onselected() {
+			self.element.off('selected', onselected);
+			init();
+		});
+	},
+
+
 	_addFiles: function(files) {
-		var self = this, file_html, queue = [];
+		var self = this, file_html;
 
 		file_html = '<li class="plupload_file ui-state-default" id="%id%">' +
 			'<div class="plupload_file_thumb">' +
@@ -957,7 +1087,6 @@ $.widget("ui.plupload", {
 			files = [files];
 		}
 
-		// loop over files to add
 		$.each(files, function(i, file) {
 			var ext = o.Mime.getFileExtension(file.name) || 'none';
 
@@ -971,43 +1100,8 @@ $.widget("ui.plupload", {
 				}
 			}));
 
-			if (self.options.views.thumbs) {
-				queue.push(function(cb) {
-					var img = new o.Image();
-
-					img.onload = function() {
-						this.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
-							width: 100, 
-							height: 60, 
-							crop: true,
-							swf_url: mOxie.resolveUrl(self.options.flash_swf_url),
-							xap_url: mOxie.resolveUrl(self.options.silverlight_xap_url)
-						});
-					};
-
-					img.onembedded = function() {
-						$('#' + file.id + ' .plupload_file_thumb', self.filelist).addClass('plupload_file_thumb_loaded');
-						this.destroy();
-						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
-					};
-
-					img.onerror = function() {
-						var ext = file.name.match(/\.([^\.]{1,7})$/);
-						$('#' + file.id + ' .plupload_file_thumb', self.filelist)
-							.html('<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">' + (ext ? ext[1] : 'none') + '</span></div>');
-						this.destroy();
-						setTimeout(cb, 1);
-					};
-					img.load(file.getSource());
-				});
-			}
-
 			self._handleFileStatus(file);
 		});
-
-		if (queue.length) {
-			o.inSeries(queue);
-		}
 	},
 
 
@@ -1130,6 +1224,11 @@ $.widget("ui.plupload", {
 		} else {
 			switcher.show();
 			this._viewChanged(this.options.views.active);
+		}
+
+		// initialize thumb viewer if requested
+		if (this.options.views.thumbs) {
+			this._displayThumbs();
 		}
 	},
 	
