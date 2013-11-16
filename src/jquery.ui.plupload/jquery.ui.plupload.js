@@ -269,8 +269,6 @@ function renderUI(obj) {
 $.widget("ui.plupload", {
 
 	widgetEventPrefix: '',
-
-	imgs: {},
 	
 	contents_bak: '',
 		
@@ -1017,12 +1015,6 @@ $.widget("ui.plupload", {
 		}
 
 		$.each(files, function(i, file) {
-			if (file.imgs && file.imgs.length) {
-				$.each(file.imgs, function(ii, img) {
-					img.destroy();
-				});
-				file.imgs = [];
-			}
 			$('#' + file.id).remove();
 			up.removeFile(file);
 		});
