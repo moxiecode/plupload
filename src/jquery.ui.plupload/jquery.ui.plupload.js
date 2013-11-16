@@ -940,7 +940,9 @@ $.widget("ui.plupload", {
 		var self = this, file_html, queue = [];
 
 		file_html = '<li class="plupload_file ui-state-default" id="%id%">' +
-			'<div class="plupload_file_thumb"> </div>' +
+			'<div class="plupload_file_thumb">' +
+				'<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">%ext%</span></div>' +
+			'</div>' +
 			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_namespan">%name%</span></div>' +						
 			'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
 			'<div class="plupload_file_size">%size% </div>' +
@@ -953,10 +955,13 @@ $.widget("ui.plupload", {
 
 		// loop over files to add
 		$.each(files, function(i, file) {
+			var ext = o.Mime.getFileExtension(file.name) || 'none';
 
 			self.filelist.append(file_html.replace(/%(\w+)%/g, function($0, $1) {
 				if ('size' === $1) {
 					return plupload.formatSize(file.size);
+				} else if ('ext' === $1) {
+					return ext;
 				} else {
 					return file[$1] || '';
 				}
