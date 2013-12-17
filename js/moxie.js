@@ -493,15 +493,11 @@ define("moxie/core/I18n", [
 		 * @return {String} String with replaced tokens
 		 */
 		sprintf: function(str) {
-			var args = [].slice.call(arguments, 1), reStr = '';
+			var args = [].slice.call(arguments, 1);
 
-			Basic.each(str.split(/%[a-z]/), function(part) {
-				reStr += part;
-				if (args.length) {
-					reStr += args.shift();
-				}
+			return str.replace(/%[a-z]/g, function() {
+				return args.shift() || '';
 			});
-			return reStr;
 		}
 	};
 });
@@ -2160,6 +2156,7 @@ define('moxie/runtime/Runtime', [
 			return {
 				uid: runtime.uid,
 				type: runtime.type,
+				mode: runtime.mode,
 				can: function() {
 					return runtime.can.apply(runtime, arguments);
 				}
@@ -4474,9 +4471,9 @@ define("moxie/xhr/XMLHttpRequest", [
 					// 8.2
 					// this.dispatchEvent('loadstart'); // will be dispatched either by native or runtime xhr
 					// 8.3
-					if (!_upload_complete_flag) {
+					//if (!_upload_complete_flag) {
 						// this.upload.dispatchEvent('loadstart');	// will be dispatched either by native or runtime xhr
-					}
+					//}
 				}
 				// 8.5 - Return the send() method call, but continue running the steps in this algorithm.
 				_doXHR.call(this, data);
@@ -7930,12 +7927,12 @@ define("moxie/runtime/html5/image/Image", [
 	"moxie/core/utils/Basic",
 	"moxie/core/Exceptions",
 	"moxie/core/utils/Encode",
-	"moxie/file/Blob",
+	"moxie/file/File",
 	"moxie/runtime/html5/image/ImageInfo",
 	"moxie/runtime/html5/image/MegaPixel",
 	"moxie/core/utils/Mime",
 	"moxie/core/utils/Env"
-], function(extensions, Basic, x, Encode, Blob, ImageInfo, MegaPixel, Mime, Env) {
+], function(extensions, Basic, x, Encode, File, ImageInfo, MegaPixel, Mime, Env) {
 	
 	function HTML5Image() {
 		var me = this
@@ -7973,7 +7970,7 @@ define("moxie/runtime/html5/image/Image", [
 			loadFromImage: function(img, exact) {
 				this.meta = img.meta;
 
-				_blob = new Blob(null, {
+				_blob = new File(null, {
 					name: img.name,
 					size: img.size,
 					type: img.type
@@ -8017,7 +8014,8 @@ define("moxie/runtime/html5/image/Image", [
 					// if different mime type requested prepare image for conversion
 					_downsize.call(this, this.width, this.height, false);
 				}
-				return new Blob(null, {
+				return new File(null, {
+					name: _blob.name || '',
 					type: type,
 					data: me.getAsBinaryString.call(this, type, quality)
 				});
@@ -8903,9 +8901,9 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 			// this.dispatchEvent('progress');
 			this.dispatchEvent('abort');
 
-			if (!upload_complete_flag) {
+			//if (!upload_complete_flag) {
 				// this.dispatchEvent('uploadprogress');
-			}
+			//}
 		}
 	};
 

@@ -621,12 +621,10 @@ var plupload = {
 	 * @return {String} Type of compatible runtime
 	 */
 	predictRuntime : function(config, runtimes) {
-		var up, runtime; 
-		if (runtimes) {
-			config.runtimes = runtimes;
-		}
+		var up, runtime;
+
 		up = new plupload.Uploader(config);
-		runtime = up.runtime;
+		runtime = o.Runtime.thatCan(up.getOption().required_features, runtimes || config.runtimes);
 		up.destroy();
 		return runtime;
 	},
