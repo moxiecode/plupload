@@ -110,7 +110,7 @@ _jQuery UI_ widget factory, there are some specifics. See examples below for mor
 	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
 	@param {Number} [settings.max_file_count=0] Limit the number of files user is able to upload in one go, autosets _multiple_queues_ to _false_ (default is 0 - no limit).
 */
-(function(window, document, plupload, $) {
+(function(window, document, plupload, o, $) {
 
 /**
 Dispatched when the widget is initialized and ready.
@@ -1020,8 +1020,8 @@ $.widget("ui.plupload", {
 					width: 100, 
 					height: 60, 
 					crop: true,
-					swf_url: mOxie.resolveUrl(self.options.flash_swf_url),
-					xap_url: mOxie.resolveUrl(self.options.silverlight_xap_url)
+					swf_url: o.resolveUrl(self.options.flash_swf_url),
+					xap_url: o.resolveUrl(self.options.silverlight_xap_url)
 				});
 			};
 
@@ -1165,7 +1165,7 @@ $.widget("ui.plupload", {
 		} 
 	
 		// ugly fix for IE6 - make content area stretchable
-		if (mOxie.Env.browser === 'IE' && mOxie.Env.version < 7) {
+		if (o.Env.browser === 'IE' && o.Env.version < 7) {
 			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (view === 'list' ? 133 : 103) + ');');
 		}
 
@@ -1307,4 +1307,4 @@ $.widget("ui.plupload", {
 	}
 });
 
-} (window, document, plupload, jQuery));
+} (window, document, plupload, mOxie, jQuery));
