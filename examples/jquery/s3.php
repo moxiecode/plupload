@@ -115,7 +115,7 @@ $(function() {
 			'key': '${filename}', // use filename as a key
 			'Filename': '${filename}', // adding this to keep consistency across the runtimes
 			'acl': 'public-read',
-			'Content-Type': 'image/jpeg'
+			'Content-Type': 'image/jpeg',
 			'AWSAccessKeyId' : '<?php echo $accessKeyId; ?>',		
 			'policy': '<?php echo $policy; ?>',
 			'signature': '<?php echo $signature; ?>'
