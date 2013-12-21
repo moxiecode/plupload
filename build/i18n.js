@@ -195,7 +195,7 @@ var pull = function(srcUrl, to, cb) {
 	console.info("Fetching fresh internationalization files...")
 
 	srcUrl = srcUrl.replace(/\/*$/, '');
-	var statsUrl = srcUrl + '/stats';
+	var langsUrl = srcUrl + '/?details';
 
 	to = to || process.env.to || './tmp/i18n';
 	if (fs.existsSync(to)) {
@@ -203,39 +203,59 @@ var pull = function(srcUrl, to, cb) {
 	} 
 	jake.mkdirP(to);
 
-	function generateLangFile(code, strs) {
+	function generateLangFile(lang, strs) {
+		var langStr = lang.name + " (" + lang.code + ")";
 		var data = {};
+
 		strs.forEach(function(str) {
 			data[str.source_string] = str.translation;
 		});
-		fs.writeFileSync(path.join(to, code+".js"), "plupload.addI18n(" + JSON.stringify(data) + ");");
-		console.info(code + " fetched.");
+		fs.writeFileSync(path.join(to, lang.code+".js"), "// " + langStr + "\n" + "plupload.addI18n(" + JSON.stringify(data) + ");");
+		console.info(langStr + " fetched.");
 	}
 
-	request(statsUrl, function (error, response, body) {
+	request(langsUrl, function (error, response, body) {
 		if (error || response.statusCode != 200) {
 			console.log(srcUrl + " not reachable.");
 			process.exit(1);
 		}
 
+		/*
+		{
+			"slug": "txc"
+			"mimetype": "text/x-po",
+			"source_language_code": "en",
+			"wordcount": 6160,
+			"total_entities": 1017,
+			"last_update": "2011-12-05 19:59:55",
+			"available_languages": [
+			{
+				"code_aliases": " ",
+				"code": "sq",
+				"name": "Albanian"
+			},
+			...
+			],
+		}
+		*/
+		var data = JSON.parse(body);
+
 		var queue = [];
 		var langUrl = srcUrl + '/translation/%s/strings/';
-		var stats = JSON.parse(body);
 
-		for (var code in stats) {
-			(function(code) {
-				queue.push(function(cb) {
-					request(util.format(langUrl, code), function(error, response, body) {
-						if (error || response.statusCode != 200) {
-							console.log(code + " not fetched.");
-						} else {
-							generateLangFile(code, JSON.parse(body));
-						}
-						cb();
-					});
+
+		data.available_languages.forEach(function(lang) {
+			queue.push(function(cb) {
+				request(util.format(langUrl, lang.code), function(error, response, body) {
+					if (error || response.statusCode != 200) {
+						console.log(lang.name + " not fetched.");
+					} else {
+						generateLangFile(lang, JSON.parse(body));
+					}
+					cb();
 				});
-			}(code));
-		}
+			});
+		});
 
 		async.parallel(queue, function() {
 			if (typeof(cb) == 'function') {
