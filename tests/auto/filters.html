@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: Test Internal Filters</title>
+
+<!-- qunit -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<!-- testrunner -->
+<script src="../js/reporter.js"></script>
+<script src="../scriptloader.js"></script>
+<script src="../tools/FileHash.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.autostart = false;
+QUnit.config.testTimeout = 10000;
+
+FileHash.init({
+	files: ['files/01.min.js', 'files/02.min.js'],
+	onready: function() {
+		QUnit.start();
+	}
+});
+
+o.Env.swf_url = "../../js/flash/Moxie.swf";
+o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+
+module("plupload.Uploader", {
+	setup: function() {
+		var options, up;
+
+		$('#qunit-fixture').html('<div id="uploader" />');
+
+		options = this.options = {
+			browse_button: 'uploader',
+			container: 'qunit-fixture',
+			url: "Plupload/upload.php"
+		};
+
+		up = this.up = new plupload.Uploader(options);
+
+		up.bind('PostInit', function() {
+			QUnit.start();
+		});
+
+		QUnit.stop();
+		up.init();
+
+		// introduce special event that can be binded or unbinded without problems
+		up.bind('FilesAdded', function(up, files) {
+			up.trigger('TestFilesAdded', files);
+		});
+
+		up.bind('QueueChanged', function(up) {
+			up.trigger('TestQueueChanged');
+		});
+	},
+
+	teardown: function() {
+		this.up.destroy();
+	}
+});
+
+
+// test internal filters (in old and new format)
+test('options.filters', function() {
+	expect(4);
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters : [
+			{title : "Image files", extensions : "jpg,jpeg,gif,png"}
+		]
+	}, this.options));
+
+	var queue = [];
+
+	queue.push(
+		// o.File
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
+				equal(up.files.length, 0, "No files were added to the queue.");
+				equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+				up.unbind('TestError');
+				cb();
+			});
+			up.addFile(files[1]); // adding "03.jpg.zip"
+		},
+
+		// plupload.File
+		function(cb) {
+			file = new plupload.File(files[1]);
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.bind('TestError', function(up, err) {
+				ok(false, "Format not accepted despite of the asterisk wildcard.");
+				cb();
+			});
+
+			var filters = up.getOption('filters');
+			filters.mime_types.push({title: "All files", extensions: "*"});
+
+			up.setOption('filters', filters);
+			up.addFile(files[1]);
+		}
+	);
+
+
+	up.bind('PostInit', function() {
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
+
+	stop();
+	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+});
+
+test('options.filters.mime_types', function() {
+	expect(4);
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters : {
+			mime_types: [
+				{title : "Image files", extensions : "jpg,jpeg,gif,png"}
+			]
+		}
+	}, this.options));
+
+	var queue = [];
+
+	queue.push(
+		// o.File
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
+				equal(up.files.length, 0, "No files were added to the queue.");
+				equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+				up.unbind('TestError');
+				cb();
+			});
+			up.addFile(files[1]); // adding "03.jpg.zip"
+		},
+
+		// plupload.File
+		function(cb) {
+			file = new plupload.File(files[1]);
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.bind('TestError', function(up, err) {
+				ok(false, "Format not accepted despite of the asterisk wildcard.");
+				cb();
+			});
+
+			var filters = up.getOption('filters');
+			filters.mime_types.push({title: "All files", extensions: "*"});
+
+			up.setOption('filters', filters);
+			up.addFile(files[1]);
+		}
+	);
+
+
+	up.bind('PostInit', function() {
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
+
+	stop();
+	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+});
+
+
+test('options.max_file_size', function() {
+	expect(2);
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		max_file_size: '100kb'
+	}, this.options));
+
+
+	up.bind('PostInit', function(up) {	
+		up.addFile(files[1]);
+	});
+
+	up.bind('TestFilesAdded', function() {
+		start();
+		equal(up.files.length, 0, "No files were added to the queue.");
+		up.unbind('TestFilesAdded');
+	});
+
+	up.bind('Error', function(up, error) {
+		start();
+		equal(error.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
+		equal(up.files.length, 0, "No files were added to the queue.");
+	});
+
+	stop();
+	up.init();
+
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+});
+
+test('options.filters.max_file_size', function() {
+	expect(2);
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters: {
+			max_file_size: '100kb'
+		}
+	}, this.options));
+
+
+	up.bind('PostInit', function(up) {	
+		up.addFile(files[1]);
+	});
+
+	up.bind('TestFilesAdded', function() {
+		start();
+		equal(up.files.length, 0, "No files were added to the queue.");
+		up.unbind('TestFilesAdded');
+	});
+
+	up.bind('Error', function(up, error) {
+		start();
+		equal(error.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
+		equal(up.files.length, 0, "No files were added to the queue.");
+	});
+
+	stop();
+	up.init();
+
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+});
+
+
+test('options.prevent_duplicates', function() {
+	expect(4);
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		prevent_duplicates: true
+	}, this.options));
+
+	var queue = [];
+
+	queue.push(
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[1]);
+		},
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0], files[1].name); // another file but with the same name
+		},
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		},
+
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
+				equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
+				up.unbind('TestError');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		}
+	);
+
+
+	up.bind('PostInit', function() {
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+
+	stop();
+	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
+});
+
+
+test('options.filters.prevent_duplicates', function() {
+	expect(4);
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters: {
+			prevent_duplicates: true
+		}
+	}, this.options));
+
+	var queue = [];
+
+	queue.push(
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[1]);
+		},
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0], files[1].name); // another file but with the same name
+		},
+
+		function(cb) {
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		},
+
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
+				equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
+				up.unbind('TestError');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		}
+	);
+
+
+	up.bind('PostInit', function() {
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+
+	stop();
+	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
+});
+
+
+</script>
+</head>
+<body>
+	<h1 id="qunit-header">Plupload: Test Uploader</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests">
+	</ol>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

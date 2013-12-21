@@ -652,6 +652,8 @@ plupload.addFileFilter('mime_types', function(filters, file, cb) {
 plupload.addFileFilter('max_file_size', function(maxSize, file, cb) {
 	var undef;
 
+	maxSize = plupload.parseSize(maxSize);
+
 	// Invalid file size
 	if (file.size !== undef && maxSize && file.size > maxSize) {
 		this.trigger('Error', {
@@ -1139,12 +1141,14 @@ plupload.Uploader = function(options) {
 
 			switch (option) {
 				case 'max_file_size':
+					if (option === 'max_file_size') {
+						settings.max_file_size = settings.filters.max_file_size = value;
+					}
+					break;
+
 				case 'chunk_size':
 					if (value = plupload.parseSize(value)) {
 						settings[option] = value;
-						if (option === 'max_file_size') {
-							settings.max_file_size = settings.filters.max_file_size = value;
-						}
 					}
 					break;
 
