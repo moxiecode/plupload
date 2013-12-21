@@ -27,8 +27,8 @@ FileHash.init({
 	}
 });
 
-o.Env.swf_url = "../../js/flash/Moxie.swf";
-o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+o.Env.swf_url = "../../js/Moxie.swf";
+o.Env.xap_url = "../../js/Moxie.xap";
 
 module("plupload.Uploader", {
 	setup: function() {
@@ -87,7 +87,7 @@ test("Normalize required_features when passed as comma-delimited string", functi
 	expect(1);
 
 	this.up = new plupload.Uploader(o.extend(this.options, {
-		required_features: 'chunks,resize,jpgresize, progress,dragdrop,multi_selection,triggerDialog,display_media'
+		required_features: 'chunks,jpgresize, progress,dragdrop,multi_selection,triggerDialog,display_media'
 	}));
 
 	deepEqual(this.up.settings.required_features, {
@@ -107,7 +107,6 @@ test("Normalize required_features when passed as object", function() {
 	this.up = new plupload.Uploader(o.extend(this.options, {
 		required_features: {
 			chunks: true,
-			resize: true,
 			jpgresize: true, 
 			progress: true,
 			dragdrop: true,
@@ -265,13 +264,13 @@ test("Test preinit and init callbacks", function() {
 		},
 		init: function() {
 			start();
-			eventOrder.push(3);
-			deepEqual(eventOrder, [1, 2, 3], "preinit callback runs first, then Init handler and finally init callback.");
+			eventOrder.push(2);
 		}
 	}));
 
 	this.up.bind('Init', function() {
-		eventOrder.push(2);
+		eventOrder.push(3);
+		deepEqual(eventOrder, [1, 2, 3], "preinit callback runs first, then init callback and finally Init handler.");
 	});
 
 	stop();
@@ -298,6 +297,48 @@ test("Test preinit and init set of event handlers", function() {
 
 	stop();
 	this.up.init();	
+});
+
+
+test("", function() {
+
+	var up = new plupload.Uploader({
+        runtimes: 'flash',
+        browse_button: 'uploader',
+		container: 'qunit-fixture',
+        chunk_size: '1mb',
+        filters: { 
+            max_file_size: '1024MB',
+            mime_types: [
+                { title: "All files", extensions: "*" }
+            ]
+        },
+        url: 'upload.php',
+        flash_swf_url: "../../js/Moxie.swf",
+        silverlight_xap_url: "../../js/Moxie.xap"
+    });
+
+    up.bind('Init', function() {
+    	start();
+
+    	var id = $('#qunit-fixture .moxie-shim').attr('id');
+
+    	ok(id, "Runtime selected, structures inserted.");
+
+    	if (id) {
+    		var info = o.Runtime.getInfo(id.replace(/_container$/, ''));
+    		equal(info.mode, 'client', "'client' mode selected as expected.");
+    	}
+    });
+
+    up.bind('Error', function(up, err) {
+    	start();
+    	ok(false, "Plupload did not initialize properly.");
+    });
+
+    stop();
+    up.init();
+
 });
 
 

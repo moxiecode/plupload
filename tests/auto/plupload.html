@@ -37,7 +37,7 @@ test("xmlEncode()", function() {
 
 test("predictRuntime()", function() {
 	var config = {
-		runtimes : 'html4,html5,flash,silverlight',
+		runtimes : 'html4,silverlight,flash,html5',
 		browse_button : 'pickfiles', // you can pass in id...
 		container: $('container'), // ... or DOM Element itself
 		multi_selection: true,
@@ -52,7 +52,15 @@ test("predictRuntime()", function() {
 		]
 	};
 
-	equal(plupload.predictRuntime(config), 'html5', "Successfully handled typical Plupload config.");
+	equal(plupload.predictRuntime(config), 'silverlight', "Successfully handled typical Plupload config.");
+
+	config.runtimes = 'html4,flash,silverlight,html5';
+	equal(plupload.predictRuntime(config), 'flash', "Flash can access binary too.");
+
+	config.drop_element = 'container';
+	delete config.required_features;
+
+	equal(plupload.predictRuntime(config), 'html4', "Without options considered as required, html4 should be ok.");
 });
 
 </script>
