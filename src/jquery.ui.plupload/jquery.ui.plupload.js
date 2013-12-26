@@ -1025,16 +1025,11 @@ $.widget("ui.plupload", {
 				});
 			};
 
-			img.onembedded = function() {
+			img.bind("embedded error", function() {
 				$('#' + file.id, self.filelist).addClass('plupload_file_thumb_loaded');
 				this.destroy();
 				setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
-			};
-
-			img.onerror = function() {
-				this.destroy();
-				setTimeout(cb, 1);
-			};
+			});
 
 			img.load(file.getSource());
 		}
