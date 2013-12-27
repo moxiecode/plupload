@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.0.0
+ * v2.1.0
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2013-09-23
+ * Date: 2013-12-27
  */
 /**
  * Plupload.js
@@ -98,7 +98,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.0.0',
+	VERSION : '2.1.0',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -571,28 +571,35 @@ var plupload = {
 	 * @return {String} Formatted size string.
 	 */
 	formatSize : function(size) {
+
 		if (size === undef || /\D/.test(size)) {
 			return plupload.translate('N/A');
 		}
 
+		function round(num, precision) {
+			return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision);
+		}
+
+		var boundary = Math.pow(1024, 4);
+
 		// TB
-		if (size > 1099511627776) {
-			return Math.round(size / 1099511627776, 1) + " " + plupload.translate('tb');
+		if (size > boundary) {
+			return round(size / boundary, 1) + " " + plupload.translate('tb');
 		}
 
 		// GB
-		if (size > 1073741824) {
-			return Math.round(size / 1073741824, 1) + " " + plupload.translate('gb');
+		if (size > (boundary/=1024)) {
+			return round(size / boundary, 1) + " " + plupload.translate('gb');
 		}
 
 		// MB
-		if (size > 1048576) {
-			return Math.round(size / 1048576, 1) + " " + plupload.translate('mb');
+		if (size > (boundary/=1024)) {
+			return round(size / boundary, 1) + " " + plupload.translate('mb');
 		}
 
 		// KB
 		if (size > 1024) {
-			return Math.round(size / 1024, 1) + " " + plupload.translate('kb');
+			return Math.round(size / 1024) + " " + plupload.translate('kb');
 		}
 
 		return size + " " + plupload.translate('b');
@@ -663,6 +670,8 @@ plupload.addFileFilter('mime_types', function(filters, file, cb) {
 
 plupload.addFileFilter('max_file_size', function(maxSize, file, cb) {
 	var undef;
+
+	maxSize = plupload.parseSize(maxSize);
 
 	// Invalid file size
 	if (file.size !== undef && maxSize && file.size > maxSize) {
@@ -1151,12 +1160,14 @@ plupload.Uploader = function(options) {
 
 			switch (option) {
 				case 'max_file_size':
+					if (option === 'max_file_size') {
+						settings.max_file_size = settings.filters.max_file_size = value;
+					}
+					break;
+
 				case 'chunk_size':
 					if (value = plupload.parseSize(value)) {
 						settings[option] = value;
-						if (option === 'max_file_size') {
-							settings.max_file_size = settings.filters.max_file_size = value;
-						}
 					}
 					break;
 
@@ -1959,6 +1970,13 @@ plupload.Uploader = function(options) {
 			// Splice and trigger events
 			var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
+			// if upload is in progress we need to stop it and restart after files are removed
+			var restartRequired = false;
+			if (this.state == plupload.STARTED) { // upload in progress
+				restartRequired = true;
+				this.stop();
+			}
+
 			this.trigger("FilesRemoved", removed);
 
 			// Dispose any resources allocated by those files
@@ -1968,6 +1986,10 @@ plupload.Uploader = function(options) {
 
 			this.trigger("QueueChanged");
 			this.refresh();
+
+			if (restartRequired) {
+				this.start();
+			}
 
 			return removed;
 		},

@@ -1,6 +1,6 @@
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.0.0
+ * v1.1.0
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2013-09-23
+ * Date: 2013-12-27
  */
 /**
  * Compiled inline version. (Library mode)
@@ -539,7 +539,7 @@ define("moxie/core/utils/Mime", [
 		"application/json,json," +
 		"audio/mpeg,mp3 mpga mpega mp2," +
 		"audio/x-wav,wav," +
-		"audio/mp4,m4a," +
+		"audio/x-m4a,m4a," +
 		"audio/ogg,oga ogg," +
 		"audio/aiff,aiff aif," +
 		"audio/flac,flac," +
@@ -711,113 +711,517 @@ define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
 	
-	var browser = [{
-			s1: navigator.userAgent,
-			s2: "Android",
-			id: "Android Browser", // default or Dolphin
-			sv: "Version" 
-		},{
-			s1: navigator.userAgent, // string
-			s2: "Chrome", // substring
-			id: "Chrome" // identity
-		},{
-			s1: navigator.vendor,
-			s2: "Apple",
-			id: "Safari",
-			sv: "Version" // version
-		},{
-			prop: window.opera && window.opera.buildNumber,
-			id: "Opera",
-			sv: "Version"
-		},{
-			s1: navigator.vendor,
-			s2: "KDE",
-			id: "Konqueror"
-		},{
-			s1: navigator.userAgent,
-			s2: "Firefox",
-			id: "Firefox"
-		},{
-			s1: navigator.vendor,
-			s2: "Camino",
-			id: "Camino"
-		},{
-			// for newer Netscapes (6+)
-			s1: navigator.userAgent,
-			s2: "Netscape",
-			id: "Netscape"
-		},{
-			s1: navigator.userAgent,
-			s2: "MSIE",
-			id: "IE",
-			sv: "MSIE"
-		},{
-			s1: navigator.userAgent,
-			s2: "Trident",
-			id: "IE",
-			sv: "rv"
-		}, {
-			s1: navigator.userAgent,
-			s2: "Gecko",
-			id: "Mozilla",
-			sv: "rv"
-		}],
+	// UAParser.js v0.6.2
+	// Lightweight JavaScript-based User-Agent string parser
+	// https://github.com/faisalman/ua-parser-js
+	//
+	// Copyright © 2012-2013 Faisalman <fyzlman@gmail.com>
+	// Dual licensed under GPLv2 & MIT
 
-		os = [{
-			s1: navigator.platform,
-			s2: "Win",
-			id: "Windows"
-		},{
-			s1: navigator.platform,
-			s2: "Mac",
-			id: "Mac"
-		},{
-			s1: navigator.userAgent,
-			s2: "iPhone",
-			id: "iOS"
-		},{
-			s1: navigator.userAgent,
-			s2: "iPad",
-			id: "iOS"
-		},{
-			s1: navigator.userAgent,
-			s2: "Android",
-			id: "Android"
-		},{
-			s1: navigator.platform,
-			s2: "Linux",
-			id: "Linux"
-		}]
-		, version;
+	var UAParser = (function (undefined) {
 
-	function getStr(data) {
-		var str, prop;
-		
-		for (var i = 0; i < data.length; i++)	{
-			str = data[i].s1;
-			prop = data[i].prop;
-			version = data[i].sv || data[i].id;
-			
-			if (str) {
-				if (str.indexOf(data[i].s2) != -1) {
-					return data[i].id;
-				}
-			} else if (prop) {
-				return data[i].id;
-			}
-		}
+	    //////////////
+	    // Constants
+	    /////////////
+
+
+	    var EMPTY       = '',
+	        UNKNOWN     = '?',
+	        FUNC_TYPE   = 'function',
+	        UNDEF_TYPE  = 'undefined',
+	        OBJ_TYPE    = 'object',
+	        MAJOR       = 'major',
+	        MODEL       = 'model',
+	        NAME        = 'name',
+	        TYPE        = 'type',
+	        VENDOR      = 'vendor',
+	        VERSION     = 'version',
+	        ARCHITECTURE= 'architecture',
+	        CONSOLE     = 'console',
+	        MOBILE      = 'mobile',
+	        TABLET      = 'tablet';
+
+
+	    ///////////
+	    // Helper
+	    //////////
+
+
+	    var util = {
+	        has : function (str1, str2) {
+	            return str2.toLowerCase().indexOf(str1.toLowerCase()) !== -1;
+	        },
+	        lowerize : function (str) {
+	            return str.toLowerCase();
+	        }
+	    };
+
+
+	    ///////////////
+	    // Map helper
+	    //////////////
+
+
+	    var mapper = {
+
+	        rgx : function () {
+
+	            // loop through all regexes maps
+	            for (var result, i = 0, j, k, p, q, matches, match, args = arguments; i < args.length; i += 2) {
+
+	                var regex = args[i],       // even sequence (0,2,4,..)
+	                    props = args[i + 1];   // odd sequence (1,3,5,..)
+
+	                // construct object barebones
+	                if (typeof(result) === UNDEF_TYPE) {
+	                    result = {};
+	                    for (p in props) {
+	                        q = props[p];
+	                        if (typeof(q) === OBJ_TYPE) {
+	                            result[q[0]] = undefined;
+	                        } else {
+	                            result[q] = undefined;
+	                        }
+	                    }
+	                }
+
+	                // try matching uastring with regexes
+	                for (j = k = 0; j < regex.length; j++) {
+	                    matches = regex[j].exec(this.getUA());
+	                    if (!!matches) {
+	                        for (p = 0; p < props.length; p++) {
+	                            match = matches[++k];
+	                            q = props[p];
+	                            // check if given property is actually array
+	                            if (typeof(q) === OBJ_TYPE && q.length > 0) {
+	                                if (q.length == 2) {
+	                                    if (typeof(q[1]) == FUNC_TYPE) {
+	                                        // assign modified match
+	                                        result[q[0]] = q[1].call(this, match);
+	                                    } else {
+	                                        // assign given value, ignore regex match
+	                                        result[q[0]] = q[1];
+	                                    }
+	                                } else if (q.length == 3) {
+	                                    // check whether function or regex
+	                                    if (typeof(q[1]) === FUNC_TYPE && !(q[1].exec && q[1].test)) {
+	                                        // call function (usually string mapper)
+	                                        result[q[0]] = match ? q[1].call(this, match, q[2]) : undefined;
+	                                    } else {
+	                                        // sanitize match using given regex
+	                                        result[q[0]] = match ? match.replace(q[1], q[2]) : undefined;
+	                                    }
+	                                } else if (q.length == 4) {
+	                                        result[q[0]] = match ? q[3].call(this, match.replace(q[1], q[2])) : undefined;
+	                                }
+	                            } else {
+	                                result[q] = match ? match : undefined;
+	                            }
+	                        }
+	                        break;
+	                    }
+	                }
+
+	                if(!!matches) break; // break the loop immediately if match found
+	            }
+	            return result;
+	        },
+
+	        str : function (str, map) {
+
+	            for (var i in map) {
+	                // check if array
+	                if (typeof(map[i]) === OBJ_TYPE && map[i].length > 0) {
+	                    for (var j = 0; j < map[i].length; j++) {
+	                        if (util.has(map[i][j], str)) {
+	                            return (i === UNKNOWN) ? undefined : i;
+	                        }
+	                    }
+	                } else if (util.has(map[i], str)) {
+	                    return (i === UNKNOWN) ? undefined : i;
+	                }
+	            }
+	            return str;
+	        }
+	    };
+
+
+	    ///////////////
+	    // String map
+	    //////////////
+
+
+	    var maps = {
+
+	        browser : {
+	            oldsafari : {
+	                major : {
+	                    '1' : ['/8', '/1', '/3'],
+	                    '2' : '/4',
+	                    '?' : '/'
+	                },
+	                version : {
+	                    '1.0'   : '/8',
+	                    '1.2'   : '/1',
+	                    '1.3'   : '/3',
+	                    '2.0'   : '/412',
+	                    '2.0.2' : '/416',
+	                    '2.0.3' : '/417',
+	                    '2.0.4' : '/419',
+	                    '?'     : '/'
+	                }
+	            }
+	        },
+
+	        device : {
+	            sprint : {
+	                model : {
+	                    'Evo Shift 4G' : '7373KT'
+	                },
+	                vendor : {
+	                    'HTC'       : 'APA',
+	                    'Sprint'    : 'Sprint'
+	                }
+	            }
+	        },
+
+	        os : {
+	            windows : {
+	                version : {
+	                    'ME'        : '4.90',
+	                    'NT 3.11'   : 'NT3.51',
+	                    'NT 4.0'    : 'NT4.0',
+	                    '2000'      : 'NT 5.0',
+	                    'XP'        : ['NT 5.1', 'NT 5.2'],
+	                    'Vista'     : 'NT 6.0',
+	                    '7'         : 'NT 6.1',
+	                    '8'         : 'NT 6.2',
+	                    '8.1'       : 'NT 6.3',
+	                    'RT'        : 'ARM'
+	                }
+	            }
+	        }
+	    };
+
+
+	    //////////////
+	    // Regex map
+	    /////////////
+
+
+	    var regexes = {
+
+	        browser : [[
+
+	            // Presto based
+	            /(opera\smini)\/((\d+)?[\w\.-]+)/i,                                 // Opera Mini
+	            /(opera\s[mobiletab]+).+version\/((\d+)?[\w\.-]+)/i,                // Opera Mobi/Tablet
+	            /(opera).+version\/((\d+)?[\w\.]+)/i,                               // Opera > 9.80
+	            /(opera)[\/\s]+((\d+)?[\w\.]+)/i                                    // Opera < 9.80
+	            
+	            ], [NAME, VERSION, MAJOR], [
+
+	            /\s(opr)\/((\d+)?[\w\.]+)/i                                         // Opera Webkit
+	            ], [[NAME, 'Opera'], VERSION, MAJOR], [
+
+	            // Mixed
+	            /(kindle)\/((\d+)?[\w\.]+)/i,                                       // Kindle
+	            /(lunascape|maxthon|netfront|jasmine|blazer)[\/\s]?((\d+)?[\w\.]+)*/i,
+	                                                                                // Lunascape/Maxthon/Netfront/Jasmine/Blazer
+
+	            // Trident based
+	            /(avant\s|iemobile|slim|baidu)(?:browser)?[\/\s]?((\d+)?[\w\.]*)/i,
+	                                                                                // Avant/IEMobile/SlimBrowser/Baidu
+	            /(?:ms|\()(ie)\s((\d+)?[\w\.]+)/i,                                  // Internet Explorer
+
+	            // Webkit/KHTML based
+	            /(rekonq)((?:\/)[\w\.]+)*/i,                                        // Rekonq
+	            /(chromium|flock|rockmelt|midori|epiphany|silk|skyfire|ovibrowser|bolt|iron)\/((\d+)?[\w\.-]+)/i
+	                                                                                // Chromium/Flock/RockMelt/Midori/Epiphany/Silk/Skyfire/Bolt/Iron
+	            ], [NAME, VERSION, MAJOR], [
+
+	            /(trident).+rv[:\s]((\d+)?[\w\.]+).+like\sgecko/i                   // IE11
+	            ], [[NAME, 'IE'], VERSION, MAJOR], [
+
+	            /(yabrowser)\/((\d+)?[\w\.]+)/i                                     // Yandex
+	            ], [[NAME, 'Yandex'], VERSION, MAJOR], [
+
+	            /(comodo_dragon)\/((\d+)?[\w\.]+)/i                                 // Comodo Dragon
+	            ], [[NAME, /_/g, ' '], VERSION, MAJOR], [
+
+	            /(chrome|omniweb|arora|[tizenoka]{5}\s?browser)\/v?((\d+)?[\w\.]+)/i
+	                                                                                // Chrome/OmniWeb/Arora/Tizen/Nokia
+	            ], [NAME, VERSION, MAJOR], [
+
+	            /(dolfin)\/((\d+)?[\w\.]+)/i                                        // Dolphin
+	            ], [[NAME, 'Dolphin'], VERSION, MAJOR], [
+
+	            /((?:android.+)crmo|crios)\/((\d+)?[\w\.]+)/i                       // Chrome for Android/iOS
+	            ], [[NAME, 'Chrome'], VERSION, MAJOR], [
+
+	            /((?:android.+))version\/((\d+)?[\w\.]+)\smobile\ssafari/i          // Android Browser
+	            ], [[NAME, 'Android Browser'], VERSION, MAJOR], [
+
+	            /version\/((\d+)?[\w\.]+).+?mobile\/\w+\s(safari)/i                 // Mobile Safari
+	            ], [VERSION, MAJOR, [NAME, 'Mobile Safari']], [
+
+	            /version\/((\d+)?[\w\.]+).+?(mobile\s?safari|safari)/i              // Safari & Safari Mobile
+	            ], [VERSION, MAJOR, NAME], [
+
+	            /webkit.+?(mobile\s?safari|safari)((\/[\w\.]+))/i                   // Safari < 3.0
+	            ], [NAME, [MAJOR, mapper.str, maps.browser.oldsafari.major], [VERSION, mapper.str, maps.browser.oldsafari.version]], [
+
+	            /(konqueror)\/((\d+)?[\w\.]+)/i,                                    // Konqueror
+	            /(webkit|khtml)\/((\d+)?[\w\.]+)/i
+	            ], [NAME, VERSION, MAJOR], [
+
+	            // Gecko based
+	            /(navigator|netscape)\/((\d+)?[\w\.-]+)/i                           // Netscape
+	            ], [[NAME, 'Netscape'], VERSION, MAJOR], [
+	            /(swiftfox)/i,                                                      // Swiftfox
+	            /(icedragon|iceweasel|camino|chimera|fennec|maemo\sbrowser|minimo|conkeror)[\/\s]?((\d+)?[\w\.\+]+)/i,
+	                                                                                // IceDragon/Iceweasel/Camino/Chimera/Fennec/Maemo/Minimo/Conkeror
+	            /(firefox|seamonkey|k-meleon|icecat|iceape|firebird|phoenix)\/((\d+)?[\w\.-]+)/i,
+	                                                                                // Firefox/SeaMonkey/K-Meleon/IceCat/IceApe/Firebird/Phoenix
+	            /(mozilla)\/((\d+)?[\w\.]+).+rv\:.+gecko\/\d+/i,                    // Mozilla
+
+	            // Other
+	            /(uc\s?browser|polaris|lynx|dillo|icab|doris|amaya|w3m|netsurf|qqbrowser)[\/\s]?((\d+)?[\w\.]+)/i,
+	                                                                                // UCBrowser/Polaris/Lynx/Dillo/iCab/Doris/Amaya/w3m/NetSurf/QQBrowser
+	            /(links)\s\(((\d+)?[\w\.]+)/i,                                      // Links
+	            /(gobrowser)\/?((\d+)?[\w\.]+)*/i,                                  // GoBrowser
+	            /(ice\s?browser)\/v?((\d+)?[\w\._]+)/i,                             // ICE Browser
+	            /(mosaic)[\/\s]((\d+)?[\w\.]+)/i                                    // Mosaic
+	            ], [NAME, VERSION, MAJOR]
+	        ],
+
+	        engine : [[
+
+	            /(presto)\/([\w\.]+)/i,                                             // Presto
+	            /(webkit|trident|netfront|netsurf|amaya|lynx|w3m)\/([\w\.]+)/i,     // WebKit/Trident/NetFront/NetSurf/Amaya/Lynx/w3m
+	            /(khtml|tasman|links)[\/\s]\(?([\w\.]+)/i,                          // KHTML/Tasman/Links
+	            /(icab)[\/\s]([23]\.[\d\.]+)/i                                      // iCab
+	            ], [NAME, VERSION], [
+
+	            /rv\:([\w\.]+).*(gecko)/i                                           // Gecko
+	            ], [VERSION, NAME]
+	        ],
+
+	        os : [[
+
+	            // Windows based
+	            /(windows)\snt\s6\.2;\s(arm)/i,                                     // Windows RT
+	            /(windows\sphone(?:\sos)*|windows\smobile|windows)[\s\/]?([ntce\d\.\s]+\w)/i
+	            ], [NAME, [VERSION, mapper.str, maps.os.windows.version]], [
+	            /(win(?=3|9|n)|win\s9x\s)([nt\d\.]+)/i
+	            ], [[NAME, 'Windows'], [VERSION, mapper.str, maps.os.windows.version]], [
+
+	            // Mobile/Embedded OS
+	            /\((bb)(10);/i                                                      // BlackBerry 10
+	            ], [[NAME, 'BlackBerry'], VERSION], [
+	            /(blackberry)\w*\/?([\w\.]+)*/i,                                    // Blackberry
+	            /(tizen)\/([\w\.]+)/i,                                              // Tizen
+	            /(android|webos|palm\os|qnx|bada|rim\stablet\sos|meego)[\/\s-]?([\w\.]+)*/i
+	                                                                                // Android/WebOS/Palm/QNX/Bada/RIM/MeeGo
+	            ], [NAME, VERSION], [
+	            /(symbian\s?os|symbos|s60(?=;))[\/\s-]?([\w\.]+)*/i                 // Symbian
+	            ], [[NAME, 'Symbian'], VERSION],[
+	            /mozilla.+\(mobile;.+gecko.+firefox/i                               // Firefox OS
+	            ], [[NAME, 'Firefox OS'], VERSION], [
+
+	            // Console
+	            /(nintendo|playstation)\s([wids3portablevu]+)/i,                    // Nintendo/Playstation
+
+	            // GNU/Linux based
+	            /(mint)[\/\s\(]?(\w+)*/i,                                           // Mint
+	            /(joli|[kxln]?ubuntu|debian|[open]*suse|gentoo|arch|slackware|fedora|mandriva|centos|pclinuxos|redhat|zenwalk)[\/\s-]?([\w\.-]+)*/i,
+	                                                                                // Joli/Ubuntu/Debian/SUSE/Gentoo/Arch/Slackware
+	                                                                                // Fedora/Mandriva/CentOS/PCLinuxOS/RedHat/Zenwalk
+	            /(hurd|linux)\s?([\w\.]+)*/i,                                       // Hurd/Linux
+	            /(gnu)\s?([\w\.]+)*/i                                               // GNU
+	            ], [NAME, VERSION], [
+
+	            /(cros)\s[\w]+\s([\w\.]+\w)/i                                       // Chromium OS
+	            ], [[NAME, 'Chromium OS'], VERSION],[
+
+	            // Solaris
+	            /(sunos)\s?([\w\.]+\d)*/i                                           // Solaris
+	            ], [[NAME, 'Solaris'], VERSION], [
+
+	            // BSD based
+	            /\s([frentopc-]{0,4}bsd|dragonfly)\s?([\w\.]+)*/i                   // FreeBSD/NetBSD/OpenBSD/PC-BSD/DragonFly
+	            ], [NAME, VERSION],[
+
+	            /(ip[honead]+)(?:.*os\s*([\w]+)*\slike\smac|;\sopera)/i             // iOS
+	            ], [[NAME, 'iOS'], [VERSION, /_/g, '.']], [
+
+	            /(mac\sos\sx)\s?([\w\s\.]+\w)*/i                                    // Mac OS
+	            ], [NAME, [VERSION, /_/g, '.']], [
+
+	            // Other
+	            /(haiku)\s(\w+)/i,                                                  // Haiku
+	            /(aix)\s((\d)(?=\.|\)|\s)[\w\.]*)*/i,                               // AIX
+	            /(macintosh|mac(?=_powerpc)|plan\s9|minix|beos|os\/2|amigaos|morphos|risc\sos)/i,
+	                                                                                // Plan9/Minix/BeOS/OS2/AmigaOS/MorphOS/RISCOS
+	            /(unix)\s?([\w\.]+)*/i                                              // UNIX
+	            ], [NAME, VERSION]
+	        ]
+	    };
+
+
+	    /////////////////
+	    // Constructor
+	    ////////////////
+
+
+	    var UAParser = function (uastring) {
+
+	        var ua = uastring || ((window && window.navigator && window.navigator.userAgent) ? window.navigator.userAgent : EMPTY);
+
+	        this.getBrowser = function () {
+	            return mapper.rgx.apply(this, regexes.browser);
+	        };
+	        this.getEngine = function () {
+	            return mapper.rgx.apply(this, regexes.engine);
+	        };
+	        this.getOS = function () {
+	            return mapper.rgx.apply(this, regexes.os);
+	        };
+	        this.getResult = function() {
+	            return {
+	                ua      : this.getUA(),
+	                browser : this.getBrowser(),
+	                engine  : this.getEngine(),
+	                os      : this.getOS()
+	            };
+	        };
+	        this.getUA = function () {
+	            return ua;
+	        };
+	        this.setUA = function (uastring) {
+	            ua = uastring;
+	            return this;
+	        };
+	        this.setUA(ua);
+	    };
+
+	    return new UAParser().getResult();
+	})();
+
+
+	function version_compare(v1, v2, operator) {
+	  // From: http://phpjs.org/functions
+	  // +      original by: Philippe Jausions (http://pear.php.net/user/jausions)
+	  // +      original by: Aidan Lister (http://aidanlister.com/)
+	  // + reimplemented by: Kankrelune (http://www.webfaktory.info/)
+	  // +      improved by: Brett Zamir (http://brett-zamir.me)
+	  // +      improved by: Scott Baker
+	  // +      improved by: Theriault
+	  // *        example 1: version_compare('8.2.5rc', '8.2.5a');
+	  // *        returns 1: 1
+	  // *        example 2: version_compare('8.2.50', '8.2.52', '<');
+	  // *        returns 2: true
+	  // *        example 3: version_compare('5.3.0-dev', '5.3.0');
+	  // *        returns 3: -1
+	  // *        example 4: version_compare('4.1.0.52','4.01.0.51');
+	  // *        returns 4: 1
+
+	  // Important: compare must be initialized at 0.
+	  var i = 0,
+	    x = 0,
+	    compare = 0,
+	    // vm maps textual PHP versions to negatives so they're less than 0.
+	    // PHP currently defines these as CASE-SENSITIVE. It is important to
+	    // leave these as negatives so that they can come before numerical versions
+	    // and as if no letters were there to begin with.
+	    // (1alpha is < 1 and < 1.1 but > 1dev1)
+	    // If a non-numerical value can't be mapped to this table, it receives
+	    // -7 as its value.
+	    vm = {
+	      'dev': -6,
+	      'alpha': -5,
+	      'a': -5,
+	      'beta': -4,
+	      'b': -4,
+	      'RC': -3,
+	      'rc': -3,
+	      '#': -2,
+	      'p': 1,
+	      'pl': 1
+	    },
+	    // This function will be called to prepare each version argument.
+	    // It replaces every _, -, and + with a dot.
+	    // It surrounds any nonsequence of numbers/dots with dots.
+	    // It replaces sequences of dots with a single dot.
+	    //    version_compare('4..0', '4.0') == 0
+	    // Important: A string of 0 length needs to be converted into a value
+	    // even less than an unexisting value in vm (-7), hence [-8].
+	    // It's also important to not strip spaces because of this.
+	    //   version_compare('', ' ') == 1
+	    prepVersion = function (v) {
+	      v = ('' + v).replace(/[_\-+]/g, '.');
+	      v = v.replace(/([^.\d]+)/g, '.$1.').replace(/\.{2,}/g, '.');
+	      return (!v.length ? [-8] : v.split('.'));
+	    },
+	    // This converts a version component to a number.
+	    // Empty component becomes 0.
+	    // Non-numerical component becomes a negative number.
+	    // Numerical component becomes itself as an integer.
+	    numVersion = function (v) {
+	      return !v ? 0 : (isNaN(v) ? vm[v] || -7 : parseInt(v, 10));
+	    };
+
+	  v1 = prepVersion(v1);
+	  v2 = prepVersion(v2);
+	  x = Math.max(v1.length, v2.length);
+	  for (i = 0; i < x; i++) {
+	    if (v1[i] == v2[i]) {
+	      continue;
+	    }
+	    v1[i] = numVersion(v1[i]);
+	    v2[i] = numVersion(v2[i]);
+	    if (v1[i] < v2[i]) {
+	      compare = -1;
+	      break;
+	    } else if (v1[i] > v2[i]) {
+	      compare = 1;
+	      break;
+	    }
+	  }
+	  if (!operator) {
+	    return compare;
+	  }
+
+	  // Important: operator is CASE-SENSITIVE.
+	  // "No operator" seems to be treated as "<."
+	  // Any other values seem to make the function return null.
+	  switch (operator) {
+	  case '>':
+	  case 'gt':
+	    return (compare > 0);
+	  case '>=':
+	  case 'ge':
+	    return (compare >= 0);
+	  case '<=':
+	  case 'le':
+	    return (compare <= 0);
+	  case '==':
+	  case '=':
+	  case 'eq':
+	    return (compare === 0);
+	  case '<>':
+	  case '!=':
+	  case 'ne':
+	    return (compare !== 0);
+	  case '':
+	  case '<':
+	  case 'lt':
+	    return (compare < 0);
+	  default:
+	    return null;
+	  }
 	}
-	
-	
-	function getVer(str) {
-		var index = str.indexOf(version);
 
-		if (index == -1) {
-			return;
-		}
-
-		return parseFloat(str.substring(index + version.length + 1));
-	}
 
 	var can = (function() {
 		var caps = {
@@ -904,15 +1308,25 @@ define("moxie/core/utils/Env", [
 		};
 	}());
 
+
 	var Env = {
 		can: can,
-		browser: getStr(browser),
-		version: getVer(navigator.userAgent) || getVer(navigator.appVersion),
-		OS: getStr(os),
+		
+		browser: UAParser.browser.name,
+		version: parseFloat(UAParser.browser.major),
+		os: UAParser.os.name, // everybody intuitively types it in a lowercase for some reason
+		osVersion: UAParser.os.version,
+
+		verComp: version_compare,
+		
 		swf_url: "../flash/Moxie.swf",
 		xap_url: "../silverlight/Moxie.xap",
 		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
 	};
+
+	// for backward compatibility
+	// @deprecated Use `Env.os` instead
+	Env.OS = Env.os;
 
 	return Env;
 });
@@ -1406,7 +1820,7 @@ define('moxie/core/EventTarget', [
 			@return {Boolean} true by default and false if any handler returned false
 			*/
 			dispatchEvent: function(type) {
-				var uid, list, args, tmpEvt, evt = {}, result = true;
+				var uid, list, args, tmpEvt, evt = {}, result = true, undef;
 				
 				if (Basic.typeOf(type) !== 'string') {
 					// we can't use original object directly (because of Silverlight)
@@ -1415,7 +1829,7 @@ define('moxie/core/EventTarget', [
 					if (Basic.typeOf(tmpEvt.type) === 'string') {
 						type = tmpEvt.type;
 
-						if (tmpEvt.total && tmpEvt.loaded) { // progress event
+						if (tmpEvt.total !== undef && tmpEvt.loaded !== undef) { // progress event
 							evt.total = tmpEvt.total;
 							evt.loaded = tmpEvt.loaded;
 						}
@@ -5651,7 +6065,9 @@ define("moxie/runtime/html5/Runtime", [
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
-					return I.can('select_file') && !(Env.browser === 'Safari' && Env.OS === 'Windows') && Env.OS !== 'iOS';
+					return I.can('select_file') && 
+						!(Env.browser === 'Safari' && Env.os === 'Windows') && 
+						!(Env.os === 'iOS' && Env.verComp(Env.osVersion, "7.0.4", '<'));
 				},
 				send_binary_string: Test(window.XMLHttpRequest && (new XMLHttpRequest().sendAsBinary || (window.Uint8Array && window.ArrayBuffer))),
 				send_custom_headers: Test(window.XMLHttpRequest),
@@ -8480,7 +8896,7 @@ define("moxie/runtime/flash/Runtime", [
 
 
 		// minimal requirement for Flash Player version
-		if (getShimVersion() < 11.3) {
+		if (getShimVersion() < 10) {
 			this.mode = false; // with falsy mode, runtime won't operable, no matter what the mode was before
 		}
 
@@ -8874,21 +9290,20 @@ define("moxie/runtime/flash/xhr/XMLHttpRequest", [
 
 				if ('blob' === responseType) {
 					return blob;
-				} else if (!!~Basic.inArray(responseType, ["", "text"])) {
-					frs = new FileReaderSync();
-					return frs.readAsText(blob);
-				} else if ('arraybuffer' === responseType) {
+				}
 
-					// do something
-
-				} else if ('json' === responseType && !!window.JSON) {
+				try { 
 					frs = new FileReaderSync();
-					try {
+
+					if (!!~Basic.inArray(responseType, ["", "text"])) {
+						return frs.readAsText(blob);
+					} else if ('json' === responseType && !!window.JSON) {
 						return JSON.parse(frs.readAsText(blob));
-					} catch (ex) {}
+					}
+				} finally {
+					blob.destroy();
 				}
 			}
-
 			return null;
 		},
 

@@ -213,8 +213,8 @@ function renderUI(obj) {
 						'<div class="plupload_header_title">' + _('Select files') + '</div>' +
 						'<div class="plupload_header_text">' + _('Add files to the upload queue and click the start button.') + '</div>' +
 						'<div class="plupload_view_switch">' +
-							'<input type="radio" id="'+obj.id+'_view_list" name="view_mode_'+obj.id+'" checked="checked" /> <label class="plupload_button" for="'+obj.id+'_view_list" data-view="list">' + _('List') + '</label>' +
-							'<input type="radio" id="'+obj.id+'_view_thumbs" name="view_mode_'+obj.id+'" /> <label class="plupload_button"  for="'+obj.id+'_view_thumbs" data-view="thumbs">' + _('Thumbnails') + '</label>' +
+							'<input type="radio" id="'+obj.id+'_view_list" name="view_mode_'+obj.id+'" checked="checked" /><label class="plupload_button" for="'+obj.id+'_view_list" data-view="list">' + _('List') + '</label>' +
+							'<input type="radio" id="'+obj.id+'_view_thumbs" name="view_mode_'+obj.id+'" /><label class="plupload_button"  for="'+obj.id+'_view_thumbs" data-view="thumbs">' + _('Thumbnails') + '</label>' +
 						'</div>' +
 					'</div>' +
 				'</div>' +
@@ -1025,16 +1025,11 @@ $.widget("ui.plupload", {
 				});
 			};
 
-			img.onembedded = function() {
+			img.bind("embedded error", function() {
 				$('#' + file.id, self.filelist).addClass('plupload_file_thumb_loaded');
 				this.destroy();
 				setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
-			};
-
-			img.onerror = function() {
-				this.destroy();
-				setTimeout(cb, 1);
-			};
+			});
 
 			img.load(file.getSource());
 		}
@@ -1118,7 +1113,9 @@ $.widget("ui.plupload", {
 		}
 
 		$.each(files, function(i, file) {
-			$('#' + file.id).remove();
+			$('#' + file.id).toggle("highlight", function() {
+				this.remove();
+			});
 			up.removeFile(file);
 		});
 

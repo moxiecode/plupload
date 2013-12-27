@@ -386,7 +386,16 @@ used as it is.
 					}
 				});
 
-				uploader.bind('QueueChanged', updateList);
+				uploader.bind('FilesAdded', updateList);
+
+				uploader.bind('FilesRemoved', function() {
+					// since the whole file list is redrawn for every change in the queue
+					// we need to scroll back to the file removal point to avoid annoying
+					// scrolling to the bottom bug (see #926)
+					var scrollTop = $('#' + id + '_filelist').scrollTop();
+					updateList();
+					$('#' + id + '_filelist').scrollTop(scrollTop);
+				});
 
 				uploader.bind('FileUploaded', function(up, file) {
 					handleStatus(file);
