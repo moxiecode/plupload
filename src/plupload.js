@@ -1958,6 +1958,13 @@ plupload.Uploader = function(options) {
 			// Splice and trigger events
 			var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
+			// if upload is in progress we need to stop it and restart after files are removed
+			var restartRequired = false;
+			if (this.state == plupload.STARTED) { // upload in progress
+				restartRequired = true;
+				this.stop();
+			}
+
 			this.trigger("FilesRemoved", removed);
 
 			// Dispose any resources allocated by those files
@@ -1967,6 +1974,10 @@ plupload.Uploader = function(options) {
 
 			this.trigger("QueueChanged");
 			this.refresh();
+
+			if (restartRequired) {
+				this.start();
+			}
 
 			return removed;
 		},
