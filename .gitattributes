@@ -1,2 +1,9 @@
 * crlf=input
 * -text
+
+tests/ export-ignore
+src/ export-ignore
+tools/ export-ignore
+build.bat export-ignore
+build.xml export-ignore
+.* export-ignore
