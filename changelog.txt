@@ -1,3 +1,7 @@
+Version 1.5.8 (2014-01-08)
+	HTML5: Always send chunk related arguments when chunking is enabled.
+	HTML5: Make a response text available in Error handler.
+	Flash/Silverlight: Include crossdomain binaries.
 Version 1.5.7 (2013-04-10)
 	HTML5: Workaround for squish problem in iOS6, when uploading resized images.
 	HTML5: Fix failing workaround for FormData+Blob bug on Android...
