@@ -32,11 +32,6 @@ $policy = base64_encode(json_encode(array(
 		array('starts-with', '$key', ''),
 		// for demo purposes we are accepting only images
 		array('starts-with', '$Content-Type', 'image/'),
-		// "Some versions of the Adobe Flash Player do not properly handle HTTP responses that have an empty body. 
-		// To configure POST to return a response that does not have an empty body, set success_action_status to 201.
-		// When set, Amazon S3 returns an XML document with a 201 status code." 
-		// http://docs.amazonwebservices.com/AmazonS3/latest/dev/HTTPPOSTFlash.html
-		array('success_action_status' => '201'),
 		// Plupload internally adds name field, so we need to mention it here
 		array('starts-with', '$name', ''), 	
 		// One more field to take into account: Filename - gets silently sent by FileReference.upload() in Flash
