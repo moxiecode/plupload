@@ -224,6 +224,16 @@ test('removeFile() / splice()', function() {
 });
 
 
+test('setOption() - set option that requires reinitialization', function() {
+	var oldValue = this.up.getOption('multi_selection');
+	var newValue = !oldValue;
+
+	this.up.setOption('multi_selection', newValue);
+
+	notEqual(oldValue, this.up.getOption('multi_selection'), "Option successfully changed.");
+});
+
+
 </script>
 </head>
 <body>

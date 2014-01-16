@@ -1575,7 +1575,7 @@ plupload.Uploader = function(options) {
 
 		preferred_caps = {};
 		disabled = false;
-		settings = startTime = xhr = null;
+		startTime = xhr = null;
 		total.reset();
 	}
 
@@ -2038,7 +2038,7 @@ plupload.Uploader = function(options) {
 		 */
 		destroy : function() {
 			this.trigger('Destroy');
-			total = null; // purge this one exclusively
+			settings = total = null; // purge these exclusively
 			this.unbindAll();
 		}
 	});
