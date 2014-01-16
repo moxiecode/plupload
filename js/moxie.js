@@ -1,6 +1,6 @@
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.1.0
+ * v1.2.0
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2013-12-27
+ * Date: 2014-01-16
  */
 /**
  * Compiled inline version. (Library mode)
@@ -252,6 +252,42 @@ define('moxie/core/utils/Basic', [], function() {
 		}
 		callNext(i);
 	};
+
+
+	/**
+	Recieve an array of functions (usually async) to call in parallel, each  function
+	receives a callback as first argument that it should call, when it completes. After 
+	everything is complete, main callback is called. Passing truthy value to the
+	callback as a first argument will interrupt the process and invoke main callback
+	immediately.
+
+	@method inParallel
+	@static
+	@param {Array} queue Array of functions to call in sequence
+	@param {Function} cb Main callback that is called in the end, or in case of erro
+	*/
+	var inParallel = function(queue, cb) {
+		var count = 0, num = queue.length, cbArgs = new Array(num);
+
+		each(queue, function(fn, i) {
+			fn(function(error) {
+				if (error) {
+					return cb(error);
+				}
+				
+				var args = [].slice.call(arguments);
+				args.shift(); // strip error - undefined or not
+
+				cbArgs[i] = args;
+				count++;
+
+				if (count === num) {
+					cbArgs.unshift(null);
+					cb.apply(this, cbArgs);
+				} 
+			});
+		});
+	};
 	
 	
 	/**
@@ -429,6 +465,7 @@ define('moxie/core/utils/Basic', [], function() {
 		each: each,
 		isEmptyObj: isEmptyObj,
 		inSeries: inSeries,
+		inParallel: inParallel,
 		inArray: inArray,
 		arrayDiff: arrayDiff,
 		arrayIntersect: arrayIntersect,
@@ -496,7 +533,8 @@ define("moxie/core/I18n", [
 			var args = [].slice.call(arguments, 1);
 
 			return str.replace(/%[a-z]/g, function() {
-				return args.shift() || '';
+				var value = args.shift();
+				return Basic.typeOf(value) !== 'undefined' ? value : '';
 			});
 		}
 	};
@@ -6556,11 +6594,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 					// Chrome 21+ accepts folders via Drag'n'Drop
 					if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
-						var entries = [];
-						Basic.each(e.dataTransfer.items, function(item) {
-							entries.push(item.webkitGetAsEntry());
-						});
-						_readEntries(entries, function() {
+						_readItems(e.dataTransfer.items, function() {
 							comp.trigger("drop");
 						});
 					} else {
@@ -6609,6 +6643,32 @@ define("moxie/runtime/html5/file/FileDrop", [
 		function _isAcceptable(file) {
 			var ext = Mime.getFileExtension(file.name);
 			return !ext || !_allowedExts.length || Basic.inArray(ext, _allowedExts) !== -1;
+		}
+
+
+		function _readItems(items, cb) {
+			var entries = [];
+			Basic.each(items, function(item) {
+				var entry = item.webkitGetAsEntry();
+				// Address #998 (https://code.google.com/p/chromium/issues/detail?id=332579)
+				if (entry) {
+					// file() fails on OSX when the filename contains a special character (e.g. umlaut): see #61
+					if (entry.isFile) {
+						var file = item.getAsFile();
+						if (_isAcceptable(file)) {
+							_files.push(file);
+						}
+					} else {
+						entries.push(entry);
+					}
+				}
+			});
+
+			if (entries.length) {
+				_readEntries(entries, cb);
+			} else {
+				cb();
+			}
 		}
 
 
@@ -7104,7 +7164,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 					// Build RFC2388 blob
 					multipart += dashdash + boundary + crlf +
 						'Content-Disposition: form-data; name="' + name + '"; filename="' + unescape(encodeURIComponent(value.name || 'blob')) + '"' + crlf +
-						'Content-Type: ' + value.type + crlf + crlf +
+						'Content-Type: ' + (value.type || 'application/octet-stream') + crlf + crlf +
 						value.getSource() + crlf;
 				} else {
 					multipart += dashdash + boundary + crlf +

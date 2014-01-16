@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.1.0
+ * v2.1.1
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2013-12-27
+ * Date: 2014-01-16
  */
 /**
  * Plupload.js
@@ -40,7 +40,6 @@ function normalizeCaps(settings) {
 			pngresize: 'send_binary_string',
 			progress: 'report_upload_progress',
 			multi_selection: 'select_multiple',
-			max_file_size: 'access_binary',
 			dragdrop: 'drag_and_drop',
 			drop_element: 'drag_and_drop',
 			headers: 'send_custom_headers',
@@ -98,7 +97,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.1.0',
+	VERSION : '2.1.1',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -1588,7 +1587,7 @@ plupload.Uploader = function(options) {
 
 		preferred_caps = {};
 		disabled = false;
-		settings = startTime = xhr = null;
+		startTime = xhr = null;
 		total.reset();
 	}
 
@@ -2051,7 +2050,7 @@ plupload.Uploader = function(options) {
 		 */
 		destroy : function() {
 			this.trigger('Destroy');
-			total = null; // purge this one exclusively
+			settings = total = null; // purge these exclusively
 			this.unbindAll();
 		}
 	});
