@@ -300,7 +300,7 @@
 .plupload_clearer {height: 0;}
 
 /* Misc */
-.plupload_hidden {display: none;}
+.plupload_hidden {display: none !important;}
 
 .plupload_droptext {
 	position: absolute;
