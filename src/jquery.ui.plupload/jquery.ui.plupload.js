@@ -110,7 +110,7 @@ _jQuery UI_ widget factory, there are some specifics. See examples below for mor
 	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
 	@param {Number} [settings.max_file_count=0] Limit the number of files user is able to upload in one go, autosets _multiple_queues_ to _false_ (default is 0 - no limit).
 */
-(function(window, document, plupload, o, $) {
+;(function(window, document, plupload, o, $) {
 
 /**
 Dispatched when the widget is initialized and ready.
@@ -210,8 +210,8 @@ function renderUI(obj) {
 				'<div class="ui-state-default ui-widget-header plupload_header">' +
 					'<div class="plupload_header_content">' +
 						'<div class="plupload_logo"> </div>' +
-						'<div class="plupload_header_title">' + _('Select files') + '</div>' +
-						'<div class="plupload_header_text">' + _('Add files to the upload queue and click the start button.') + '</div>' +
+						'<div class="plupload_header_title">' + _("Select files") + '</div>' +
+						'<div class="plupload_header_text">' + _("Add files to the upload queue and click the start button.") + '</div>' +
 						'<div class="plupload_view_switch">' +
 							'<input type="radio" id="'+obj.id+'_view_list" name="view_mode_'+obj.id+'" checked="checked" /><label class="plupload_button" for="'+obj.id+'_view_list" data-view="list">' + _('List') + '</label>' +
 							'<input type="radio" id="'+obj.id+'_view_thumbs" name="view_mode_'+obj.id+'" /><label class="plupload_button"  for="'+obj.id+'_view_thumbs" data-view="thumbs">' + _('Thumbnails') + '</label>' +
@@ -238,9 +238,9 @@ function renderUI(obj) {
 				'<tr>' +
 					'<td class="plupload_cell plupload_file_name">' +
 						'<div class="plupload_buttons"><!-- Visible -->' +
-							'<a class="plupload_button plupload_add">' + _('Add Files') + '</a>&nbsp;' +
-							'<a class="plupload_button plupload_start">' + _('Start Upload') + '</a>&nbsp;' +
-							'<a class="plupload_button plupload_stop plupload_hidden">'+_('Stop Upload') + '</a>&nbsp;' +
+							'<a class="plupload_button plupload_add">' + _("Add Files") + '</a>&nbsp;' +
+							'<a class="plupload_button plupload_start">' + _("Start Upload") + '</a>&nbsp;' +
+							'<a class="plupload_button plupload_stop plupload_hidden">'+_("Stop Upload") + '</a>&nbsp;' +
 						'</div>' +
 
 						'<div class="plupload_started plupload_hidden"><!-- Hidden -->' +
@@ -397,6 +397,7 @@ $.widget("ui.plupload", {
 			this.filelist.parent().attr('id', this.id + '_dropbox');
 			options.drop_element = this.id + '_dropbox';
 		}
+
 
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
