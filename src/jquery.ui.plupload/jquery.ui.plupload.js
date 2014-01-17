@@ -1095,7 +1095,7 @@ $.widget("ui.plupload", {
 			'<div class="plupload_file_thumb">' +
 				'<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">%ext%</span></div>' +
 			'</div>' +
-			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_namespan">%name%</span></div>' +						
+			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_name_wrapper">%name%</span></div>' +						
 			'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
 			'<div class="plupload_file_size">%size% </div>' +
 			'<div class="plupload_file_status">' +
@@ -1232,7 +1232,7 @@ $.widget("ui.plupload", {
 		this.filelist.dblclick(function(e) {
 			var nameSpan = $(e.target), nameInput, file, parts, name, ext = "";
 
-			if (!nameSpan.hasClass('plupload_file_namespan')) {
+			if (!nameSpan.hasClass('plupload_file_name_wrapper')) {
 				return;
 			}
 		

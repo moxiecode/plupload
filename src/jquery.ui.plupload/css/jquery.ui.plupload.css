@@ -11,6 +11,7 @@
 	font: normal 11px Verdana,sans-serif;
 	width: 100%;
 	min-width: 520px;
+	line-height: 12px;
 }
 
 .plupload_container {
@@ -50,6 +51,7 @@
 
 .plupload_header_title {
 	font: normal 18px sans-serif;
+	line-height: 19px;
 	padding: 6px 0 3px;
 }
 
@@ -104,6 +106,7 @@
 	position: relative;
 	overflow: hidden;
 	width: 100%;
+	line-height: 12px;
 }
 
 .plupload_file_thumb {
