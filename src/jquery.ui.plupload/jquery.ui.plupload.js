@@ -405,6 +405,28 @@ $.widget("ui.plupload", {
 			uploader.settings.required_features.display_media = true;
 		}
 
+		if (self.options.max_file_count) {
+			plupload.extend(uploader.getOption('filters'), {
+				max_file_count: self.options.max_file_count
+			});
+		}
+
+		plupload.addFileFilter('max_file_count', function(maxCount, file, cb) {
+			if (maxCount <= this.files.length - (this.total.uploaded + this.total.failed)) {
+				self.browse_button.button('disable');
+				this.disableBrowse();
+				
+				this.trigger('Error', {
+					code : self.FILE_COUNT_ERROR,
+					message : _("File count error."),
+					file : file
+				});
+				cb(false);
+			} else {
+				cb(true);
+			}
+		});
+
 
 		uploader.bind('Error', function(up, err) {			
 			var message, details = "";
@@ -502,27 +524,6 @@ $.widget("ui.plupload", {
 
 			self._trigger('ready', null, { up: up });
 		});
-		
-		
-		// check if file count doesn't exceed the limit
-		if (self.options.max_file_count) {
-			self.options.multiple_queues = false; // one go only
-
-			uploader.bind('FilesAdded', function(up, selectedFiles) {
-				var selectedCount = selectedFiles.length
-				, extraCount = up.files.length + selectedCount - self.options.max_file_count
-				;
-				
-				if (extraCount > 0) {
-					selectedFiles.splice(selectedCount - extraCount, extraCount);
-					
-					up.trigger('Error', {
-						code : self.FILE_COUNT_ERROR,
-						message : _('File count error.')
-					});
-				}
-			});
-		}
 		
 		// uploader internal events must run first 
 		uploader.init();
@@ -819,39 +820,47 @@ $.widget("ui.plupload", {
 	
 	
 	_handleState: function() {
-		var up = this.uploader;
+		var up = this.uploader
+		, filesPending = up.files.length - (up.total.uploaded + up.total.failed)
+		, maxCount = up.getOption('filters').max_file_count || 0
+		;
 						
-		if (up.state === plupload.STARTED) {
-			$(this.start_button).button('disable');
-								
+		if (plupload.STARTED === up.state) {			
 			$([])
 				.add(this.stop_button)
 				.add('.plupload_started')
 					.removeClass('plupload_hidden');
+
+			this.start_button.button('disable');
+
+			if (!this.options.multiple_queues) {
+				this.browse_button.button('disable');
+				up.disableBrowse();
+			}
 							
 			$('.plupload_upload_status', this.element).html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
 			$('.plupload_header_content', this.element).addClass('plupload_header_content_bw');
-		} else if (up.state === plupload.STOPPED) {
+		} 
+		else if (plupload.STOPPED === up.state) {
 			$([])
 				.add(this.stop_button)
 				.add('.plupload_started')
 					.addClass('plupload_hidden');
+
+			if (filesPending) {
+				this.start_button.button('enable');
+			} else {
+				this.start_button.button('disable');
+			}
 			
 			if (this.options.multiple_queues) {
 				$('.plupload_header_content', this.element).removeClass('plupload_header_content_bw');
-			} else {
-				$([])
-					.add(this.browse_button)
-					.add(this.start_button)
-						.button('disable');
+			} 
 
-				up.disableBrowse();
-			}
-
-			if (up.files.length === (up.total.uploaded + up.total.failed)) {
-				this.start_button.button('disable');
-			} else {
-				this.start_button.button('enable');
+			// if max_file_count defined, only that many files can be queued at once
+			if (this.options.multiple_queues && maxCount && maxCount > filesPending) {
+				this.browse_button.button('enable');
+				up.disableBrowse(false);
 			}
 
 			this._updateTotalProgress();
