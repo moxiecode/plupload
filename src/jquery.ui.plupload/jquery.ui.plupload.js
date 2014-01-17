@@ -550,6 +550,25 @@ $.widget("ui.plupload", {
 		});
 		
 		uploader.bind('FilesRemoved', function(up, files) {
+			// destroy sortable if enabled
+			if ($.ui.sortable && self.options.sortable) {
+				$('tbody', self.filelist).sortable('destroy');	
+			}
+
+			$.each(files, function(i, file) {
+				$('#' + file.id).toggle("highlight", function() {
+					this.remove();
+				});
+			});
+			
+			if (up.files.length) {
+				// re-initialize sortable
+				if (self.options.sortable && $.ui.sortable) {
+					self._enableSortingList();	
+				}
+			}
+
+			self._trigger('updatelist', null, { filelist: self.filelist });
 			self._trigger('removed', null, { up: up, files: files } );
 		});
 		
@@ -693,7 +712,7 @@ $.widget("ui.plupload", {
 		if (plupload.typeOf(file) === 'string') {
 			file = this.getFile(file);
 		}
-		this._removeFiles(file);
+		this.uploader.removeFile(file);
 	},
 
 	
@@ -766,9 +785,7 @@ $.widget("ui.plupload", {
 
 	@method destroy
 	*/
-	destroy: function() {
-		this._removeFiles([].slice.call(this.uploader.files));
-		
+	destroy: function() {		
 		// destroy uploader instance
 		this.uploader.destroy();
 
@@ -848,7 +865,7 @@ $.widget("ui.plupload", {
 
 		up.refresh();
 	},
-	
+
 	
 	_handleFileStatus: function(file) {
 		var self = this, actionClass, iconClass;
@@ -911,7 +928,7 @@ $.widget("ui.plupload", {
 			.filter('.plupload_delete, .plupload_done, .plupload_failed')
 				.find('.ui-icon')
 					.click(function(e) {
-						self._removeFiles(file);
+						self.removeFile(file);
 						e.preventDefault();
 					});
 	},
@@ -1098,37 +1115,6 @@ $.widget("ui.plupload", {
 
 			self._handleFileStatus(file);
 		});
-	},
-
-
-	_removeFiles: function(files) {
-		var self = this, up = this.uploader;
-
-		if (plupload.typeOf(files) !== 'array') {
-			files = [files];
-		}
-
-		// destroy sortable if enabled
-		if ($.ui.sortable && this.options.sortable) {
-			$('tbody', self.filelist).sortable('destroy');	
-		}
-
-		$.each(files, function(i, file) {
-			$('#' + file.id).toggle("highlight", function() {
-				this.remove();
-			});
-			up.removeFile(file);
-		});
-
-		
-		if (up.files.length) {
-			// re-initialize sortable
-			if (this.options.sortable && $.ui.sortable) {
-				this._enableSortingList();	
-			}
-		}
-
-		this._trigger('updatelist', null, { filelist: this.filelist });
 	},
 
 
