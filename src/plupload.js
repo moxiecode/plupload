@@ -1266,10 +1266,7 @@ plupload.Uploader = function(options) {
 
 
 	// Internal event handlers
-	function onFilesAdded(up, filteredFiles) {
-		// Add files to queue				
-		[].push.apply(files, filteredFiles);
-
+	function onFilesAdded(up) {
 		up.trigger('QueueChanged');
 		up.refresh();
 	}
@@ -1840,7 +1837,6 @@ plupload.Uploader = function(options) {
 		addFile : function(file, fileName) {
 			var self = this
 			, queue = [] 
-			, files = []
 			, ruid
 			;
 
