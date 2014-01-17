@@ -558,7 +558,7 @@ $.widget("ui.plupload", {
 
 			$.each(files, function(i, file) {
 				$('#' + file.id).toggle("highlight", function() {
-					this.remove();
+					$(this).remove();
 				});
 			});
 			
