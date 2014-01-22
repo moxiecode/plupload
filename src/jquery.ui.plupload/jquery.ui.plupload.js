@@ -439,7 +439,7 @@ $.widget("ui.plupload", {
 					break;
 				
 				case plupload.FILE_SIZE_ERROR:
-					details = o.sprintf(_("File: %s, size: %d, max file size: %d"), err.file.name, err.file.size, plupload.parseSize(self.options.max_file_size));
+					details = o.sprintf(_("File: %s, size: %d, max file size: %d"), err.file.name, err.file.size, plupload.parseSize(self.options.max_file_size?self.options.max_file_size:self.options.filters.max_file_size));
 					break;
 
 				case plupload.FILE_DUPLICATE_ERROR:
