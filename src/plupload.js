@@ -970,7 +970,10 @@ plupload.Uploader = function(options) {
 
 
 	function bindEventListeners() {
-		this.bind('FilesAdded', onFilesAdded);
+		this.bind('FilesAdded FilesRemoved', function(up) {
+			up.trigger('QueueChanged');
+			up.refresh();
+		});
 
 		this.bind('CancelUpload', onCancelUpload);
 		
@@ -1264,12 +1267,6 @@ plupload.Uploader = function(options) {
 
 
 	// Internal event handlers
-	function onFilesAdded(up) {
-		up.trigger('QueueChanged');
-		up.refresh();
-	}
-
-
 	function onBeforeUpload(up, file) {
 		// Generate unique target filenames
 		if (settings.unique_names) {
@@ -1964,10 +1961,7 @@ plupload.Uploader = function(options) {
 			plupload.each(removed, function(file) {
 				file.destroy();
 			});
-
-			this.trigger("QueueChanged");
-			this.refresh();
-
+			
 			if (restartRequired) {
 				this.start();
 			}
