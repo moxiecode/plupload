@@ -162,7 +162,7 @@ var plupload = {
 	HTTP_ERROR : -200,
 
 	/**
-	 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
+	 * Generic I/O error. For example if it wasn't possible to open the file stream on local machine.
 	 *
 	 * @property IO_ERROR
 	 * @static
@@ -171,8 +171,6 @@ var plupload = {
 	IO_ERROR : -300,
 
 	/**
-	 * Generic I/O error. For exampe if it wasn't possible to open the file stream on local machine.
-	 *
 	 * @property SECURITY_ERROR
 	 * @static
 	 * @final
@@ -225,7 +223,7 @@ var plupload = {
 	IMAGE_FORMAT_ERROR : -700,
 
 	/**
-	 * While working on the image runtime will try to detect if the operation may potentially run out of memeory and will throw this error.
+	 * While working on the image runtime will try to detect if the operation may potentially run out of memory and will throw this error.
 	 *
 	 * @property IMAGE_MEMORY_ERROR
 	 * @static
