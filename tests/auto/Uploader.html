@@ -56,6 +56,10 @@ module("plupload.Uploader", {
 			up.trigger('TestFilesAdded', files);
 		});
 
+		up.bind('FilesRemoved', function(up, files) {
+			up.trigger('TestFilesRemoved', files);
+		});
+
 		up.bind('QueueChanged', function(up) {
 			up.trigger('TestQueueChanged');
 		});
@@ -221,6 +225,50 @@ test('removeFile() / splice()', function() {
 		new plupload.File(files[0]),
 		new plupload.File(files[1])
 	]);
+});
+
+
+test('Test if internal file counters are properly updated, when queue changes.', function() {	
+	var up = this.up
+	, file
+	, files = FileHash.getRuntimeFiles()
+	, nFiles = FileHash.getNativeFiles()
+	, queue = []
+	;
+	
+	queue.push(
+
+		// when files are added to the queue
+		function(cb) {
+			up.bind('TestFilesAdded', function() {
+				ok(true, "FilesAdded triggered when file was added.");
+				equal(up.files.length, files.length, "Queue updated.");
+				equal(up.total.queued, files.length, "up.total updated.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files);
+		},
+
+		// when files are removed from the queue
+		function(cb) {
+			up.bind('TestFilesRemoved', function() {
+				ok(true, "FilesRemoved triggered when file was removed.");
+				equal(up.files.length, files.length - 1, "Queue updated.");
+				equal(up.total.queued, files.length - 1, "up.total updated.");
+				up.unbind('TestFilesRemoved');
+				cb();
+			});
+
+			up.removeFile(up.files[1]);
+		}
+	);
+
+	stop();
+	o.inSeries(queue, function() {
+		start();
+	});
 });
 
 
