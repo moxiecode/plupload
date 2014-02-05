@@ -532,6 +532,12 @@
 						return;
 					}
 
+					// Block browser default drag enter
+					plupload.addEvent(dropElm, 'dragenter', function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+					}, uploader.id);
+
 					// Block browser default drag over
 					plupload.addEvent(dropElm, 'dragover', function(e) {
 						e.preventDefault();
