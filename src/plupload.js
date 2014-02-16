@@ -1682,6 +1682,8 @@ plupload.Uploader = function(options) {
 				});
 			}
 
+			bindEventListeners.call(this);
+
 			// Check for required options
 			if (!settings.browse_button || !settings.url) {
 				this.trigger('Error', {
@@ -1690,8 +1692,6 @@ plupload.Uploader = function(options) {
 				});
 				return;
 			}
-
-			bindEventListeners.call(this);
 
 			initControls.call(this, settings, function(inited) {
 				if (typeof(settings.init) == "function") {
