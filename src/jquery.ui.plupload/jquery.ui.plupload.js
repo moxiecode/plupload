@@ -454,7 +454,7 @@ $.widget("ui.plupload", {
 					break;
 					
 				case self.FILE_COUNT_ERROR:
-					details = o.sprintf(_("Upload element accepts only %d file(s) at a time. Extra files were stripped."), self.options.filters.max_file_count || 0);
+					details = o.sprintf(_("Upload element accepts only %d file(s) at a time. Extra files were stripped."), up.getOption('filters').max_file_count || 0);
 					break;
 				
 				case plupload.IMAGE_FORMAT_ERROR :
