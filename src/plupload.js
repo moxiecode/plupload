@@ -764,11 +764,43 @@ plupload.Uploader = function(options) {
 	 */
 
 	/**
-	 * Fires when a file is to be uploaded by the runtime.
+	 * Fires when browse_button is clicked and browse dialog shows.
 	 *
-	 * @event UploadFile
+	 * @event Browse
+	 * @since 2.1.2
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File to be uploaded.
+	 */	
+
+	/**
+	 * Fires for every filtered file before it is added to the queue.
+	 * 
+	 * @event FileFiltered
+	 * @since 2.1
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file Another file that has to be added to the queue.
+	 */
+
+	/**
+	 * Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+	 *
+	 * @event QueueChanged
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 */ 
+
+	/**
+	 * Fires after files were filtered and added to the queue.
+	 *
+	 * @event FilesAdded
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {Array} files Array of file objects that were added to queue by the user.
+	 */
+
+	/**
+	 * Fires when file is removed from the queue.
+	 *
+	 * @event FilesRemoved
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {Array} files Array of files that got removed.
 	 */
 
 	/**
@@ -781,10 +813,11 @@ plupload.Uploader = function(options) {
 	 */
 
 	/**
-	 * Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+	 * Fires when a file is to be uploaded by the runtime.
 	 *
-	 * @event QueueChanged
+	 * @event UploadFile
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File to be uploaded.
 	 */
 
 	/**
@@ -793,31 +826,15 @@ plupload.Uploader = function(options) {
 	 * @event UploadProgress
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {plupload.File} file File that is currently being uploaded.
-	 */
+	 */	
 
 	/**
-	 * Fires when file is removed from the queue.
+	 * Fires when file chunk is uploaded.
 	 *
-	 * @event FilesRemoved
+	 * @event ChunkUploaded
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of files that got removed.
-	 */
-
-	/**
-	 * Fires for every filtered file before it is added to the queue.
-	 * 
-	 * @event FileFiltered
-	 * @since 2.1
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file Another file that has to be added to the queue.
-	 */
-
-	/**
-	 * Fires after files were filtered and added to the queue.
-	 *
-	 * @event FilesAdded
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of file objects that were added to queue by the user.
+	 * @param {plupload.File} file File that the chunk was uploaded for.
+	 * @param {Object} response Object with response properties.
 	 */
 
 	/**
@@ -826,15 +843,6 @@ plupload.Uploader = function(options) {
 	 * @event FileUploaded
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {plupload.File} file File that was uploaded.
-	 * @param {Object} response Object with response properties.
-	 */
-
-	/**
-	 * Fires when file chunk is uploaded.
-	 *
-	 * @event ChunkUploaded
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File that the chunk was uploaded for.
 	 * @param {Object} response Object with response properties.
 	 */
 
@@ -1063,6 +1071,10 @@ plupload.Uploader = function(options) {
 								}
 							}
 						}
+					});
+
+					fileInput.bind('mousedown', function() {
+						self.trigger('Browse');
 					});
 
 					fileInput.bind('error runtimeerror', function() {
