@@ -223,13 +223,14 @@ var plupload = {
 	IMAGE_FORMAT_ERROR : -700,
 
 	/**
-	 * While working on the image runtime will try to detect if the operation may potentially run out of memory and will throw this error.
+	 * While working on files runtime may run out of memory and will throw this error.
 	 *
-	 * @property IMAGE_MEMORY_ERROR
+	 * @since 2.1.2
+	 * @property MEMORY_ERROR
 	 * @static
 	 * @final
 	 */
-	IMAGE_MEMORY_ERROR : -701,
+	MEMORY_ERROR : -701,
 
 	/**
 	 * Each runtime has an upper limit on a dimension of the image it can handle. If bigger, will throw this error.
