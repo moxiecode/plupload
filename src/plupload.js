@@ -1610,6 +1610,18 @@ plupload.Uploader = function(options) {
 			, ruid
 			;
 
+
+			function bindListeners(file) {
+				file.bind('progress', function() {
+					self.trigger('UploadProgress', file);
+				});
+
+				file.bind('uploaded', function(e, args) {
+					self.trigger('FileUploaded', file, args);
+				});
+			}
+
+
 			function filterFile(file, cb) {
 				var queue = [];
 				o.each(self.settings.filters, function(rule, name) {
@@ -1658,6 +1670,7 @@ plupload.Uploader = function(options) {
 						// run through the internal and user-defined filters, if any
 						filterFile(file, function(err) {
 							if (!err) {
+								bindListeners(file);
 								files.push(file);
 								self.trigger("FileFiltered", file);
 							}
