@@ -872,40 +872,54 @@ plupload.Uploader = function(options) {
 	var uid = plupload.guid()
 	, settings
 	, files = []
+	, activeUploads = new Collection()
+	, pendingUploads = new Collection()
 	, preferred_caps = {}
 	, fileInputs = []
 	, fileDrops = []
 	, startTime
 	, total
 	, disabled = false
-	, xhr
 	;
 
 
 	// Private methods
 	function uploadNext() {
-		var file, count = 0, i;
+		var up = this
+		, nextFile
+		;
 
 		if (this.state == plupload.STARTED) {
-			// Find first QUEUED file
-			for (i = 0; i < files.length; i++) {
-				if (!file && files[i].status == plupload.QUEUED) {
-					file = files[i];
-					if (this.trigger("BeforeUpload", file)) {
-						file.status = plupload.UPLOADING;
-						this.trigger("UploadFile", file);
-					}
-				} else {
-					count++;
-				}
+			// check if we have any pending files
+			if (pendingUploads.length) {
+				pendingUploads.each(function(file, id) {
+					pendingUploads.remove(id);
+					nextFile = file;
+					return false;
+				});
 			}
 
-			// All files are DONE or FAILED
-			if (count == files.length) {
+			// ... otherwise simply pick up the first QUEUED file from the main queue
+			if (!nextFile) {
+				plupload.each(files, function(file) {
+					if (file.status == plupload.QUEUED) {
+						if (up.trigger("BeforeUpload", file)) {
+							nextFile = file;
+							return false;
+						}
+					}
+				});
+			}
+
+			if (nextFile) {
+				up.uploadFile(nextFile);
+			} else if (!activeUploads.length) {
+				// all files are either DONE or FAILED
 				if (this.state !== plupload.STOPPED) {
 					this.state = plupload.STOPPED;
 					this.trigger("StateChanged");
 				}
+
 				this.trigger("UploadComplete", files);
 			}
 		}
@@ -970,8 +984,6 @@ plupload.Uploader = function(options) {
 		this.bind('CancelUpload', onCancelUpload);
 		
 		this.bind('BeforeUpload', onBeforeUpload);
-
-		this.bind('UploadFile', onUploadFile);
 
 		this.bind('UploadProgress', onUploadProgress);
 
@@ -1256,10 +1268,16 @@ plupload.Uploader = function(options) {
 	}
 
 
+	function onFileUploaded(up, file) {
+		activeUploads.remove(file.id);
 
+		calc();
 
-	function onUploadProgress(up, file) {
-		calcFile(file);
+		// Upload next file but detach it from the error event
+		// since other custom listeners might want to stop the queue
+		delay(function() {
+			uploadNext.call(up);
+		}, 1);
 	}
 
 
@@ -1280,20 +1298,13 @@ plupload.Uploader = function(options) {
 
 
 	function onCancelUpload() {
-		if (xhr) {
-			xhr.abort();
+		// loop over active uploads and cancel them
+		if (activeUploads.length) {
+			activeUploads.each(function(file) {
+				file.cancelUpload();
+			});
 		}
-	}
-
-
-	function onFileUploaded(up) {
-		calc();
-
-		// Upload next file but detach it from the error event
-		// since other custom listeners might want to stop the queue
-		delay(function() {
-			uploadNext.call(up);
-		}, 1);
+		activeUploads.clear();
 	}
 
 
@@ -1340,6 +1351,9 @@ plupload.Uploader = function(options) {
 			fileDrops = [];
 		}
 
+		activeUploads.clear();
+		pendingUploads.clear();
+
 		preferred_caps = {};
 		disabled = false;
 		startTime = null;
@@ -1351,6 +1365,7 @@ plupload.Uploader = function(options) {
 	settings = {
 		runtimes: o.Runtime.order,
 		max_retries: 0,
+		max_upload_slots: 2,
 		chunk_size: 0,
 		multipart: true,
 		multi_selection: true,
@@ -1577,6 +1592,40 @@ plupload.Uploader = function(options) {
 
 			this.trigger('DisableBrowse', disabled);
 		},
+
+
+		/**
+		 * Returns the specified file object by id.
+		 *
+		 * @method uploadFile
+		 * @param {String|Object} file File object to upload.
+		 */
+		uploadFile : function(file) {
+			var up = this
+			, maxSlots = up.getOption('max_upload_slots')
+			;
+
+			if (typeof(file) === 'string') {
+				file = this.getFile(file);
+			}
+
+			if (activeUploads.length < maxSlots) {
+				activeUploads.add(file.id, file);
+				file.upload(up.getOption());
+
+				this.trigger('UploadFile', file);
+
+				// if we still got the slots, enqueue more
+				if (activeUploads.length < maxSlots) {
+					delay(function() {
+						uploadNext.call(up);
+					});
+				}
+			} else {
+				pendingUploads.add(file.id, file);
+			}
+		},
+
 
 		/**
 		 * Returns the specified file object by id.
