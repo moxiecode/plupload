@@ -2286,6 +2286,7 @@ plupload.File = (function() {
  * Constructs a queue progress.
  *
  * @class QueueProgress
+ * @private
  * @constructor
  */
  var QueueProgress = function() {
