@@ -1365,7 +1365,7 @@ plupload.Uploader = function(options) {
 	settings = {
 		runtimes: o.Runtime.order,
 		max_retries: 0,
-		max_upload_slots: 2,
+		max_upload_slots: 1,
 		chunk_size: 0,
 		multipart: true,
 		multi_selection: true,
