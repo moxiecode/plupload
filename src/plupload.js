@@ -2260,6 +2260,46 @@ plupload.File = (function() {
 	};
 };
 
+
+/**
+Helper collection class - in a way a mix of object and array
+
+@contsructor
+@class Collection
+@private
+*/
+var Collection = function() {
+	var registry = {};
+
+	this.length = 0;
+
+	this.get = function(key) {
+		return registry.hasOwnProperty(key) ? registry[key] : null;
+	};
+
+	this.add = function(key, obj) {
+		registry[key] = obj;
+		this.length++;
+	};
+
+	this.remove = function(key) {
+		if (registry.hasOwnProperty(key)) {
+			delete registry[key];
+			this.length--;
+		}
+	};
+
+	this.each = function(cb) {
+		plupload.each(registry, cb);
+	};
+
+	this.clear = function() {
+		registry = {};
+		this.length = 0;
+	};
+};
+
+
 window.plupload = plupload;
 
 }(window, mOxie));
