@@ -1134,6 +1134,17 @@ plupload.Uploader = function(options) {
 
 		try {
 			img.onload = function() {
+				// no manipulation required if...
+				if (params.width > this.width &&
+					params.height > this.height &&
+					params.quality === undef &&
+					params.preserve_headers &&
+					!params.crop
+				) {
+					this.destroy();
+					return cb(blob);
+				}
+				// otherwise downsize
 				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
 			};
 
