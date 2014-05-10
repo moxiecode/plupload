@@ -404,6 +404,12 @@ $.widget("ui.plupload", {
 			options.drop_element = this.id + '_dropbox';
 		}
 
+		this.filelist.on('click', function(e) {
+			if ($(e.target).hasClass('plupload_action_icon')) {
+				self.removeFile($(e.target).closest('.plupload_file').attr('id'));
+				e.preventDefault();
+			}
+		});
 
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
@@ -894,22 +900,22 @@ $.widget("ui.plupload", {
 		switch (file.status) {
 			case plupload.DONE: 
 				actionClass = 'plupload_done';
-				iconClass = 'ui-icon ui-icon-circle-check';
+				iconClass = 'plupload_action_icon ui-icon ui-icon-circle-check';
 				break;
 			
 			case plupload.FAILED:
 				actionClass = 'ui-state-error plupload_failed';
-				iconClass = 'ui-icon ui-icon-alert';
+				iconClass = 'plupload_action_icon ui-icon ui-icon-alert';
 				break;
 
 			case plupload.QUEUED:
 				actionClass = 'plupload_delete';
-				iconClass = 'ui-icon ui-icon-circle-minus';
+				iconClass = 'plupload_action_icon ui-icon ui-icon-circle-minus';
 				break;
 
 			case plupload.UPLOADING:
 				actionClass = 'ui-state-highlight plupload_uploading';
-				iconClass = 'ui-icon ui-icon-circle-arrow-w';
+				iconClass = 'plupload_action_icon ui-icon ui-icon-circle-arrow-w';
 				
 				// scroll uploading file into the view if its bottom boundary is out of it
 				var scroller = $('.plupload_scroll', this.container)
@@ -938,15 +944,8 @@ $.widget("ui.plupload", {
 
 		$('#' + file.id)
 			.attr('class', actionClass)
-			.find('.ui-icon')
-				.attr('class', iconClass)
-				.end()
-			.filter('.plupload_delete, .plupload_done, .plupload_failed')
-				.find('.ui-icon')
-					.click(function(e) {
-						self.removeFile(file);
-						e.preventDefault();
-					});
+			.find('.plupload_action_icon')
+				.attr('class', iconClass);
 	},
 	
 	
