@@ -31,6 +31,7 @@ function normalizeCaps(settings) {
 			dragdrop: 'drag_and_drop',
 			drop_element: 'drag_and_drop',
 			headers: 'send_custom_headers',
+			urlstream_upload: 'send_binary_string',
 			canSendBinary: 'send_binary',
 			triggerDialog: 'summon_file_dialog'
 		};
@@ -52,15 +53,11 @@ function normalizeCaps(settings) {
 		});
 	} else if (features === true) {
 		// check settings for required features
-		if (!settings.multipart) { // special care for multipart: false
-			caps.send_binary_string = true;
-		}
-
 		if (settings.chunk_size > 0) {
 			caps.slice_blob = true;
 		}
 
-		if (settings.resize.enabled) {
+		if (settings.resize.enabled || !settings.multipart) {
 			caps.send_binary_string = true;
 		}
 		
