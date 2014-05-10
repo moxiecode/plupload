@@ -113,11 +113,12 @@
 	position: absolute;
 	left: 6px;
 	top: 6px;
-	background: #eee url(../img/loading.gif) center no-repeat;
+	background-image: none;
+	background-color: #eee;
 }
 
-.plupload_file_thumb_loaded .plupload_file_thumb {
-	background-image: none;
+.plupload_file_loading .plupload_file_thumb {
+	background: #eee url(../img/loading.gif) center no-repeat;
 }
 
 .plupload_file_name {

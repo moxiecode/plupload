@@ -890,10 +890,10 @@ $.widget("ui.plupload", {
 
 	
 	_handleFileStatus: function(file) {
-		var self = this, actionClass, iconClass;
+		var self = this, $file = $('#' + file.id), actionClass, iconClass;
 		
 		// since this method might be called asynchronously, file row might not yet be rendered
-		if (!$('#' + file.id).length) {
+		if (!$file.length) {
 			return;	
 		}
 
@@ -921,7 +921,7 @@ $.widget("ui.plupload", {
 				var scroller = $('.plupload_scroll', this.container)
 				, scrollTop = scroller.scrollTop()
 				, scrollerHeight = scroller.height()
-				, rowOffset = $('#' + file.id).position().top + $('#' + file.id).height()
+				, rowOffset = $file.position().top + $file.height()
 				;
 					
 				if (scrollerHeight < rowOffset) {
@@ -929,7 +929,7 @@ $.widget("ui.plupload", {
 				}		
 
 				// Set file specific progress
-				$('#' + file.id)
+				$file
 					.find('.plupload_file_percent')
 						.html(file.percent + '%')
 						.end()
@@ -942,7 +942,7 @@ $.widget("ui.plupload", {
 		}
 		actionClass += ' ui-state-default plupload_file';
 
-		$('#' + file.id)
+		$file
 			.attr('class', actionClass)
 			.find('.plupload_action_icon')
 				.attr('class', iconClass);
@@ -1016,7 +1016,7 @@ $.widget("ui.plupload", {
 			// get potentially visible thumbs that are not yet visible
 			thumbs = $('.plupload_file', self.filelist)
 				.slice(startIdx, startIdx + num)
-				.filter(':not(.plupload_file_thumb_loaded)')
+				.filter('.plupload_file_loading')
 				.get();
 		}
 		
@@ -1059,7 +1059,7 @@ $.widget("ui.plupload", {
 			};
 
 			img.bind("embedded error", function() {
-				$('#' + file.id, self.filelist).addClass('plupload_file_thumb_loaded');
+				$('#' + file.id, self.filelist).removeClass('plupload_file_loading');
 				this.destroy();
 				setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 			});
@@ -1097,7 +1097,7 @@ $.widget("ui.plupload", {
 	_addFiles: function(files) {
 		var self = this, file_html, html = '';
 
-		file_html = '<li class="plupload_file ui-state-default plupload_delete" id="%id%">' +
+		file_html = '<li class="plupload_file ui-state-default plupload_file_loading plupload_delete" id="%id%">' +
 			'<div class="plupload_file_thumb">' +
 				'<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">%ext%</span></div>' +
 			'</div>' +
