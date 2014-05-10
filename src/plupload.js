@@ -1337,8 +1337,8 @@ plupload.Uploader = function(options) {
 		function uploadNextChunk() {
 			var chunkBlob, formData, args, curChunkSize;
 
-			// File upload finished
-			if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
+			// make sure that file wasn't cancelled and upload is not stopped in general
+			if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
 				return;
 			}
 
