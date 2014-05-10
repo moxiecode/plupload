@@ -1180,6 +1180,14 @@ plupload.Uploader = function(options) {
 				case 'chunk_size':
 					if (value = plupload.parseSize(value)) {
 						settings[option] = value;
+						settings.send_file_name = true;
+					}
+					break;
+
+				case 'unique_names':
+					settings[option] = value;
+					if (value) {
+						settings.send_file_name = true;
 					}
 					break;
 
@@ -1293,7 +1301,7 @@ plupload.Uploader = function(options) {
 	// Internal event handlers
 	function onBeforeUpload(up, file) {
 		// Generate unique target filenames
-		if (settings.unique_names) {
+		if (up.settings.unique_names) {
 			var matches = file.name.match(/\.([^.]+)$/), ext = "part";
 			if (matches) {
 				ext = matches[1];
@@ -1335,15 +1343,17 @@ plupload.Uploader = function(options) {
 		}
 
 		function uploadNextChunk() {
-			var chunkBlob, formData, args, curChunkSize;
+			var chunkBlob, formData, args = {}, curChunkSize;
 
 			// make sure that file wasn't cancelled and upload is not stopped in general
 			if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
 				return;
 			}
 
-			// Standard arguments
-			args = {name : file.target_name || file.name};
+			// send additional 'name' parameter only if required
+			if (up.settings.send_file_name) {
+				args.name = file.target_name || file.name;
+			}
 
 			if (chunkSize && features.chunks && blob.size > chunkSize) { // blob will be of type string if it was loaded in memory 
 				curChunkSize = Math.min(chunkSize, blob.size - offset);
@@ -1444,9 +1454,6 @@ plupload.Uploader = function(options) {
 
 			// Build multipart request
 			if (up.settings.multipart && features.multipart) {
-
-				args.name = file.target_name || file.name;
-
 				xhr.open("post", url, true);
 
 				// Set custom headers
@@ -1619,6 +1626,7 @@ plupload.Uploader = function(options) {
 			preserve_headers: true,
 			crop: false
 		},
+		send_file_name: true,
 		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	};
 
