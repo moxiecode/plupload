@@ -1978,8 +1978,16 @@ plupload.Uploader = function(options) {
 			// if upload is in progress we need to stop it and restart after files are removed
 			var restartRequired = false;
 			if (this.state == plupload.STARTED) { // upload in progress
-				restartRequired = true;
-				this.stop();
+				plupload.each(removed, function(file) {
+					if (file.status === plupload.UPLOADING) {
+						restartRequired = true; // do not restart, unless file that is being removed is uploading
+						return false;
+					}
+				});
+				
+				if (restartRequired) {
+					this.stop();
+				}
 			}
 
 			this.trigger("FilesRemoved", removed);
