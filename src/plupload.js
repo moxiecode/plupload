@@ -1314,7 +1314,7 @@ plupload.Uploader = function(options) {
 
 		// make sure we start at a predictable offset
 		if (file.loaded) {
-			offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
+			offset = file.loaded = chunkSize ? chunkSize * Math.floor(file.loaded / chunkSize) : 0;
 		}
 
 		function handleError() {
