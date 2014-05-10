@@ -1096,14 +1096,16 @@ $.widget("ui.plupload", {
 
 
 	_addFiles: function(files) {
-		var self = this, file_html;
+		var self = this, file_html, html = '';
 
-		file_html = '<li class="plupload_file ui-state-default" id="%id%">' +
+		file_html = '<li class="plupload_file ui-state-default plupload_delete" id="%id%">' +
 			'<div class="plupload_file_thumb">' +
 				'<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">%ext%</span></div>' +
 			'</div>' +
 			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_name_wrapper">%name%</span></div>' +						
-			'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
+			'<div class="plupload_file_action">' +
+				'<div class="plupload_action_icon ui-icon ui-icon-circle-minus"> </div>' +
+			'</div>' +
 			'<div class="plupload_file_size">%size% </div>' +
 			'<div class="plupload_file_status">' +
 				'<div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div>' + 
@@ -1119,7 +1121,7 @@ $.widget("ui.plupload", {
 		$.each(files, function(i, file) {
 			var ext = o.Mime.getFileExtension(file.name) || 'none';
 
-			self.filelist.append(file_html.replace(/%(\w+)%/g, function($0, $1) {
+			html += file_html.replace(/%(\w+)%/g, function($0, $1) {
 				if ('size' === $1) {
 					return plupload.formatSize(file.size);
 				} else if ('ext' === $1) {
@@ -1127,10 +1129,10 @@ $.widget("ui.plupload", {
 				} else {
 					return file[$1] || '';
 				}
-			}));
-
-			self._handleFileStatus(file);
+			});
 		});
+
+		self.filelist.append(html);
 	},
 
 
