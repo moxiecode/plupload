@@ -890,7 +890,7 @@ $.widget("ui.plupload", {
 
 	
 	_handleFileStatus: function(file) {
-		var self = this, $file = $('#' + file.id), actionClass, iconClass;
+		var $file = $('#' + file.id), actionClass, iconClass;
 		
 		// since this method might be called asynchronously, file row might not yet be rendered
 		if (!$file.length) {

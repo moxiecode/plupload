@@ -1183,6 +1183,13 @@ plupload.Uploader = function(options) {
 					}
 					break;
 
+				case 'multipart':
+					settings[option] = value;
+					if (!value) {
+						settings.send_file_name = true;
+					}
+					break;
+
 				case 'unique_names':
 					settings[option] = value;
 					if (value) {
