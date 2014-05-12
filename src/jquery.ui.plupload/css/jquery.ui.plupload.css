@@ -105,14 +105,11 @@
 	display: block;
 	position: relative;
 	overflow: hidden;
-	width: 100%;
 	line-height: 12px;
 }
 
 .plupload_file_thumb {
-	position: absolute;
-	left: 6px;
-	top: 6px;
+	position: relative;
 	background-image: none;
 	background-color: #eee;
 }
@@ -189,8 +186,8 @@
 	width: 52px;
 }
 
-.plupload_view_list .plupload_file_thumb,
-.plupload_view_list .plupload_file_dummy {
+.plupload_view_list .plupload_file_thumb {
+	position: absolute;
 	top: -999px;
 }
 
@@ -209,8 +206,7 @@
 }
 
 .plupload_view_thumbs .plupload_file {
-	width: 100px;
-	padding: 72px 6px 6px;
+	padding: 6px;
 	margin: 10px;
 	border: 1px solid #fff;
 	float: left;
@@ -218,8 +214,6 @@
 
 .plupload_view_thumbs .plupload_file_thumb,
 .plupload_view_thumbs .plupload_file_dummy {
-	width: 100px;
-	height: 60px;
 	text-align: center;
 	overflow: hidden;
 }
@@ -229,8 +223,12 @@
 	font-weight: bold;
 	text-transform: lowercase;
 	overflow: hidden;
-	line-height: 60px;
 	border: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 }
 
 .plupload_view_thumbs div.plupload_file_action {
@@ -255,13 +253,11 @@
 }
 
 .plupload_view_thumbs div.plupload_file_status {
-	position: absolute;
-	top: 67px;
-	left: 6px;
-	width: 100px;
+	position: relative;	
 	height: 3px;
 	overflow: hidden;
 	text-indent: -999px;
+	margin-bottom: 3px;
 }
 
 .plupload_view_thumbs div.plupload_file_progress {

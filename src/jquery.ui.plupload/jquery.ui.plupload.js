@@ -295,6 +295,9 @@ $.widget("ui.plupload", {
 			remember: true // requires: https://github.com/carhartl/jquery-cookie, otherwise disabled even if set to true
 		},
 
+		thumb_width: 100,
+		thumb_height: 60,
+
 		multiple_queues: true, // re-use widget by default
 		dragdrop : true, 
 		autostart: false,
@@ -1050,8 +1053,8 @@ $.widget("ui.plupload", {
 			img.onload = function() {
 				var thumb = $('#' + file.id + ' .plupload_file_thumb', self.filelist).html('');
 				this.embed(thumb[0], { 
-					width: 100, 
-					height: 60, 
+					width:  self.options.thumb_width, 
+					height: self.options.thumb_height, 
 					crop: true,
 					swf_url: o.resolveUrl(self.options.flash_swf_url),
 					xap_url: o.resolveUrl(self.options.silverlight_xap_url)
@@ -1097,19 +1100,21 @@ $.widget("ui.plupload", {
 	_addFiles: function(files) {
 		var self = this, file_html, html = '';
 
-		file_html = '<li class="plupload_file ui-state-default plupload_file_loading plupload_delete" id="%id%">' +
-			'<div class="plupload_file_thumb">' +
-				'<div class="plupload_file_dummy ui-widget-content"><span class="ui-state-disabled">%ext%</span></div>' +
+		file_html = '<li class="plupload_file ui-state-default plupload_file_loading plupload_delete" id="%id%" style="width:%thumb_width%px;">' +
+			'<div class="plupload_file_thumb" style="width:%thumb_width%px;height:%thumb_height%px;">' +
+				'<div class="plupload_file_dummy ui-widget-content" style="line-height:%thumb_height%px;"><span class="ui-state-disabled">%ext% </span></div>' +
 			'</div>' +
-			'<div class="plupload_file_name" title="%name%"><span class="plupload_file_name_wrapper">%name%</span></div>' +						
-			'<div class="plupload_file_action">' +
-				'<div class="plupload_action_icon ui-icon ui-icon-circle-minus"> </div>' +
-			'</div>' +
-			'<div class="plupload_file_size">%size% </div>' +
 			'<div class="plupload_file_status">' +
 				'<div class="plupload_file_progress ui-widget-header" style="width: 0%"> </div>' + 
 				'<span class="plupload_file_percent">%percent% </span>' +
 			'</div>' +
+			'<div class="plupload_file_name" title="%name%">' +
+				'<span class="plupload_file_name_wrapper">%name% </span>' +
+			'</div>' +						
+			'<div class="plupload_file_action">' +
+				'<div class="plupload_action_icon ui-icon ui-icon-circle-minus"> </div>' +
+			'</div>' +
+			'<div class="plupload_file_size">%size% </div>' +
 			'<div class="plupload_file_fields"> </div>' +
 		'</li>';
 
@@ -1121,12 +1126,19 @@ $.widget("ui.plupload", {
 			var ext = o.Mime.getFileExtension(file.name) || 'none';
 
 			html += file_html.replace(/%(\w+)%/g, function($0, $1) {
-				if ('size' === $1) {
-					return plupload.formatSize(file.size);
-				} else if ('ext' === $1) {
-					return ext;
-				} else {
-					return file[$1] || '';
+				switch ($1) {
+					case 'thumb_width':
+					case 'thumb_height':
+						return self.options[$1];
+					
+					case 'size':
+						return plupload.formatSize(file.size);
+
+					case 'ext':
+						return ext;
+
+					default:
+						return file[$1] || '';
 				}
 			});
 		});
