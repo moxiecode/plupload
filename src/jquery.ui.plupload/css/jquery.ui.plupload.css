@@ -148,6 +148,10 @@
 	border-right: none;
 	border-top: none;
 	height: 29px;
+	width: 100% !important;
+	/* fix IE6 vertical white-space bug */
+	_float: left;
+	_clear: left;
 }
 
 .plupload_view_list div.plupload_file_size, 
