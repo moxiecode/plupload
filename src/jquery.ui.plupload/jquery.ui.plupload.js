@@ -1167,7 +1167,7 @@ $.widget("ui.plupload", {
 	
 		// ugly fix for IE6 - make content area stretchable
 		if (o.Env.browser === 'IE' && o.Env.version < 7) {
-			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (view === 'list' ? 133 : 103) + ');');
+			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (view === 'list' ? 132 : 102) + ')');
 		}
 
 		this.container.removeClass('plupload_view_list plupload_view_thumbs').addClass('plupload_view_' + view); 
