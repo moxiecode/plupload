@@ -1008,7 +1008,6 @@ plupload.Uploader = function(options) {
 
 		// common settings
 		var options = {
-			accept: settings.filters.mime_types,
 			runtime_order: settings.runtimes,
 			required_caps: settings.required_features,
 			preferred_caps: preferred_caps,
@@ -1028,6 +1027,7 @@ plupload.Uploader = function(options) {
 			plupload.each(settings.browse_button, function(el) {
 				queue.push(function(cb) {
 					var fileInput = new o.FileInput(plupload.extend({}, options, {
+						accept: settings.filters.mime_types,
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
 						container: settings.container,
