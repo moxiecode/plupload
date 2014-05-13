@@ -4,8 +4,15 @@
     "type": "library",
     "keywords": [
         "plupload",
-        "file upload"
+        "file upload",
+        "multi-runtime",
+        "legacy browser support"
     ],
     "homepage": "http://plupload.com",
-    "license": "GPL-2.0"
+    "license": "(GPL-2.0 or OEM)",
+	"authors": [{
+		"name": "Davit Barbakadze",
+		"email": "david@moxiecode.com",
+		"role": "Maintainer"
+	}]
 }
