@@ -2,6 +2,11 @@
    Plupload
 ------------------------------------------------------------------- */
 
+
+.plupload_wrapper * {
+	box-sizing: content-box;
+}
+
 .plupload_button {
 	display: -moz-inline-box; /* FF < 3*/
 	display: inline-block;
