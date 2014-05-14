@@ -2,6 +2,10 @@
    Plupload
 ------------------------------------------------------------------- */
 
+.plupload_wrapper * {
+	box-sizing: content-box;
+}
+
 .plupload_button {
 	cursor: pointer;
 	outline: none;
