@@ -22,10 +22,3 @@
 *.xap binary
 *.min.js binary
 js/* binary
-
-tests/ export-ignore
-src/ export-ignore
-build/ export-ignore
-Jakefile.js export-ignore
-package.json export-ignore
-.* export-ignore
