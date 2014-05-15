@@ -74,9 +74,8 @@ build by yourself out of the API.
 
 Plupload depends on File API and XHR2 L2 pollyfills that currently have their 
 [own repository](https://github.com/moxiecode/moxie) on GitHub. However, in most cases you shouldn't 
-care as we bundled the latest build of mOxie, including full and minified JavaScript source and 
-pre-compiled `SWF` and `XAP` components, with the repository here. You can find everything you may
-need under `js/` folder.
+care as we bundle the latest build of mOxie, including full and minified JavaScript source and 
+pre-compiled `SWF` and `XAP` components, with [every release](https://github.com/moxiecode/plupload/releases). You can find everything you may need under `js/` folder.
 
 There are cases where you might need a custom build, for example free of unnecessary runtimes, half the 
 original size, etc. The difficult part of this task comes from mOxie and its set of additional runtimes 
