@@ -1434,9 +1434,9 @@ plupload.Uploader = function(options) {
 						blob = null;
 					}
 
-					up.trigger('UploadProgress', file);
-
 					file.status = plupload.DONE;
+
+					up.trigger('UploadProgress', file);
 
 					up.trigger('FileUploaded', file, {
 						response : xhr.responseText,
