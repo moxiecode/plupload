@@ -1885,6 +1885,7 @@ plupload.Uploader = function(options) {
 		addFile : function(file, fileName) {
 			var self = this
 			, queue = [] 
+			, filesAdded = []
 			, ruid
 			;
 
@@ -1936,7 +1937,11 @@ plupload.Uploader = function(options) {
 						// run through the internal and user-defined filters, if any
 						filterFile(file, function(err) {
 							if (!err) {
+								// make files available for the filters by updating the main queue directly
 								files.push(file);
+								// collect the files that will be passed to FilesAdded event
+								filesAdded.push(file); 
+
 								self.trigger("FileFiltered", file);
 							}
 							delay(cb, 1); // do not build up recursions or eventually we might hit the limits
@@ -1966,8 +1971,8 @@ plupload.Uploader = function(options) {
 			if (queue.length) {
 				o.inSeries(queue, function() {
 					// if any files left after filtration, trigger FilesAdded
-					if (files.length) {
-						self.trigger("FilesAdded", files);
+					if (filesAdded.length) {
+						self.trigger("FilesAdded", filesAdded);
 					}
 				});
 			}
