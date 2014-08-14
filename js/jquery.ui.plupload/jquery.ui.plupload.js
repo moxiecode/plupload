@@ -1053,7 +1053,7 @@ $.widget("ui.plupload", {
 			img.onload = function() {
 				var thumb = $('#' + file.id + ' .plupload_file_thumb', self.filelist).html('');
 				this.embed(thumb[0], { 
-					width:  self.options.thumb_width, 
+					width: self.options.thumb_width,
 					height: self.options.thumb_height, 
 					crop: true,
 					swf_url: o.resolveUrl(self.options.flash_swf_url),
