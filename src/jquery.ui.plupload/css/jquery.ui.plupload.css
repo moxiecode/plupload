@@ -122,6 +122,14 @@
 	background: #eee url(../img/loading.gif) center no-repeat;
 }
 
+.plupload_file_dummy {
+	display: none;
+}
+
+.plupload_thumb_error .plupload_file_dummy {
+	display: block;
+}
+
 .plupload_file_name {
 	overflow: hidden;
 	text-overflow: ellipsis;

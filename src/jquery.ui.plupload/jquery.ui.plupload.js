@@ -1051,18 +1051,22 @@ $.widget("ui.plupload", {
 			var img = new o.Image();
 
 			img.onload = function() {
-				var thumb = $('#' + file.id + ' .plupload_file_thumb', self.filelist).html('');
+				var thumb = $('#' + file.id + ' .plupload_file_thumb', self.filelist);
 				this.embed(thumb[0], { 
 					width:  self.options.thumb_width, 
 					height: self.options.thumb_height, 
-					crop: true,
+					//crop: true,
+					resample: 'bicubic',
 					swf_url: o.resolveUrl(self.options.flash_swf_url),
 					xap_url: o.resolveUrl(self.options.silverlight_xap_url)
 				});
 			};
 
-			img.bind("embedded error", function() {
-				$('#' + file.id, self.filelist).removeClass('plupload_file_loading');
+			img.bind("embedded error", function(e) {
+				$('#' + file.id, self.filelist)
+					.removeClass('plupload_file_loading')
+					.addClass('plupload_thumb_' + e.type)
+					;
 				this.destroy();
 				setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 			});
