@@ -1144,7 +1144,7 @@ plupload.Uploader = function(options) {
 		var img = new o.Image();
 
 		try {
-            img.onload = function() {
+			img.onload = function() {
                 if(img.meta && img.meta.exif && img.meta.exif.ColorSpace && img.meta.exif.ColorSpace==='sRGB'){
                     // no manipulation required if...
                     if (params.width > this.width &&
@@ -1156,12 +1156,12 @@ plupload.Uploader = function(options) {
                         this.destroy();
                         return cb(blob);
                     }
-                    // otherwise downsize
-                    img.downsize(params.width, params.height, params.crop, params.preserve_headers);
                 }else{
                     return cb(blob);
                 }
-            };
+				// otherwise downsize
+				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+			};
 
 			img.onresize = function() {
 				cb(this.getAsBlob(blob.type, params.quality));
