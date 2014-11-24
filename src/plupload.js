@@ -1015,6 +1015,11 @@ plupload.Uploader = function(options) {
 			xap_url: settings.silverlight_xap_url
 		};
 
+		//before_chunk_upload must always be set either to user function or default or uploads will never actually start
+		if(!settings.before_chunk_upload){
+			settings.before_chunk_upload = defaultBeforeChunkUpload;
+		}
+
 		// add runtime specific options if any
 		plupload.each(settings.runtimes.split(/\s*,\s*/), function(runtime) {
 			if (settings[runtime]) {
@@ -1170,6 +1175,14 @@ plupload.Uploader = function(options) {
 			var oldValue = settings[option];
 
 			switch (option) {
+				case 'before_chunk_upload':
+					if(value) {
+						settings[option] = value;
+					}
+					else{ //before_chunk_upload must always be set either to user function or default
+						settings[option] = defaultBeforeChunkUpload;
+					}
+					break;
 				case 'max_file_size':
 					if (option === 'max_file_size') {
 						settings.max_file_size = settings.filters.max_file_size = value;
@@ -1305,6 +1318,15 @@ plupload.Uploader = function(options) {
 
 
 	// Internal event handlers
+
+	/*
+	Default function to call before uploading chunk.
+	settings.before_chunk_upload must always be set to user or default function, otherwise upload will never actually start!
+	*/
+	function defaultBeforeChunkUpload(uploader, file, chunkBlob, args, continueUpload){
+		continueUpload();
+	}
+
 	function onBeforeUpload(up, file) {
 		// Generate unique target filenames
 		if (up.settings.unique_names) {
@@ -1458,52 +1480,69 @@ plupload.Uploader = function(options) {
 				xhr = null;
 			};
 
-			// Build multipart request
-			if (up.settings.multipart && features.multipart) {
-				xhr.open("post", url, true);
 
-				// Set custom headers
-				plupload.each(up.settings.headers, function(value, name) {
-					xhr.setRequestHeader(name, value);
-				});
 
-				formData = new o.FormData();
 
-				// Add multipart params
-				plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
-					formData.append(name, value);
-				});
+			function continueUpload(skipChunk) {
+				// Build multipart request
 
-				// Add file and send it
-				formData.append(up.settings.file_data_name, chunkBlob);
-				xhr.send(formData, {
-					runtime_order: up.settings.runtimes,
-					required_caps: up.settings.required_features,
-					preferred_caps: preferred_caps,
-					swf_url: up.settings.flash_swf_url,
-					xap_url: up.settings.silverlight_xap_url
-				});
-			} else {
-				// if no multipart, send as binary stream
-				url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
+				if(skipChunk) { //skip this chunk
+					xhr.status = 200; //fake ok return code
+					xhr.onload(); //proceed with upload
+				}
 
-				xhr.open("post", url, true);
+				else{
 
-				xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+					if (up.settings.multipart && features.multipart) {
+						xhr.open("post", url, true);
 
-				// Set custom headers
-				plupload.each(up.settings.headers, function(value, name) {
-					xhr.setRequestHeader(name, value);
-				});
+						// Set custom headers
+						plupload.each(up.settings.headers, function (value, name) {
+							xhr.setRequestHeader(name, value);
+						});
 
-				xhr.send(chunkBlob, {
-					runtime_order: up.settings.runtimes,
-					required_caps: up.settings.required_features,
-					preferred_caps: preferred_caps,
-					swf_url: up.settings.flash_swf_url,
-					xap_url: up.settings.silverlight_xap_url
-				});
+						formData = new o.FormData();
+
+						// Add multipart params
+						plupload.each(plupload.extend(args, up.settings.multipart_params), function (value, name) {
+							formData.append(name, value);
+						});
+
+						// Add file and send it
+						formData.append(up.settings.file_data_name, chunkBlob);
+						xhr.send(formData, {
+							runtime_order: up.settings.runtimes,
+							required_caps: up.settings.required_features,
+							preferred_caps: preferred_caps,
+							swf_url: up.settings.flash_swf_url,
+							xap_url: up.settings.silverlight_xap_url
+						});
+					} else {
+						// if no multipart, send as binary stream
+						url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
+
+						xhr.open("post", url, true);
+
+						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+
+						// Set custom headers
+						plupload.each(up.settings.headers, function (value, name) {
+							xhr.setRequestHeader(name, value);
+						});
+
+						xhr.send(chunkBlob, {
+							runtime_order: up.settings.runtimes,
+							required_caps: up.settings.required_features,
+							preferred_caps: preferred_caps,
+							swf_url: up.settings.flash_swf_url,
+							xap_url: up.settings.silverlight_xap_url
+						});
+					}
+				}
+
 			}
+
+			up.settings.before_chunk_upload(up, file, chunkBlob, args, continueUpload);
 		}
 
 		blob = file.getSource();
