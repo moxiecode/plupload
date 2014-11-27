@@ -1484,6 +1484,12 @@ plupload.Uploader = function(options) {
 
 
 			function continueUpload(skipChunk) {
+
+				// Check if file or upload cancelled
+				if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
+					return;
+				}
+
 				// Build multipart request
 
 				if(skipChunk) { //skip this chunk
