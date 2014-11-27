@@ -1490,7 +1490,6 @@ plupload.Uploader = function(options) {
 					return;
 				}
 
-				// Build multipart request
 
 				if(skipChunk) { //skip this chunk
 					xhr.status = 200; //fake ok return code
