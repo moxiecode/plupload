@@ -1499,6 +1499,7 @@ plupload.Uploader = function(options) {
 				else{
 
 					if (up.settings.multipart && features.multipart) {
+						url = up.settings.url;
 						xhr.open("post", url, true);
 
 						// Set custom headers
