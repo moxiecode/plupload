@@ -695,7 +695,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 @constructor
 
 @param {Object} settings For detailed information about each option check documentation.
-	@param {String|DOMElement} settings.browse_button id of the DOM element or DOM element itself to use as file dialog trigger.
+	@param {String|DOMElement|Array} settings.browse_button id of the DOM element or DOM element itself to use as file dialog trigger.
 	@param {String} settings.url URL of the server-side upload handler.
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
 	@param {Boolean} [settings.send_chunk_number=true] Whether to send chunks and chunk numbers, or total and offset bytes.
@@ -1024,7 +1024,8 @@ plupload.Uploader = function(options) {
 
 		// initialize file pickers - there can be many
 		if (settings.browse_button) {
-			plupload.each(settings.browse_button, function(el) {
+			var browse_buttons = Array.isArray(settings.browse_button) ? settings.browse_button : [ settings.browse_button ];
+			plupload.each(browse_buttons, function(el) {
 				queue.push(function(cb) {
 					var fileInput = new o.FileInput(plupload.extend({}, options, {
 						accept: settings.filters.mime_types,
