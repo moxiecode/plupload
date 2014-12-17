@@ -31,6 +31,7 @@ function normalizeCaps(settings) {
 			dragdrop: 'drag_and_drop',
 			drop_element: 'drag_and_drop',
 			headers: 'send_custom_headers',
+			urlstream_upload: 'send_binary_string',
 			canSendBinary: 'send_binary',
 			triggerDialog: 'summon_file_dialog'
 		};
@@ -52,17 +53,14 @@ function normalizeCaps(settings) {
 		});
 	} else if (features === true) {
 		// check settings for required features
-		if (!settings.multipart) { // special care for multipart: false
-			caps.send_binary_string = true;
-		}
-
 		if (settings.chunk_size > 0) {
 			caps.slice_blob = true;
 		}
 
-		if (settings.resize.enabled) {
+		if (settings.resize.enabled || !settings.multipart) {
 			caps.send_binary_string = true;
 		}
+
 		
 		plupload.each(settings, function(value, feature) {
 			resolve(feature, !!value, true); // strict check
@@ -701,6 +699,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String|DOMElement} settings.browse_button id of the DOM element or DOM element itself to use as file dialog trigger.
 	@param {String} settings.url URL of the server-side upload handler.
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
+	@param {Boolean} [settings.send_chunk_number=true] Whether to send chunks and chunk numbers, or total and offset bytes.
 	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
 	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
@@ -723,6 +722,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
 	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
+	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
 */
 plupload.Uploader = function(options) {
 	/**
@@ -1004,7 +1004,6 @@ plupload.Uploader = function(options) {
 
 		// common settings
 		var options = {
-			accept: settings.filters.mime_types,
 			runtime_order: settings.runtimes,
 			required_caps: settings.required_features,
 			preferred_caps: preferred_caps,
@@ -1024,6 +1023,7 @@ plupload.Uploader = function(options) {
 			plupload.each(settings.browse_button, function(el) {
 				queue.push(function(cb) {
 					var fileInput = new o.FileInput(plupload.extend({}, options, {
+						accept: settings.filters.mime_types,
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
 						container: settings.container,
@@ -1141,6 +1141,21 @@ plupload.Uploader = function(options) {
 					if (value = plupload.parseSize(value)) {
 						settings[option] = value;
 					}
+					settings.send_file_name = true;
+					break;
+
+				case 'multipart':
+					settings[option] = value;
+					if (!value) {
+						settings.send_file_name = true;
+					}
+					break;
+
+				case 'unique_names':
+					settings[option] = value;
+					if (value) {
+						settings.send_file_name = true;
+					}
 					break;
 
 				case 'filters':
@@ -1253,7 +1268,7 @@ plupload.Uploader = function(options) {
 	// Internal event handlers
 	function onBeforeUpload(up, file) {
 		// Generate unique target filenames
-		if (settings.unique_names) {
+		if (up.settings.unique_names) {
 			var matches = file.name.match(/\.([^.]+)$/), ext = "part";
 			if (matches) {
 				ext = matches[1];
@@ -1382,6 +1397,7 @@ plupload.Uploader = function(options) {
 			preserve_headers: true,
 			crop: false
 		},
+		send_file_name: true,
 		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	};
 
@@ -1655,7 +1671,8 @@ plupload.Uploader = function(options) {
 		 */
 		addFile : function(file, fileName) {
 			var self = this
-			, queue = [] 
+			, queue = []
+			, filesAdded = []
 			, ruid
 			;
 
@@ -1720,7 +1737,10 @@ plupload.Uploader = function(options) {
 						filterFile(file, function(err) {
 							if (!err) {
 								bindListeners(file);
+								// make files available for the filters by updating the main queue directly
 								files.push(file);
+								// collect the files that will be passed to FilesAdded event
+								filesAdded.push(file); 
 								self.trigger("FileFiltered", file);
 							}
 							delay(cb, 1); // do not build up recursions or eventually we might hit the limits
@@ -1750,8 +1770,8 @@ plupload.Uploader = function(options) {
 			if (queue.length) {
 				o.inSeries(queue, function() {
 					// if any files left after filtration, trigger FilesAdded
-					if (files.length) {
-						self.trigger("FilesAdded", files);
+					if (filesAdded.length) {
+						self.trigger("FilesAdded", filesAdded);
 					}
 				});
 			}
@@ -1788,8 +1808,16 @@ plupload.Uploader = function(options) {
 			// if upload is in progress we need to stop it and restart after files are removed
 			var restartRequired = false;
 			if (this.state == plupload.STARTED) { // upload in progress
-				restartRequired = true;
-				this.stop();
+				plupload.each(removed, function(file) {
+					if (file.status === plupload.UPLOADING) {
+						restartRequired = true; // do not restart, unless file that is being removed is uploading
+						return false;
+					}
+				});
+
+				if (restartRequired) {
+					this.stop();
+				}
 			}
 
 			this.trigger("FilesRemoved", removed);
@@ -1926,6 +1954,17 @@ plupload.File = (function() {
 
 			try {
 				img.onload = function() {
+					// no manipulation required if...
+					if (params.width > this.width &&
+						params.height > this.height &&
+						params.quality === undef &&
+						params.preserve_headers &&
+						!params.crop
+					) {
+						this.destroy();
+						return cb(blob);
+					}
+					// otherwise downsize					
 					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
 				};
 
@@ -1954,7 +1993,7 @@ plupload.File = (function() {
 			 * @type String
 			 */
 			id: uid,
-			uid: uid,
+			uid: uid, // for EventTarget
 
 			/**
 			 * File name for example "myfile.gif".
@@ -2074,6 +2113,7 @@ plupload.File = (function() {
 					headers: {},
 					file_data_name: 'file',
 					chunk_size: 0,
+					send_file_name: true,
 					send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
 					max_retries: 0,
 					resize: {
@@ -2123,8 +2163,10 @@ plupload.File = (function() {
 					, curChunkSize
 					;
 
-					// Standard arguments
-					data = { name : file.target_name || file.name };
+					// send additional 'name' parameter only if required
+					if (options.send_file_name) {
+						data.name = file.target_name || file.name;
+					}
 
 					if (chunkSize && canSliceBlob && blob.size > chunkSize) {
 						curChunkSize = Math.min(chunkSize, blob.size - offset);
@@ -2240,9 +2282,6 @@ plupload.File = (function() {
 
 					// Build multipart request
 					if (options.multipart && canSendMultipart) {
-
-						data.name = file.target_name || file.name;
-
 						xhr.open("post", url, true);
 
 						// Set custom headers
