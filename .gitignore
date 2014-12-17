@@ -16,3 +16,4 @@ jscoverage
 .DS_Store
 _notes
 node_modules
+sftp-config.json
