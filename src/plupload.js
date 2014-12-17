@@ -2425,6 +2425,9 @@ var Collection = function() {
 	};
 
 	this.add = function(key, obj) {
+		if (registry.hasOwnProperty(key)) {
+			return this.update.apply(this, arguments);
+		}
 		registry[key] = obj;
 		this.length++;
 	};
@@ -2434,6 +2437,10 @@ var Collection = function() {
 			delete registry[key];
 			this.length--;
 		}
+	};
+
+	this.update = function(key, obj) {
+		registry[key] = obj;
 	};
 
 	this.each = function(cb) {
