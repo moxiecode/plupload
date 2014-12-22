@@ -699,7 +699,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String} settings.url URL of the server-side upload handler.
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
 	@param {Boolean} [settings.send_chunk_number=true] Whether to send chunks and chunk numbers, or total and offset bytes.
-	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
+	@param {String|DOMElement} [settings.container] id of the DOM element or DOM element itself that will be used to wrap uploader structures. Defaults to immediate parent of the `browse_button` element.
 	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
 	@param {Object} [settings.filters={}] Set of file type filters.
