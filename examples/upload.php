@@ -58,6 +58,15 @@ if (isset($_REQUEST["name"])) {
 	$fileName = uniqid("file_");
 }
 
+// Sanitize file name
+$fileName = basename($filename);
+$fileName = preg_replace('/[^a-zA-Z0-9-_.]/g', '_', $fileName);
+$fileName = preg_replace('/^\.*/', '', $fileName);
+
+if ($fileName === "") {
+        $fileName = uniqid("file_");
+}
+
 $filePath = $targetDir . DIRECTORY_SEPARATOR . $fileName;
 
 // Chunking might be enabled
