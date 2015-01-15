@@ -59,8 +59,8 @@ if (isset($_REQUEST["name"])) {
 }
 
 // Sanitize file name
-$fileName = basename($filename);
-$fileName = preg_replace('/[^a-zA-Z0-9-_.]/g', '_', $fileName);
+$fileName = basename($fileName);
+$fileName = preg_replace('/[^-a-zA-Z0-9_.]/', '_', $fileName);
 $fileName = preg_replace('/^\.*/', '', $fileName);
 
 if ($fileName === "") {
