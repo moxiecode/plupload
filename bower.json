@@ -1,0 +1,17 @@
+{
+  "name": "plupload",
+  "version": "2.1.2",
+  "main": "js/plupload.full.min.js",
+  "ignore": [
+    ".jshintrc",
+    ".gitmodules",
+    ".gitignore",
+    ".gitattributes",
+    "composer.json",
+    "package.json",
+    "Jakefile.js",
+    "build",
+    "src",
+    "tests"
+  ]
+}
