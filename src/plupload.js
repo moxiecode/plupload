@@ -1,4 +1,16 @@
 /**
+ * Plupload - multi-runtime File Uploader
+ * v2.1.2
+ *
+ * Copyright 2013, Moxiecode Systems AB
+ * Released under GPL License.
+ *
+ * License: http://www.plupload.com/license
+ * Contributing: http://www.plupload.com/contributing
+ *
+ * Date: 2014-05-14
+ */
+/**
  * Plupload.js
  *
  * Copyright 2013, Moxiecode Systems AB
@@ -60,6 +72,7 @@ function normalizeCaps(settings) {
 		if (settings.resize.enabled || !settings.multipart) {
 			caps.send_binary_string = true;
 		}
+
 		
 		plupload.each(settings, function(value, feature) {
 			resolve(feature, !!value, true); // strict check
@@ -82,7 +95,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '@@version@@',
+	VERSION : '2.1.2',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -699,7 +712,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String} settings.url URL of the server-side upload handler.
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
 	@param {Boolean} [settings.send_chunk_number=true] Whether to send chunks and chunk numbers, or total and offset bytes.
-	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
+ @param {String|DOMElement} [settings.container] id of the DOM element or DOM element itself that will be used to wrap uploader structures. Defaults to immediate parent of the `browse_button` element.
 	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
 	@param {Object} [settings.filters={}] Set of file type filters.
@@ -871,49 +884,57 @@ plupload.Uploader = function(options) {
 	var uid = plupload.guid()
 	, settings
 	, files = []
+		, activeUploads = new Collection()
+		, pendingUploads = new Collection()
 	, preferred_caps = {}
 	, fileInputs = []
 	, fileDrops = []
 	, startTime
 	, total
 	, disabled = false
-	, xhr
 	;
 
 
 	// Private methods
 	function uploadNext() {
-		var file, count = 0, i;
+		var up = this
+			, nextFile
+			;
 
 		if (this.state == plupload.STARTED) {
-			// Find first QUEUED file
-			for (i = 0; i < files.length; i++) {
-				if (!file && files[i].status == plupload.QUEUED) {
-					file = files[i];
-					if (this.trigger("BeforeUpload", file)) {
-						file.status = plupload.UPLOADING;
-						this.trigger("UploadFile", file);
-					}
-				} else {
-					count++;
-				}
+			// check if we have any pending files
+			if (pendingUploads.length) {
+				pendingUploads.each(function (file, id) {
+					pendingUploads.remove(id);
+					nextFile = file;
+					return false;
+				});
 			}
 
-			// All files are DONE or FAILED
-			if (count == files.length) {
+			// ... otherwise simply pick up the first QUEUED file from the main queue
+			if (!nextFile) {
+				plupload.each(files, function (file) {
+					if (file.status == plupload.QUEUED) {
+						if (up.trigger("BeforeUpload", file)) {
+							nextFile = file;
+							return false;
+						}
+					}
+				});
+			}
+
+			if (nextFile) {
+				up.uploadFile(nextFile);
+			} else if (!activeUploads.length) {
+				// all files are either DONE or FAILED
 				if (this.state !== plupload.STOPPED) {
 					this.state = plupload.STOPPED;
 					this.trigger("StateChanged");
 				}
+
 				this.trigger("UploadComplete", files);
 			}
 		}
-	}
-
-
-	function calcFile(file) {
-		file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 100;
-		calc();
 	}
 
 
@@ -966,17 +987,6 @@ plupload.Uploader = function(options) {
 	}
 
 
-	function runtimeCan(file, cap) {
-		if (file.ruid) {
-			var info = o.Runtime.getInfo(file.ruid);
-			if (info) {
-				return info.can(cap);
-			}
-		}
-		return false;
-	}
-
-
 	function bindEventListeners() {
 		this.bind('FilesAdded FilesRemoved', function(up) {
 			up.trigger('QueueChanged');
@@ -986,8 +996,6 @@ plupload.Uploader = function(options) {
 		this.bind('CancelUpload', onCancelUpload);
 		
 		this.bind('BeforeUpload', onBeforeUpload);
-
-		this.bind('UploadFile', onUploadFile);
 
 		this.bind('UploadProgress', onUploadProgress);
 
@@ -1133,41 +1141,6 @@ plupload.Uploader = function(options) {
 	}
 
 
-	function resizeImage(blob, params, cb) {
-		var img = new o.Image();
-
-		try {
-			img.onload = function() {
-				// no manipulation required if...
-				if (params.width > this.width &&
-					params.height > this.height &&
-					params.quality === undef &&
-					params.preserve_headers &&
-					!params.crop
-				) {
-					this.destroy();
-					return cb(blob);
-				}
-				// otherwise downsize
-				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
-			};
-
-			img.onresize = function() {
-				cb(this.getAsBlob(blob.type, params.quality));
-				this.destroy();
-			};
-
-			img.onerror = function() {
-				cb(blob);
-			};
-
-			img.load(blob);
-		} catch(ex) {
-			cb(blob);
-		}
-	}
-
-
 	function setOption(option, value, init) {
 		var self = this, reinitRequired = false;
 
@@ -1194,6 +1167,21 @@ plupload.Uploader = function(options) {
 						settings[option] = value;
 						settings.send_file_name = true;
 					}
+					break;
+
+				case 'multipart':
+					settings[option] = value;
+					if (!value) {
+						settings.send_file_name = true;
+					}
+					break;
+
+				case 'unique_names':
+					settings[option] = value;
+					if (value) {
+						settings.send_file_name = true;
+					}
+					settings.send_file_name = true;
 					break;
 
 				case 'multipart':
@@ -1323,8 +1311,8 @@ plupload.Uploader = function(options) {
 	Default function to call before uploading chunk.
 	settings.before_chunk_upload must always be set to user or default function, otherwise upload will never actually start!
 	*/
-	function defaultBeforeChunkUpload(uploader, file, chunkBlob, args, continueUpload){
-		continueUpload();
+	function defaultBeforeChunkUpload(uploader, file, args, continueUpload) {
+		continueUpload.ok();
 	}
 
 	function onBeforeUpload(up, file) {
@@ -1339,236 +1327,21 @@ plupload.Uploader = function(options) {
 	}
 
 
-	function onUploadFile(up, file) {
-		var url = up.settings.url
-		, chunkSize = up.settings.chunk_size
-		, retries = up.settings.max_retries
-		, features = up.features
-		, offset = 0
-		, blob
-		;
-
-		// make sure we start at a predictable offset
-		if (file.loaded) {
-			offset = file.loaded = chunkSize ? chunkSize * Math.floor(file.loaded / chunkSize) : 0;
-		}
-
-		function handleError() {
-			if (retries-- > 0) {
-				delay(uploadNextChunk, 1000);
-			} else {
-				file.loaded = offset; // reset all progress
-
-				up.trigger('Error', {
-					code : plupload.HTTP_ERROR,
-					message : plupload.translate('HTTP Error.'),
-					file : file,
-					response : xhr.responseText,
-					status : xhr.status,
-					responseHeaders: xhr.getAllResponseHeaders()
-				});
-			}
-		}
-
-		function uploadNextChunk() {
-			var chunkBlob, formData, args = {}, curChunkSize;
-
-			// make sure that file wasn't cancelled and upload is not stopped in general
-			if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
-				return;
-			}
-
-			// send additional 'name' parameter only if required
-			if (up.settings.send_file_name) {
-				args.name = file.target_name || file.name;
-			}
-
-			if (chunkSize && features.chunks && blob.size > chunkSize) { // blob will be of type string if it was loaded in memory 
-				curChunkSize = Math.min(chunkSize, blob.size - offset);
-				chunkBlob = blob.slice(offset, offset + curChunkSize);
-			} else {
-				curChunkSize = blob.size;
-				chunkBlob = blob;
-			}
-
-			// If chunking is enabled add corresponding args, no matter if file is bigger than chunk or smaller
-			if (chunkSize && features.chunks) {
-				// Setup query string arguments
-				if (up.settings.send_chunk_number) {
-					args.chunk = Math.ceil(offset / chunkSize);
-					args.chunks = Math.ceil(blob.size / chunkSize);
-				} else { // keep support for experimental chunk format, just in case
-					args.offset = offset;
-					args.total = blob.size;
-				}
-			}
-
-			xhr = new o.XMLHttpRequest();
-
-			// Do we have upload progress support
-			if (xhr.upload) {
-				xhr.upload.onprogress = function(e) {
-					file.loaded = Math.min(file.size, offset + e.loaded);
-					up.trigger('UploadProgress', file);
-				};
-			}
-
-			xhr.onload = function() {
-				// check if upload made itself through
-				if (xhr.status >= 400) {
-					handleError();
-					return;
-				}
-
-				retries = up.settings.max_retries; // reset the counter
-
-				// Handle chunk response
-				if (curChunkSize < blob.size) {
-					chunkBlob.destroy();
-
-					offset += curChunkSize;
-					file.loaded = Math.min(offset, blob.size);
-
-					up.trigger('ChunkUploaded', file, {
-						offset : file.loaded,
-						total : blob.size,
-						response : xhr.responseText,
-						status : xhr.status,
-						responseHeaders: xhr.getAllResponseHeaders()
-					});
-
-					// stock Android browser doesn't fire upload progress events, but in chunking mode we can fake them
-					if (o.Env.browser === 'Android Browser') {
-						// doesn't harm in general, but is not required anywhere else
-						up.trigger('UploadProgress', file);
-					} 
-				} else {
-					file.loaded = file.size;
-				}
-
-				chunkBlob = formData = null; // Free memory
-
-				// Check if file is uploaded
-				if (!offset || offset >= blob.size) {
-					// If file was modified, destory the copy
-					if (file.size != file.origSize) {
-						blob.destroy();
-						blob = null;
-					}
-
-					up.trigger('UploadProgress', file);
-
-					file.status = plupload.DONE;
-
-					up.trigger('FileUploaded', file, {
-						response : xhr.responseText,
-						status : xhr.status,
-						responseHeaders: xhr.getAllResponseHeaders()
-					});
-				} else {
-					// Still chunks left
-					delay(uploadNextChunk, 1); // run detached, otherwise event handlers interfere
-				}
-			};
-
-			xhr.onerror = function() {
-				handleError();
-			};
-
-			xhr.onloadend = function() {
-				this.destroy();
-				xhr = null;
-			};
-
-
-
-
-			function continueUpload(skipChunk) {
-
-				// Check if file or upload cancelled
-				if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
-					return;
-				}
-
-
-				if(skipChunk) { //skip this chunk
-					xhr.status = 200; //fake ok return code
-					xhr.onload(); //proceed with upload
-				}
-
-				else{
-
-					if (up.settings.multipart && features.multipart) {
-						url = up.settings.url;
-						xhr.open("post", url, true);
-
-						// Set custom headers
-						plupload.each(up.settings.headers, function (value, name) {
-							xhr.setRequestHeader(name, value);
-						});
-
-						formData = new o.FormData();
-
-						// Add multipart params
-						plupload.each(plupload.extend(args, up.settings.multipart_params), function (value, name) {
-							formData.append(name, value);
-						});
-
-						// Add file and send it
-						formData.append(up.settings.file_data_name, chunkBlob);
-						xhr.send(formData, {
-							runtime_order: up.settings.runtimes,
-							required_caps: up.settings.required_features,
-							preferred_caps: preferred_caps,
-							swf_url: up.settings.flash_swf_url,
-							xap_url: up.settings.silverlight_xap_url
-						});
-					} else {
-						// if no multipart, send as binary stream
-						url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
-
-						xhr.open("post", url, true);
-
-						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
-
-						// Set custom headers
-						plupload.each(up.settings.headers, function (value, name) {
-							xhr.setRequestHeader(name, value);
-						});
-
-						xhr.send(chunkBlob, {
-							runtime_order: up.settings.runtimes,
-							required_caps: up.settings.required_features,
-							preferred_caps: preferred_caps,
-							swf_url: up.settings.flash_swf_url,
-							xap_url: up.settings.silverlight_xap_url
-						});
-					}
-				}
-
-			}
-
-			up.settings.before_chunk_upload(up, file, chunkBlob, args, continueUpload);
-		}
-
-		blob = file.getSource();
-
-		// Start uploading chunks
-		if (up.settings.resize.enabled && runtimeCan(blob, 'send_binary_string') && !!~o.inArray(blob.type, ['image/jpeg', 'image/png'])) {
-			// Resize if required
-			resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
-				blob = resizedBlob;
-				file.size = resizedBlob.size;
-				uploadNextChunk();
-			});
-		} else {
-			uploadNextChunk();
-		}
+	function onUploadProgress() {
+		calc();
 	}
 
 
-	function onUploadProgress(up, file) {
-		calcFile(file);
+	function onFileUploaded(up, file) {
+		activeUploads.remove(file.id);
+
+		calc();
+
+		// Upload next file but detach it from the error event
+		// since other custom listeners might want to stop the queue
+		delay(function () {
+			uploadNext.call(up);
+		}, 1);
 	}
 
 
@@ -1589,20 +1362,13 @@ plupload.Uploader = function(options) {
 
 
 	function onCancelUpload() {
-		if (xhr) {
-			xhr.abort();
+		// loop over active uploads and cancel them
+		if (activeUploads.length) {
+			activeUploads.each(function (file) {
+				file.cancelUpload();
+			});
 		}
-	}
-
-
-	function onFileUploaded(up) {
-		calc();
-
-		// Upload next file but detach it from the error event
-		// since other custom listeners might want to stop the queue
-		delay(function() {
-			uploadNext.call(up);
-		}, 1);
+		activeUploads.clear();
 	}
 
 
@@ -1612,8 +1378,7 @@ plupload.Uploader = function(options) {
 		}
 		// Set failed status if an error occured on a file
 		else if (err.file) {
-			err.file.status = plupload.FAILED;
-			calcFile(err.file);
+			calc();
 
 			// Upload next file but detach it from the error event
 			// since other custom listeners might want to stop the queue
@@ -1650,9 +1415,12 @@ plupload.Uploader = function(options) {
 			fileDrops = [];
 		}
 
+		activeUploads.clear();
+		pendingUploads.clear();
+
 		preferred_caps = {};
 		disabled = false;
-		startTime = xhr = null;
+		startTime = null;
 		total.reset();
 	}
 
@@ -1661,6 +1429,7 @@ plupload.Uploader = function(options) {
 	settings = {
 		runtimes: o.Runtime.order,
 		max_retries: 0,
+		max_upload_slots: 1,
 		chunk_size: 0,
 		multipart: true,
 		multi_selection: true,
@@ -1678,14 +1447,14 @@ plupload.Uploader = function(options) {
 			crop: false
 		},
 		send_file_name: true,
-		send_chunk_number: true
+		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	};
 
 	
 	setOption.call(this, options, null, true);
 
 	// Inital total state
-	total = new plupload.QueueProgress(); 
+	total = new QueueProgress(); 
 
 	// Add public methods
 	plupload.extend(this, {
@@ -1889,6 +1658,40 @@ plupload.Uploader = function(options) {
 			this.trigger('DisableBrowse', disabled);
 		},
 
+
+		/**
+		 * Returns the specified file object by id.
+		 *
+		 * @method uploadFile
+		 * @param {String|Object} file File object to upload.
+		 */
+		uploadFile: function (file) {
+			var up = this
+				, maxSlots = up.getOption('max_upload_slots')
+				;
+
+			if (typeof(file) === 'string') {
+				file = this.getFile(file);
+			}
+
+			if (activeUploads.length < maxSlots) {
+				activeUploads.add(file.id, file);
+				file.upload(up.getOption(), up);
+
+				this.trigger('UploadFile', file);
+
+				// if we still got the slots, enqueue more
+				if (activeUploads.length < maxSlots) {
+					delay(function () {
+						uploadNext.call(up);
+					});
+				}
+			} else {
+				pendingUploads.add(file.id, file);
+			}
+		},
+
+
 		/**
 		 * Returns the specified file object by id.
 		 *
@@ -1917,10 +1720,22 @@ plupload.Uploader = function(options) {
 		 */
 		addFile : function(file, fileName) {
 			var self = this
-			, queue = [] 
+				, queue = []
 			, filesAdded = []
 			, ruid
 			;
+
+
+			function bindListeners(file) {
+				file.bind('progress', function () {
+					self.trigger('UploadProgress', file);
+				});
+
+				file.bind('uploaded', function (e, args) {
+					self.trigger('FileUploaded', file, args);
+				});
+			}
+
 
 			function filterFile(file, cb) {
 				var queue = [];
@@ -1970,11 +1785,11 @@ plupload.Uploader = function(options) {
 						// run through the internal and user-defined filters, if any
 						filterFile(file, function(err) {
 							if (!err) {
+								bindListeners(file);
 								// make files available for the filters by updating the main queue directly
 								files.push(file);
 								// collect the files that will be passed to FilesAdded event
 								filesAdded.push(file); 
-
 								self.trigger("FileFiltered", file);
 							}
 							delay(cb, 1); // do not build up recursions or eventually we might hit the limits
@@ -2048,7 +1863,7 @@ plupload.Uploader = function(options) {
 						return false;
 					}
 				});
-				
+
 				if (restartRequired) {
 					this.stop();
 				}
@@ -2146,7 +1961,76 @@ plupload.Uploader.prototype = o.EventTarget.instance;
 plupload.File = (function() {
 	var filepool = {};
 
+
+	/**
+	 @class PluploadFile
+
+	 @constructor
+	 @param {o.File} file
+	 */
 	function PluploadFile(file) {
+		/**
+		 Dispatched while file is uploading.
+
+		 @event progress
+		 @param {Object} event
+		 */
+
+		/**
+		 Dispatched when file is uploaded.
+
+		 @event uploaded
+		 @param {Object} event
+		 */
+		var uid = plupload.guid()
+			, xhr
+			;
+
+
+		function runtimeCan(blob, cap) {
+			if (blob.ruid) {
+				var info = o.Runtime.getInfo(blob.ruid);
+				if (info) {
+					return info.can(cap);
+				}
+			}
+			return false;
+		}
+
+
+		function resizeImage(blob, params, cb) {
+			var img = new o.Image();
+
+			try {
+				img.onload = function () {
+					// no manipulation required if...
+					if (params.width > this.width &&
+						params.height > this.height &&
+						params.quality === undef &&
+						params.preserve_headers && !params.crop
+					) {
+						this.destroy();
+						return cb(blob);
+					}
+					// otherwise downsize					
+					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+				};
+
+				img.onresize = function () {
+					cb(this.getAsBlob(blob.type, params.quality));
+					this.destroy();
+				};
+
+				img.onerror = function () {
+					cb(blob);
+				};
+
+				img.load(blob);
+			} catch (ex) {
+				cb(blob);
+			}
+		}
+
 
 		plupload.extend(this, {
 
@@ -2156,7 +2040,8 @@ plupload.File = (function() {
 			 * @property id
 			 * @type String
 			 */
-			id: plupload.guid(),
+			id: uid,
+			uid: uid, // for EventTarget
 
 			/**
 			 * File name for example "myfile.gif".
@@ -2223,6 +2108,12 @@ plupload.File = (function() {
 			 */
 			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
 
+
+			isImage: function () {
+				return o.inArray(this.type, ['image/jpeg', 'image/png']) !== -1;
+			},
+
+
 			/**
 			 * Returns native window.File object, when it's available.
 			 *
@@ -2247,12 +2138,291 @@ plupload.File = (function() {
 				return filepool[this.id];
 			},
 
+
+			/**
+
+			 @param {Object} options
+			 @param {String} options.url
+			 @param {Number} options.max_retries
+			 @param {Boolean} [options.multipart=true]
+			 @param {Boolean} [options.file_data_name='file']
+			 @param {Number} options.chunk_size
+			 @param {Object} options.resize
+			 @param {Number} [options.resize.width] If image is bigger, it will be resized.
+			 @param {Number} [options.resize.height] If image is bigger, it will be resized.
+			 @param {Number} [options.resize.quality=90] Compression quality for jpegs (1-100).
+			 @param {Boolean} [options.resize.crop=false] Whether to crop images to exact dimensions. By default they will be resized proportionally.
+			 */
+			upload: function (options) {
+
+				options = plupload.extend({
+					multipart: true,
+					multipart_params: {},
+					headers: {},
+					file_data_name: 'file',
+					chunk_size: 0,
+					send_file_name: true,
+					send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
+					max_retries: 0,
+					resize: {
+						enabled: false,
+						preserve_headers: true,
+						crop: false
+					}
+				}, options);
+
+
+				var file = this
+					, blob = file.getSource()
+					, canSliceBlob = runtimeCan(blob, 'slice_blob')
+					, canSendMultipart = runtimeCan(blob, 'send_multipart')
+					, chunkSize = options.chunk_size
+					, retries = options.max_retries
+					, offset = 0
+					;
+
+
+				file.status = plupload.UPLOADING;
+
+
+				function handleError() {
+					if (retries-- > 0) {
+						delay(uploadNextChunk, 1000);
+					} else {
+						file.loaded = offset; // reset all progress
+
+						file.status = plupload.FAILED;
+
+						file.trigger('Error', {
+							code: plupload.HTTP_ERROR,
+							message: plupload.translate('HTTP Error.'),
+							response: xhr.responseText,
+							status: xhr.status,
+							responseHeaders: xhr.getAllResponseHeaders()
+						});
+					}
+				}
+
+				function uploadNextChunk() {
+					var chunkBlob
+						, formData
+						, url = options.url
+						, data = {}
+						, curChunkSize
+						;
+
+					// send additional 'name' parameter only if required
+					if (options.send_file_name) {
+						data.name = file.target_name || file.name;
+					}
+
+					if (chunkSize && canSliceBlob && blob.size > chunkSize) {
+						curChunkSize = Math.min(chunkSize, blob.size - offset);
+						chunkBlob = blob.slice(offset, offset + curChunkSize);
+					} else {
+						curChunkSize = blob.size;
+						chunkBlob = blob;
+					}
+
+					// If chunking is enabled add corresponding data, no matter if file is bigger than chunk or smaller
+					if (chunkSize && canSliceBlob) {
+						// Setup query string arguments
+						if (options.send_chunk_number) {
+							data.chunk = Math.ceil(offset / chunkSize);
+							data.chunks = Math.ceil(blob.size / chunkSize);
+						} else { // keep support for experimental chunk format, just in case
+							data.offset = offset;
+							data.total = blob.size;
+						}
+					}
+
+					xhr = new o.XMLHttpRequest();
+
+
+					if (xhr.upload) {
+						xhr.upload.onprogress = function (e) {
+							file.loaded = Math.min(file.size, offset + e.loaded);
+							if (file.size) {
+								file.percent = Math.ceil(file.loaded / file.size * 100);
+							}
+							file.trigger(e);
+						};
+					}
+
+
+					xhr.onload = function () {
+						if (xhr.status >= 400) { // assume error
+							handleError();
+							return;
+						}
+
+						// reset retries counter
+						retries = options.max_retries;
+
+						// Handle chunk response
+						if (curChunkSize < blob.size) {
+							chunkBlob.destroy();
+
+							offset += curChunkSize;
+							file.loaded = Math.min(offset, blob.size);
+							file.percent = Math.ceil(file.loaded / file.size * 100);
+
+							file.trigger('ChunkUploaded', {
+								offset: file.loaded,
+								total: blob.size,
+								response: xhr.responseText,
+								status: xhr.status,
+								responseHeaders: xhr.getAllResponseHeaders()
+							});
+
+							// stock Android browser doesn't fire upload progress events, but in chunking mode we can fake them
+							if (o.Env.browser === 'Android Browser') {
+								// doesn't harm in general, but is not required anywhere else
+								file.trigger({
+									type: 'Progress',
+									loaded: file.loaded,
+									total: blob.size
+								});
+							}
+						} else {
+							file.loaded = file.size;
+						}
+
+						chunkBlob = formData = null; // Free memory
+
+						// Check if file is uploaded
+						if (!offset || offset >= blob.size) {
+							// If file was modified, destory the copy
+							if (file.size != file.origSize) {
+								blob.destroy();
+								blob = null;
+							}
+
+							file.percent = 100; // %
+
+							file.trigger({
+								type: 'Progress',
+								loaded: file.loaded,
+								total: file.size
+							});
+
+							file.status = plupload.DONE;
+
+							file.trigger('Uploaded', {
+								response: xhr.responseText,
+								status: xhr.status,
+								responseHeaders: xhr.getAllResponseHeaders()
+							});
+						} else {
+							// Still chunks left
+							delay(uploadNextChunk, 1); // run detached, otherwise event handlers interfere
+						}
+					};
+
+					xhr.onerror = function () {
+						handleError();
+					};
+
+					xhr.onloadend = function () {
+						this.destroy();
+						xhr = null;
+					};
+
+					var continueUpload = {
+						ok: function () {
+							if (file.status !== plupload.UPLOADING) {
+								return;
+							}
+
+							// Build multipart request
+							if (options.multipart && canSendMultipart) {
+								url = options.url;
+								xhr.open("post", url, true);
+
+								// Set custom headers
+								plupload.each(options.headers, function (value, name) {
+									xhr.setRequestHeader(name, value);
+								});
+
+								formData = new o.FormData();
+
+								// Add multipart params
+								plupload.each(plupload.extend(data, options.multipart_params), function (value, name) {
+									formData.append(name, value);
+								});
+
+								// Add file and send it
+								formData.append(options.file_data_name, chunkBlob);
+								xhr.send(formData);
+							} else {
+								// if no multipart, send as binary stream
+								url = plupload.buildUrl(options.url, plupload.extend(data, options.multipart_params));
+
+								xhr.open("post", url, true);
+
+								xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+
+								// Set custom headers
+								plupload.each(options.headers, function (value, name) {
+									xhr.setRequestHeader(name, value);
+								});
+
+								xhr.send(chunkBlob);
+							}
+						},
+						skip: function () {
+							xhr.status = 200; //fake ok return code
+							xhr.onload(); //proceed with upload
+
+						},
+						error: function () {
+							xhr.status = 400; //fake bad return code
+							xhr.onload();
+						}
+
+
+					};
+
+					options.before_chunk_upload(options, file, data, continueUpload);
+				}
+
+
+				// make sure we start at a predictable offset
+				if (file.loaded) {
+					offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
+				}
+
+				// Start uploading chunks
+				if (options.resize.enabled && file.isImage() && runtimeCan(blob, 'send_binary_string')) {
+					// Resize if required
+					resizeImage.call(this, blob, options.resize, function (resizedBlob) {
+						blob = resizedBlob;
+						file.size = resizedBlob.size;
+						uploadNextChunk();
+					});
+				} else {
+					uploadNextChunk();
+				}
+			},
+
+
+			cancelUpload: function () {
+				if (xhr) {
+					xhr.abort();
+					xhr.destroy();
+					xhr = null;
+				}
+			},
+
 			/**
 			 * Destroys plupload.File object.
 			 *
 			 * @method destroy
 			 */
 			destroy: function() {
+				this.cancelUpload();
+				this.unbindAll();
+
 				var src = this.getSource();
 				if (src) {
 					src.destroy();
@@ -2264,6 +2434,8 @@ plupload.File = (function() {
 		filepool[this.id] = file;
 	}
 
+	PluploadFile.prototype = o.EventTarget.instance;
+
 	return PluploadFile;
 }());
 
@@ -2272,9 +2444,10 @@ plupload.File = (function() {
  * Constructs a queue progress.
  *
  * @class QueueProgress
+ * @private
  * @constructor
  */
- plupload.QueueProgress = function() {
+var QueueProgress = function () {
 	var self = this; // Setup alias for self to reduce code size when it's compressed
 
 	/**
@@ -2342,6 +2515,53 @@ plupload.File = (function() {
 		self.size = self.loaded = self.uploaded = self.failed = self.queued = self.percent = self.bytesPerSec = 0;
 	};
 };
+
+
+	/**
+	 Helper collection class - in a way a mix of object and array
+
+	 @contsructor
+	 @class Collection
+	 @private
+	 */
+	var Collection = function () {
+		var registry = {};
+
+		this.length = 0;
+
+		this.get = function (key) {
+			return registry.hasOwnProperty(key) ? registry[key] : null;
+		};
+
+		this.add = function (key, obj) {
+			if (registry.hasOwnProperty(key)) {
+				return this.update.apply(this, arguments);
+			}
+			registry[key] = obj;
+			this.length++;
+		};
+
+		this.remove = function (key) {
+			if (registry.hasOwnProperty(key)) {
+				delete registry[key];
+				this.length--;
+			}
+		};
+
+		this.update = function (key, obj) {
+			registry[key] = obj;
+		};
+
+		this.each = function (cb) {
+			plupload.each(registry, cb);
+		};
+
+		this.clear = function () {
+			registry = {};
+			this.length = 0;
+		};
+	};
+
 
 window.plupload = plupload;
 
