@@ -1543,6 +1543,7 @@ plupload.Uploader = function(options) {
 		if (up.state == plupload.STARTED) {
 			// Get start time to calculate bps
 			startTime = (+new Date());
+			total.reset();
 		} else if (up.state == plupload.STOPPED) {
 			// Reset currently uploading files
 			for (var i = up.files.length - 1; i >= 0; i--) {
