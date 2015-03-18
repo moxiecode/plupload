@@ -643,7 +643,8 @@ plupload.addFileFilter('mime_types', function(filters, file, cb) {
 		this.trigger('Error', {
 			code : plupload.FILE_EXTENSION_ERROR,
 			message : plupload.translate('File extension error.'),
-			file : file
+			file : file,
+			queue: true
 		});
 		cb(false);
 	} else {
@@ -662,7 +663,8 @@ plupload.addFileFilter('max_file_size', function(maxSize, file, cb) {
 		this.trigger('Error', {
 			code : plupload.FILE_SIZE_ERROR,
 			message : plupload.translate('File size error.'),
-			file : file
+			file : file,
+			queue: true
 		});
 		cb(false);
 	} else {
@@ -680,7 +682,8 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 				this.trigger('Error', {
 					code : plupload.FILE_DUPLICATE_ERROR,
 					message : plupload.translate('Duplicate file error.'),
-					file : file
+					file : file,
+					queue: true
 				});
 				cb(false);
 				return;
@@ -1343,7 +1346,7 @@ plupload.Uploader = function(options) {
 			up.destroy();
 		}
 		// Set failed status if an error occured on a file
-		else if (err.file) {
+		else if (err.file && !err.queue) {
 			calc();
 
 			// Upload next file but detach it from the error event
