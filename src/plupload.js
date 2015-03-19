@@ -1343,7 +1343,7 @@ plupload.Uploader = function(options) {
 			up.destroy();
 		}
 		// Set failed status if an error occured on a file
-		else if (err.file) {
+		else if (err.code === plupload.HTTP_ERROR) {
 			calc();
 
 			// Upload next file but detach it from the error event
