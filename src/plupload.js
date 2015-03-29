@@ -675,8 +675,8 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	if (value) {
 		var ii = this.files.length;
 		while (ii--) {
-			// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
-			if (file.name === this.files[ii].name && file.size === this.files[ii].size) {
+			// Compare by name and origSize (size might be 0 or undefined, but still equivalent for both)
+			if (file.name === this.files[ii].name && file.origSize === this.files[ii].origSize) {
 				this.trigger('Error', {
 					code : plupload.FILE_DUPLICATE_ERROR,
 					message : plupload.translate('Duplicate file error.'),
