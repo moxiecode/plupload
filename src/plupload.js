@@ -2290,6 +2290,10 @@ plupload.File = (function() {
 						handleError();
 					};
 
+					xhr.ontimeout = function() {
+						handleError();
+					};
+
 					xhr.onloadend = function() {
 						this.destroy();
 						xhr = null;
@@ -2298,6 +2302,7 @@ plupload.File = (function() {
 					// Build multipart request
 					if (options.multipart && canSendMultipart) {
 						xhr.open("post", url, true);
+						xhr.timeout = 90000;
 
 						// Set custom headers
 						plupload.each(options.headers, function(value, name) {
@@ -2319,6 +2324,7 @@ plupload.File = (function() {
 						url = plupload.buildUrl(options.url, plupload.extend(data, options.multipart_params));
 						
 						xhr.open("post", url, true);
+						xhr.timeout = 90000;
 
 						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
 
