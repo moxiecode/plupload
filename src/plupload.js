@@ -1882,6 +1882,7 @@ plupload.Uploader = function(options) {
 				args.splice(0, 1, self); // replace event object with uploader instance
 				return func.apply(this, args);
 			}, 0, scope);
+			return self;
 		},
 
 		/**
