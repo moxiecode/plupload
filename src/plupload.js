@@ -1046,7 +1046,7 @@ plupload.Uploader = function(options) {
 					};
 
 					fileInput.onchange = function() {
-						self.trigger('FileSelected', this.files);
+						self.trigger('FilesSelected', this.files);
 						self.addFile(this.files);
 					};
 
@@ -1103,7 +1103,7 @@ plupload.Uploader = function(options) {
 					};
 
 					fileDrop.ondrop = function() {
-						self.trigger('FileDropped', this.files);
+						self.trigger('FilesDropped', this.files);
 						self.addFile(this.files);
 					};
 
