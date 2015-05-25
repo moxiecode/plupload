@@ -6,7 +6,6 @@
 		{"title": "plupload.Uploader", "url": "Uploader.html"},
 		{"title": "Filters", "url": "filters.html"},
 		{"title": "Events", "url": "events.html"},
-		{"title": "Chunked Upload", "url": "ChunkedUpload.html"},
 		{"title": "UI Widget", "url": "UI.html"}
 	]
 }

@@ -149,7 +149,6 @@ test("Consider special settings as required_features when required_features is b
 		select_multiple: true,
 		drag_and_drop: true,
 		slice_blob: true,
-		access_binary: true,
 		send_binary_string: true,
 		send_custom_headers: true
 	}, "required_features properly normalized and translated to caps.");
@@ -194,6 +193,7 @@ test("Test how default values are assigned to missing options", function() {
 		runtimes: o.Runtime.order,
 		max_retries: 0,
 		multipart : true,
+		send_file_name : true,
 		multi_selection : true,
 		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
