@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.1.3
+ * v2.1.4
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-05-11
+ * Date: 2015-05-25
  */
 /**
  * Plupload.js
@@ -94,7 +94,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.1.3',
+	VERSION : '2.1.4',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
@@ -711,7 +711,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String} settings.url URL of the server-side upload handler.
 	@param {Number|String} [settings.chunk_size=0] Chunk size in bytes to slice the file into. Shorcuts with b, kb, mb, gb, tb suffixes also supported. `e.g. 204800 or "204800b" or "200kb"`. By default - disabled.
 	@param {Boolean} [settings.send_chunk_number=true] Whether to send chunks and chunk numbers, or total and offset bytes.
-	@param {String} [settings.container] id of the DOM element to use as a container for uploader structures. Defaults to document.body.
+	@param {String|DOMElement} [settings.container] id of the DOM element or DOM element itself that will be used to wrap uploader structures. Defaults to immediate parent of the `browse_button` element.
 	@param {String|DOMElement} [settings.drop_element] id of the DOM element or DOM element itself to use as a drop zone for Drag-n-Drop.
 	@param {String} [settings.file_data_name="file"] Name for the file field in Multipart formated message.
 	@param {Object} [settings.filters={}] Set of file type filters.
@@ -1578,7 +1578,7 @@ plupload.Uploader = function(options) {
 			up.destroy();
 		}
 		// Set failed status if an error occured on a file
-		else if (err.file) {
+		else if (err.code === plupload.HTTP_ERROR) {
 			err.file.status = plupload.FAILED;
 			calcFile(err.file);
 
