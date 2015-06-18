@@ -1138,7 +1138,7 @@ define("moxie/core/utils/Env", [
 		can: can,
 		
 		browser: UAParser.browser.name,
-		version: parseFloat(UAParser.browser.major),
+		version: parseFloat(UAParser.browser.version),
 		os: UAParser.os.name, // everybody intuitively types it in a lowercase for some reason
 		osVersion: UAParser.os.version,
 
