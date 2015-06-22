@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.3
+ * v1.3.1
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-05-24
+ * Date: 2015-06-22
  */
 /**
  * Compiled inline version. (Library mode)
@@ -172,26 +172,20 @@ define('moxie/core/utils/Basic', [], function() {
 		var length, key, i, undef;
 
 		if (obj) {
-			try {
-				length = obj.length;
-			} catch(ex) {
-				length = undef;
-			}
-
-			if (length === undef) {
+			if (typeOf(obj) === 'array') {
+				// Loop array items
+				for (i = 0, length = obj.length; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
+			} else {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
-					}
-				}
-			} else {
-				// Loop array items
-				for (i = 0; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
 					}
 				}
 			}
@@ -265,7 +259,7 @@ define('moxie/core/utils/Basic', [], function() {
 	@method inParallel
 	@static
 	@param {Array} queue Array of functions to call in sequence
-	@param {Function} cb Main callback that is called in the end, or in case of erro
+	@param {Function} cb Main callback that is called in the end, or in case of error
 	*/
 	var inParallel = function(queue, cb) {
 		var count = 0, num = queue.length, cbArgs = new Array(num);
@@ -510,13 +504,14 @@ define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
 	
-	// UAParser.js v0.6.2
-	// Lightweight JavaScript-based User-Agent string parser
-	// https://github.com/faisalman/ua-parser-js
-	//
-	// Copyright © 2012-2013 Faisalman <fyzlman@gmail.com>
-	// Dual licensed under GPLv2 & MIT
-
+	/**
+	 * UAParser.js v0.7.7
+	 * Lightweight JavaScript-based User-Agent string parser
+	 * https://github.com/faisalman/ua-parser-js
+	 *
+	 * Copyright © 2012-2015 Faisal Salman <fyzlman@gmail.com>
+	 * Dual licensed under GPLv2 & MIT
+	 */
 	var UAParser = (function (undefined) {
 
 	    //////////////
@@ -926,7 +921,7 @@ define("moxie/core/utils/Env", [
 	        this.setUA(ua);
 	    };
 
-	    return new UAParser().getResult();
+	    return UAParser;
 	})();
 
 
@@ -1134,13 +1129,18 @@ define("moxie/core/utils/Env", [
 	}());
 
 
+	var uaResult = new UAParser().getResult();
+
+
 	var Env = {
 		can: can,
+
+		uaParser: UAParser,
 		
-		browser: UAParser.browser.name,
-		version: parseFloat(UAParser.browser.major),
-		os: UAParser.os.name, // everybody intuitively types it in a lowercase for some reason
-		osVersion: UAParser.os.version,
+		browser: uaResult.browser.name,
+		version: uaResult.browser.version,
+		os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
+		osVersion: uaResult.os.version,
 
 		verComp: version_compare,
 		
@@ -1701,7 +1701,8 @@ define('moxie/core/Exceptions', [
 		ImageError: (function() {
 			var namecodes = {
 				WRONG_FORMAT: 1,
-				MAX_RESOLUTION_ERR: 2
+				MAX_RESOLUTION_ERR: 2,
+				INVALID_META_ERR: 3
 			};
 
 			function ImageError(code) {
@@ -6029,6 +6030,14 @@ define("moxie/image/Image", [
 				info = this.exec('Image', 'getInfo');
 			}
 
+			// store thumbnail data as blob
+			if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+				info.meta.thumb.data = new Blob(this.ruid, {
+					type: 'image/jpeg',
+					data: info.meta.thumb.data
+				});
+			}
+
 			this.size = info.size;
 			this.width = info.width;
 			this.height = info.height;
@@ -6215,10 +6224,13 @@ define("moxie/runtime/html5/Runtime", [
 					// this comes directly from Modernizr: http://www.modernizr.com/
 					var div = document.createElement('div');
 					// IE has support for drag and drop since version 5, but doesn't support dropping files from desktop
-					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && (Env.browser !== 'IE' || Env.version > 9);
+					return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 
+						(Env.browser !== 'IE' || Env.verComp(Env.version, 9, '>'));
 				}()),
 				filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-					return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10) || (Env.browser === 'Safari' && Env.version >= 7);
+					return (Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '>=')) || 
+						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) || 
+						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '>='));
 				}()),
 				return_response_headers: True,
 				return_response_type: function(responseType) {
@@ -6236,7 +6248,7 @@ define("moxie/runtime/html5/Runtime", [
 					return Env.can('use_fileinput') && window.File;
 				},
 				select_folder: function() {
-					return I.can('select_file') && Env.browser === 'Chrome' && Env.version >= 21;
+					return I.can('select_file') && Env.browser === 'Chrome' && Env.verComp(Env.version, 21, '>=');
 				},
 				select_multiple: function() {
 					// it is buggy on Safari Windows and iOS
@@ -6255,9 +6267,9 @@ define("moxie/runtime/html5/Runtime", [
 				},
 				summon_file_dialog: function() { // yeah... some dirty sniffing here...
 					return I.can('select_file') && (
-						(Env.browser === 'Firefox' && Env.version >= 4) ||
-						(Env.browser === 'Opera' && Env.version >= 12) ||
-						(Env.browser === 'IE' && Env.version >= 10) ||
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
+						(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
+						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
 						!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
 					);
 				},
@@ -7016,7 +7028,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 		Basic.extend(this, {
 			send: function(meta, data) {
 				var target = this
-				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.version >= 4 && Env.version < 7)
+				, isGecko2_5_6 = (Env.browser === 'Mozilla' && Env.verComp(Env.version, 4, '>=') && Env.verComp(Env.version, 7, '<'))
 				, isAndroidBrowser = Env.browser === 'Android Browser'
 				, mustSendAsBinary = false
 				;
@@ -7275,7 +7287,7 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 
 		
 		function _getNativeXHR() {
-			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.version < 8)) { // IE7 has native XHR but it's buggy
+			if (window.XMLHttpRequest && !(Env.browser === 'IE' && Env.verComp(Env.version, 8, '<'))) { // IE7 has native XHR but it's buggy
 				return new window.XMLHttpRequest();
 			} else {
 				return (function() {
@@ -7368,101 +7380,208 @@ define("moxie/runtime/html5/xhr/XMLHttpRequest", [
 @class moxie/runtime/html5/utils/BinaryReader
 @private
 */
-define("moxie/runtime/html5/utils/BinaryReader", [], function() {
-	return function() {
-		var II = false, bin;
+define("moxie/runtime/html5/utils/BinaryReader", [
+	"moxie/core/utils/Basic"
+], function(Basic) {
 
-		// Private functions
-		function read(idx, size) {
-			var mv = II ? 0 : -8 * (size - 1), sum = 0, i;
+	
+	function BinaryReader(data) {
+		if (data instanceof ArrayBuffer) {
+			ArrayBufferReader.apply(this, arguments);
+		} else {
+			UTF16StringReader.apply(this, arguments);
+		}
+	}
+	 
 
-			for (i = 0; i < size; i++) {
-				sum |= (bin.charCodeAt(idx + i) << Math.abs(mv + i*8));
+	Basic.extend(BinaryReader.prototype, {
+		
+		littleEndian: false,
+
+
+		read: function(idx, size) {
+			var sum, mv, i;
+
+			if (idx + size > this.length()) {
+				throw new Error("You are trying to read outside the source boundaries.");
 			}
+			
+			mv = this.littleEndian 
+				? 0 
+				: -8 * (size - 1)
+			;
 
+			for (i = 0, sum = 0; i < size; i++) {
+				sum |= (this.readByteAt(idx + i) << Math.abs(mv + i*8));
+			}
 			return sum;
-		}
+		},
 
-		function putstr(segment, idx, length) {
-			length = arguments.length === 3 ? length : bin.length - idx - 1;
-			bin = bin.substr(0, idx) + segment + bin.substr(length + idx);
-		}
 
-		function write(idx, num, size) {
-			var str = '', mv = II ? 0 : -8 * (size - 1), i;
+		write: function(idx, num, size) {
+			var mv, i, str = '';
 
-			for (i = 0; i < size; i++) {
-				str += String.fromCharCode((num >> Math.abs(mv + i*8)) & 255);
+			if (idx > this.length()) {
+				throw new Error("You are trying to write outside the source boundaries.");
 			}
 
-			putstr(str, idx, size);
-		}
+			mv = this.littleEndian 
+				? 0 
+				: -8 * (size - 1)
+			;
 
-		// Public functions
-		return {
-			II: function(order) {
-				if (order === undefined) {
-					return II;
-				} else {
-					II = order;
+			for (i = 0; i < size; i++) {
+				this.writeByteAt(idx + i, (num >> Math.abs(mv + i*8)) & 255);
+			}
+		},
+
+
+		BYTE: function(idx) {
+			return this.read(idx, 1);
+		},
+
+
+		SHORT: function(idx) {
+			return this.read(idx, 2);
+		},
+
+
+		LONG: function(idx) {
+			return this.read(idx, 4);
+		},
+
+
+		SLONG: function(idx) { // 2's complement notation
+			var num = this.read(idx, 4);
+			return (num > 2147483647 ? num - 4294967296 : num);
+		},
+
+
+		CHAR: function(idx) {
+			return String.fromCharCode(this.read(idx, 1));
+		},
+
+
+		STRING: function(idx, count) {
+			return this.asArray('CHAR', idx, count).join('');
+		},
+
+
+		asArray: function(type, idx, count) {
+			var values = [];
+
+			for (var i = 0; i < count; i++) {
+				values[i] = this[type](idx + i);
+			}
+			return values;
+		}
+	});
+
+
+	function ArrayBufferReader(data) {
+		var _dv = new DataView(data);
+
+		Basic.extend(this, {
+			
+			readByteAt: function(idx) {
+				return _dv.getUint8(idx);
+			},
+
+
+			writeByteAt: function(idx, value) {
+				_dv.setUint8(idx, value);
+			},
+			
+
+			SEGMENT: function(idx, size, value) {
+				switch (arguments.length) {
+					case 2:
+						return data.slice(idx, idx + size);
+
+					case 1:
+						return data.slice(idx);
+
+					case 3:
+						if (value === null) {
+							value = new ArrayBuffer();
+						}
+
+						if (value instanceof ArrayBuffer) {					
+							var arr = new Uint8Array(this.length() - size + value.byteLength);
+							if (idx > 0) {
+								arr.set(new Uint8Array(data.slice(0, idx)), 0);
+							}
+							arr.set(new Uint8Array(value), idx);
+							arr.set(new Uint8Array(data.slice(idx + size)), idx + value.byteLength);
+
+							this.clear();
+							data = arr.buffer;
+							_dv = new DataView(data);
+							break;
+						}
+
+					default: return data;
 				}
 			},
 
-			init: function(binData) {
-				II = false;
-				bin = binData;
+
+			length: function() {
+				return data ? data.byteLength : 0;
 			},
+
+
+			clear: function() {
+				_dv = data = null;
+			}
+		});
+	}
+
+
+	function UTF16StringReader(data) {
+		Basic.extend(this, {
+			
+			readByteAt: function(idx) {
+				return data.charCodeAt(idx);
+			},
+
+
+			writeByteAt: function(idx, value) {
+				putstr(String.fromCharCode(value), idx, 1);
+			},
+
 
 			SEGMENT: function(idx, length, segment) {
 				switch (arguments.length) {
 					case 1:
-						return bin.substr(idx, bin.length - idx - 1);
+						return data.substr(idx);
 					case 2:
-						return bin.substr(idx, length);
+						return data.substr(idx, length);
 					case 3:
-						putstr(segment, idx, length);
+						putstr(segment !== null ? segment : '', idx, length);
 						break;
-					default: return bin;
+					default: return data;
 				}
 			},
 
-			BYTE: function(idx) {
-				return read(idx, 1);
-			},
-
-			SHORT: function(idx) {
-				return read(idx, 2);
-			},
-
-			LONG: function(idx, num) {
-				if (num === undefined) {
-					return read(idx, 4);
-				} else {
-					write(idx, num, 4);
-				}
-			},
-
-			SLONG: function(idx) { // 2's complement notation
-				var num = read(idx, 4);
-
-				return (num > 2147483647 ? num - 4294967296 : num);
-			},
-
-			STRING: function(idx, size) {
-				var str = '';
-
-				for (size += idx; idx < size; idx++) {
-					str += String.fromCharCode(read(idx, 1));
-				}
-
-				return str;
-			},
 
 			length: function() {
-				return bin.length;
+				return data ? data.length : 0;
+			}, 
+
+			clear: function() {
+				data = null;
 			}
-		};
-	};
+		});
+
+
+		function putstr(segment, idx, length) {
+			length = arguments.length === 3 ? length : data.length - idx - 1;
+			data = data.substr(0, idx) + segment + data.substr(length + idx);
+		}
+	}
+
+
+	return BinaryReader;
 });
 
 // Included from: src/javascript/runtime/html5/image/JPEGHeaders.js
@@ -7482,24 +7601,25 @@ define("moxie/runtime/html5/utils/BinaryReader", [], function() {
 @private
 */
 define("moxie/runtime/html5/image/JPEGHeaders", [
-	"moxie/runtime/html5/utils/BinaryReader"
-], function(BinaryReader) {
+	"moxie/runtime/html5/utils/BinaryReader",
+	"moxie/core/Exceptions"
+], function(BinaryReader, x) {
 	
 	return function JPEGHeaders(data) {
-		var headers = [], read, idx, marker, length = 0;
+		var headers = [], _br, idx, marker, length = 0;
 
-		read = new BinaryReader();
-		read.init(data);
+		_br = new BinaryReader(data);
 
 		// Check if data is jpeg
-		if (read.SHORT(0) !== 0xFFD8) {
-			return;
+		if (_br.SHORT(0) !== 0xFFD8) {
+			_br.clear();
+			throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 		}
 
 		idx = 2;
 
-		while (idx <= data.length) {
-			marker = read.SHORT(idx);
+		while (idx <= _br.length()) {
+			marker = _br.SHORT(idx);
 
 			// omit RST (restart) markers
 			if (marker >= 0xFFD0 && marker <= 0xFFD7) {
@@ -7512,7 +7632,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 				break;
 			}
 
-			length = read.SHORT(idx + 2) + 2;
+			length = _br.SHORT(idx + 2) + 2;
 
 			// APPn marker detected
 			if (marker >= 0xFFE1 && marker <= 0xFFEF) {
@@ -7521,51 +7641,51 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 					name: 'APP' + (marker & 0x000F),
 					start: idx,
 					length: length,
-					segment: read.SEGMENT(idx, length)
+					segment: _br.SEGMENT(idx, length)
 				});
 			}
 
 			idx += length;
 		}
 
-		read.init(null); // free memory
+		_br.clear();
 
 		return {
 			headers: headers,
 
 			restore: function(data) {
-				var max, i;
+				var max, i, br;
 
-				read.init(data);
+				br = new BinaryReader(data);
 
-				idx = read.SHORT(2) == 0xFFE0 ? 4 + read.SHORT(4) : 2;
+				idx = br.SHORT(2) == 0xFFE0 ? 4 + br.SHORT(4) : 2;
 
 				for (i = 0, max = headers.length; i < max; i++) {
-					read.SEGMENT(idx, 0, headers[i].segment);
+					br.SEGMENT(idx, 0, headers[i].segment);
 					idx += headers[i].length;
 				}
 
-				data = read.SEGMENT();
-				read.init(null);
+				data = br.SEGMENT();
+				br.clear();
 				return data;
 			},
 
 			strip: function(data) {
-				var headers, jpegHeaders, i;
+				var br, headers, jpegHeaders, i;
 
 				jpegHeaders = new JPEGHeaders(data);
 				headers = jpegHeaders.headers;
 				jpegHeaders.purge();
 
-				read.init(data);
+				br = new BinaryReader(data);
 
 				i = headers.length;
 				while (i--) {
-					read.SEGMENT(headers[i].start, headers[i].length, '');
+					br.SEGMENT(headers[i].start, headers[i].length, '');
 				}
 				
-				data = read.SEGMENT();
-				read.init(null);
+				data = br.SEGMENT();
+				br.clear();
 				return data;
 			},
 
@@ -7602,9 +7722,7 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 			},
 
 			purge: function() {
-				headers = [];
-				read.init(null);
-				read = null;
+				this.headers = headers = [];
 			}
 		};
 	};
@@ -7628,14 +7746,14 @@ define("moxie/runtime/html5/image/JPEGHeaders", [
 */
 define("moxie/runtime/html5/image/ExifParser", [
 	"moxie/core/utils/Basic",
-	"moxie/runtime/html5/utils/BinaryReader"
-], function(Basic, BinaryReader) {
+	"moxie/runtime/html5/utils/BinaryReader",
+	"moxie/core/Exceptions"
+], function(Basic, BinaryReader, x) {
 	
-	return function ExifParser() {
-		// Private ExifParser fields
-		var data, tags, Tiff, offsets = {}, tagDescs;
-
-		data = new BinaryReader();
+	function ExifParser(data) {
+		var __super__, tags, tagDescs, offsets, idx, Tiff;
+		
+		BinaryReader.call(this, data);
 
 		tags = {
 			tiff: {
@@ -7737,10 +7855,10 @@ define("moxie/runtime/html5/image/ExifParser", [
 			},
 
 			'Flash': {
-				0x0000: 'Flash did not fire.',
-				0x0001: 'Flash fired.',
-				0x0005: 'Strobe return light not detected.',
-				0x0007: 'Strobe return light detected.',
+				0x0000: 'Flash did not fire',
+				0x0001: 'Flash fired',
+				0x0005: 'Strobe return light not detected',
+				0x0007: 'Strobe return light detected',
 				0x0009: 'Flash fired, compulsory flash mode',
 				0x000D: 'Flash fired, compulsory flash mode, return light not detected',
 				0x000F: 'Flash fired, compulsory flash mode, return light detected',
@@ -7809,13 +7927,204 @@ define("moxie/runtime/html5/image/ExifParser", [
 			}
 		};
 
+		offsets = {
+			tiffHeader: 10
+		};
+		
+		idx = offsets.tiffHeader;
+
+		__super__ = {
+			clear: this.clear
+		};
+
+		// Public functions
+		Basic.extend(this, {
+			
+			read: function() {
+				try {
+					return ExifParser.prototype.read.apply(this, arguments);
+				} catch (ex) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				}
+			},
+
+
+			write: function() {
+				try {
+					return ExifParser.prototype.write.apply(this, arguments);
+				} catch (ex) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				}
+			},
+
+
+			UNDEFINED: function() {
+				return this.BYTE.apply(this, arguments);
+			},
+
+
+			RATIONAL: function(idx) {
+				return this.LONG(idx) / this.LONG(idx + 4)
+			},
+
+
+			SRATIONAL: function(idx) {
+				return this.SLONG(idx) / this.SLONG(idx + 4)
+			},
+
+			ASCII: function(idx) {
+				return this.CHAR(idx);
+			},
+
+			TIFF: function() {
+				return Tiff || null;
+			},
+
+
+			EXIF: function() {
+				var Exif = null;
+
+				if (offsets.exifIFD) {
+					try {
+						Exif = extractTags.call(this, offsets.exifIFD, tags.exif);
+					} catch(ex) {
+						return null;
+					}
+
+					// Fix formatting of some tags
+					if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
+						for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
+							exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
+						}
+						Exif.ExifVersion = exifVersion;
+					}
+				}
+
+				return Exif;
+			},
+
+
+			GPS: function() {
+				var GPS = null;
+
+				if (offsets.gpsIFD) {
+					try {
+						GPS = extractTags.call(this, offsets.gpsIFD, tags.gps);
+					} catch (ex) {
+						return null;
+					}
+
+					// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
+					if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
+						GPS.GPSVersionID = GPS.GPSVersionID.join('.');
+					}
+				}
+
+				return GPS;
+			},
+
+
+			thumb: function() {
+				if (offsets.IFD1) {
+					try {
+						var IFD1Tags = extractTags.call(this, offsets.IFD1, tags.thumb);
+						
+						if ('JPEGInterchangeFormat' in IFD1Tags) {
+							return this.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
+						}
+					} catch (ex) {}
+				}
+				return null;
+			},
+
+
+			setExif: function(tag, value) {
+				// Right now only setting of width/height is possible
+				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') { return false; }
+
+				return setTag.call(this, 'exif', tag, value);
+			},
+
+
+			clear: function() {
+				__super__.clear();
+				data = tags = tagDescs = Tiff = offsets = __super__ = null;
+			}
+		});
+
+
+		// Check if that's APP1 and that it has EXIF
+		if (this.SHORT(0) !== 0xFFE1 || this.STRING(4, 5).toUpperCase() !== "EXIF\0") {
+			throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+		}
+
+		// Set read order of multi-byte data
+		this.littleEndian = (this.SHORT(idx) == 0x4949);
+
+		// Check if always present bytes are indeed present
+		if (this.SHORT(idx+=2) !== 0x002A) {
+			throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+		}
+
+		offsets.IFD0 = offsets.tiffHeader + this.LONG(idx += 2);
+		Tiff = extractTags.call(this, offsets.IFD0, tags.tiff);
+
+		if ('ExifIFDPointer' in Tiff) {
+			offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
+			delete Tiff.ExifIFDPointer;
+		}
+
+		if ('GPSInfoIFDPointer' in Tiff) {
+			offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
+			delete Tiff.GPSInfoIFDPointer;
+		}
+
+		if (Basic.isEmptyObj(Tiff)) {
+			Tiff = null;
+		}
+
+		// check if we have a thumb as well
+		var IFD1Offset = this.LONG(offsets.IFD0 + this.SHORT(offsets.IFD0) * 12 + 2);
+		if (IFD1Offset) {
+			offsets.IFD1 = offsets.tiffHeader + IFD1Offset;
+		}
+
+
 		function extractTags(IFD_offset, tags2extract) {
-			var length = data.SHORT(IFD_offset), i, ii,
-				tag, type, count, tagOffset, offset, value, values = [], hash = {};
+			var data = this;
+			var length, i, tag, type, count, size, offset, value, values = [], hash = {};
+			
+			var types = {
+				1 : 'BYTE',
+				7 : 'UNDEFINED',
+				2 : 'ASCII',
+				3 : 'SHORT',
+				4 : 'LONG',
+				5 : 'RATIONAL',
+				9 : 'SLONG',
+				10: 'SRATIONAL'
+			};
+
+			var sizes = {
+				'BYTE' 		: 1,
+				'UNDEFINED'	: 1,
+				'ASCII'		: 1,
+				'SHORT'		: 2,
+				'LONG' 		: 4,
+				'RATIONAL' 	: 8,
+				'SLONG'		: 4,
+				'SRATIONAL'	: 8
+			};
+
+			length = data.SHORT(IFD_offset);
+
+			// The size of APP1 including all these elements shall not exceed the 64 Kbytes specified in the JPEG standard.
 
 			for (i = 0; i < length; i++) {
+				values = [];
+
 				// Set binary reader pointer to beginning of the next tag
-				offset = tagOffset = IFD_offset + 12 * i + 2;
+				offset = IFD_offset + 2 + i*12;
 
 				tag = tags2extract[data.SHORT(offset)];
 
@@ -7823,129 +8132,44 @@ define("moxie/runtime/html5/image/ExifParser", [
 					continue; // Not the tag we requested
 				}
 
-				type = data.SHORT(offset+=2);
+				type = types[data.SHORT(offset+=2)];
 				count = data.LONG(offset+=2);
+				size = sizes[type];
 
-				offset += 4;
-				values = [];
-
-				switch (type) {
-					case 1: // BYTE
-					case 7: // UNDEFINED
-						if (count > 4) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.BYTE(offset + ii);
-						}
-
-						break;
-
-					case 2: // STRING
-						if (count > 4) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						hash[tag] = data.STRING(offset, count - 1);
-
-						continue;
-
-					case 3: // SHORT
-						if (count > 2) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SHORT(offset + ii*2);
-						}
-
-						break;
-
-					case 4: // LONG
-						if (count > 1) {
-							offset = data.LONG(offset) + offsets.tiffHeader;
-						}
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.LONG(offset + ii*4);
-						}
-
-						break;
-
-					case 5: // RATIONAL
-						offset = data.LONG(offset) + offsets.tiffHeader;
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.LONG(offset + ii*8) / data.LONG(offset + ii*8 + 4);
-						}
-
-						break;
-
-					case 9: // SLONG
-						offset = data.LONG(offset) + offsets.tiffHeader;
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SLONG(offset + ii*4);
-						}
-
-						break;
-
-					case 10: // SRATIONAL
-						offset = data.LONG(offset) + offsets.tiffHeader;
-
-						for (ii = 0; ii < count; ii++) {
-							values[ii] = data.SLONG(offset + ii*8) / data.SLONG(offset + ii*8 + 4);
-						}
-
-						break;
-
-					default:
-						continue;
+				if (!size) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
 				}
 
-				value = (count == 1 ? values[0] : values);
+				offset += 4;
 
-				if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
-					hash[tag] = tagDescs[tag][value];
+				// tag can only fit 4 bytes of data, if data is larger we should look outside
+				if (size * count > 4) {
+					// instead of data tag contains an offset of the data
+					offset = data.LONG(offset) + offsets.tiffHeader;
+				}
+
+				// in case we left the boundaries of data throw an early exception
+				if (offset + size * count >= this.length()) {
+					throw new x.ImageError(x.ImageError.INVALID_META_ERR);
+				} 
+
+				// special care for the string
+				if (type === 'ASCII') {
+					hash[tag] = Basic.trim(data.STRING(offset, count).replace(/\0$/, '')); // strip trailing NULL
+					continue;
 				} else {
-					hash[tag] = value;
+					values = data.asArray(type, offset, count);
+					value = (count == 1 ? values[0] : values);
+
+					if (tagDescs.hasOwnProperty(tag) && typeof value != 'object') {
+						hash[tag] = tagDescs[tag][value];
+					} else {
+						hash[tag] = value;
+					}
 				}
 			}
 
 			return hash;
-		}
-
-		function getIFDOffsets() {
-			var idx = offsets.tiffHeader;
-
-			// Set read order of multi-byte data
-			data.II(data.SHORT(idx) == 0x4949);
-
-			// Check if always present bytes are indeed present
-			if (data.SHORT(idx+=2) !== 0x002A) {
-				return false;
-			}
-
-			offsets.IFD0 = offsets.tiffHeader + data.LONG(idx += 2);
-			Tiff = extractTags(offsets.IFD0, tags.tiff);
-
-			if ('ExifIFDPointer' in Tiff) {
-				offsets.exifIFD = offsets.tiffHeader + Tiff.ExifIFDPointer;
-				delete Tiff.ExifIFDPointer;
-			}
-
-			if ('GPSInfoIFDPointer' in Tiff) {
-				offsets.gpsIFD = offsets.tiffHeader + Tiff.GPSInfoIFDPointer;
-				delete Tiff.GPSInfoIFDPointer;
-			}
-
-			// check if we got thumb data as well
-			var IFD1Offset = data.LONG(offsets.IFD0 + data.SHORT(offsets.IFD0) * 12 + 2);
-			if (IFD1Offset) {
-				offsets.IFD1 = offsets.tiffHeader + IFD1Offset;
-			}
-			return true;
 		}
 
 		// At the moment only setting of simple (LONG) values, that do not require offset recalculation, is supported
@@ -7963,12 +8187,12 @@ define("moxie/runtime/html5/image/ExifParser", [
 				}
 			}
 			offset = offsets[ifd.toLowerCase() + 'IFD'];
-			length = data.SHORT(offset);
+			length = this.SHORT(offset);
 
 			for (var i = 0; i < length; i++) {
 				tagOffset = offset + 12 * i + 2;
 
-				if (data.SHORT(tagOffset) == tag) {
+				if (this.SHORT(tagOffset) == tag) {
 					valueOffset = tagOffset + 8;
 					break;
 				}
@@ -7978,98 +8202,19 @@ define("moxie/runtime/html5/image/ExifParser", [
 				return false;
 			}
 
-			data.LONG(valueOffset, value);
+			try {
+				this.write(valueOffset, value, 4);
+			} catch(ex) {
+				return false;
+			}
+
 			return true;
 		}
+	}
 
+	ExifParser.prototype = BinaryReader.prototype;
 
-		// Public functions
-		return {
-			init: function(segment) {
-				// Reset internal data
-				offsets = {
-					tiffHeader: 10
-				};
-
-				if (segment === undefined || !segment.length) {
-					return false;
-				}
-
-				data.init(segment);
-
-				// Check if that's APP1 and that it has EXIF
-				if (data.SHORT(0) === 0xFFE1 && data.STRING(4, 5).toUpperCase() === "EXIF\0") {
-					return getIFDOffsets();
-				}
-				return false;
-			},
-
-			TIFF: function() {
-				return Tiff;
-			},
-
-			EXIF: function() {
-				var Exif = null;
-
-				if (offsets.exifIFD) {
-					Exif = extractTags(offsets.exifIFD, tags.exif);
-
-					// Fix formatting of some tags
-					if (Exif.ExifVersion && Basic.typeOf(Exif.ExifVersion) === 'array') {
-						for (var i = 0, exifVersion = ''; i < Exif.ExifVersion.length; i++) {
-							exifVersion += String.fromCharCode(Exif.ExifVersion[i]);
-						}
-						Exif.ExifVersion = exifVersion;
-					}
-				}
-
-				return Exif;
-			},
-
-			GPS: function() {
-				var GPS = null;
-
-				if (offsets.gpsIFD) {
-					var GPS = extractTags(offsets.gpsIFD, tags.gps);
-
-					// iOS devices (and probably some others) do not put in GPSVersionID tag (why?..)
-					if (GPS.GPSVersionID && Basic.typeOf(GPS.GPSVersionID) === 'array') {
-						GPS.GPSVersionID = GPS.GPSVersionID.join('.');
-					}
-				}
-
-				return GPS;
-			},
-
-			thumb: function() {
-				if (offsets.IFD1) {
-					var IFD1Tags = extractTags(offsets.IFD1, tags.thumb);
-					if ('JPEGInterchangeFormat' in IFD1Tags) {
-						return data.SEGMENT(offsets.tiffHeader + IFD1Tags.JPEGInterchangeFormat, IFD1Tags.JPEGInterchangeFormatLength);
-					}
-				}
-				return null;
-			},
-
-			setExif: function(tag, value) {
-				// Right now only setting of width/height is possible
-				if (tag !== 'PixelXDimension' && tag !== 'PixelYDimension') {return false;}
-
-				return setTag('exif', tag, value);
-			},
-
-
-			getBinary: function() {
-				return data.SEGMENT();
-			},
-
-			purge: function() {
-				data.init(null);
-				data = Tiff = null;
-				offsets = {};
-			}
-		};
-	};
+	return ExifParser;
 });
 
 // Included from: src/javascript/runtime/html5/image/JPEG.js
@@ -8096,13 +8241,10 @@ define("moxie/runtime/html5/image/JPEG", [
 	"moxie/runtime/html5/image/ExifParser"
 ], function(Basic, x, JPEGHeaders, BinaryReader, ExifParser) {
 	
-	function JPEG(binstr) {
-		var _binstr, _br, _hm, _ep, _info, hasExif;
+	function JPEG(data) {
+		var _br, _hm, _ep, _info, hasExif = false;
 
-		_binstr = binstr;
-
-		_br = new BinaryReader();
-		_br.init(_binstr);
+		_br = new BinaryReader(data);
 
 		// check if it is jpeg
 		if (_br.SHORT(0) !== 0xFFD8) {
@@ -8110,11 +8252,11 @@ define("moxie/runtime/html5/image/JPEG", [
 		}
 
 		// backup headers
-		_hm = new JPEGHeaders(binstr);
+		_hm = new JPEGHeaders(data);
 
 		// extract exif info
-		_ep = new ExifParser();
-		hasExif = !!_ep.init(_hm.get('app1')[0]);
+		_ep = new ExifParser(_hm.get('app1')[0]);
+		hasExif = true;
 
 		// get dimensions
 		_info = _getDimensions.call(this);
@@ -8122,7 +8264,7 @@ define("moxie/runtime/html5/image/JPEG", [
 		Basic.extend(this, {
 			type: 'image/jpeg',
 
-			size: _binstr.length,
+			size: _br.length(),
 
 			width: _info && _info.width || 0,
 
@@ -8142,19 +8284,19 @@ define("moxie/runtime/html5/image/JPEG", [
 				}
 
 				// update internal headers
-				_hm.set('app1', _ep.getBinary());
+				_hm.set('app1', _ep.SEGMENT());
 			},
 
 			writeHeaders: function() {
 				if (!arguments.length) {
 					// if no arguments passed, update headers internally
-					return (_binstr = _hm.restore(_binstr));
+					return _hm.restore(data);
 				}
 				return _hm.restore(arguments[0]);
 			},
 
-			stripHeaders: function(binstr) {
-				return _hm.strip(binstr);
+			stripHeaders: function(data) {
+				return _hm.strip(data);
 			},
 
 			purge: function() {
@@ -8201,18 +8343,18 @@ define("moxie/runtime/html5/image/JPEG", [
 
 
 		function _getThumb() {
-			var binstr =  _ep.thumb()
-			, br = new BinaryReader()
+			var data =  _ep.thumb()
+			, br
 			, info
 			;
 
-			if (binstr) {
-				br.init(binstr);
+			if (data) {
+				br = new BinaryReader(data);
 				info = _getDimensions(br);
-				br.init(null);
+				br.clear();
 
 				if (info) {
-					info.data = binstr;
+					info.data = data;
 					return info;
 				}
 			}
@@ -8224,10 +8366,10 @@ define("moxie/runtime/html5/image/JPEG", [
 			if (!_ep || !_hm || !_br) { 
 				return; // ignore any repeating purge requests
 			}
-			_ep.purge();
+			_ep.clear();
 			_hm.purge();
-			_br.init(null);
-			_binstr = _info = _hm = _ep = _br = null;
+			_br.clear();
+			_info = _hm = _ep = _br = null;
 		}
 	}
 
@@ -8256,13 +8398,10 @@ define("moxie/runtime/html5/image/PNG", [
 	"moxie/runtime/html5/utils/BinaryReader"
 ], function(x, Basic, BinaryReader) {
 	
-	function PNG(binstr) {
-		var _binstr, _br, _hm, _ep, _info;
+	function PNG(data) {
+		var _br, _hm, _ep, _info;
 
-		_binstr = binstr;
-
-		_br = new BinaryReader();
-		_br.init(_binstr);
+		_br = new BinaryReader(data);
 
 		// check if it's png
 		(function() {
@@ -8296,8 +8435,8 @@ define("moxie/runtime/html5/image/PNG", [
 			if (!_br) {
 				return; // ignore any repeating purge requests
 			}
-			_br.init(null);
-			_binstr = _info = _hm = _ep = _br = null;
+			_br.clear();
+			data = _info = _hm = _ep = _br = null;
 		}
 
 		_info = _getDimensions.call(this);
@@ -8305,7 +8444,7 @@ define("moxie/runtime/html5/image/PNG", [
 		Basic.extend(this, {
 			type: 'image/png',
 
-			size: _binstr.length,
+			size: _br.length(),
 
 			width: _info.width,
 
@@ -8371,16 +8510,16 @@ define("moxie/runtime/html5/image/ImageInfo", [
 
 	@class ImageInfo
 	@constructor
-	@param {String} binstr Image source as binary string
+	@param {String} data Image source as binary string
 	*/
-	return function(binstr) {
+	return function(data) {
 		var _cs = [JPEG, PNG], _img;
 
 		// figure out the format, throw: ImageError.WRONG_FORMAT if not supported
 		_img = (function() {
 			for (var i = 0; i < _cs.length; i++) {
 				try {
-					return new _cs[i](binstr);
+					return new _cs[i](data);
 				} catch (ex) {
 					// console.info(ex);
 				}
@@ -8461,7 +8600,9 @@ define("moxie/runtime/html5/image/ImageInfo", [
 
 			@method purge
 			*/
-			purge: function() {}
+			purge: function() {
+				data = null;
+			}
 		});
 
 		Basic.extend(this, _img);
@@ -8699,14 +8840,6 @@ define("moxie/runtime/html5/image/Image", [
 					name: _blob.name || '',
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}
 				};
-
-				// store thumbnail data as blob
-				if (info.meta.thumb) {
-					info.meta.thumb.data = new Blob(null, {
-						type: 'image/jpeg',
-						data: info.meta.thumb.data
-					});
-				}
 
 				return info;
 			},
@@ -9766,17 +9899,6 @@ define("moxie/runtime/flash/image/Image", [
 			}
 		},
 
-		getInfo: function() {
-			var self = this.getRuntime()
-			, info = self.shimExec.call(this, 'Image', 'getInfo')
-			;
-
-			if (info.meta && info.meta.thumb) {
-				info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
-			}
-			return info;
-		},
-
 		loadFromImage: function(img) {
 			var self = this.getRuntime();
 			return self.shimExec.call(this, 'Image', 'loadFromImage', img.uid);
@@ -10311,11 +10433,6 @@ define("moxie/runtime/silverlight/image/Image", [
 						}
 					}
 				});
-
-				// save thumb data as blob
-				if (info.meta && info.meta.thumb) {
-					info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
-				}
 			}
 
 			info.width = parseInt(rawInfo.width, 10);
@@ -10371,7 +10488,9 @@ define("moxie/runtime/html4/Runtime", [
 			do_cors: false,
 			drag_and_drop: false,
 			filter_by_extension: Test(function() { // if you know how to feature-detect this, please suggest
-				return (Env.browser === 'Chrome' && Env.version >= 28) || (Env.browser === 'IE' && Env.version >= 10) || (Env.browser === 'Safari' && Env.version >= 7);
+				return (Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '>=')) || 
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) || 
+					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '>='));
 			}()),
 			resize_image: function() {
 				return extensions.Image && I.can('access_binary') && Env.can('create_canvas');
@@ -10400,9 +10519,9 @@ define("moxie/runtime/html4/Runtime", [
 			},
 			summon_file_dialog: function() { // yeah... some dirty sniffing here...
 				return I.can('select_file') && (
-					(Env.browser === 'Firefox' && Env.version >= 4) ||
-					(Env.browser === 'Opera' && Env.version >= 12) ||
-					(Env.browser === 'IE' && Env.version >= 10) ||
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 4, '>=')) ||
+					(Env.browser === 'Opera' && Env.verComp(Env.version, 12, '>=')) ||
+					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '>=')) ||
 					!!~Basic.inArray(Env.browser, ['Chrome', 'Safari'])
 				);
 			},
@@ -10516,7 +10635,7 @@ define("moxie/runtime/html4/file/FileInput", [
 				height: '100%'
 			});
 
-			if (Env.browser === 'IE' && Env.version < 10) {
+			if (Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) {
 				Basic.extend(input.style, {
 					filter : "progid:DXImageTransform.Microsoft.Alpha(opacity=0)"
 				});

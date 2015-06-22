@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.1.4
+ * v2.1.5
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-05-25
+ * Date: 2015-06-22
  */
 /**
  * Plupload.js
@@ -94,7 +94,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.1.4',
+	VERSION : '2.1.5',
 
 	/**
 	 * Inital state of the queue and also the state ones it's finished all it's uploads.
