@@ -1017,7 +1017,7 @@ $.widget("ui.plupload", {
 			// calculate index of virst visible thumb
 			var startIdx = Math.floor(self.content.scrollTop() / th) * cols;
 			// get potentially visible thumbs that are not yet visible
-			thumbs = $('.plupload_file', self.filelist)
+			thumbs = $('.plupload_file .plupload_file_thumb', self.filelist)
 				.slice(startIdx, startIdx + num)
 				.filter('.plupload_thumb_toload')
 				.get();
@@ -1056,6 +1056,7 @@ $.widget("ui.plupload", {
 					width: self.options.thumb_width, 
 					height: self.options.thumb_height, 
 					crop: true,
+					preserveHeaders: false,
 					swf_url: o.resolveUrl(self.options.flash_swf_url),
 					xap_url: o.resolveUrl(self.options.silverlight_xap_url)
 				});
@@ -1063,16 +1064,18 @@ $.widget("ui.plupload", {
 
 			img.bind("embedded error", function(e) {
 				$('#' + file.id, self.filelist)
-					.removeClass('plupload_thumb_loading')
-					.addClass('plupload_thumb_' + e.type)
+					.find('.plupload_file_thumb')
+						.removeClass('plupload_thumb_loading')
+						.addClass('plupload_thumb_' + e.type)
 					;
 				this.destroy();
 				setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 			});
 
 			$('#' + file.id, self.filelist)
-				.removeClass('plupload_thumb_toload')
-				.addClass('plupload_thumb_loading')
+				.find('.plupload_file_thumb')
+					.removeClass('plupload_thumb_toload')
+					.addClass('plupload_thumb_loading')
 				;
 			img.load(file.getSource());
 		}
@@ -1090,7 +1093,7 @@ $.widget("ui.plupload", {
 
 			loading = true;
 
-			preloadThumb(self.getFile($(thumbs.shift()).attr('id')), function() {
+			preloadThumb(self.getFile($(thumbs.shift()).closest('.plupload_file').attr('id')), function() {
 				loading = false;
 				lazyLoad();
 			});
@@ -1107,8 +1110,8 @@ $.widget("ui.plupload", {
 	_addFiles: function(files) {
 		var self = this, file_html, html = '';
 
-		file_html = '<li class="plupload_file ui-state-default plupload_thumb_toload plupload_delete" id="{id}" style="width:{thumb_width}px;">' +
-			'<div class="plupload_file_thumb" style="width: {thumb_width}px; height: {thumb_height}px;">' +
+		file_html = '<li class="plupload_file ui-state-default plupload_delete" id="{id}" style="width:{thumb_width}px;">' +
+			'<div class="plupload_file_thumb plupload_thumb_toload" style="width: {thumb_width}px; height: {thumb_height}px;">' +
 				'<div class="plupload_file_dummy ui-widget-content" style="line-height: {thumb_height}px;"><span class="ui-state-disabled">{ext} </span></div>' +
 			'</div>' +
 			'<div class="plupload_file_status">' +
