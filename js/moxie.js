@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.3.1
+ * v1.3.2
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-06-22
+ * Date: 2015-07-01
  */
 /**
  * Compiled inline version. (Library mode)
@@ -172,20 +172,20 @@ define('moxie/core/utils/Basic', [], function() {
 		var length, key, i, undef;
 
 		if (obj) {
-			if (typeOf(obj) === 'array') {
-				// Loop array items
-				for (i = 0, length = obj.length; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
-					}
-				}
-			} else {
+			if (typeOf(obj) === 'object') {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
+					}
+				}
+			} else if (typeOf(obj.length) === 'number') { // it might be Array or, for example, FileList
+				// Loop array items
+				for (i = 0, length = obj.length; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
 					}
 				}
 			}
@@ -8242,7 +8242,7 @@ define("moxie/runtime/html5/image/JPEG", [
 ], function(Basic, x, JPEGHeaders, BinaryReader, ExifParser) {
 	
 	function JPEG(data) {
-		var _br, _hm, _ep, _info, hasExif = false;
+		var _br, _hm, _ep, _info;
 
 		_br = new BinaryReader(data);
 
@@ -8255,8 +8255,9 @@ define("moxie/runtime/html5/image/JPEG", [
 		_hm = new JPEGHeaders(data);
 
 		// extract exif info
-		_ep = new ExifParser(_hm.get('app1')[0]);
-		hasExif = true;
+		try {
+			_ep = new ExifParser(_hm.get('app1')[0]);
+		} catch(ex) {}
 
 		// get dimensions
 		_info = _getDimensions.call(this);
@@ -8271,7 +8272,7 @@ define("moxie/runtime/html5/image/JPEG", [
 			height: _info && _info.height || 0,
 
 			setExif: function(tag, value) {
-				if (!hasExif) {
+				if (!_ep) {
 					return false; // or throw an exception
 				}
 
@@ -8304,7 +8305,7 @@ define("moxie/runtime/html5/image/JPEG", [
 			}
 		});
 
-		if (hasExif) {
+		if (_ep) {
 			this.meta = {
 				tiff: _ep.TIFF(),
 				exif: _ep.EXIF(),
