@@ -645,7 +645,7 @@ $.widget("ui.plupload", {
 			}
 		}
 		
-		self.uploader.settings[key] = value;	
+		self.uploader.setOption(key, value);	
 	},
 
 	
