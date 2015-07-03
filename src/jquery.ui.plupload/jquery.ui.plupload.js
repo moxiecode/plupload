@@ -416,6 +416,9 @@ $.widget("ui.plupload", {
 
 		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
 
+		// retrieve full normalized set of options
+		this.options = uploader.getOption();
+
 		if (self.options.views.thumbs) {
 			uploader.settings.required_features.display_media = true;
 		}
