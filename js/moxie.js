@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.3.2
+ * v1.3.3
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-07-01
+ * Date: 2015-07-03
  */
 /**
  * Compiled inline version. (Library mode)
@@ -172,20 +172,20 @@ define('moxie/core/utils/Basic', [], function() {
 		var length, key, i, undef;
 
 		if (obj) {
-			if (typeOf(obj) === 'object') {
+			if (typeOf(obj.length) === 'number') { // it might be Array, FileList or even arguments object
+				// Loop array items
+				for (i = 0, length = obj.length; i < length; i++) {
+					if (callback(obj[i], i) === false) {
+						return;
+					}
+				}
+			} else if (typeOf(obj) === 'object') {
 				// Loop object items
 				for (key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (callback(obj[key], key) === false) {
 							return;
 						}
-					}
-				}
-			} else if (typeOf(obj.length) === 'number') { // it might be Array or, for example, FileList
-				// Loop array items
-				for (i = 0, length = obj.length; i < length; i++) {
-					if (callback(obj[i], i) === false) {
-						return;
 					}
 				}
 			}
@@ -4197,7 +4197,7 @@ define('moxie/core/utils/Url', [], function() {
 			http: 80,
 			https: 443
 		}
-		, urlp = typeof(url) === 'string' ? parseUrl(url) : url
+		, urlp = typeof(url) === 'object' ? url : parseUrl(url);
 		;
 
 		return urlp.scheme + '://' + urlp.host + (urlp.port !== ports[urlp.scheme] ? ':' + urlp.port : '') + urlp.path + (urlp.query ? urlp.query : '');
