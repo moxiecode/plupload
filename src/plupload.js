@@ -835,6 +835,11 @@ plupload.Uploader = function(options) {
 	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	@param {plupload.File} file File that the chunk was uploaded for.
 	@param {Object} result Object with response properties.
+		@param {Number} offset The amount of bytes the server has received so far, including this chunk.
+		@param {Number} total The size of the file.
+		@param {String} response The response body sent by the server.
+		@param {Number} status The HTTP status code sent by the server.
+		@param {String} responseHeaders All the response headers as a single string.
 	 */
 
 	/**
@@ -844,6 +849,9 @@ plupload.Uploader = function(options) {
 	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	@param {plupload.File} file File that was uploaded.
 	@param {Object} result Object with response properties.
+		@param {String} response The response body sent by the server.
+		@param {Number} status The HTTP status code sent by the server.
+		@param {String} responseHeaders All the response headers as a single string.
 	 */
 
 	/**
@@ -860,6 +868,8 @@ plupload.Uploader = function(options) {
 	@event Error
 	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	@param {Object} error Contains code, message and sometimes file and other details.
+		@param {Number} code The plupload error code.
+		@param {String} message Description of the error (uses i18n).
 	 */
 
 	/**
