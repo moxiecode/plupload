@@ -694,7 +694,7 @@ $.widget("ui.plupload", {
 
 	
 	/**
-	Retrieve file by it's unique id.
+	Retrieve file by its unique id.
 
 	@method getFile
 	@param {String} id Unique id of the file
@@ -726,7 +726,7 @@ $.widget("ui.plupload", {
 	Remove the file from the queue.
 
 	@method removeFile
-	@param {plupload.File|String} file File to remove, might be specified directly or by it's unique id
+	@param {plupload.File|String} file File to remove, might be specified directly or by its unique id
 	*/
 	removeFile: function(file) {
 		if (plupload.typeOf(file) === 'string') {

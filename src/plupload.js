@@ -86,7 +86,7 @@ var plupload = {
 	VERSION : '@@version@@',
 
 	/**
-	 * Inital state of the queue and also the state ones it's finished all it's uploads.
+	 * The state of the queue before it has started and after it has finished
 	 *
 	 * @property STOPPED
 	 * @static
@@ -373,7 +373,7 @@ var plupload = {
 	toArray : o.toArray,
 
 	/**
-	 * Find an element in array and return it's index if present, otherwise return -1.
+	 * Find an element in array and return its index if present, otherwise return -1.
 	 *
 	 * @method inArray
 	 * @static
@@ -1850,7 +1850,7 @@ plupload.Uploader = function(options) {
 		},
 
 		/**
-		 * Dispatches the specified event name and it's arguments to all listeners.
+		 * Dispatches the specified event name and its arguments to all listeners.
 		 *
 		 *
 		 * @method trigger
@@ -2452,7 +2452,7 @@ plupload.File = (function() {
 	self.bytesPerSec = 0;
 
 	/**
-	 * Resets the progress to it's initial values.
+	 * Resets the progress to its initial values.
 	 *
 	 * @method reset
 	 */
