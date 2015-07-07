@@ -725,148 +725,148 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 */
 plupload.Uploader = function(options) {
 	/**
-	 * Fires when the current RunTime has been initialized.
-	 *
-	 * @event Init
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires when the current RunTime has been initialized.
+	
+	@event Init
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
 
 	/**
-	 * Fires after the init event incase you need to perform actions there.
-	 *
-	 * @event PostInit
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires after the init event incase you need to perform actions there.
+	
+	@event PostInit
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
 
 	/**
-	 * Fires when the option is changed in via uploader.setOption().
-	 *
-	 * @event OptionChanged
-	 * @since 2.1
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {String} name Name of the option that was changed
-	 * @param {Mixed} value New value for the specified option
-	 * @param {Mixed} oldValue Previous value of the option
+	Fires when the option is changed in via uploader.setOption().
+	
+	@event OptionChanged
+	@since 2.1
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {String} name Name of the option that was changed
+	@param {Mixed} value New value for the specified option
+	@param {Mixed} oldValue Previous value of the option
 	 */
 
 	/**
-	 * Fires when the silverlight/flash or other shim needs to move.
-	 *
-	 * @event Refresh
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires when the silverlight/flash or other shim needs to move.
+	
+	@event Refresh
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
 
 	/**
-	 * Fires when the overall state is being changed for the upload queue.
-	 *
-	 * @event StateChanged
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires when the overall state is being changed for the upload queue.
+	
+	@event StateChanged
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
 
 	/**
-	 * Fires when browse_button is clicked and browse dialog shows.
-	 *
-	 * @event Browse
-	 * @since 2.1.2
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires when browse_button is clicked and browse dialog shows.
+	
+	@event Browse
+	@since 2.1.2
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */	
 
 	/**
-	 * Fires for every filtered file before it is added to the queue.
-	 * 
-	 * @event FileFiltered
-	 * @since 2.1
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file Another file that has to be added to the queue.
+	Fires for every filtered file before it is added to the queue.
+	
+	@event FileFiltered
+	@since 2.1
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {plupload.File} file Another file that has to be added to the queue.
 	 */
 
 	/**
-	 * Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
-	 *
-	 * @event QueueChanged
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires when the file queue is changed. In other words when files are added/removed to the files array of the uploader instance.
+	
+	@event QueueChanged
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */ 
 
 	/**
-	 * Fires after files were filtered and added to the queue.
-	 *
-	 * @event FilesAdded
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of file objects that were added to queue by the user.
+	Fires after files were filtered and added to the queue.
+	
+	@event FilesAdded
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {Array} files Array of file objects that were added to queue by the user.
 	 */
 
 	/**
-	 * Fires when file is removed from the queue.
-	 *
-	 * @event FilesRemoved
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of files that got removed.
+	Fires when file is removed from the queue.
+	
+	@event FilesRemoved
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {Array} files Array of files that got removed.
 	 */
 
 	/**
-	 * Fires just before a file is uploaded. Can be used to cancel the upload for the specified file
-	 * by returning false from the handler.
-	 *
-	 * @event BeforeUpload
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File to be uploaded.
+	Fires just before a file is uploaded. Can be used to cancel the upload for the specified file
+	by returning false from the handler.
+	
+	@event BeforeUpload
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {plupload.File} file File to be uploaded.
 	 */
 
 	/**
-	 * Fires when a file is to be uploaded by the runtime.
-	 *
-	 * @event UploadFile
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File to be uploaded.
+	Fires when a file is to be uploaded by the runtime.
+	
+	@event UploadFile
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {plupload.File} file File to be uploaded.
 	 */
 
 	/**
-	 * Fires while a file is being uploaded. Use this event to update the current file upload progress.
-	 *
-	 * @event UploadProgress
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File that is currently being uploaded.
+	Fires while a file is being uploaded. Use this event to update the current file upload progress.
+	
+	@event UploadProgress
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {plupload.File} file File that is currently being uploaded.
 	 */	
 
 	/**
-	 * Fires when file chunk is uploaded.
-	 *
-	 * @event ChunkUploaded
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File that the chunk was uploaded for.
-	 * @param {Object} result Object with response properties.
+	Fires when file chunk is uploaded.
+	
+	@event ChunkUploaded
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {plupload.File} file File that the chunk was uploaded for.
+	@param {Object} result Object with response properties.
 	 */
 
 	/**
-	 * Fires when a file is successfully uploaded.
-	 *
-	 * @event FileUploaded
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {plupload.File} file File that was uploaded.
-	 * @param {Object} result Object with response properties.
+	Fires when a file is successfully uploaded.
+	
+	@event FileUploaded
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {plupload.File} file File that was uploaded.
+	@param {Object} result Object with response properties.
 	 */
 
 	/**
-	 * Fires when all files in a queue are uploaded.
-	 *
-	 * @event UploadComplete
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Array} files Array of file objects that was added to queue/selected by the user.
+	Fires when all files in a queue are uploaded.
+	
+	@event UploadComplete
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {Array} files Array of file objects that was added to queue/selected by the user.
 	 */
 
 	/**
-	 * Fires when a error occurs.
-	 *
-	 * @event Error
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
-	 * @param {Object} error Contains code, message and sometimes file and other details.
+	Fires when a error occurs.
+	
+	@event Error
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
+	@param {Object} error Contains code, message and sometimes file and other details.
 	 */
 
 	/**
-	 * Fires when destroy method is called.
-	 *
-	 * @event Destroy
-	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	Fires when destroy method is called.
+	
+	@event Destroy
+	@param {plupload.Uploader} uploader Uploader instance sending the event.
 	 */
 	var uid = plupload.guid()
 	, settings
