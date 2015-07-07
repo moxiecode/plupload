@@ -804,8 +804,8 @@ plupload.Uploader = function(options) {
 	 */
 
 	/**
-	 * Fires when just before a file is uploaded. This event enables you to override settings
-	 * on the uploader instance before the file is uploaded.
+	 * Fires just before a file is uploaded. Can be used to cancel the upload for the specified file
+	 * by returning false from the handler.
 	 *
 	 * @event BeforeUpload
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
@@ -834,7 +834,7 @@ plupload.Uploader = function(options) {
 	 * @event ChunkUploaded
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {plupload.File} file File that the chunk was uploaded for.
-	 * @param {Object} response Object with response properties.
+	 * @param {Object} result Object with response properties.
 	 */
 
 	/**
@@ -843,7 +843,7 @@ plupload.Uploader = function(options) {
 	 * @event FileUploaded
 	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
 	 * @param {plupload.File} file File that was uploaded.
-	 * @param {Object} response Object with response properties.
+	 * @param {Object} result Object with response properties.
 	 */
 
 	/**
