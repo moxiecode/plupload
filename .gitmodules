@@ -4,3 +4,6 @@
 [submodule "tests/js"]
 	path = tests/js
 	url = https://github.com/moxiecode/testrunner.git
+[submodule "tests/js/testrunner"]
+	path = tests/js/testrunner
+	url = https://github.com/moxiecode/testrunner.git
