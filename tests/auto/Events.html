@@ -42,29 +42,50 @@ module("plupload.Uploader", {
 });
 
 
-test("Sequence of event handlers", function() {
+test("trigger()", function(assert) {
+	var up = this.up, arg1 = 1, arg2 = { two: 2 };
+
+	up.bind('SomeEvent', function(up, one, two) {
+		ok(up instanceof plupload.Uploader, "First argument is always plupload.Uploader instance.");
+		deepEqual(one, arg1, "Second argument (number) successfully passed.");
+		deepEqual(two, arg2, "Thir argument (object) successfully passed.");
+	});
+
+	up.trigger('SomeEvent', arg1, arg2);
+});
+
+
+test("bind() - basic functionality, priority, scope.", function() {
 	var up = this.up, seq = [];
+	var someScope = {
+		prop1: 1,
+		prop2: 2
+	};
 
 	up.bind('SomeEvent', function() {
 		seq.push(1);
-	});
+		deepEqual(this, someScope, "Scope successfully altered.");
+	}, someScope, 5);
 
 	up.bind('SomeEvent', function() {
+		ok(!seq.length, "Handler with higher priority runs first.")
 		seq.push(2);
-		deepEqual(seq, [1,2], "Event handlers run in sequence.");
-	});
+	}, up, 10);
 
 	up.bind('SomeEvent', function() {
+		ok(this instanceof plupload.Uploader, "By default the scope is set to the object firing the event.");
 		seq.push(3);
 		return false;
 	});
 
 	up.bind('SomeEvent', function() {
+		// this should never run
+		ok(false, "Consequent event handlers cancelled by returning false.");
 		seq.push(4);
 	});
 
 	up.bind('TestComplete', function() {
-		deepEqual(seq, [1,2,3], "Consequent event handlers canceled by returning false.");
+		deepEqual(seq, [2,1,3], "All expected event handlers have run and in order specified by priority.");
 	});
 
 	up.trigger('SomeEvent');
@@ -72,16 +93,59 @@ test("Sequence of event handlers", function() {
 });
 
 
+test("unbind()", function(assert) {
+	var up = this.up, seq = [];
+
+	function handler1() {
+		seq.push(1);
+	}
+
+	function handler2() {
+		seq.push(2);
+	}
+
+	up.bind('SomeEvent', handler1);
+	up.bind('SomeEvent', handler2);
+
+	up.trigger('SomeEvent'); // will populate seq with [1,2]
+
+	up.unbind('SomeEvent', handler2);
+
+	up.trigger('SomeEvent'); // seq should become [1,2,1]
+
+	assert.deepEqual(seq, [1,2,1], "unbind successfull.");
+});
+
+
+test("unbindAll()", function(assert) {
+	var up = this.up, seq = [];
+
+	function handler1() {
+		seq.push(1);
+	}
+
+	function handler2() {
+		seq.push(2);
+	}
+
+	up.bind('SomeEvent', handler1);
+	up.bind('SomeEvent', handler2);
+
+	up.trigger('SomeEvent'); // will populate seq with [1,2]
+
+	up.unbindAll('SomeEvent');
+
+	up.trigger('SomeEvent'); // seq should become [1,2,1]
+
+	assert.deepEqual(seq, [1,2], "unbind successfull.");
+});
+
 // test upload
 
 </script>
 </head>
 <body>
-	<h1 id="qunit-header">Plupload: Test Uploader</h1>
-	<h2 id="qunit-banner"></h2>
-	<h2 id="qunit-userAgent"></h2>
-	<ol id="qunit-tests">
-	</ol>
+	<div id="qunit"></div>
     <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
 </body>
 </html>
