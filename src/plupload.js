@@ -2034,53 +2034,75 @@ plupload.Uploader = function(options) {
 		},
 
 		/**
-		 * Dispatches the specified event name and its arguments to all listeners.
-		 *
-		 *
-		 * @method trigger
-		 * @param {String} name Event name to fire.
-		 * @param {Object..} Multiple arguments to pass along to the listener functions.
-		 */
+		Dispatches the specified event name and its arguments to all listeners.
 
-		/**
-		 * Check whether uploader has any listeners to the specified event.
-		 *
-		 * @method hasEventListener
-		 * @param {String} name Event name to check for.
-		 */
+		@method trigger
+		@param {String} name Event name to fire.
+		@param {Object..} Multiple arguments to pass along to the listener functions.
+		*/
 
+		// override the parent method to match Plupload-like event logic
+		dispatchEvent: function(type) {
+			var list, args, result;
+						
+			type = type.toLowerCase();
+							
+			list = this.hasEventListener(type);
 
-		/**
-		 * Adds an event listener by name.
-		 *
-		 * @method bind
-		 * @param {String} name Event name to listen for.
-		 * @param {function} func Function to call ones the event gets fired.
-		 * @param {Object} scope Optional scope to execute the specified function in.
-		 */
-		bind : function(name, func, scope) {
-			var self = this;
-			// adapt moxie EventTarget style to Plupload-like
-			plupload.Uploader.prototype.bind.call(this, name, function() {
-				var args = [].slice.call(arguments);
-				args.splice(0, 1, self); // replace event object with uploader instance
-				return func.apply(this, args);
-			}, 0, scope);
+			if (list) {
+				// sort event list by prority
+				list.sort(function(a, b) { return b.priority - a.priority; });
+				
+				// first argument should be current plupload.Uploader instance
+				args = [].slice.call(arguments);
+				args.shift();
+				args.unshift(this);
+
+				for (var i = 0; i < list.length; i++) {
+					// Fire event, break chain if false is returned
+					if (list[i].fn.apply(list[i].scope, args) === false) {
+						return false;
+					}
+				}
+			}
+			return true;
 		},
 
 		/**
-		 * Removes the specified event listener.
-		 *
-		 * @method unbind
-		 * @param {String} name Name of event to remove.
-		 * @param {function} func Function to remove from listener.
-		 */
+		Check whether uploader has any listeners to the specified event.
+
+		@method hasEventListener
+		@param {String} name Event name to check for.
+		*/
+
 
 		/**
-		 * Removes all event listeners.
-		 *
-		 * @method unbindAll
-		 */
+		Adds an event listener by name.
+
+		@method bind
+		@param {String} name Event name to listen for.
+		@param {function} fn Function to call ones the event gets fired.
+		@param {Object} [scope] Optional scope to execute the specified function in.
+		@param {Number} [priority=0] Priority of the event handler - handlers with higher priorities will be called first
+		*/
+		bind: function(name, fn, scope, priority) {
+			// adapt moxie EventTarget style to Plupload-like
+			plupload.Uploader.prototype.bind.call(this, name, fn, priority, scope);
+		},
+
+		/**
+		Removes the specified event listener.
+
+		@method unbind
+		@param {String} name Name of event to remove.
+		@param {function} fn Function to remove from listener.
+		*/
+
+		/**
+		Removes all event listeners.
+
+		@method unbindAll
+		*/
 
 
 		/**
