@@ -93,15 +93,15 @@
 				Basic.extend(this, {
 					send: function(meta, data) {
 						var target = this
-						, upSpeed = 200 // kb/s
-						, downSpeed = 100
+						, upSpeed = 200 * 1024 // kb/s
+						, downSpeed = 100 * 1024
 						, upSize = 100 * 1024
 						, downSize = 10 * 1024
 						, uploaded = 0
 						, downloaded = 0
 						, interval = 50 // ms
-						, upDelta = upSpeed / 1000 * interval
-						, downDelta = downSpeed / 1000 * interval
+						, upDelta = interval / 1000 * upSpeed
+						, downDelta = interval / 1000 * downSpeed
 						;
 
 						if (data instanceof Blob) {
