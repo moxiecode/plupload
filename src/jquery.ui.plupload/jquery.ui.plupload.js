@@ -600,9 +600,9 @@ $.widget("ui.plupload", {
 			self._handleFileStatus(file);
 		});
 		
-		uploader.bind('FileUploaded', function(up, file) {
+		uploader.bind('FileUploaded', function(up, file, result) {
 			self._handleFileStatus(file);
-			self._trigger('uploaded', null, { up: up, file: file } );
+			self._trigger('uploaded', null, { up: up, file: file, result: result } );
 		});
 		
 		uploader.bind('UploadProgress', function(up, file) {
