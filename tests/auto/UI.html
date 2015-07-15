@@ -9,26 +9,204 @@
 <script type="text/javascript">
 
 QUnit.config.reorder = false;
+QUnit.config.testTimeout = 2000;
+QUnit.config.autostart = false;
+
+FileHash.init({
+	files: ['files/01.min.js', 'files/02.min.js'],
+	onready: function() {
+		QUnit.start();
+	}
+});
+
 
 o.Env.swf_url = "../../js/flash/Moxie.swf";
 o.Env.xap_url = "../../js/silverlight/Moxie.xap";
 
-module("Runtime", {
-	setup: function() {
-	},
 
+module("Methods", {
 	teardown: function() {
+		$('#qunit-fixture').plupload('destroy');
 	}
 });
+
+test("getUploader()", function(assert) {
+	stop();
+	$('#qunit-fixture').plupload({
+		runtimes: 'test',
+		url: '../upload.php',
+
+		ready: function(e, o) {
+			start();
+			assert.ok($(this).plupload('getUploader') instanceof plupload.Uploader, 
+				'Retrieved a reference to an internal plupload.Uploader object.');
+		},
+
+		error: function() {
+			start();
+			assert.ok(false, "Plupload didn't initialise.");
+		}
+	});
+});
+
+
+test("refresh()", function(assert) {
+	stop();
+	$('#qunit-fixture').plupload({
+		runtimes: 'test',
+		url: '../upload.php',
+
+		ready: function(e, o) {
+			o.up.bind('refresh', function() {
+				start();
+				assert.ok(true, 
+					'Refresh has been triggered.');
+			});
+
+			$(this).plupload('refresh');
+		},
+
+		error: function() {
+			start();
+			assert.ok(false, "Plupload didn't initialise.");
+		}
+	});
+});
+
+
+
+
+
+module("Events", {
+	teardown: function() {
+		$('#qunit-fixture').plupload('destroy');
+	}
+});
+
+test('ready', function(assert) {
+	expect(2);
+	stop();
+	$('#qunit-fixture').plupload({
+		runtimes: 'test',
+		url: '../upload.php',
+
+		ready: function(e, o) {
+			start();
+			assert.ok(true, 'ready fired.');
+			assert.ok(o.up instanceof plupload.Uploader, 
+				'Second arguments up property is plupload.Uploader object.');
+		},
+
+		error: function() {
+			start();
+			assert.ok(false, "Plupload didn't initialise.");
+		}
+	});
+});
+
+
+test('selected (uses - event:ready)', function(assert) {
+	var files = FileHash.getRuntimeFiles();
+
+	stop();
+	$('#qunit-fixture').plupload({
+		runtimes: 'test',
+		url: '../upload.php',
+
+		ready: function(e, o) {
+			o.up.addFile(files);
+		},
+
+		selected: function(e, o) {
+			start();
+			assert.ok(true, 'selected fired.');
+			assert.ok(o.files, "Event object contains files property.");
+			assert.equal(o.files.length, files.length, 
+				files.length + " files were selected (added to the queue)");
+			assert.ok(o.files[0] instanceof plupload.File, "Selected file is an instance of plupload.File.");
+		},
+
+		error: function() {
+			start();
+			assert.ok(false, "Plupload didn't initialise.");
+		}
+	});
+});
+
+
+test('started, stopped, progress, uploaded, complete (uses - event:ready, prop:autostart)', function(assert) {
+	var files = FileHash.getRuntimeFiles();
+
+	var events = {
+		started: 0,
+		stopped: 0,
+		progress: 0,
+		uploaded: 0,
+		complete: 0
+	};
+
+	stop();
+	$('#qunit-fixture').plupload({
+		runtimes: 'test',
+		url: '../upload.php',
+		autostart: true,
+
+		ready: function(e, o) {
+			o.up.addFile(files[0]);
+		},
+
+		started: function(e, o) {
+			events[e.type]++;
+		},
+
+		stopped: function(e, o) {
+			events[e.type]++;
+		},
+
+		progress: function(e, o) {
+			events[e.type]++;
+		},
+
+		uploaded: function(e, o) {
+			events[e.type]++;
+
+			assert.ok(o.file instanceof plupload.File, "uploaded: Event object contains file property.");
+			assert.equal(typeof(o.result), 'object', "uploaded: Event object contains result property.");
+
+			assert.deepEqual([
+				!!o.result.response,
+				o.result.status,
+				!!o.result.responseHeaders
+			], [
+				true,
+				200,
+				true
+			], "uploaded: result property contains server response, status code and response headers.");
+		},
+
+		complete: function(e, o) {
+			start();
+			events[e.type]++;
+
+			assert.equal(events.started, 1, "start fired 1 time.");
+			assert.equal(events.stopped, 1, "stop fired 1 time.");
+			assert.ok(events.progress, "progress fired "+events.progress+" time(s).");
+			assert.equal(events.uploaded, 1, "uploaded fired 1 time.");
+			assert.equal(events.complete, 1, "complete fired 1 time.");
+		},
+
+		error: function() {
+			start();
+			assert.ok(false, "Plupload didn't initialise.");
+		}
+	});
+});
+
 
 </script>
 </head>
 <body>
-	<h1 id="qunit-header">Plupload Test Suite</h1>
-	<h2 id="qunit-banner"></h2>
-	<h2 id="qunit-userAgent"></h2>
-	<ol id="qunit-tests">
-	</ol>
-    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: auto;"></div>
 </body>
 </html>
