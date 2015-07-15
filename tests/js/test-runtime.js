@@ -88,7 +88,7 @@
 
 
 			XMLHttpRequest: function() {
-				var _state = XMLHttpRequest.OPENED;
+				var _state = XMLHttpRequest.OPENED, _status = 0;
 
 				Basic.extend(this, {
 					send: function(meta, data) {
@@ -155,6 +155,16 @@
 									total: downSize
 								});
 								_state = XMLHttpRequest.DONE;
+
+								// if meta.url is set to http code, trigger error with that code and exit
+								var errCodes = ['404'];
+								var m = meta.url.match(new RegExp('('+errCodes.join('|')+')$'));
+								if (m) {
+									_status = m[1];
+								} else {
+									_status = 200;
+								}
+								
 								target.trigger('Load');
 							}
 						}
@@ -165,7 +175,7 @@
 					},
 
 					getStatus: function() {
-						return _state > XMLHttpRequest.OPENED ? 200 : 0;
+						return _status;
 					},
 
 					getResponse: function(responseType) {
@@ -203,11 +213,12 @@
 
 					abort: function() {
 						_state = XMLHttpRequest.DONE;
+						_status = 0;
 						this.trigger('Abort');
 					},
 
 					destroy: function() {
-						
+						_status = 0;
 					}
 				});
 
