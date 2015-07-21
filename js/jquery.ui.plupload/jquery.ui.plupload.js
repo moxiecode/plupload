@@ -141,14 +141,14 @@ Dispatched when file dialog is closed.
 /**
 Dispatched when upload is started.
 
-@event start
+@event started
 @param {plupload.Uploader} uploader Uploader instance sending the event.
 */
 
 /**
 Dispatched when upload is stopped.
 
-@event stop
+@event stopped
 @param {plupload.Uploader} uploader Uploader instance sending the event.
 */
 
@@ -592,17 +592,26 @@ $.widget("ui.plupload", {
 			self._trigger('removed', null, { up: up, files: files } );
 		});
 		
-		uploader.bind('QueueChanged StateChanged', function() {
+		uploader.bind('QueueChanged', function() {
 			self._handleState();
+		});
+
+		uploader.bind('StateChanged', function(up) {
+			self._handleState();
+			if (plupload.STARTED === up.state) {
+				self._trigger('started', null, { up: this.uploader });
+			} else if (plupload.STOPPED === up.state) {
+				self._trigger('stopped', null, { up: this.uploader });
+			}
 		});
 		
 		uploader.bind('UploadFile', function(up, file) {
 			self._handleFileStatus(file);
 		});
 		
-		uploader.bind('FileUploaded', function(up, file) {
+		uploader.bind('FileUploaded', function(up, file, result) {
 			self._handleFileStatus(file);
-			self._trigger('uploaded', null, { up: up, file: file } );
+			self._trigger('uploaded', null, { up: up, file: file, result: result } );
 		});
 		
 		uploader.bind('UploadProgress', function(up, file) {
@@ -656,7 +665,6 @@ $.widget("ui.plupload", {
 	*/
 	start: function() {
 		this.uploader.start();
-		this._trigger('start', null, { up: this.uploader });
 	},
 
 	
@@ -667,7 +675,6 @@ $.widget("ui.plupload", {
 	*/
 	stop: function() {
 		this.uploader.stop();
-		this._trigger('stop', null, { up: this.uploader });
 	},
 
 
@@ -694,7 +701,7 @@ $.widget("ui.plupload", {
 
 	
 	/**
-	Retrieve file by it's unique id.
+	Retrieve file by its unique id.
 
 	@method getFile
 	@param {String} id Unique id of the file
@@ -726,7 +733,7 @@ $.widget("ui.plupload", {
 	Remove the file from the queue.
 
 	@method removeFile
-	@param {plupload.File|String} file File to remove, might be specified directly or by it's unique id
+	@param {plupload.File|String} file File to remove, might be specified directly or by its unique id
 	*/
 	removeFile: function(file) {
 		if (plupload.typeOf(file) === 'string') {
