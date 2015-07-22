@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.3.3
+ * v1.3.4
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-07-03
+ * Date: 2015-07-18
  */
 /**
  * Compiled inline version. (Library mode)
@@ -1892,7 +1892,8 @@ define('moxie/core/EventTarget', [
 			@return {Mixed} Returns a handler if it was found and false, if - not
 			*/
 			hasEventListener: function(type) {
-				return type ? !!(eventpool[this.uid] && eventpool[this.uid][type]) : !!eventpool[this.uid];
+				var list = type ? eventpool[this.uid] && eventpool[this.uid][type] : eventpool[this.uid];
+				return list ? list : false;
 			},
 			
 			/**
@@ -6030,14 +6031,6 @@ define("moxie/image/Image", [
 				info = this.exec('Image', 'getInfo');
 			}
 
-			// store thumbnail data as blob
-			if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
-				info.meta.thumb.data = new Blob(this.ruid, {
-					type: 'image/jpeg',
-					data: info.meta.thumb.data
-				});
-			}
-
 			this.size = info.size;
 			this.width = info.width;
 			this.height = info.height;
@@ -6076,7 +6069,7 @@ define("moxie/image/Image", [
 				// if String
 				else if (srcType === 'string') {
 					// if dataUrl String
-					if (/^data:[^;]*;base64,/.test(src)) {
+					if (src.substr(0, 5) === 'data:') {
 						_load.call(this, new Blob(null, { data: src }), arguments[1]);
 					}
 					// else assume Url, either relative or absolute
@@ -7392,7 +7385,7 @@ define("moxie/runtime/html5/utils/BinaryReader", [
 			UTF16StringReader.apply(this, arguments);
 		}
 	}
-	 
+	 
 
 	Basic.extend(BinaryReader.prototype, {
 		
@@ -8842,6 +8835,14 @@ define("moxie/runtime/html5/image/Image", [
 					meta: _imgInfo && _imgInfo.meta || this.meta || {}
 				};
 
+				// store thumbnail data as blob
+				if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+					info.meta.thumb.data = new Blob(null, {
+						type: 'image/jpeg',
+						data: info.meta.thumb.data
+					});
+				}
+
 				return info;
 			},
 
@@ -9905,6 +9906,17 @@ define("moxie/runtime/flash/image/Image", [
 			return self.shimExec.call(this, 'Image', 'loadFromImage', img.uid);
 		},
 
+		getInfo: function() {
+			var self = this.getRuntime()
+			, info = self.shimExec.call(this, 'Image', 'getInfo')
+			;
+
+			if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+				info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
+			}
+			return info;
+		},
+
 		getAsBlob: function(type, quality) {
 			var self = this.getRuntime()
 			, blob = self.shimExec.call(this, 'Image', 'getAsBlob', type, quality)
@@ -10434,6 +10446,11 @@ define("moxie/runtime/silverlight/image/Image", [
 						}
 					}
 				});
+
+				// save thumb data as blob
+				if (info.meta && info.meta.thumb && !(info.meta.thumb.data instanceof Blob)) {
+					info.meta.thumb.data = new Blob(self.uid, info.meta.thumb.data);
+				}
 			}
 
 			info.width = parseInt(rawInfo.width, 10);
