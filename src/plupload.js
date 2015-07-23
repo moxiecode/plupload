@@ -1268,11 +1268,15 @@ plupload.Uploader = function(options) {
 					settings.prevent_duplicates = settings.filters.prevent_duplicates = !!value;
 					break;
 
+				// options that require reinitialisation
+				case 'container':
 				case 'browse_button':
 				case 'drop_element':
-						value = plupload.get(value);
-
-				case 'container':
+						value = 'container' === option
+							? plupload.get(value)
+							: plupload.getAll(value)
+							; 
+				
 				case 'runtimes':
 				case 'multi_selection':
 				case 'flash_swf_url':
@@ -1736,32 +1740,49 @@ plupload.Uploader = function(options) {
 		 * @method init
 		 */
 		init : function() {
-			var self = this;
-
-			if (typeof(settings.preinit) == "function") {
-				settings.preinit(self);
+			var self = this, opt, preinitOpt, err;
+			
+			preinitOpt = self.getOption('preinit');
+			if (typeof(preinitOpt) == "function") {
+				preinitOpt(self);
 			} else {
-				plupload.each(settings.preinit, function(func, name) {
+				plupload.each(preinitOpt, function(func, name) {
 					self.bind(name, func);
 				});
 			}
 
-			bindEventListeners.call(this);
+			bindEventListeners.call(self);
 
 			// Check for required options
-			if (!settings.browse_button || !settings.url) {
-				this.trigger('Error', {
-					code : plupload.INIT_ERROR,
-					message : plupload.translate('Init error.')
-				});
-				return;
+			plupload.each(['container', 'browse_button', 'drop_element'], function(el) {
+				if (self.getOption(el) === null) {
+					err = {
+						code : plupload.INIT_ERROR,
+						message : plupload.translate("'%' specified, but cannot be found.")
+					}
+					return false;
+				}
+			});
+
+			if (err) {
+				return self.trigger('Error', err);
 			}
 
-			initControls.call(this, settings, function(inited) {
-				if (typeof(settings.init) == "function") {
-					settings.init(self);
+
+			if (!settings.browse_button && !settings.drop_element) {
+				return self.trigger('Error', {
+					code : plupload.INIT_ERROR,
+					message : plupload.translate("You must specify either 'browse_button' or 'drop_element'.")
+				});
+			}
+
+
+			initControls.call(self, settings, function(inited) {
+				var initOpt = self.getOption('init');
+				if (typeof(initOpt) == "function") {
+					initOpt(self);
 				} else {
-					plupload.each(settings.init, function(func, name) {
+					plupload.each(initOpt, function(func, name) {
 						self.bind(name, func);
 					});
 				}
@@ -2063,7 +2084,7 @@ plupload.Uploader = function(options) {
 			list = this.hasEventListener(type);
 
 			if (list) {
-				// sort event list by prority
+				// sort event list by priority
 				list.sort(function(a, b) { return b.priority - a.priority; });
 				
 				// first argument should be current plupload.Uploader instance
