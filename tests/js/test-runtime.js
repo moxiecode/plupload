@@ -14,7 +14,7 @@
 			access_image_binary: False,
 			display_media: False,
 			do_cors: True,
-			drag_and_drop: False,
+			drag_and_drop: True,
 			return_response_headers: True,
 			return_response_type: True,
 			report_upload_progress: True,
