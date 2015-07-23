@@ -134,7 +134,7 @@ var findFiles = function(filePath, baseDir) {
 		return files;
 	}
 
-	filePath = path.join(baseDir, filePath);
+	filePath = path.join(baseDir || './', filePath);
 
 	if (filePath.indexOf('*') != -1) {
 		// Use glob if whildcard pattern
