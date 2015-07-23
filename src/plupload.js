@@ -292,20 +292,19 @@ var plupload = {
 	 * Get array of DOM Elements by their ids.
 	 * 
 	 * @method get
-	 * @for Utils
 	 * @param {String} id Identifier of the DOM Element
 	 * @return {Array}
 	*/
-	get : function get(ids) {
+	getAll : function get(ids) {
 		var els = [], el;
 
-		if (o.typeOf(ids) !== 'array') {
+		if (plupload.typeOf(ids) !== 'array') {
 			ids = [ids];
 		}
 
 		var i = ids.length;
 		while (i--) {
-			el = o.get(ids[i]);
+			el = plupload.get(ids[i]);
 			if (el) {
 				els.push(el);
 			}
@@ -313,6 +312,15 @@ var plupload = {
 
 		return els.length ? els : null;
 	},
+
+	/**
+	Get DOM element by id
+
+	@method get
+	@param {String} id Identifier of the DOM Element
+	@return {Node}
+	*/
+	get: o.get,
 
 	/**
 	 * Executes the callback function for each item in array/object. If you return false in the
