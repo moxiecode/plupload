@@ -214,56 +214,92 @@ var pull = function(srcUrl, to, cb) {
 		console.info(langStr + " fetched.");
 	}
 
-	request(langsUrl, function (error, response, body) {
+
+	function fetchLangs(stats) {
+		stats = stats || {};
+
+		request(langsUrl, function (error, response, body) {
+			if (error || response.statusCode != 200) {
+				console.log(srcUrl + " not reachable.");
+				process.exit(1);
+			}
+
+			/*
+			{
+				"slug": "txc"
+				"mimetype": "text/x-po",
+				"source_language_code": "en",
+				"wordcount": 6160,
+				"total_entities": 1017,
+				"last_update": "2011-12-05 19:59:55",
+				"available_languages": [
+				{
+					"code_aliases": " ",
+					"code": "sq",
+					"name": "Albanian"
+				},
+				...
+				],
+			}
+			*/
+			var data = JSON.parse(body);
+
+			var queue = [];
+			var langUrl = srcUrl + '/translation/%s/strings/';
+
+
+			data.available_languages.forEach(function(lang) {
+				// ignore language packs that weren't even started
+				if (!stats[lang.code] || !stats[lang.code].translated_entities) {
+					return;
+				}
+
+				queue.push(function(cb) {
+					request(util.format(langUrl, lang.code), function(error, response, body) {
+						if (error || response.statusCode != 200) {
+							console.log(lang.name + " not fetched.");
+						} else {
+							generateLangFile(lang, JSON.parse(body));
+						}
+						cb();
+					});
+				});
+			});
+
+			async.parallel(queue, function() {
+				if (typeof(cb) == 'function') {
+					cb();
+				}
+			});
+		});
+	}
+
+
+	request(srcUrl + '/stats', function (error, response, body) {
 		if (error || response.statusCode != 200) {
 			console.log(srcUrl + " not reachable.");
 			process.exit(1);
 		}
 
 		/*
-		{
-			"slug": "txc"
-			"mimetype": "text/x-po",
-			"source_language_code": "en",
-			"wordcount": 6160,
-			"total_entities": 1017,
-			"last_update": "2011-12-05 19:59:55",
-			"available_languages": [
-			{
-				"code_aliases": " ",
-				"code": "sq",
-				"name": "Albanian"
-			},
-			...
-			],
-		}
+		{ 
+			sl: { 
+			   	reviewed_percentage: '0%',
+				completed: '0%',
+				untranslated_words: 139,
+				last_commiter: 'jayarjo',
+				reviewed: 0,
+				translated_entities: 0,
+				translated_words: 0,
+				last_update: '2015-07-23 16:45:09',
+				untranslated_entities: 38 
+	     	} 
+	     	...
+     	}
 		*/
-		var data = JSON.parse(body);
 
-		var queue = [];
-		var langUrl = srcUrl + '/translation/%s/strings/';
-
-
-		data.available_languages.forEach(function(lang) {
-			queue.push(function(cb) {
-				request(util.format(langUrl, lang.code), function(error, response, body) {
-					if (error || response.statusCode != 200) {
-						console.log(lang.name + " not fetched.");
-					} else {
-						generateLangFile(lang, JSON.parse(body));
-					}
-					cb();
-				});
-			});
-		});
-
-		async.parallel(queue, function() {
-			if (typeof(cb) == 'function') {
-				cb();
-			}
-		});
-	})
-
+		fetchLangs(JSON.parse(body));
+	});
 };
 
 
