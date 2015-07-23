@@ -28,6 +28,7 @@ module("plupload.Uploader", {
 
 		this.options = {
 			browse_button: 'uploader',
+			drop_element: 'uploader',
 			container: 'qunit-fixture',
 			url: "Plupload/upload.php"
 		};	
@@ -44,30 +45,46 @@ module("plupload.Uploader", {
 
 
 // test required options
-test("If 'url' option is missing, uploader should trigger plupload.INIT_ERROR", function() {
+test("'url' is not a required option anymore so uploader shouldn't trigger plupload.INIT_ERROR", function() {
 	expect(1);
 
 	delete this.options['url'];
 	
 	this.up = new plupload.Uploader(this.options);
+
+	this.up.bind("Init", function() {
+		start();
+		ok(true, "'url' option is not required.");
+	});
+
 	this.up.bind("Error", function(up, err) {
 		start();
-		equal(err.code, plupload.INIT_ERROR, "'url' option is required.");
+		ok(false, "'url' option is not required.");
 	});
 
 	stop();
 	this.up.init();
 });
 
-test("If 'browse_button' option is missing, uploader should trigger plupload.INIT_ERROR", function() {
+
+test("If both 'browse_button' and 'drop_element' are missing, uploader should trigger plupload.INIT_ERROR", function() {
 	expect(1);
 
 	delete this.options['browse_button'];
+	delete this.options['drop_element'];
 	
 	this.up = new plupload.Uploader(this.options);
+
+	this.up.bind("Init", function() {
+		start();
+		ok(false, 
+			"One must specify either 'browse_button' or 'drop_element'.");
+	});
+
 	this.up.bind("Error", function(up, err) {
 		start();
-		equal(err.code, plupload.INIT_ERROR, "'browse_button' option is required.");
+		equal(err.code, plupload.INIT_ERROR, 
+			"One must specify either 'browse_button' or 'drop_element'.");
 	});
 
 	stop();
@@ -92,6 +109,7 @@ test("Normalize required_features when passed as comma-delimited string", functi
 		display_media: true
 	}, "required_features properly normalized and translated to caps.");
 });
+
 
 test("Normalize required_features when passed as object", function() {
 	expect(1);
@@ -118,6 +136,7 @@ test("Normalize required_features when passed as object", function() {
 		display_media: true
 	}, "required_features properly normalized and translated to caps.");
 });
+
 
 test("Consider special settings as required_features when required_features is boolean true", function() {
 
@@ -146,6 +165,7 @@ test("Consider special settings as required_features when required_features is b
 	}, "required_features properly normalized and translated to caps.");
 });
 
+
 test("When required_features is undefined, consider special settings as optional", function() {
 
 	this.up = new plupload.Uploader(o.extend(this.options, {
@@ -164,6 +184,7 @@ test("When required_features is undefined, consider special settings as optional
 	deepEqual(this.up.settings.required_features, {}, "required_features must be empty.");
 });
 
+
 test("Size identifiers in string format (e.g. 1mb) converted to numerical format", function() {
 
 	this.up = new plupload.Uploader(o.extend(this.options, {
@@ -174,13 +195,15 @@ test("Size identifiers in string format (e.g. 1mb) converted to numerical format
 	equal(this.up.settings.chunk_size, 1024 * 1024, "'1mb' converted to numerical bytes");
 });
 
+
 test("Test how default values are assigned to missing options", function() {
 
 	this.up = new plupload.Uploader(this.options);
 
 	deepEqual(this.up.settings, {
-		browse_button: plupload.get('uploader'),
-		container: 'qunit-fixture',
+		browse_button: plupload.getAll('uploader'),
+		drop_element: plupload.getAll('uploader'),
+		container: plupload.get('qunit-fixture'),
 		url: "Plupload/upload.php",
 		runtimes: o.Runtime.order,
 		max_retries: 0,
@@ -206,6 +229,7 @@ test("Test how default values are assigned to missing options", function() {
 	}, "Proper defaults set.");
 });
 
+
 test("Test how defaults are set for resize object", function() {
 
 	this.up = new plupload.Uploader(o.extend(this.options, {
@@ -229,13 +253,13 @@ test("Test runtime property", function() {
 	expect(2);
 
 	this.up = new plupload.Uploader(o.extend(this.options, {
-		runtimes: 'html4,html5',
+		runtimes: 'html4,test',
 		required_features: 'multi_selection'
 	}));
 
 	this.up.bind('Init', function(up, info) {
-		equal(info.runtime, 'html5', "Test second argument for Init handler.");
-		equal(up.runtime, 'html5', "Test uploader's 'runtime' property.");
+		equal(info.runtime, 'test', "Test second argument for Init handler.");
+		equal(up.runtime, 'test', "Test uploader's 'runtime' property.");
 	});
 
 	this.up.bind('PostInit', function() {
@@ -269,6 +293,7 @@ test("Test preinit and init callbacks", function() {
 	this.up.init();	
 });
 
+
 test("Test preinit and init set of event handlers", function() {
 	var eventOrder = [];
 
@@ -292,45 +317,98 @@ test("Test preinit and init set of event handlers", function() {
 });
 
 
-test("", function() {
+module("up.features must be set for backward compatibility", {
+	setup: function() {
+		$('#qunit-fixture').html('<div id="uploader" />');
 
-	var up = new plupload.Uploader({
-        runtimes: 'flash',
-        browse_button: 'uploader',
-		container: 'qunit-fixture',
-        chunk_size: '1mb',
-        filters: { 
-            max_file_size: '1024MB',
-            mime_types: [
-                { title: "All files", extensions: "*" }
-            ]
-        },
-        url: 'upload.php',
-        flash_swf_url: "../../js/Moxie.swf",
-        silverlight_xap_url: "../../js/Moxie.xap"
-    });
+		this.options = {
+			runtimes: 'test',
+			browse_button: 'uploader',
+			drop_element: 'uploader',
+			container: 'qunit-fixture',
+			url: "Plupload/upload.php",
 
-    up.bind('Init', function() {
-    	start();
+			init: {
+				Error: function(up) {
+					start();
+					ok(false, "Runtime failed to initialise.");
+				}
+			}
+		};	
 
-    	var id = $('#qunit-fixture .moxie-shim').attr('id');
+		this.up = null;
+	},
 
-    	ok(id, "Runtime selected, structures inserted.");
+	teardown: function() {
+		if (this.up) {
+			this.up.destroy();
+		}
+	}
+});
 
-    	if (id) {
-    		var info = o.Runtime.getInfo(id.replace(/_container$/, ''));
-    		equal(info.mode, 'client', "'client' mode selected as expected.");
-    	}
-    });
 
-    up.bind('Error', function(up, err) {
-    	start();
-    	ok(false, "Plupload did not initialize properly.");
-    });
+test("with 'drop_element' only", function() {
+	delete this.options.browse_button;
 
-    stop();
-    up.init();
+	var up = new plupload.Uploader(this.options);
 
+	up.bind('PostInit', function(up) {
+		start();
+
+		deepEqual(up.features, {
+				dragdrop: true,
+				chunks: true,
+				multipart: true
+			},
+			"up.features properly set for backward compatibility."
+		);
+	});
+
+	stop();
+	up.init();
+});
+
+
+test("with 'browse_button' only", function() {
+	delete this.options.drop_element;
+
+	var up = new plupload.Uploader(this.options);
+
+	up.bind('PostInit', function(up) {
+		start();
+
+		deepEqual(up.features, {
+				multi_selection: true,
+				chunks: true,
+				multipart: true
+			},
+			"up.features properly set for backward compatibility."
+		);
+	});
+
+	stop();
+	up.init();
+});
+
+
+test("with both", function() {
+	var up = new plupload.Uploader(this.options);
+
+	up.bind('PostInit', function(up) {
+		start();
+
+		deepEqual(up.features, {
+				dragdrop: true,
+				chunks: true,
+				multipart: true,
+				multi_selection: true
+			},
+			"up.features properly set for backward compatibility."
+		);
+	});
+
+	stop();
+	up.init();
 });
 
 
