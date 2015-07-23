@@ -52,7 +52,7 @@ task("moxie", [], function (params) {
 
 
 desc("Minify JS files");
-task("mkjs", [], function (params) {
+task("mkjs", [], function (i18n) {
 	var Instrument = require('coverjs').Instrument;
 	var uglify = tools.uglify;
 
@@ -116,9 +116,11 @@ task("mkjs", [], function (params) {
 	fs.writeFileSync(targetDir + "/plupload.full.min.js", code);
 
 	// Add I18n files
-	process.env.auth = "moxieuser:12345";
-	process.env.to = "./js/i18n";
-	jake.Task['i18n'].invoke();
+	if (i18n) {
+		process.env.auth = "moxieuser:12345";
+		process.env.to = "./js/i18n";
+		jake.Task['i18n'].invoke();
+	}
 });
 
 
