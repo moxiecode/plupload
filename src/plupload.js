@@ -1108,7 +1108,12 @@ plupload.Uploader = function(options) {
 					fileDrop.onready = function() {
 						var info = o.Runtime.getInfo(this.ruid);
 
-						self.features.dragdrop = info.can('drag_and_drop'); // for backward compatibility
+						// for backward compatibility
+						o.extend(self.features, {
+							chunks: info.can('slice_blob'),
+							multipart: info.can('send_multipart'),
+							dragdrop: info.can('drag_and_drop')
+						});
 
 						inited++;
 						fileDrops.push(this);
