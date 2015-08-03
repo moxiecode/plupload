@@ -88,7 +88,7 @@ $(function() {
 		 * Sometime S3 will redirect the bucker url 'http://<?php echo $bucket; ?>.s3.amazonaws.com/' to
 		 * https://<?= $bucket ?>.{region}.amazonaws.com the header sent is a 307 and it will break pupload
 		 */
-		'https://<?= $bucket ?>.<?= $region ?>.amazonaws.com/',
+		url : 'https://<?= $bucket ?>.<?= $region ?>.amazonaws.com/',
 		
 		multipart: true,
 		multipart_params: {
