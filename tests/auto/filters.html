@@ -201,6 +201,70 @@ test('options.filters.mime_types', function() {
 });
 
 
+test('options.filters.mime_types (passing actual mime types directly)', function() {
+
+	var files = FileHash.getRuntimeFiles();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters : {
+			mime_types: 'image/*'
+		}
+	}, this.options));
+
+	var queue = [];
+
+	queue.push(
+		// o.File
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_EXTENSION_ERROR, 
+					"Error triggered, code: FILE_EXTENSION_ERROR.");
+				equal(up.files.length, 0, 
+					"No files were added to the queue.");
+				equal(o.typeOf(up.settings.filters.mime_types), 'array', 
+					"Alternative (mime_types: 'image/*') format successfully parsed.");
+
+				up.unbind('TestError');
+				cb();
+			});
+			up.addFile(files[1]); // adding "03.jpg.zip"
+		},
+
+		// plupload.File
+		function(cb) {
+			file = new plupload.File(files[1]);
+			up.bind('TestFilesAdded', function(up) {
+				equal(up.files.length, 1, "Image (jpeg) successfully added.");
+				up.unbind('TestFilesAdded');
+				cb();
+			});
+
+			up.addFile(files[0]);
+		}
+	);
+
+
+	up.bind('PostInit', function() {
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
+
+	stop();
+	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+});
+
+
 test('options.max_file_size', function() {
 	expect(2);
 

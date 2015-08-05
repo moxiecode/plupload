@@ -1212,7 +1212,11 @@ plupload.Uploader = function(options) {
 
 					// if file format filters are being updated, regenerate the matching expressions
 					if (value.mime_types) {
-						settings.filters.mime_types.regexp = (function(filters) {
+						if (plupload.typeOf(value.mime_types) === 'string') {
+							value.mime_types = o.Mime.mimes2extList(value.mime_types);
+						}
+
+						value.mime_types.regexp = (function(filters) {
 							var extensionsRegExp = [];
 
 							plupload.each(filters, function(filter) {
@@ -1226,7 +1230,9 @@ plupload.Uploader = function(options) {
 							});
 
 							return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
-						}(settings.filters.mime_types));
+						}(value.mime_types));
+
+						settings.filters.mime_types = value.mime_types;
 					}
 					break;
 	
