@@ -408,7 +408,8 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 		preinit: {
 			Init: function(up, info) {	
 				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
-				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme		
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
+				runtimeFiles[0].connectRuntime(info.ruid);		
 				up.addFile(runtimeFiles[0]);
 			},
 
@@ -493,7 +494,8 @@ test("Error (HTTP error)", function() {
 		preinit: {
 			Init: function(up, info) {	
 				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
-				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme		
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
+				runtimeFiles[0].connectRuntime(info.ruid);	
 				up.addFile(runtimeFiles[0]);
 			}
 		},

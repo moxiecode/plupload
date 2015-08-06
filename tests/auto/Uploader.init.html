@@ -206,11 +206,7 @@ test("Test how default values are assigned to missing options", function() {
 		container: plupload.get('qunit-fixture'),
 		url: "Plupload/upload.php",
 		runtimes: o.Runtime.order,
-		max_retries: 0,
-		multipart : true,
-		send_file_name : true,
 		multi_selection : true,
-		file_data_name : 'file',
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
 		max_upload_slots: 1,
@@ -219,10 +215,7 @@ test("Test how default values are assigned to missing options", function() {
 			max_file_size: 0,
 			mime_types: []
 		},
-		resize: false,
-		chunk_size: 0,
-		required_features: {},
-		send_chunk_number: true
+		required_features: {}
 	}, "Proper defaults set.");
 });
 

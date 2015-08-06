@@ -37,8 +37,10 @@ test("Enable or disable client-side resizing in BeforeUpload", function() {
 		}
 	});
 
-	up.bind('PostInit', function() {
+	up.bind('Init', function(up, info) {
 		var files = FileHash.getRuntimeFiles();
+		files[0].ruid = info.ruid;
+		files[0].connectRuntime(info.ruid);	
 		up.addFile(files[0]);		
 	});
 
