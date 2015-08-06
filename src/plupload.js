@@ -57,7 +57,7 @@ function normalizeCaps(settings) {
 			caps.slice_blob = true;
 		}
 
-		if (settings.resize.enabled || !settings.multipart) {
+		if (!plupload.isEmptyObj(settings.resize) || !settings.multipart) {
 			caps.send_binary_string = true;
 		}
 		
@@ -1269,12 +1269,13 @@ plupload.Uploader = function(options) {
 					break;
 	
 				case 'resize':
-					if (init) {
-						plupload.extend(settings.resize, value, {
-							enabled: true
-						});
+					if (value) {
+						settings.resize = plupload.extend({
+							preserve_headers: true,
+							crop: false
+						}, value);
 					} else {
-						settings.resize = value;
+						settings.resize = false;
 					}
 					break;
 
@@ -1550,7 +1551,7 @@ plupload.Uploader = function(options) {
 		blob = file.getSource();
 
 		// Start uploading chunks
-		if (up.settings.resize.enabled && runtimeCan(blob, 'send_binary_string') && !!~o.inArray(blob.type, ['image/jpeg', 'image/png'])) {
+		if (!plupload.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && o.inArray(blob.type, ['image/jpeg', 'image/png']) !== -1) {
 			// Resize if required
 			resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
 				blob = resizedBlob;
@@ -1668,11 +1669,7 @@ plupload.Uploader = function(options) {
 			prevent_duplicates: false,
 			max_file_size: 0
 		},
-		resize: {
-			enabled: false,
-			preserve_headers: true,
-			crop: false
-		},
+		resize: false,
 		send_file_name: true,
 		send_chunk_number: true
 	};

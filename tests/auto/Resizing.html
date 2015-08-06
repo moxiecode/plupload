@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: Client-side image resizing</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.autostart = false;
+QUnit.config.testTimeout = 10000;
+
+FileHash.init({
+	files: ['files/01.min.js', 'files/02.min.js'],
+	onready: function() {
+		QUnit.start();
+	}
+});
+
+o.Env.swf_url = "../../js/flash/Moxie.swf";
+o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+
+module("Client-side image resizing");
+
+
+test("Enable or disable client-side resizing in BeforeUpload", function() {
+	var up = new plupload.Uploader({
+		runtimes: 'test',
+		browse_button: 'qunit-fixture',
+		url: "Plupload/upload.php",
+		required_features: true,
+		resize: {
+			width: 50,
+			height: 50
+		}
+	});
+
+	up.bind('PostInit', function() {
+		console.info('hi');
+		var files = files = FileHash.getRuntimeFiles();
+		up.addFile(files[0]);		
+	});
+
+
+	up.bind('Error', function() {
+		start();
+		ok(false, "Plupload cannot be initialized.");	
+	});
+
+	stop();
+	up.init();
+
+
+	up.bind('FilesAdded', function() {
+		up.start();
+	});
+
+
+	up.bind('BeforeUpload', function() {
+		start();
+
+		deepEqual(up.getOption('resize'), {
+			height: 50,
+			width: 50,
+			crop: false,
+			preserve_headers: true
+		}, "Check resize options prior to any action.");
+
+		up.setOption('resize', {
+			width: 60,
+			height: 60,
+			crop: true
+		});
+
+		deepEqual(up.getOption('resize'), {
+			height: 60,
+			width: 60,
+			crop: true,
+			preserve_headers: true
+		}, "Check resize options after they were changed.");
+
+		up.setOption('resize', false);
+
+		equal(up.getOption('resize'), false, 
+			"Check resize options after they were disabled.");
+
+		deepEqual(up.getOption('required_features'), {
+			select_file: true,
+			select_multiple: true,
+			send_binary_string: true
+		}, "Test what required_features are set.");
+
+	});
+
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

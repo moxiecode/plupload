@@ -218,11 +218,7 @@ test("Test how default values are assigned to missing options", function() {
 			max_file_size: 0,
 			mime_types: []
 		},
-		resize: {
-			enabled: false,
-			preserve_headers: true,
-			crop: false
-		},
+		resize: false,
 		chunk_size: 0,
 		required_features: {},
 		send_chunk_number: true
@@ -240,7 +236,6 @@ test("Test how defaults are set for resize object", function() {
 	}));
 
 	deepEqual(this.up.settings.resize, {
-		enabled: true,
 		width: 100,
 		height: 60,
 		crop: false,
