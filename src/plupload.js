@@ -53,12 +53,16 @@ function normalizeCaps(settings) {
 		});
 	} else if (features === true) {
 		// check settings for required features
-		if (settings.chunk_size > 0) {
+		if (settings.chunk_size && settings.chunk_size > 0) {
 			caps.slice_blob = true;
 		}
 
-		if (!plupload.isEmptyObj(settings.resize) || !settings.multipart) {
+		if (!plupload.isEmptyObj(settings.resize) || settings.multipart === false) {
 			caps.send_binary_string = true;
+		}
+
+		if (settings.http_method) {
+			caps.use_http_method = settings.http_method;
 		}
 
 		plupload.each(settings, function(value, feature) {
@@ -1181,6 +1185,10 @@ plupload.Uploader = function(options) {
 					}
 					break;
 
+				case 'http_method':
+					settings[option] = value.toUpperCase() === 'PUT' ? 'PUT' : 'POST';
+					break;
+
 				case 'unique_names':
 					settings[option] = value;
 					if (value) {
@@ -2194,6 +2202,7 @@ plupload.File = (function() {
 				options = plupload.extend({
 					multipart: true,
 					multipart_params: {},
+					http_method: 'POST',
 					headers: {},
 					file_data_name: 'file',
 					chunk_size: 0,
@@ -2362,7 +2371,7 @@ plupload.File = (function() {
 
 					// Build multipart request
 					if (options.multipart && canSendMultipart) {
-						xhr.open("post", url, true);
+						xhr.open(options.http_method, url, true);
 
 						// Set custom headers
 						plupload.each(options.headers, function(value, name) {
@@ -2383,7 +2392,7 @@ plupload.File = (function() {
 						// if no multipart, send as binary stream
 						url = plupload.buildUrl(options.url, plupload.extend(data, options.multipart_params));
 						
-						xhr.open("post", url, true);
+						xhr.open(options.http_method, url, true);
 
 						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
 
