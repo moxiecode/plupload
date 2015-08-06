@@ -412,6 +412,14 @@ var plupload = {
 	translate : o.translate,
 
 	/**
+	 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
+	 *
+	 * @param {String} str String with tokens
+	 * @return {String} String with replaced tokens
+	 */
+	sprintf : o.sprintf,
+
+	/**
 	 * Checks if object is empty.
 	 *
 	 * @method isEmptyObj
@@ -1544,7 +1552,7 @@ plupload.Uploader = function(options) {
 				if (self.getOption(el) === null) {
 					err = {
 						code : plupload.INIT_ERROR,
-						message : plupload.translate("'%' specified, but cannot be found.")
+						message : plupload.sprintf(plupload.translate("%s specified, but cannot be found."), el)
 					}
 					return false;
 				}
@@ -1558,7 +1566,7 @@ plupload.Uploader = function(options) {
 			if (!settings.browse_button && !settings.drop_element) {
 				return self.trigger('Error', {
 					code : plupload.INIT_ERROR,
-					message : plupload.translate("You must specify either 'browse_button' or 'drop_element'.")
+					message : plupload.translate("You must specify either browse_button or drop_element.")
 				});
 			}
 
