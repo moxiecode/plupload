@@ -57,11 +57,10 @@ function normalizeCaps(settings) {
 			caps.slice_blob = true;
 		}
 
-		if (settings.resize.enabled || !settings.multipart) {
+		if (!plupload.isEmptyObj(settings.resize) || !settings.multipart) {
 			caps.send_binary_string = true;
 		}
 
-		
 		plupload.each(settings, function(value, feature) {
 			resolve(feature, !!value, true); // strict check
 		});
@@ -1187,21 +1186,6 @@ plupload.Uploader = function(options) {
 					if (value) {
 						settings.send_file_name = true;
 					}
-					settings.send_file_name = true;
-					break;
-
-				case 'multipart':
-					settings[option] = value;
-					if (!value) {
-						settings.send_file_name = true;
-					}
-					break;
-
-				case 'unique_names':
-					settings[option] = value;
-					if (value) {
-						settings.send_file_name = true;
-					}
 					break;
 
 				case 'filters':
@@ -1245,12 +1229,13 @@ plupload.Uploader = function(options) {
 					break;
 	
 				case 'resize':
-					if (init) {
-						plupload.extend(settings.resize, value, {
-							enabled: true
-						});
+					if (value) {
+						settings.resize = plupload.extend({
+							preserve_headers: true,
+							crop: false
+						}, value);
 					} else {
-						settings.resize = value;
+						settings.resize = false;
 					}
 					break;
 
@@ -1448,11 +1433,7 @@ plupload.Uploader = function(options) {
 			prevent_duplicates: false,
 			max_file_size: 0
 		},
-		resize: {
-			enabled: false,
-			preserve_headers: true,
-			crop: false
-		},
+		resize: false,
 		send_file_name: true,
 		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	};
@@ -2211,11 +2192,7 @@ plupload.File = (function() {
 					send_file_name: true,
 					send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
 					max_retries: 0,
-					resize: {
-						enabled: false,
-						preserve_headers: true,
-						crop: false
-					}
+					resize: false
 				}, options);
 
 
@@ -2418,7 +2395,7 @@ plupload.File = (function() {
 				}
 
 				// Start uploading chunks
-				if (options.resize.enabled && file.isImage() && runtimeCan(blob, 'send_binary_string')) {
+				if (!plupload.isEmptyObj(options.resize) && file.isImage() && runtimeCan(blob, 'send_binary_string')) {
 					// Resize if required
 					resizeImage.call(this, blob, options.resize, function(resizedBlob) {
 						blob = resizedBlob;
