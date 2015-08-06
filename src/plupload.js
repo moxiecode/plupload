@@ -1292,8 +1292,11 @@ plupload.Uploader = function(options) {
 			
 			initControls.call(self, settings, function(inited) {
 				if (inited) {
-					self.runtime = o.Runtime.getInfo(getRUID()).type;
-					self.trigger('Init', { runtime: self.runtime });
+					var runtime = o.Runtime.getInfo(getRUID());
+					self.trigger('Init', { 
+						ruid: runtime.uid,
+						runtime: self.runtime = runtime.type 
+					});
 					self.trigger('PostInit');
 				} else {
 					self.trigger('Error', {
@@ -1563,8 +1566,11 @@ plupload.Uploader = function(options) {
 				}
 
 				if (inited) {
-					self.runtime = o.Runtime.getInfo(getRUID()).type;
-					self.trigger('Init', { runtime: self.runtime });
+					var runtime = o.Runtime.getInfo(getRUID());
+					self.trigger('Init', { 
+						ruid: runtime.uid,
+						runtime: self.runtime = runtime.type
+					});
 					self.trigger('PostInit');
 				} else {
 					self.trigger('Error', {
