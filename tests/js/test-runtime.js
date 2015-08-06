@@ -47,11 +47,6 @@
 
 
 		Basic.extend(this.getShim(), {
-
-			Blob: function() {
-
-			},
-
 		
 			FileInput: function() {
 				var _files = [];
