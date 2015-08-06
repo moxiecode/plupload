@@ -1293,10 +1293,12 @@ plupload.Uploader = function(options) {
 			initControls.call(self, settings, function(inited) {
 				if (inited) {
 					var runtime = o.Runtime.getInfo(getRUID());
+
 					self.trigger('Init', { 
 						ruid: runtime.uid,
 						runtime: self.runtime = runtime.type 
 					});
+
 					self.trigger('PostInit');
 				} else {
 					self.trigger('Error', {
@@ -1423,12 +1425,7 @@ plupload.Uploader = function(options) {
 	// Default settings
 	settings = {
 		runtimes: o.Runtime.order,
-		max_retries: 0,
-		max_upload_slots: 1,
-		chunk_size: 0,
-		multipart: true,
 		multi_selection: true,
-		file_data_name: 'file',
 		flash_swf_url: 'js/Moxie.swf',
 		silverlight_xap_url: 'js/Moxie.xap',
 		filters: {
@@ -1436,9 +1433,7 @@ plupload.Uploader = function(options) {
 			prevent_duplicates: false,
 			max_file_size: 0
 		},
-		resize: false,
-		send_file_name: true,
-		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
+		max_upload_slots: 1
 	};
 
 	
@@ -1567,10 +1562,12 @@ plupload.Uploader = function(options) {
 
 				if (inited) {
 					var runtime = o.Runtime.getInfo(getRUID());
+					
 					self.trigger('Init', { 
 						ruid: runtime.uid,
 						runtime: self.runtime = runtime.type
 					});
+
 					self.trigger('PostInit');
 				} else {
 					self.trigger('Error', {
