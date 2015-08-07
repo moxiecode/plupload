@@ -65,18 +65,9 @@ test("PUT method", function() {
 			FileUploaded: function(up, file, result) {
 				start();
 
-				var meta = (function(headers) {
-					var meta = {};
-					o.each(headers, function(header) {
-						if (/^meta\-/.test(header)) {
-							var parts = header.split(/:/);
-							meta[parts[0].replace(/^meta\-/, '')] = parts[1];
-						}
-					});
-					return meta;
-				}(result.responseHeaders.split(/\r\n/)));
+				var meta = extractMeta(result.responseHeaders.split(/\r\n/));
 
-				equal(up.getOption('http_method'), 'PUT', 
+				equal(meta.method, 'PUT', 
 					"PUT was used as HTTP method.");
 			}
 		}
@@ -85,6 +76,116 @@ test("PUT method", function() {
 	stop();
 	uploader.init();
 });
+
+
+test("multipart=false (default content-type)", function() {
+	expect(1);
+
+	var uploader = new plupload.Uploader({
+		browse_button: 'qunit-fixture',
+		runtimes: 'test',
+		url: '../upload.php',
+
+		multipart: false,
+
+		preinit: {
+			Init: function(up, info) {	
+				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
+				runtimeFiles[0].connectRuntime(info.ruid);	
+				up.addFile(runtimeFiles[0]);				
+			},
+
+			Error: function(up, err) {
+				start();
+				ok(false, "Plupload failed to initialize.");
+			}
+		},
+
+		init: {
+			FilesAdded: function(up) {
+				up.start();
+			},
+
+			FileUploaded: function(up, file, result) {
+				start();
+
+				var meta = extractMeta(result.responseHeaders.split(/\r\n/));
+
+				equal(meta.headers['content-type'], 'application/octet-stream',
+					"By default Content-Type is set to application/octet-stream.");
+			}
+		}
+	});
+
+	stop();
+	uploader.init();
+});
+
+
+test("multipart=false", function() {
+	var uploader = new plupload.Uploader({
+		browse_button: 'qunit-fixture',
+		runtimes: 'test',
+		url: '../upload.php',
+
+		multipart: false,
+		send_file_name: false,
+
+		headers: {
+			'content-type': 'custom/mime-type'
+		},
+
+		preinit: {
+			Init: function(up, info) {	
+				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
+				runtimeFiles[0].connectRuntime(info.ruid);	
+				up.addFile(runtimeFiles[0]);				
+			},
+
+			Error: function(up, err) {
+				start();
+				ok(false, "Plupload failed to initialize.");
+			}
+		},
+
+		init: {
+			FilesAdded: function(up) {
+				up.start();
+			},
+
+			FileUploaded: function(up, file, result) {
+				start();
+
+				var meta = extractMeta(result.responseHeaders.split(/\r\n/));
+
+				equal(meta.headers['content-type'], 'custom/mime-type',
+					"If Content-Type supplied it should be used instead of default (application/octet-stream).");
+
+				var urlParts = meta.url.split(/\?/);
+				ok(!urlParts[1] || !/(?:^|[\?&]?)name=/.test(urlParts[1]), 
+					"name argument not sent when send_file_name=false.");
+			}
+		}
+	});
+
+	stop();
+	uploader.init();
+});
+
+
+
+function extractMeta(headers) {
+	var meta = {};
+	o.each(headers, function(header) {
+		if (/^meta\-/.test(header)) {
+			var parts = header.split(/::/);
+			meta[parts[0].replace(/^meta\-/, '')] = JSON.parse(parts[1]);
+		}
+	});
+	return meta;
+}
 
 </script>
 </head>
