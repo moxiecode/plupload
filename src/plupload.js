@@ -731,6 +731,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
 	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
+	@param {String} [settings.http_method="POST"] HTTP method to use during upload (only PUT or POST allowed).
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
 	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
 	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
@@ -2212,6 +2213,7 @@ plupload.File = (function() {
 				options = plupload.extend({
 					multipart: true,
 					multipart_params: {},
+					// @since 2.3
 					http_method: 'POST',
 					headers: {},
 					file_data_name: 'file',
