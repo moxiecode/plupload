@@ -825,7 +825,7 @@ plupload.Uploader = function(options) {
 	 */
 
 	/**
-	Fires just before a file is uploaded. Can be used to cancel the upload for the specified file
+	Fires just before a file is uploaded. Can be used to cancel upload of the current file
 	by returning false from the handler.
 	
 	@event BeforeUpload
@@ -933,10 +933,8 @@ plupload.Uploader = function(options) {
 			if (!nextFile) {
 				plupload.each(files, function(file) {
 					if (file.status == plupload.QUEUED) {
-						if (up.trigger("BeforeUpload", file)) {
-							nextFile = file;
-							return false;
-						}
+						nextFile = file;
+						return false;
 					}
 				});
 			}
@@ -1702,10 +1700,12 @@ plupload.Uploader = function(options) {
 			}
 
 			if (activeUploads.length < maxSlots) {
-				activeUploads.add(file.id, file);
-				file.upload(up.getOption());
+				if (up.trigger('BeforeUpload', file)) {
+					activeUploads.add(file.id, file);
+					file.upload(up.getOption());
 
-				this.trigger('UploadFile', file);
+					up.trigger('UploadFile', file); // for backward compatibility really
+				}
 
 				// if we still got the slots, enqueue more
 				if (activeUploads.length < maxSlots) {
