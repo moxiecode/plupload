@@ -83,7 +83,7 @@
 
 
 			XMLHttpRequest: function() {
-				var _state = XMLHttpRequest.OPENED, _status = 0;
+				var _state = XMLHttpRequest.OPENED, _status = 0, _meta;
 
 				Basic.extend(this, {
 					send: function(meta, data) {
@@ -98,6 +98,8 @@
 						, upDelta = interval / 1000 * upSpeed
 						, downDelta = interval / 1000 * downSpeed
 						;
+
+						_meta = meta;
 
 						if (data instanceof Blob) {
 							upSize = data.size;
@@ -160,7 +162,7 @@
 									_status = 200;
 								}
 								
-								target.trigger('Load');
+								target.trigger('Load', meta);
 							}
 						}
 
@@ -200,6 +202,11 @@
 						];
 
 
+						Basic.each(_meta, function(value, key) {
+							headers.push('meta-' + key + ':' + value);
+						});
+
+
 						if (_state > XMLHttpRequest.OPENED) {
 							return headers.join('\r\n');
 						}
@@ -214,6 +221,7 @@
 
 					destroy: function() {
 						_status = 0;
+						_meta = {};
 					}
 				});
 
