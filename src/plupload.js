@@ -1185,6 +1185,16 @@ plupload.Uploader = function(options) {
 					}
 					break;
 
+				case 'headers':
+					var headers = {};
+					if (typeof(value) === 'object') {
+						plupload.each(value, function(value, key) {
+							headers[key.toLowerCase()] = value;
+						});
+					}
+					settings.headers = headers;
+					break;
+
 				case 'http_method':
 					settings[option] = value.toUpperCase() === 'PUT' ? 'PUT' : 'POST';
 					break;
@@ -2394,7 +2404,9 @@ plupload.File = (function() {
 						
 						xhr.open(options.http_method, url, true);
 
-						xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+						if (plupload.isEmptyObj(options.headers) || !options.headers['content-type']) {
+							xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
+						}
 
 						// Set custom headers
 						plupload.each(options.headers, function(value, name) {
