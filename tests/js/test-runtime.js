@@ -203,7 +203,9 @@
 
 
 						Basic.each(_meta, function(value, key) {
-							headers.push('meta-' + key + ':' + value);
+							if (Basic.typeOf(value) !== 'undefined') {
+								headers.push('meta-' + key + '::' + JSON.stringify(value));
+							}
 						});
 
 
