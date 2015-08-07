@@ -7,6 +7,7 @@
 		{"title": "Filters", "url": "filters.html"},
 		{"title": "Events", "url": "events.html"},
 		{"title": "Image Resizing", "url": "Resizing.html"},
+		{"title": "Uploading", "url": "Uploading.html"},
 		{"title": "UI Widget", "url": "UI.html"}
 	]
 }
