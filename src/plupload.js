@@ -73,6 +73,127 @@ function normalizeCaps(settings) {
 	return caps;
 }
 
+/**
+Normalize an option.
+
+@method normalizeOption
+@private
+
+@param {String} option Name of the option to normalize
+@param {Mixed} value
+@param {Object} options The whole set of options, that might be modified during normalization (see max_file_size or unique_names)
+*/
+function normalizeOption(option, value, options) {
+	if (options && !options.filters) {
+		options.filters = {};
+	}
+
+	switch (option) {
+		
+		case 'chunk_size':
+			if (value = plupload.parseSize(value)) {
+				options.send_file_name = true;
+			}
+			break;
+
+		case 'headers':
+			var headers = {};
+			if (typeof(value) === 'object') {
+				plupload.each(value, function(value, key) {
+					headers[key.toLowerCase()] = value;
+				});
+			}
+			return headers;
+
+		case 'http_method':
+			return value.toUpperCase() === 'PUT' ? 'PUT' : 'POST';
+
+
+		case 'filters':
+			if (plupload.typeOf(value) === 'array') { // for backward compatibility
+				value = {
+					mime_types: value
+				};
+			}
+
+			// if file format filters are being updated, regenerate the matching expressions
+			if (value.mime_types) {
+				if (plupload.typeOf(value.mime_types) === 'string') {
+					value.mime_types = o.Mime.mimes2extList(value.mime_types);
+				}
+
+				value.mime_types.regexp = (function(filters) {
+					var extensionsRegExp = [];
+
+					plupload.each(filters, function(filter) {
+						plupload.each(filter.extensions.split(/,/), function(ext) {
+							if (/^\s*\*\s*$/.test(ext)) {
+								extensionsRegExp.push('\\.*');
+							} else {
+								extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
+							}
+						});
+					});
+
+					return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
+				}(value.mime_types));
+			}
+
+			return value;
+
+		case 'max_file_size':
+			options.filters.max_file_size = value;
+			break;
+
+		case 'multipart':
+			if (!value) {
+				options.send_file_name = true;
+			}
+			break;
+
+		case 'resize':
+			if (value) {
+				return plupload.extend({
+					preserve_headers: true,
+					crop: false
+				}, value);
+			}
+			return false;
+
+		case 'prevent_duplicates':
+			options.filters.prevent_duplicates = !!value;
+			break;
+
+		case 'unique_names':
+			if (value) {
+				options.send_file_name = true;
+			}
+			break;
+
+		// options that require reinitialisation
+		case 'container':
+		case 'browse_button':
+		case 'drop_element':
+			return 'container' === option
+				? plupload.get(value)
+				: plupload.getAll(value)
+				;
+	}
+
+	return value;
+}
+
+
+function normalizeOptions(options) {
+	var normalizedOptions = {};
+	
+	plupload.each(options, function(value, option) {
+		normalizedOptions[option] = normalizeOption(option, value, options);
+	});
+
+	return normalizedOptions;
+}
+
 /** 
  * @module plupload	
  * @static
@@ -241,6 +362,17 @@ var plupload = {
 	 * @final
 	 */
 	IMAGE_DIMENSIONS_ERROR : -702,
+
+
+	/**
+	Invalid option error. Will be thrown if user tries to alter the option that cannot be changed without
+	uploader reinitialisation.
+
+	@property OPTION_ERROR
+	@static
+	@final
+	*/
+	OPTION_ERROR: -800,
 
 	/**
 	 * Mime type lookup table.
@@ -744,7 +876,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
 	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
 */
-plupload.Uploader = function(options) {
+plupload.Uploader = function(settings) {
 	/**
 	Fires when the current RunTime has been initialized.
 	
@@ -1156,178 +1288,6 @@ plupload.Uploader = function(options) {
 		});
 	}
 
-
-	function setOption(option, value, init) {
-		var self = this, reinitRequired = false;
-
-		function _setOption(option, value, init) {
-			var oldValue = settings[option];
-
-			switch (option) {
-				case 'max_file_size':
-					if (option === 'max_file_size') {
-						settings.max_file_size = settings.filters.max_file_size = value;
-					}
-					break;
-
-				case 'chunk_size':
-					if (value = plupload.parseSize(value)) {
-						settings[option] = value;
-						settings.send_file_name = true;
-					}
-					break;
-
-				case 'multipart':
-					settings[option] = value;
-					if (!value) {
-						settings.send_file_name = true;
-					}
-					break;
-
-				case 'headers':
-					var headers = {};
-					if (typeof(value) === 'object') {
-						plupload.each(value, function(value, key) {
-							headers[key.toLowerCase()] = value;
-						});
-					}
-					settings.headers = headers;
-					break;
-
-				case 'http_method':
-					settings[option] = value.toUpperCase() === 'PUT' ? 'PUT' : 'POST';
-					break;
-
-				case 'unique_names':
-					settings[option] = value;
-					if (value) {
-						settings.send_file_name = true;
-					}
-					break;
-
-				case 'filters':
-					// for sake of backward compatibility
-					if (plupload.typeOf(value) === 'array') {
-						value = {
-							mime_types: value
-						};
-					}
-
-					if (init) {
-						plupload.extend(settings.filters, value);
-					} else {
-						settings.filters = value;
-					}
-
-					// if file format filters are being updated, regenerate the matching expressions
-					if (value.mime_types) {
-						if (plupload.typeOf(value.mime_types) === 'string') {
-							value.mime_types = o.Mime.mimes2extList(value.mime_types);
-						}
-
-						value.mime_types.regexp = (function(filters) {
-							var extensionsRegExp = [];
-
-							plupload.each(filters, function(filter) {
-								plupload.each(filter.extensions.split(/,/), function(ext) {
-									if (/^\s*\*\s*$/.test(ext)) {
-										extensionsRegExp.push('\\.*');
-									} else {
-										extensionsRegExp.push('\\.' + ext.replace(new RegExp('[' + ('/^$.*+?|()[]{}\\'.replace(/./g, '\\$&')) + ']', 'g'), '\\$&'));
-									}
-								});
-							});
-
-							return new RegExp('(' + extensionsRegExp.join('|') + ')$', 'i');
-						}(value.mime_types));
-
-						settings.filters.mime_types = value.mime_types;
-					}
-					break;
-	
-				case 'resize':
-					if (value) {
-						settings.resize = plupload.extend({
-							preserve_headers: true,
-							crop: false
-						}, value);
-					} else {
-						settings.resize = false;
-					}
-					break;
-
-				case 'prevent_duplicates':
-					settings.prevent_duplicates = settings.filters.prevent_duplicates = !!value;
-					break;
-
-				// options that require reinitialisation
-				case 'container':
-				case 'browse_button':
-				case 'drop_element':
-						value = 'container' === option
-							? plupload.get(value)
-							: plupload.getAll(value)
-							; 
-				
-				case 'runtimes':
-				case 'multi_selection':
-				case 'flash_swf_url':
-				case 'silverlight_xap_url':
-					settings[option] = value;
-					if (!init) {
-						reinitRequired = true;
-					}
-					break;
-
-				default:
-					settings[option] = value;
-			}
-
-			if (!init) {
-				self.trigger('OptionChanged', option, value, oldValue);
-			}
-		}
-
-		if (typeof(option) === 'object') {
-			plupload.each(option, function(value, option) {
-				_setOption(option, value, init);
-			});
-		} else {
-			_setOption(option, value, init);
-		}
-
-		if (init) {
-			// Normalize the list of required capabilities
-			settings.required_features = normalizeCaps(plupload.extend({}, settings));
-
-			// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
-			preferred_caps = normalizeCaps(plupload.extend({}, settings, {
-				required_features: true
-			}));
-		} else if (reinitRequired) {
-			self.trigger('Destroy');
-			
-			initControls.call(self, settings, function(inited) {
-				if (inited) {
-					var runtime = o.Runtime.getInfo(getRUID());
-
-					self.trigger('Init', { 
-						ruid: runtime.uid,
-						runtime: self.runtime = runtime.type 
-					});
-
-					self.trigger('PostInit');
-				} else {
-					self.trigger('Error', {
-						code : plupload.INIT_ERROR,
-						message : plupload.translate('Init error.')
-					});
-				}
-			});
-		}
-	}
-
-
 	// Internal event handlers
 	function onBeforeUpload(up, file) {
 		// Generate unique target filenames
@@ -1438,23 +1398,38 @@ plupload.Uploader = function(options) {
 		total.reset();
 	}
 
-
-	// Default settings
-	settings = {
-		runtimes: o.Runtime.order,
-		multi_selection: true,
-		flash_swf_url: 'js/Moxie.swf',
-		silverlight_xap_url: 'js/Moxie.xap',
-		filters: {
-			mime_types: [],
-			prevent_duplicates: false,
-			max_file_size: 0
-		},
-		max_upload_slots: 1
-	};
-
 	
-	setOption.call(this, options, null, true);
+	settings = plupload.extend(
+		{
+			runtimes: o.Runtime.order,
+			multi_selection: true,
+			flash_swf_url: 'js/Moxie.swf',
+			silverlight_xap_url: 'js/Moxie.xap',
+			filters: {
+				prevent_duplicates: false,
+				max_file_size: 0
+			},
+			max_upload_slots: 1,
+			multipart: true,
+			multipart_params: {},
+			// @since 2.3
+			http_method: 'POST',
+			headers: {},
+			file_data_name: 'file',
+			chunk_size: 0,
+			send_file_name: true,
+			send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
+			max_retries: 0,
+			resize: false
+		}, 
+		normalizeOptions(settings)
+	);
+
+	// Normalize the list of required capabilities
+	settings.required_features = normalizeCaps(plupload.extend({}, settings));
+
+	// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
+	preferred_caps = normalizeCaps(plupload.extend({}, settings, { required_features: true }));
 
 	// Inital total state
 	total = new QueueProgress(); 
@@ -1495,6 +1470,7 @@ plupload.Uploader = function(options) {
 		 *
 		 * @property runtime
 		 * @type String
+		 * @deprecated There might be multiple runtimes per uploader
 		 */
 		runtime : null,
 
@@ -1512,6 +1488,7 @@ plupload.Uploader = function(options) {
 		 *
 		 * @property settings
 		 * @type Object
+		 * @deprecated Use `getOption()/setOption()`
 		 */
 		settings : settings,
 
@@ -1604,7 +1581,37 @@ plupload.Uploader = function(options) {
 		 * @param {Mixed} [value] Value for the option (is ignored, if first argument is object)
 		 */
 		setOption: function(option, value) {
-			setOption.call(this, option, value, !this.runtime); // until runtime not set we do not need to reinitialize
+			var self = this;
+
+			if (typeof(option) === 'object') {
+				plupload.each(option, function(value, option) {
+					self.setOption(option, value);
+				});
+				return;
+			} 
+
+			var oldValue = settings[option];
+
+			if (plupload.inArray(option, [
+				'container',
+				'browse_button',
+				'drop_element',
+				'runtimes',
+				'multi_selection',
+				'flash_swf_url',
+				'silverlight_xap_url'
+			]) !== -1) {
+				this.trigger('Error', {
+					code: plupload.OPTION_ERROR,
+					message: plupload.sprintf(plupload.translate("%s option cannot be changed.")),
+					option: option
+				});
+				return;
+			}
+
+			settings[option] = normalizeOption(option, value, settings);
+			
+			self.trigger('OptionChanged', option, value, oldValue);
 		},
 
 		/**
