@@ -55,6 +55,10 @@ module("plupload.Uploader", {
 		up.bind('QueueChanged', function(up) {
 			up.trigger('TestQueueChanged');
 		});
+
+		up.bind('Error', function(up, err) {
+			up.trigger('TestError', err);
+		});
 	},
 
 	teardown: function() {
@@ -268,9 +272,14 @@ test('setOption() - set option that requires reinitialization', function() {
 	var oldValue = this.up.getOption('multi_selection');
 	var newValue = !oldValue;
 
-	this.up.setOption('multi_selection', newValue);
+	this.up.bind('TestError', function(up, err) {
+		start();
 
-	notEqual(oldValue, this.up.getOption('multi_selection'), "Option successfully changed.");
+		equal(err.code, plupload.OPTION_ERROR, "Options that require reinitialisation throw plupload.OPTION_ERROR.");
+	});
+
+	stop();
+	this.up.setOption('multi_selection', newValue);
 });
 
 

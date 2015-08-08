@@ -164,8 +164,8 @@ test("multipart=false", function() {
 					"If Content-Type supplied it should be used instead of default (application/octet-stream).");
 
 				var urlParts = meta.url.split(/\?/);
-				ok(!urlParts[1] || !/(?:^|[\?&]?)name=/.test(urlParts[1]), 
-					"name argument not sent when send_file_name=false.");
+				ok(urlParts[1] && /(?:^|[\?&]?)name=/.test(urlParts[1]), 
+					"name argument will be sent even if send_file_name=false.");
 			}
 		}
 	});

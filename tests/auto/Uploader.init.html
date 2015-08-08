@@ -161,7 +161,8 @@ test("Consider special settings as required_features when required_features is b
 		drag_and_drop: true,
 		slice_blob: true,
 		send_binary_string: true,
-		send_custom_headers: true
+		send_custom_headers: true,
+		use_http_method: "POST"
 	}, "required_features properly normalized and translated to caps.");
 });
 
@@ -211,11 +212,21 @@ test("Test how default values are assigned to missing options", function() {
 		silverlight_xap_url : 'js/Moxie.xap',
 		max_upload_slots: 1,
 		filters : {
+			mime_types: false,
 			prevent_duplicates: false,
-			max_file_size: 0,
-			mime_types: []
+			max_file_size: 0
 		},
-		required_features: {}
+		required_features: {},
+		http_method: "POST",
+		file_data_name: "file",
+		chunk_size: 0,
+		max_retries: 0,
+		multipart: true,
+		multipart_params: {},
+		required_features:  {},
+		resize: false,
+		send_chunk_number: true,
+		send_file_name: true,
 	}, "Proper defaults set.");
 });
 
