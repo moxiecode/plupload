@@ -1043,361 +1043,6 @@ plupload.Uploader = function(settings) {
 	, total
 	, disabled = false
 	;
-
-
-	// Private methods
-	function uploadNext() {
-		var up = this
-		, nextFile
-		;
-
-		if (this.state == plupload.STARTED) {
-			// check if we have any pending files
-			if (pendingUploads.length) {
-				pendingUploads.each(function(file, id) {
-					pendingUploads.remove(id);
-					nextFile = file;
-					return false;
-				});
-			}
-
-			// ... otherwise simply pick up the first QUEUED file from the main queue
-			if (!nextFile) {
-				plupload.each(files, function(file) {
-					if (file.status == plupload.QUEUED) {
-						nextFile = file;
-						return false;
-					}
-				});
-			}
-
-			if (nextFile) {
-				up.uploadFile(nextFile);
-			} else if (!activeUploads.length) {
-				// all files are either DONE or FAILED
-				if (this.state !== plupload.STOPPED) {
-					this.state = plupload.STOPPED;
-					this.trigger("StateChanged");
-				}
-
-				this.trigger("UploadComplete", files);
-			}
-		}
-	}
-
-
-	function calc() {
-		var i, file;
-
-		// Reset stats
-		total.reset();
-
-		// Check status, size, loaded etc on all files
-		for (i = 0; i < files.length; i++) {
-			file = files[i];
-
-			if (file.size !== undef) {
-				// We calculate totals based on original file size
-				total.size += file.origSize;
-
-				// Since we cannot predict file size after resize, we do opposite and
-				// interpolate loaded amount to match magnitude of total
-				total.loaded += file.loaded * file.origSize / file.size;
-			} else {
-				total.size = undef;
-			}
-
-			if (file.status == plupload.DONE) {
-				total.uploaded++;
-			} else if (file.status == plupload.FAILED) {
-				total.failed++;
-			} else {
-				total.queued++;
-			}
-		}
-
-		// If we couldn't calculate a total file size then use the number of files to calc percent
-		if (total.size === undef) {
-			total.percent = files.length > 0 ? Math.ceil(total.uploaded / files.length * 100) : 0;
-		} else {
-			total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
-			total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
-		}
-	}
-
-
-	function getRUID() {
-		var ctrl = fileInputs[0] || fileDrops[0];
-		if (ctrl) {
-			return ctrl.getRuntime().uid;
-		}
-		return false;
-	}
-
-
-	function bindEventListeners() {
-		this.bind('FilesAdded FilesRemoved', function(up) {
-			up.trigger('QueueChanged');
-			up.refresh();
-		});
-
-		this.bind('CancelUpload', onCancelUpload);
-		
-		this.bind('BeforeUpload', onBeforeUpload);
-
-		this.bind('UploadProgress', onUploadProgress);
-
-		this.bind('StateChanged', onStateChanged);
-
-		this.bind('QueueChanged', calc);
-
-		this.bind('Error', onError);
-
-		this.bind('FileUploaded', onFileUploaded);
-
-		this.bind('Destroy', onDestroy);
-	}
-
-
-	function initControls(settings, cb) {
-		var self = this, inited = 0, queue = [];
-
-		// common settings
-		var options = {
-			runtime_order: settings.runtimes,
-			required_caps: settings.required_features,
-			preferred_caps: preferred_caps,
-			swf_url: settings.flash_swf_url,
-			xap_url: settings.silverlight_xap_url
-		};
-
-		// add runtime specific options if any
-		plupload.each(settings.runtimes.split(/\s*,\s*/), function(runtime) {
-			if (settings[runtime]) {
-				options[runtime] = settings[runtime];
-			}
-		});
-
-		// initialize file pickers - there can be many
-		if (settings.browse_button) {
-			plupload.each(settings.browse_button, function(el) {
-				queue.push(function(cb) {
-					var fileInput = new o.FileInput(plupload.extend({}, options, {
-						accept: settings.filters.mime_types,
-						name: settings.file_data_name,
-						multiple: settings.multi_selection,
-						container: settings.container,
-						browse_button: el
-					}));
-
-					fileInput.onready = function() {
-						var info = o.Runtime.getInfo(this.ruid);
-
-						// for backward compatibility
-						o.extend(self.features, {
-							chunks: info.can('slice_blob'),
-							multipart: info.can('send_multipart'),
-							multi_selection: info.can('select_multiple')
-						});
-
-						inited++;
-						fileInputs.push(this);
-						cb();
-					};
-
-					fileInput.onchange = function() {
-						self.addFile(this.files);
-					};
-
-					fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
-						if (!disabled) {
-							if (settings.browse_button_hover) {
-								if ('mouseenter' === e.type) {
-									o.addClass(el, settings.browse_button_hover);
-								} else if ('mouseleave' === e.type) {
-									o.removeClass(el, settings.browse_button_hover);
-								}
-							}
-
-							if (settings.browse_button_active) {
-								if ('mousedown' === e.type) {
-									o.addClass(el, settings.browse_button_active);
-								} else if ('mouseup' === e.type) {
-									o.removeClass(el, settings.browse_button_active);
-								}
-							}
-						}
-					});
-
-					fileInput.bind('mousedown', function() {
-						self.trigger('Browse');
-					});
-
-					fileInput.bind('error runtimeerror', function() {
-						fileInput = null;
-						cb();
-					});
-
-					fileInput.init();
-				});
-			});
-		}
-
-		// initialize drop zones
-		if (settings.drop_element) {
-			plupload.each(settings.drop_element, function(el) {
-				queue.push(function(cb) {
-					var fileDrop = new o.FileDrop(plupload.extend({}, options, {
-						drop_zone: el
-					}));
-
-					fileDrop.onready = function() {
-						var info = o.Runtime.getInfo(this.ruid);
-
-						// for backward compatibility
-						o.extend(self.features, {
-							chunks: info.can('slice_blob'),
-							multipart: info.can('send_multipart'),
-							dragdrop: info.can('drag_and_drop')
-						});
-
-						inited++;
-						fileDrops.push(this);
-						cb();
-					};
-
-					fileDrop.ondrop = function() {
-						self.addFile(this.files);
-					};
-
-					fileDrop.bind('error runtimeerror', function() {
-						fileDrop = null;
-						cb();
-					});
-
-					fileDrop.init();
-				});
-			});
-		}
-
-
-		o.inSeries(queue, function() {
-			if (typeof(cb) === 'function') {
-				cb(inited);
-			}
-		});
-	}
-
-	// Internal event handlers
-	function onBeforeUpload(up, file) {
-		// Generate unique target filenames
-		if (up.settings.unique_names) {
-			var matches = file.name.match(/\.([^.]+)$/), ext = "part";
-			if (matches) {
-				ext = matches[1];
-			}
-			file.target_name = file.id + '.' + ext;
-		}
-	}
-
-
-	function onUploadProgress() {
-		calc();
-	}
-
-
-	function onFileUploaded(up, file) {
-		activeUploads.remove(file.id);
-
-		calc();
-
-		// Upload next file but detach it from the error event
-		// since other custom listeners might want to stop the queue
-		delay(function() {
-			uploadNext.call(up);
-		}, 1);
-	}
-
-
-	function onStateChanged(up) {
-		if (up.state == plupload.STARTED) {
-			// Get start time to calculate bps
-			startTime = (+new Date());
-		} else if (up.state == plupload.STOPPED) {
-			// Reset currently uploading files
-			for (var i = up.files.length - 1; i >= 0; i--) {
-				if (up.files[i].status == plupload.UPLOADING) {
-					up.files[i].status = plupload.QUEUED;
-					calc();
-				}
-			}
-		}
-	}
-
-
-	function onCancelUpload() {
-		// loop over active uploads and cancel them
-		if (activeUploads.length) {
-			activeUploads.each(function(file) {
-				file.cancelUpload();
-			});
-		}
-		activeUploads.clear();
-	}
-
-
-	function onError(up, err) {
-		if (err.code === plupload.INIT_ERROR) {
-			up.destroy();
-		}
-		// Set failed status if an error occured on a file
-		else if (err.code === plupload.HTTP_ERROR) {
-			calc();
-
-			// Upload next file but detach it from the error event
-			// since other custom listeners might want to stop the queue
-			if (up.state == plupload.STARTED) { // upload in progress
-				up.trigger('CancelUpload');
-				delay(function() {
-					uploadNext.call(up);
-				}, 1);
-			}
-		}
-	}
-
-
-	function onDestroy(up) {
-		up.stop();
-
-		// Purge the queue
-		plupload.each(files, function(file) {
-			file.destroy();
-		});
-		files = [];
-
-		if (fileInputs.length) {
-			plupload.each(fileInputs, function(fileInput) {
-				fileInput.destroy();
-			});
-			fileInputs = [];
-		}
-
-		if (fileDrops.length) {
-			plupload.each(fileDrops, function(fileDrop) {
-				fileDrop.destroy();
-			});
-			fileDrops = [];
-		}
-
-		activeUploads.clear();
-		pendingUploads.clear();
-
-		preferred_caps = {};
-		disabled = false;
-		startTime = null;
-		total.reset();
-	}
-
 	
 	settings = plupload.extend(
 		{
@@ -2005,6 +1650,360 @@ plupload.Uploader = function(settings) {
 			this.unbindAll();
 		}
 	});
+
+
+	// Private methods
+	function uploadNext() {
+		var up = this
+		, nextFile
+		;
+
+		if (this.state == plupload.STARTED) {
+			// check if we have any pending files
+			if (pendingUploads.length) {
+				pendingUploads.each(function(file, id) {
+					pendingUploads.remove(id);
+					nextFile = file;
+					return false;
+				});
+			}
+
+			// ... otherwise simply pick up the first QUEUED file from the main queue
+			if (!nextFile) {
+				plupload.each(files, function(file) {
+					if (file.status == plupload.QUEUED) {
+						nextFile = file;
+						return false;
+					}
+				});
+			}
+
+			if (nextFile) {
+				up.uploadFile(nextFile);
+			} else if (!activeUploads.length) {
+				// all files are either DONE or FAILED
+				if (this.state !== plupload.STOPPED) {
+					this.state = plupload.STOPPED;
+					this.trigger("StateChanged");
+				}
+
+				this.trigger("UploadComplete", files);
+			}
+		}
+	}
+
+
+	function calc() {
+		var i, file;
+
+		// Reset stats
+		total.reset();
+
+		// Check status, size, loaded etc on all files
+		for (i = 0; i < files.length; i++) {
+			file = files[i];
+
+			if (file.size !== undef) {
+				// We calculate totals based on original file size
+				total.size += file.origSize;
+
+				// Since we cannot predict file size after resize, we do opposite and
+				// interpolate loaded amount to match magnitude of total
+				total.loaded += file.loaded * file.origSize / file.size;
+			} else {
+				total.size = undef;
+			}
+
+			if (file.status == plupload.DONE) {
+				total.uploaded++;
+			} else if (file.status == plupload.FAILED) {
+				total.failed++;
+			} else {
+				total.queued++;
+			}
+		}
+
+		// If we couldn't calculate a total file size then use the number of files to calc percent
+		if (total.size === undef) {
+			total.percent = files.length > 0 ? Math.ceil(total.uploaded / files.length * 100) : 0;
+		} else {
+			total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
+			total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
+		}
+	}
+
+
+	function getRUID() {
+		var ctrl = fileInputs[0] || fileDrops[0];
+		if (ctrl) {
+			return ctrl.getRuntime().uid;
+		}
+		return false;
+	}
+
+
+	function bindEventListeners() {
+		this.bind('FilesAdded FilesRemoved', function(up) {
+			up.trigger('QueueChanged');
+			up.refresh();
+		});
+
+		this.bind('CancelUpload', onCancelUpload);
+		
+		this.bind('BeforeUpload', onBeforeUpload);
+
+		this.bind('UploadProgress', onUploadProgress);
+
+		this.bind('StateChanged', onStateChanged);
+
+		this.bind('QueueChanged', calc);
+
+		this.bind('Error', onError);
+
+		this.bind('FileUploaded', onFileUploaded);
+
+		this.bind('Destroy', onDestroy);
+	}
+
+
+	function initControls(settings, cb) {
+		var self = this, inited = 0, queue = [];
+
+		// common settings
+		var options = {
+			runtime_order: settings.runtimes,
+			required_caps: settings.required_features,
+			preferred_caps: preferred_caps,
+			swf_url: settings.flash_swf_url,
+			xap_url: settings.silverlight_xap_url
+		};
+
+		// add runtime specific options if any
+		plupload.each(settings.runtimes.split(/\s*,\s*/), function(runtime) {
+			if (settings[runtime]) {
+				options[runtime] = settings[runtime];
+			}
+		});
+
+		// initialize file pickers - there can be many
+		if (settings.browse_button) {
+			plupload.each(settings.browse_button, function(el) {
+				queue.push(function(cb) {
+					var fileInput = new o.FileInput(plupload.extend({}, options, {
+						accept: settings.filters.mime_types,
+						name: settings.file_data_name,
+						multiple: settings.multi_selection,
+						container: settings.container,
+						browse_button: el
+					}));
+
+					fileInput.onready = function() {
+						var info = o.Runtime.getInfo(this.ruid);
+
+						// for backward compatibility
+						o.extend(self.features, {
+							chunks: info.can('slice_blob'),
+							multipart: info.can('send_multipart'),
+							multi_selection: info.can('select_multiple')
+						});
+
+						inited++;
+						fileInputs.push(this);
+						cb();
+					};
+
+					fileInput.onchange = function() {
+						self.addFile(this.files);
+					};
+
+					fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
+						if (!disabled) {
+							if (settings.browse_button_hover) {
+								if ('mouseenter' === e.type) {
+									o.addClass(el, settings.browse_button_hover);
+								} else if ('mouseleave' === e.type) {
+									o.removeClass(el, settings.browse_button_hover);
+								}
+							}
+
+							if (settings.browse_button_active) {
+								if ('mousedown' === e.type) {
+									o.addClass(el, settings.browse_button_active);
+								} else if ('mouseup' === e.type) {
+									o.removeClass(el, settings.browse_button_active);
+								}
+							}
+						}
+					});
+
+					fileInput.bind('mousedown', function() {
+						self.trigger('Browse');
+					});
+
+					fileInput.bind('error runtimeerror', function() {
+						fileInput = null;
+						cb();
+					});
+
+					fileInput.init();
+				});
+			});
+		}
+
+		// initialize drop zones
+		if (settings.drop_element) {
+			plupload.each(settings.drop_element, function(el) {
+				queue.push(function(cb) {
+					var fileDrop = new o.FileDrop(plupload.extend({}, options, {
+						drop_zone: el
+					}));
+
+					fileDrop.onready = function() {
+						var info = o.Runtime.getInfo(this.ruid);
+
+						// for backward compatibility
+						o.extend(self.features, {
+							chunks: info.can('slice_blob'),
+							multipart: info.can('send_multipart'),
+							dragdrop: info.can('drag_and_drop')
+						});
+
+						inited++;
+						fileDrops.push(this);
+						cb();
+					};
+
+					fileDrop.ondrop = function() {
+						self.addFile(this.files);
+					};
+
+					fileDrop.bind('error runtimeerror', function() {
+						fileDrop = null;
+						cb();
+					});
+
+					fileDrop.init();
+				});
+			});
+		}
+
+
+		o.inSeries(queue, function() {
+			if (typeof(cb) === 'function') {
+				cb(inited);
+			}
+		});
+	}
+
+	// Internal event handlers
+	function onBeforeUpload(up, file) {
+		// Generate unique target filenames
+		if (up.settings.unique_names) {
+			var matches = file.name.match(/\.([^.]+)$/), ext = "part";
+			if (matches) {
+				ext = matches[1];
+			}
+			file.target_name = file.id + '.' + ext;
+		}
+	}
+
+
+	function onUploadProgress() {
+		calc();
+	}
+
+
+	function onFileUploaded(up, file) {
+		activeUploads.remove(file.id);
+
+		calc();
+
+		// Upload next file but detach it from the error event
+		// since other custom listeners might want to stop the queue
+		delay(function() {
+			uploadNext.call(up);
+		}, 1);
+	}
+
+
+	function onStateChanged(up) {
+		if (up.state == plupload.STARTED) {
+			// Get start time to calculate bps
+			startTime = (+new Date());
+		} else if (up.state == plupload.STOPPED) {
+			// Reset currently uploading files
+			for (var i = up.files.length - 1; i >= 0; i--) {
+				if (up.files[i].status == plupload.UPLOADING) {
+					up.files[i].status = plupload.QUEUED;
+					calc();
+				}
+			}
+		}
+	}
+
+
+	function onCancelUpload() {
+		// loop over active uploads and cancel them
+		if (activeUploads.length) {
+			activeUploads.each(function(file) {
+				file.cancelUpload();
+			});
+		}
+		activeUploads.clear();
+	}
+
+
+	function onError(up, err) {
+		if (err.code === plupload.INIT_ERROR) {
+			up.destroy();
+		}
+		// Set failed status if an error occured on a file
+		else if (err.code === plupload.HTTP_ERROR) {
+			calc();
+
+			// Upload next file but detach it from the error event
+			// since other custom listeners might want to stop the queue
+			if (up.state == plupload.STARTED) { // upload in progress
+				up.trigger('CancelUpload');
+				delay(function() {
+					uploadNext.call(up);
+				}, 1);
+			}
+		}
+	}
+
+
+	function onDestroy(up) {
+		up.stop();
+
+		// Purge the queue
+		plupload.each(files, function(file) {
+			file.destroy();
+		});
+		files = [];
+
+		if (fileInputs.length) {
+			plupload.each(fileInputs, function(fileInput) {
+				fileInput.destroy();
+			});
+			fileInputs = [];
+		}
+
+		if (fileDrops.length) {
+			plupload.each(fileDrops, function(fileDrop) {
+				fileDrop.destroy();
+			});
+			fileDrops = [];
+		}
+
+		activeUploads.clear();
+		pendingUploads.clear();
+
+		preferred_caps = {};
+		disabled = false;
+		startTime = null;
+		total.reset();
+	}
 };
 
 plupload.Uploader.prototype = o.EventTarget.instance;
