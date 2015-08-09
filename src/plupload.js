@@ -2029,6 +2029,9 @@ plupload.File = (function() {
 	@param {o.File} file 
 	*/
 	function PluploadFile(file) {
+		var _options;
+
+
 		/**
 		Dispatched while file is uploading.
 
@@ -2170,6 +2173,13 @@ plupload.File = (function() {
 			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
 
 
+			/*
+			Test if file is an image (currently only PNG and JPG are considered being images)
+
+			@method isImage
+			@sinse 2.3
+			@return {Bool}
+			*/
 			isImage: function() {
 				return o.inArray(this.type, ['image/jpeg', 'image/png']) !== -1;
 			},
@@ -2199,14 +2209,57 @@ plupload.File = (function() {
 				return filepool[this.id];
 			},
 
+			/**
+			Get the value for the specified option or the whole configuration, if not specified.
+			
+			@method getOption
+			@sinse 2.3
+			@param {String} [option] Name of the option to get
+			@return {Mixed} Value for the option or the whole set
+			*/
+			getOption: function(option) {
+				if (!option) {
+					return _options;
+				}
+				return _options[option];
+			},
+
 
 			/**
+			Set the value for the specified option(s).
+
+			@method setOption
+			@sinse 2.3
+			@param {String|Object} option Name of the option to change or the set of key/value pairs
+			@param {Mixed} [value] Value for the option (is ignored, if first argument is object)
+			*/
+			setOption: function(option, value) {
+				var self = this;
+
+				if (typeof(option) === 'object') {
+					plupload.each(option, function(value, option) {
+						self.setOption(option, value);
+					});
+					return;
+				} 
+
+				_options[option] = normalizeOption(option, value, _options);
+				
+				self.trigger('OptionChanged', option, value, oldValue);
+			},
+
 			
+			/**
+			Initiate file upload.
+
+			@method upload
+			@sinse 2.3		
 			@param {Object} options
 				@param {String} options.url
 				@param {Number} options.max_retries
 				@param {Boolean} [options.multipart=true]
 				@param {Boolean} [options.file_data_name='file']
+				@param {String} [options.http_method="POST"]
 				@param {Number} options.chunk_size
 				@param {Object} options.resize
 					@param {Number} [options.resize.width] If image is bigger, it will be resized.
@@ -2216,12 +2269,12 @@ plupload.File = (function() {
 			*/
 			upload: function(options) {
 
-				options = plupload.extend({
+				_options = plupload.extend({
 					multipart: true,
 					multipart_params: {},
 					// @since 2.3
 					http_method: 'POST',
-					headers: {},
+					headers: false,
 					file_data_name: 'file',
 					chunk_size: 0,
 					send_file_name: true,
@@ -2235,8 +2288,8 @@ plupload.File = (function() {
 				, blob = file.getSource()
 				, canSliceBlob = runtimeCan(blob, 'slice_blob')
 				, canSendMultipart = runtimeCan(blob, 'send_multipart')
-				, chunkSize = options.chunk_size
-				, retries = options.max_retries
+				, chunkSize = _options.chunk_size
+				, retries = _options.max_retries
 				, offset = 0
 				;
 
@@ -2265,13 +2318,13 @@ plupload.File = (function() {
 				function uploadNextChunk() {
 					var chunkBlob
 					, formData
-					, url = options.url
+					, url = _options.url
 					, data = {}
 					, curChunkSize
 					;
 
 					// send additional 'name' parameter only if required
-					if (options.send_file_name) {
+					if (_options.send_file_name) {
 						data.name = file.target_name || file.name;
 					}
 
@@ -2286,7 +2339,7 @@ plupload.File = (function() {
 					// If chunking is enabled add corresponding data, no matter if file is bigger than chunk or smaller
 					if (chunkSize && canSliceBlob) {
 						// Setup query string arguments
-						if (options.send_chunk_number) {
+						if (_options.send_chunk_number) {
 							data.chunk = Math.ceil(offset / chunkSize);
 							data.chunks = Math.ceil(blob.size / chunkSize);
 						} else { // keep support for experimental chunk format, just in case
@@ -2316,7 +2369,7 @@ plupload.File = (function() {
 						}
 
 						// reset retries counter
-						retries = options.max_retries; 
+						retries = _options.max_retries; 
 
 						// Handle chunk response
 						if (curChunkSize < blob.size) {
@@ -2388,36 +2441,36 @@ plupload.File = (function() {
 					};
 
 					// Build multipart request
-					if (options.multipart && canSendMultipart) {
-						xhr.open(options.http_method, url, true);
+					if (_options.multipart && canSendMultipart) {
+						xhr.open(_options.http_method, url, true);
 
 						// Set custom headers
-						plupload.each(options.headers, function(value, name) {
+						plupload.each(_options.headers, function(value, name) {
 							xhr.setRequestHeader(name, value);
 						});
 
 						formData = new o.FormData();
 
 						// Add multipart params
-						plupload.each(plupload.extend(data, options.multipart_params), function(value, name) {
+						plupload.each(plupload.extend(data, _options.multipart_params), function(value, name) {
 							formData.append(name, value);
 						});
 
 						// Add file and send it
-						formData.append(options.file_data_name, chunkBlob);
+						formData.append(_options.file_data_name, chunkBlob);
 						xhr.send(formData);
 					} else {
 						// if no multipart, send as binary stream
-						url = plupload.buildUrl(options.url, plupload.extend(data, options.multipart_params));
+						url = plupload.buildUrl(_options.url, plupload.extend(data, _options.multipart_params));
 						
-						xhr.open(options.http_method, url, true);
+						xhr.open(_options.http_method, url, true);
 
-						if (plupload.isEmptyObj(options.headers) || !options.headers['content-type']) {
+						if (plupload.isEmptyObj(_options.headers) || !_options.headers['content-type']) {
 							xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
 						}
 
 						// Set custom headers
-						plupload.each(options.headers, function(value, name) {
+						plupload.each(_options.headers, function(value, name) {
 							xhr.setRequestHeader(name, value);
 						});
 
@@ -2432,9 +2485,9 @@ plupload.File = (function() {
 				}
 
 				// Start uploading chunks
-				if (!plupload.isEmptyObj(options.resize) && file.isImage() && runtimeCan(blob, 'send_binary_string')) {
+				if (!plupload.isEmptyObj(_options.resize) && file.isImage() && runtimeCan(blob, 'send_binary_string')) {
 					// Resize if required
-					resizeImage.call(this, blob, options.resize, function(resizedBlob) {
+					resizeImage.call(this, blob, _options.resize, function(resizedBlob) {
 						blob = resizedBlob;
 						file.size = resizedBlob.size;
 						uploadNextChunk();
@@ -2445,6 +2498,12 @@ plupload.File = (function() {
 			},
 
 
+			/**
+			Cancel any current upload.
+
+			@method cancelUpload
+			@sinse 2.3
+			*/
 			cancelUpload: function() {
 				if (xhr) {
 					xhr.abort();
@@ -2467,6 +2526,8 @@ plupload.File = (function() {
 					src.destroy();
 					delete filepool[this.id];
 				}
+
+				_options = null;
 			}
 		});
 
