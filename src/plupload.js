@@ -2049,53 +2049,6 @@ plupload.File = (function() {
 		, xhr
 		;
 
-
-		function runtimeCan(blob, cap) {
-			if (blob.ruid) {
-				var info = o.Runtime.getInfo(blob.ruid);
-				if (info) {
-					return info.can(cap);
-				}
-			}
-			return false;
-		}
-
-
-		function resizeImage(blob, params, cb) {
-			var img = new o.Image();
-
-			try {
-				img.onload = function() {
-					// no manipulation required if...
-					if (params.width > this.width &&
-						params.height > this.height &&
-						params.quality === undef &&
-						params.preserve_headers &&
-						!params.crop
-					) {
-						this.destroy();
-						return cb(blob);
-					}
-					// otherwise downsize					
-					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
-				};
-
-				img.onresize = function() {
-					cb(this.getAsBlob(blob.type, params.quality));
-					this.destroy();
-				};
-
-				img.onerror = function() {
-					cb(blob);
-				};
-
-				img.load(blob);
-			} catch(ex) {
-				cb(blob);
-			}
-		}
-
-
 		plupload.extend(this, {
 
 			/**
@@ -2532,6 +2485,52 @@ plupload.File = (function() {
 		});
 
 		filepool[this.id] = file;
+
+
+		function runtimeCan(blob, cap) {
+			if (blob.ruid) {
+				var info = o.Runtime.getInfo(blob.ruid);
+				if (info) {
+					return info.can(cap);
+				}
+			}
+			return false;
+		}
+
+
+		function resizeImage(blob, params, cb) {
+			var img = new o.Image();
+
+			try {
+				img.onload = function() {
+					// no manipulation required if...
+					if (params.width > this.width &&
+						params.height > this.height &&
+						params.quality === undef &&
+						params.preserve_headers &&
+						!params.crop
+					) {
+						this.destroy();
+						return cb(blob);
+					}
+					// otherwise downsize					
+					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+				};
+
+				img.onresize = function() {
+					cb(this.getAsBlob(blob.type, params.quality));
+					this.destroy();
+				};
+
+				img.onerror = function() {
+					cb(blob);
+				};
+
+				img.load(blob);
+			} catch(ex) {
+				cb(blob);
+			}
+		}
 	}
 
 	PluploadFile.prototype = o.EventTarget.instance;
