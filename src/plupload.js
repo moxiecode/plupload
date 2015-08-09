@@ -1050,9 +1050,11 @@ plupload.Uploader = function(settings) {
 			flash_swf_url: 'js/Moxie.swf',
 			silverlight_xap_url: 'js/Moxie.xap',
 			filters: {
+				mime_types: false,
 				prevent_duplicates: false,
 				max_file_size: 0
 			},
+			// headers: false, // Plupload had a required feature with the same name, comment it to avoid confusion
 			max_upload_slots: 1,
 			multipart: true,
 			multipart_params: {},
