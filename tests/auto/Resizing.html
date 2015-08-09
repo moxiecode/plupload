@@ -90,7 +90,8 @@ test("Enable or disable client-side resizing in BeforeUpload", function() {
 		deepEqual(up.getOption('required_features'), {
 			select_file: true,
 			select_multiple: true,
-			send_binary_string: true
+			send_binary_string: true,
+			use_http_method: "POST"
 		}, "Test what required_features are set.");
 
 	});
