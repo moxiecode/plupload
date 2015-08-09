@@ -84,10 +84,6 @@ Normalize an option.
 @param {Object} options The whole set of options, that might be modified during normalization (see max_file_size or unique_names)
 */
 function normalizeOption(option, value, options) {
-	if (options && !options.filters) {
-		options.filters = {};
-	}
-
 	switch (option) {
 		
 		case 'chunk_size':
@@ -142,6 +138,9 @@ function normalizeOption(option, value, options) {
 			return value;
 
 		case 'max_file_size':
+			if (options && !options.filters) {
+				options.filters = {};
+			}
 			options.filters.max_file_size = value;
 			break;
 
@@ -161,6 +160,9 @@ function normalizeOption(option, value, options) {
 			return false;
 
 		case 'prevent_duplicates':
+			if (options && !options.filters) {
+				options.filters = {};
+			}
 			options.filters.prevent_duplicates = !!value;
 			break;
 
@@ -184,14 +186,11 @@ function normalizeOption(option, value, options) {
 }
 
 
-function normalizeOptions(options) {
-	var normalizedOptions = {};
-	
+function normalizeOptions(options) {	
 	plupload.each(options, function(value, option) {
-		normalizedOptions[option] = normalizeOption(option, value, options);
+		options[option] = normalizeOption(option, value, options);
 	});
-
-	return normalizedOptions;
+	return options;
 }
 
 /** 
@@ -1059,7 +1058,6 @@ plupload.Uploader = function(settings) {
 			multipart_params: {},
 			// @since 2.3
 			http_method: 'POST',
-			headers: {},
 			file_data_name: 'file',
 			chunk_size: 0,
 			send_file_name: true,
@@ -1067,7 +1065,7 @@ plupload.Uploader = function(settings) {
 			max_retries: 0,
 			resize: false
 		}, 
-		normalizeOptions(settings)
+		normalizeOptions(plupload.extend({}, settings)) // we shouldn't alter original config
 	);
 
 	// Normalize the list of required capabilities
