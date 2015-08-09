@@ -227,40 +227,44 @@ var plupload = {
 	STARTED : 2,
 
 	/**
-	 * File is queued for upload
-	 *
-	 * @property QUEUED
-	 * @static
-	 * @final
-	 */
-	QUEUED : 1,
+	File is queued for upload
+
+	@property QUEUED
+	@deprecated
+	@static
+	@final
+	*/
+	QUEUED : plupload.File.QUEUED,
 
 	/**
-	 * File is being uploaded
-	 *
-	 * @property UPLOADING
-	 * @static
-	 * @final
+	File is being uploaded
+
+	@property UPLOADING
+	@deprecated
+	@static
+	@final
 	 */
-	UPLOADING : 2,
+	UPLOADING : plupload.File.UPLOADING,
 
 	/**
-	 * File has failed to be uploaded
-	 *
-	 * @property FAILED
-	 * @static
-	 * @final
+	File has failed to be uploaded
+
+	@property FAILED
+	@deprecated
+	@static
+	@final
 	 */
-	FAILED : 4,
+	FAILED : plupload.File.FAILED,
 
 	/**
-	 * File has been uploaded successfully
-	 *
-	 * @property DONE
-	 * @static
-	 * @final
+	File has been uploaded successfully
+
+	@property DONE
+	@deprecated
+	@static
+	@final
 	 */
-	DONE : 5,
+	DONE : plupload.File.DONE,
 
 	// Error constants used by the Error event
 
@@ -2029,9 +2033,6 @@ plupload.File = (function() {
 	@param {o.File} file 
 	*/
 	function PluploadFile(file) {
-		var _options;
-
-
 		/**
 		Dispatched while file is uploading.
 
@@ -2045,9 +2046,8 @@ plupload.File = (function() {
 		@event uploaded
 		@param {Object} event
 		*/
-		var uid = plupload.guid()
-		, xhr
-		;
+
+		var uid = plupload.guid(), _options, xhr;
 
 		plupload.extend(this, {
 
@@ -2115,7 +2115,7 @@ plupload.File = (function() {
 			 * @type Number
 			 * @see plupload
 			 */
-			status: plupload.QUEUED,
+			status: PluploadFile.QUEUED,
 
 			/**
 			 * Date of last modification.
@@ -2532,6 +2532,55 @@ plupload.File = (function() {
 			}
 		}
 	}
+
+
+	plupload.extend(PluploadFile, {
+		/**
+		File is queued for upload
+		
+		@property QUEUED
+		@static
+		@final
+		*/
+		QUEUED: 1,
+
+		/**
+		File is being uploaded
+		
+		@property UPLOADING
+		@static
+		@final
+		*/
+		UPLOADING: 2,
+
+		/**
+		File has failed to be uploaded
+		
+		@property FAILED
+		@static
+		@final
+		*/
+		FAILED: 4,
+
+		/**
+		File has been uploaded successfully
+		
+		@property DONE
+		@static
+		@final
+		*/
+		DONE: 5,
+
+		/**
+		File (Image) is being resized
+		
+		@property RESIZING
+		@static
+		@final
+		*/
+		RESIZING: 6
+	});
+
 
 	PluploadFile.prototype = o.EventTarget.instance;
 
