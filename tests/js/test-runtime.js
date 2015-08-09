@@ -28,7 +28,8 @@
 			slice_blob: True,
 			stream_upload: True,
 			summon_file_dialog: False,
-			upload_filesize: True
+			upload_filesize: True,
+			use_http_method: True
 		});
 
 		Basic.extend(this, {
