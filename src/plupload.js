@@ -1341,12 +1341,14 @@ plupload.Uploader = function(settings) {
 
 
 		/**
-		 * Returns the specified file object by id.
-		 *
-		 * @method uploadFile
-		 * @param {String|Object} file File object to upload.
-		 */
-		uploadFile : function(file) {
+		Returns the specified file object by id.
+
+		@method uploadFile
+		@since 2.3
+		@param {String|Object} file File object to upload.
+		@param {Object} [options] Options to take into account during the upload
+		*/
+		uploadFile : function(file, options) {
 			var up = this
 			, maxSlots = up.getOption('max_upload_slots')
 			;
@@ -1358,7 +1360,7 @@ plupload.Uploader = function(settings) {
 			if (activeUploads.length < maxSlots) {
 				if (up.trigger('BeforeUpload', file)) {
 					activeUploads.add(file.id, file);
-					file.upload(up.getOption());
+					file.upload(options || up.getOption());
 
 					up.trigger('UploadFile', file); // for backward compatibility really
 				}
@@ -2049,6 +2051,20 @@ plupload.File = (function() {
 
 		var uid = plupload.guid(), _options, xhr;
 
+		_options = {
+			multipart: true,
+			multipart_params: {},
+			// @since 2.3
+			http_method: 'POST',
+			headers: false,
+			file_data_name: 'file',
+			chunk_size: 0,
+			send_file_name: true,
+			send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
+			max_retries: 0,
+			resize: false
+		};
+
 		plupload.extend(this, {
 
 			/**
@@ -2222,19 +2238,7 @@ plupload.File = (function() {
 			*/
 			upload: function(options) {
 
-				_options = plupload.extend({
-					multipart: true,
-					multipart_params: {},
-					// @since 2.3
-					http_method: 'POST',
-					headers: false,
-					file_data_name: 'file',
-					chunk_size: 0,
-					send_file_name: true,
-					send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
-					max_retries: 0,
-					resize: false
-				}, options);
+				_options = plupload.extend(_options, options);
 
 
 				var file = this
