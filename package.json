@@ -29,7 +29,6 @@
         "type": "Custom Licensing",
         "url": "http://www.moxiecode.com/contact.php"
     }],
-    "private": true,
     "engines": {
         "node": ">=0.8.0"
     },
