@@ -7,6 +7,7 @@ var exec = require('child_process').exec;
 var tools = require('./src/moxie/build/tools');
 var utils = require('./src/moxie/build/utils');
 var wiki = require('./src/moxie/build/wiki');
+var mkjs = require('./src/moxie/build/mkjs');
 
 var copyright = [
 	"/**",
@@ -50,76 +51,109 @@ task("moxie", [], function (params) {
 }, true);
 
 
+desc("Build release files");
+task("mkjs", [], function () {
+	var amdlc = require('amdlc');
+	var targetDir = "js";
+	var flags = utils.asFlags(arguments);
 
-desc("Minify JS files");
-task("mkjs", [], function (i18n) {
-	var Instrument = require('coverjs').Instrument;
-	var uglify = tools.uglify;
+	var options = {
+		from: ['Uploader.js'],
+		compress: {
+			unused: false,
+			global_defs: {
+				MXI_DEBUG: false
+			}
+		},
+		baseDir: 'src',
+		rootNS: "plupload",
+		expose: "public",
+		libs: {
+			'moxie': {
+				rootNS: 'moxie',
+				baseDir: 'src/moxie/src/javascript',
+				expose: false,
+				force: true
+			}
+		},
+		verbose: true,
+		outputSource: targetDir + "/plupload.js",
+		outputMinified: targetDir + "/plupload.min.js",
+		outputDev: targetDir + "/plupload.dev.js",
+		outputCoverage: targetDir + "/plupload.cov.js"
+	};
 
-	var targetDir = "./js", moxieDir = "src/moxie";
-	
-	// Clear previous versions
+	if (!flags['no-image']) {
+		options.from.push('ImageResizer.js');
+	}
+
+
+	[].push.apply(options.from, 
+		getExtensionPaths({ 
+			baseDir: options.baseDir,
+			extensionsDir: options.libs.moxie.baseDir,
+			imageSupport: !flags['no-image']
+		})
+	);
+
+	// start fresh
 	if (fs.existsSync(targetDir)) {
 		jake.rmRf(targetDir);
 	}
-	fs.mkdirSync(targetDir, 0755);
+	jake.mkdirP(targetDir);
 
-	// Include Plupload source
-	tools.copySync('./src/plupload.js', "js/plupload.dev.js");
+	amdlc.compile(options);
 
-	// Instrument Plupload code
-	fs.writeFileSync(targetDir + '/plupload.cov.js', new Instrument(fs.readFileSync('./src/plupload.js').toString(), {
-		name: 'Plupload'
-	}).instrument());
-	
 
 	// Copy compiled moxie files
-	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
-	tools.copySync(moxieDir + "/bin/silverlight/Moxie.xap", "js/Moxie.xap");
-	tools.copySync(moxieDir + "/bin/js/moxie.min.js", "js/moxie.min.js");
-	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
+	if (!flags['no-image']) {
+		tools.copySync("src/moxie/bin/flash/Moxie.swf", "js/Moxie.swf");
+		tools.copySync("src/moxie/bin/silverlight/Moxie.xap", "js/Moxie.xap");
+	} else {
+		tools.copySync("src/moxie/bin/flash/Moxie.min.swf", "js/Moxie.swf");
+		tools.copySync("src/moxie/bin/silverlight/Moxie.min.xap", "js/Moxie.xap");
+	}
 
-	// Copy UI Plupload
-	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
 
-	uglify([
-		'jquery.ui.plupload.js'
-	], targetDir + "/jquery.ui.plupload/jquery.ui.plupload.min.js", {
-		sourceBase: targetDir + "/jquery.ui.plupload/"
-	});
+	// add debug constant to dev source
+	mkjs.addDebug(targetDir + "/plupload.dev.js");
+	mkjs.addDebug(targetDir + "/plupload.cov.js");
+	mkjs.addDebug(targetDir + "/plupload.js");
 
-	// Copy Queue Plupload
-	jake.cpR("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
-
-	uglify([
-		'jquery.plupload.queue.js'
-	], targetDir + "/jquery.plupload.queue/jquery.plupload.queue.min.js", {
-		sourceBase: targetDir + "/jquery.plupload.queue/"
-	});
-
-	// Minify Plupload and combine with mOxie
-	uglify([
-		'plupload.js'
-	], targetDir + "/plupload.min.js", {
-		sourceBase: 'src/'
-	});
 
 	var info = require("./package.json");
 	info.copyright = copyright;
 	tools.addReleaseDetailsTo(targetDir + "/plupload.dev.js", info);
 	tools.addReleaseDetailsTo(targetDir + "/plupload.min.js", info);
+	tools.addReleaseDetailsTo(targetDir + "/plupload.js", info);
 
-	var code = "";
-	code += fs.readFileSync(targetDir + "/moxie.min.js") + "\n";
-	code += fs.readFileSync(targetDir + "/plupload.min.js");
-
-	fs.writeFileSync(targetDir + "/plupload.full.min.js", code);
 
 	// Add I18n files
-	if (i18n) {
+	if (flags['i18n']) {
 		process.env.auth = "moxieuser:12345";
 		process.env.to = "./js/i18n";
 		jake.Task['i18n'].invoke();
+	}
+
+
+	function getExtensionPaths(options) {
+		var modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest"];
+		var extensions = [];
+
+		if (options.imageSupport) {
+			modules.push("image/Image");
+		}
+
+		extensions = mkjs.getExtensionPaths4(modules, {
+			runtimes: options.runtimes,
+			baseDir: options.extensionsDir
+		});
+
+		// we need to strip of the baseDir for plupload
+		var re = new RegExp('^' + options.baseDir.replace(/\//g, '\/') + '\/?');
+		return extensions.map(function(ext) {
+			return ext.replace(re, '');
+		});
 	}
 });
 
