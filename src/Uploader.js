@@ -514,12 +514,8 @@ define('plupload/Uploader', [
 			 * @return {plupload.File} File object or undefined if it wasn't found;
 			 */
 			getFile : function(id) {
-				var i;
-				for (i = files.length - 1; i >= 0; i--) {
-					if (files[i].id === id) {
-						return files[i];
-					}
-				}
+				var item = self.getItem(id);
+				return item ? item.getFile() : null;
 			},
 
 			/**
@@ -663,6 +659,7 @@ define('plupload/Uploader', [
 				}
 			},
 
+			// TODO
 			/**
 			 * Removes part of the queue and returns the files removed. This will also trigger the FilesRemoved and QueueChanged events.
 			 *
