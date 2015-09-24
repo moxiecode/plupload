@@ -216,15 +216,15 @@ define('plupload/Uploader', [
 	var fileFilters = {};
 
 
-    function Uploader(options) {
-    	var self = this;
-    	var _uid = plupload.guid();
-    	var _options;
-    	var _fileInputs = [];
-    	var _fileDrops = [];
-    	var _disabled = false;
+	function Uploader(options) {
+		var self = this;
+		var _uid = plupload.guid();
+		var _options;
+		var _fileInputs = [];
+		var _fileDrops = [];
+		var _disabled = false;
 
-    	_options = plupload.extend(
+		_options = plupload.extend(
 			{
 				runtimes: Runtime.order,
 				multi_selection: true,
@@ -257,7 +257,7 @@ define('plupload/Uploader', [
 		// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
 		_options.preferred_caps = normalizeCaps(plupload.extend({}, _options, { required_features: true }));
 
-		
+
 		Queue.call(this, _options);
 
 
@@ -1019,10 +1019,10 @@ define('plupload/Uploader', [
 			up.stats.reset();
 		}
 
-    }
+	}
 
 
-    // convert plupload features to caps acceptable by mOxie
+	// convert plupload features to caps acceptable by mOxie
 	function normalizeCaps(settings) {		
 		var features = settings.required_features, caps = {};
 

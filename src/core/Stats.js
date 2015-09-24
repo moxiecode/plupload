@@ -102,17 +102,17 @@ define('plupload/core/Stats', [], function() {
 		 * @method reset
 		 */
 		self.reset = function() {
-			self.size 				= // deprecated
-			self.total 				= 
-			self.loaded				= // deprecated
-			self.processed			=
-			self.uploaded 			= // deprecated
-			self.done 				=
-			self.failed 			= 
-			self.queued 			= 
-			self.percent 			=
-			self.bytesPerSec		= // deprecated
-			self.processedPerSec 	= 0;
+			self.size             = // deprecated
+			self.total            = 
+			self.loaded           = // deprecated
+			self.processed        =
+			self.uploaded         = // deprecated
+			self.done             =
+			self.failed           = 
+			self.queued           = 
+			self.percent          =
+			self.bytesPerSec      = // deprecated
+			self.processedPerSec  = 0;
 		};
 	};
 });

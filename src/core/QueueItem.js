@@ -160,12 +160,12 @@ define('plupload/core/QueueItem', [
     }
     
     
-    QueueItem.IDLE = 0;
-    QueueItem.PROCESSING = 1;
-    QueueItem.PAUSED = 2;
-    QueueItem.RESUMED = 3;
-    QueueItem.DONE = 4;
-    QueueItem.FAILED = 5;
+    QueueItem.IDLE          = 0;
+    QueueItem.PROCESSING    = 1;
+    QueueItem.PAUSED        = 2;
+    QueueItem.RESUMED       = 3;
+    QueueItem.DONE          = 4;
+    QueueItem.FAILED        = 5;
     
     QueueItem.prototype = new EventTarget();
     
