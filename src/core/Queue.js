@@ -187,6 +187,11 @@ define('plupload/core/Queue', [
                 this.trigger('StateChanged', self.state, prevState);
                 self.trigger('Stopped');
             },
+
+
+            getItem: function(uid) {
+                return _queue.get(uid);
+            },
             
             
             /**
