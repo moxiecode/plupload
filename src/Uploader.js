@@ -799,8 +799,6 @@ define('plupload/Uploader', [
 				up.trigger('QueueChanged');
 				up.refresh();
 			});
-
-			this.bind('CancelUpload', onCancelUpload);
 			
 			this.bind('BeforeUpload', onBeforeUpload);
 
@@ -949,18 +947,6 @@ define('plupload/Uploader', [
 				}
 				file.target_name = file.id + '.' + ext;
 			}
-		}
-
-
-		// TODO
-		function onCancelUpload() {
-			// loop over active uploads and cancel them
-			if (activeUploads.length) {
-				activeUploads.each(function(file) {
-					file.cancelUpload();
-				});
-			}
-			activeUploads.clear();
 		}
 
 
