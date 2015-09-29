@@ -33,7 +33,6 @@
 	var matches = document.location.search.match(/src=(min|dev|cov)/);
 	var source = matches ? matches[1] : 'min';
 
-	document.write('<script src="' + baseUrl + '/../../js/moxie.js"></script>');
 	document.write('<script src="' + baseUrl + '/../../js/plupload.' + source + '.js"></script>');
 
 

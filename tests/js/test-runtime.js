@@ -1,4 +1,4 @@
-;(function(Basic, x, Runtime, Url, File, Blob, FormData, Env) {
+;(function(Basic, Runtime, Url, File, Blob, FormData) {
 
 	var type = "test", extensions = {};
 
@@ -241,12 +241,9 @@
 	Runtime.addConstructor(type, TestRuntime);
 }(
 	moxie.core.utils.Basic,
-	moxie.core.Exceptions,
 	moxie.runtime.Runtime,
 	moxie.core.utils.Url,
 	moxie.file.File,
 	moxie.file.Blob,
-	moxie.xhr.FormData,
-	moxie.core.Exceptions,
-	moxie.core.utils.Env
+	moxie.xhr.FormData
 ));
