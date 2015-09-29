@@ -72,7 +72,7 @@ task("mkjs", [], function () {
 			'moxie': {
 				rootNS: 'moxie',
 				baseDir: 'src/moxie/src/javascript',
-				expose: false,
+				expose: flags['hide-moxie'] ? false : 'public',
 				force: true
 			}
 		},
@@ -106,12 +106,12 @@ task("mkjs", [], function () {
 
 
 	// Copy compiled moxie files
-	if (!flags['no-image']) {
-		tools.copySync("src/moxie/bin/flash/Moxie.swf", "js/Moxie.swf");
-		tools.copySync("src/moxie/bin/silverlight/Moxie.xap", "js/Moxie.xap");
-	} else {
+	if (flags['no-image']) {
 		tools.copySync("src/moxie/bin/flash/Moxie.min.swf", "js/Moxie.swf");
 		tools.copySync("src/moxie/bin/silverlight/Moxie.min.xap", "js/Moxie.xap");
+	} else {
+		tools.copySync("src/moxie/bin/flash/Moxie.swf", "js/Moxie.swf");
+		tools.copySync("src/moxie/bin/silverlight/Moxie.xap", "js/Moxie.xap");
 	}
 
 
