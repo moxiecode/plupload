@@ -21,8 +21,11 @@ define('plupload', [
     'moxie/core/utils/Basic',
     'moxie/core/utils/Dom',
     'moxie/core/utils/Events',
-    'moxie/runtime/Runtime'
-], function(I18n, Env, Basic, Dom, Events, Runtime) {
+    'moxie/core/utils/Url',
+    'moxie/runtime/Runtime',
+    'moxie/file/FileInput',
+    'moxie/file/FileReader'
+], function(I18n, Env, Basic, Dom, Events, Url, Runtime, FileInput, FileReader) {
 
 	return {
 		/**
@@ -231,7 +234,15 @@ define('plupload', [
 		 */
 		extend: Basic.extend,
 
+		/**
+		Extends the specified object with another object(s), but only if the property exists in the target.
 
+		@method extendIf
+		@static
+		@param {Object} target Object to extend.
+		@param {Object} [obj]* Multiple objects to extend with.
+		@return {Object} Same as target, the extended object.
+		*/
 		extendIf: Basic.extendIf,
 
 		/**
@@ -592,6 +603,15 @@ define('plupload', [
 			return size + " " + plupload.translate('b');
 		},
 
+		/**
+		Resolve url - among other things will turn relative url to absolute
+
+		@method resolveUrl
+		@static
+		@param {String|Object} url Either absolute or relative, or a result of parseUrl call
+		@return {String} Resolved, absolute url
+		*/
+		resolveUrl: Url.resolveUrl,
 
 		/**
 		 * Parses the specified size string into a byte value. For example 10kb becomes 10240.
@@ -603,7 +623,52 @@ define('plupload', [
 		 */
 		parseSize: Basic.parseSizeStr,
 
-		delay: Basic.delay
+		delay: Basic.delay,
+
+		/**
+		Common set of methods and properties for every runtime instance
+
+		@class moxie/runtime/Runtime
+
+		@param {Object} options
+		@param {String} type Sanitized name of the runtime
+		@param {Object} [caps] Set of capabilities that differentiate specified runtime
+		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
+		@param {String} [preferredMode='browser'] Preferred operational mode to choose if no required capabilities were requested
+		*/
+		Runtime: Runtime,
+
+		/**
+		Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
+		converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
+		with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
+
+		@class plupload/FileInput
+		@constructor
+		@extends EventTarget
+		@uses RuntimeClient
+		@param {Object|String|DOMElement} options If options is string or node, argument is considered as _browse\_button_.
+			@param {String|DOMElement} options.browse_button DOM Element to turn into file picker.
+			@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
+			@param {String} [options.file='file'] Name of the file field (not the filename).
+			@param {Boolean} [options.multiple=false] Enable selection of multiple files.
+			@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
+			@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+			for _browse\_button_.
+			@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
+		*/
+		FileInput: FileInput,
+
+		/**
+		Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
+		interface. Where possible uses native FileReader, where - not falls back to shims.
+
+		@class plupload/FileReader
+		@constructor FileReader
+		@extends EventTarget
+		@uses RuntimeClient
+		*/
+		FileReader: FileReader
 	};
 
 });

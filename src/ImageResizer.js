@@ -13,7 +13,16 @@
 @constructor 
 */
 define("plupload/ImageResizer", [
+    'plupload',
 	'moxie/image/Image'
-], function(Image) {
+], function(plupload, Image) {
+
+    /**
+    Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
+
+    @class plupload/Image
+    @constructor
+    */
+    plupload.Image = Image;
 
 });
