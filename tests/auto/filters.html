@@ -19,8 +19,8 @@ FileHash.init({
 	}
 });
 
-o.Env.swf_url = "../../js/flash/Moxie.swf";
-o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+plupload.ua.xap_url = "../../js/silverlight/Moxie.xap";
 
 module("plupload.Uploader", {
 	setup: function() {
@@ -66,7 +66,7 @@ test('options.filters', function() {
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		filters : [
 			{title : "Image files", extensions : "jpg,jpeg,gif,png"}
 		]
@@ -75,12 +75,12 @@ test('options.filters', function() {
 	var queue = [];
 
 	queue.push(
-		// o.File
+		// plupload.File
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
 				equal(up.files.length, 0, "No files were added to the queue.");
-				equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+				equal(plupload.typeOf(up.getOption('filters').mime_types), 'array', "Legacy 'filters' format successfully parsed.");
 				up.unbind('TestError');
 				cb();
 			});
@@ -89,7 +89,6 @@ test('options.filters', function() {
 
 		// plupload.File
 		function(cb) {
-			file = new plupload.File(files[1]);
 			up.bind('TestFilesAdded', function(up) {
 				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
 				up.unbind('TestFilesAdded');
@@ -111,7 +110,7 @@ test('options.filters', function() {
 
 
 	up.bind('PostInit', function() {
-		o.inSeries(queue, function() {
+		plupload.inSeries(queue, function() {
 			start();
 		});
 	});
@@ -135,7 +134,7 @@ test('options.filters.mime_types', function() {
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		filters : {
 			mime_types: [
 				{title : "Image files", extensions : "jpg,jpeg,gif,png"}
@@ -146,12 +145,12 @@ test('options.filters.mime_types', function() {
 	var queue = [];
 
 	queue.push(
-		// o.File
+		// plupload.File
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
 				equal(up.files.length, 0, "No files were added to the queue.");
-				equal(o.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+				equal(plupload.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
 				up.unbind('TestError');
 				cb();
 			});
@@ -160,7 +159,6 @@ test('options.filters.mime_types', function() {
 
 		// plupload.File
 		function(cb) {
-			file = new plupload.File(files[1]);
 			up.bind('TestFilesAdded', function(up) {
 				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
 				up.unbind('TestFilesAdded');
@@ -182,7 +180,7 @@ test('options.filters.mime_types', function() {
 
 
 	up.bind('PostInit', function() {
-		o.inSeries(queue, function() {
+		plupload.inSeries(queue, function() {
 			start();
 		});
 	});
@@ -206,7 +204,7 @@ test('options.filters.mime_types (passing actual mime types directly)', function
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		filters : {
 			mime_types: 'image/*'
 		}
@@ -215,14 +213,14 @@ test('options.filters.mime_types (passing actual mime types directly)', function
 	var queue = [];
 
 	queue.push(
-		// o.File
+		// plupload.File
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, 
 					"Error triggered, code: FILE_EXTENSION_ERROR.");
 				equal(up.files.length, 0, 
 					"No files were added to the queue.");
-				equal(o.typeOf(up.settings.filters.mime_types), 'array', 
+				equal(plupload.typeOf(up.settings.filters.mime_types), 'array', 
 					"Alternative (mime_types: 'image/*') format successfully parsed.");
 
 				up.unbind('TestError');
@@ -246,7 +244,7 @@ test('options.filters.mime_types (passing actual mime types directly)', function
 
 
 	up.bind('PostInit', function() {
-		o.inSeries(queue, function() {
+		plupload.inSeries(queue, function() {
 			start();
 		});
 	});
@@ -271,7 +269,7 @@ test('options.max_file_size', function() {
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		max_file_size: '100kb'
 	}, this.options));
 
@@ -306,7 +304,7 @@ test('options.filters.max_file_size', function() {
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		filters: {
 			max_file_size: '100kb'
 		}
@@ -344,7 +342,7 @@ test('options.prevent_duplicates', function() {
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		prevent_duplicates: true
 	}, this.options));
 
@@ -395,7 +393,7 @@ test('options.prevent_duplicates', function() {
 
 
 	up.bind('PostInit', function() {
-		o.inSeries(queue, function() {
+		plupload.inSeries(queue, function() {
 			start();
 		});
 	});
@@ -420,7 +418,7 @@ test('options.filters.prevent_duplicates', function() {
 	var files = FileHash.getRuntimeFiles();
 
 	// test file type check by extension
-	var up = new plupload.Uploader(o.extend({
+	var up = new plupload.Uploader(plupload.extend({
 		filters: {
 			prevent_duplicates: true
 		}
@@ -473,7 +471,7 @@ test('options.filters.prevent_duplicates', function() {
 
 
 	up.bind('PostInit', function() {
-		o.inSeries(queue, function() {
+		plupload.inSeries(queue, function() {
 			start();
 		});
 	});
