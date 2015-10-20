@@ -187,6 +187,11 @@ define('plupload/core/Queue', [
             },
 
 
+            eachItem: function(cb) {
+                return _queue.each(cb);
+            },
+
+
             getItem: function(uid) {
                 return _queue.get(uid);
             },
