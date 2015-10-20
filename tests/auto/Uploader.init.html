@@ -19,8 +19,8 @@ FileHash.init({
 	}
 });
 
-o.Env.swf_url = "../../js/Moxie.swf";
-o.Env.xap_url = "../../js/Moxie.xap";
+plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+plupload.ua.xap_url = "../../js/silverlight/Moxie.xap";
 
 module("plupload.Uploader", {
 	setup: function() {
@@ -95,11 +95,11 @@ test("If both 'browse_button' and 'drop_element' are missing, uploader should tr
 test("Normalize required_features when passed as comma-delimited string", function() {
 	expect(1);
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		required_features: 'chunks,jpgresize, progress,dragdrop,multi_selection,triggerDialog,display_media'
 	}));
 
-	deepEqual(this.up.settings.required_features, {
+	deepEqual(this.up.getOption('required_features'), {
 		slice_blob: true,
 		send_binary_string: true,
 		report_upload_progress: true,
@@ -114,7 +114,7 @@ test("Normalize required_features when passed as comma-delimited string", functi
 test("Normalize required_features when passed as object", function() {
 	expect(1);
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		required_features: {
 			chunks: true,
 			jpgresize: true, 
@@ -126,7 +126,7 @@ test("Normalize required_features when passed as object", function() {
 		}
 	}));
 
-	deepEqual(this.up.settings.required_features, {
+	deepEqual(this.up.getOption('required_features'), {
 		slice_blob: true,
 		send_binary_string: true,
 		report_upload_progress: true,
@@ -140,7 +140,7 @@ test("Normalize required_features when passed as object", function() {
 
 test("Consider special settings as required_features when required_features is boolean true", function() {
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		multi_selection: true,
 		drop_element: 'uploader',
 		multipart: false,	
@@ -156,7 +156,7 @@ test("Consider special settings as required_features when required_features is b
 		required_features: true
 	}));
 
-	deepEqual(this.up.settings.required_features, {
+	deepEqual(this.up.getOption('required_features'), {
 		select_multiple: true,
 		drag_and_drop: true,
 		slice_blob: true,
@@ -169,7 +169,7 @@ test("Consider special settings as required_features when required_features is b
 
 test("When required_features is undefined, consider special settings as optional", function() {
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		multi_selection: true,
 		drop_element: 'uploader',
 		max_file_size: '1gb',
@@ -182,18 +182,18 @@ test("When required_features is undefined, consider special settings as optional
 		}
 	}));
 
-	deepEqual(this.up.settings.required_features, {}, "required_features must be empty.");
+	deepEqual(this.up.getOption('required_features'), {}, "required_features must be empty.");
 });
 
 
 test("Size identifiers in string format (e.g. 1mb) converted to numerical format", function() {
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		chunk_size: '1mb',
 		max_file_size: '1gb'
 	}));
 
-	equal(this.up.settings.chunk_size, 1024 * 1024, "'1mb' converted to numerical bytes");
+	equal(this.up.getOption('chunk_size'), 1024 * 1024, "'1mb' converted to numerical bytes");
 });
 
 
@@ -201,12 +201,12 @@ test("Test how default values are assigned to missing options", function() {
 
 	this.up = new plupload.Uploader(this.options);
 
-	deepEqual(this.up.settings, {
+	deepEqual(this.up.getOption(), {
 		browse_button: plupload.getAll('uploader'),
 		drop_element: plupload.getAll('uploader'),
 		container: plupload.get('qunit-fixture'),
 		url: "Plupload/upload.php",
-		runtimes: o.Runtime.order,
+		runtimes: plupload.Runtime.order,
 		multi_selection : true,
 		flash_swf_url : 'js/Moxie.swf',
 		silverlight_xap_url : 'js/Moxie.xap',
@@ -227,20 +227,34 @@ test("Test how default values are assigned to missing options", function() {
 		resize: false,
 		send_chunk_number: true,
 		send_file_name: true,
+
+		// default options from Queue
+		max_slots: 1,
+        max_retries: 0, 
+        auto_start: false,
+        finish_active: false,
+        pause_before_start: true,
+
+        // preferred caps are now part of the config
+        preferred_caps: {
+			drag_and_drop: true,
+			select_multiple: true,
+			use_http_method: "POST"
+		},
 	}, "Proper defaults set.");
 });
 
 
 test("Test how defaults are set for resize object", function() {
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		resize: {
 			width: 100,
 			height: 60
 		}
 	}));
 
-	deepEqual(this.up.settings.resize, {
+	deepEqual(this.up.getOption('resize'), {
 		width: 100,
 		height: 60,
 		crop: false,
@@ -252,7 +266,7 @@ test("Test how defaults are set for resize object", function() {
 test("Test runtime property", function() {
 	expect(2);
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		runtimes: 'html4,test',
 		required_features: 'multi_selection'
 	}));
@@ -274,7 +288,7 @@ test("Test runtime property", function() {
 test("Test preinit and init callbacks", function() {
 	var eventOrder = [];
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		preinit: function() {
 			eventOrder.push(1);
 		},
@@ -297,7 +311,7 @@ test("Test preinit and init callbacks", function() {
 test("Test preinit and init set of event handlers", function() {
 	var eventOrder = [];
 
-	this.up = new plupload.Uploader(o.extend(this.options, {
+	this.up = new plupload.Uploader(plupload.extend(this.options, {
 		preinit: {
 			PostInit: function() {
 				eventOrder.push(1);
