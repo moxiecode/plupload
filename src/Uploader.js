@@ -771,17 +771,6 @@ define('plupload/Uploader', [
 
 			@method unbindAll
 			*/
-
-			/**
-			 * Destroys Plupload instance and cleans after itself.
-			 *
-			 * @method destroy
-			 */
-			destroy: function() {
-				this.trigger('Destroy');
-				_options = null; // purge these exclusively
-				this.unbindAll();
-			}
 		});
 
 
@@ -969,15 +958,11 @@ define('plupload/Uploader', [
 			}
 		}
 
-		// TODO
-		function onDestroy(up) {
-			up.stop();
 
-			// Purge the queue
-			plupload.each(files, function(file) {
+		function onDestroy(up) {
+			up.eachItem(function(file) {
 				file.destroy();
 			});
-			files = [];
 
 			if (_fileInputs.length) {
 				plupload.each(_fileInputs, function(fileInput) {
@@ -992,14 +977,8 @@ define('plupload/Uploader', [
 				});
 				_fileDrops = [];
 			}
-
-			activeUploads.clear();
-			pendingUploads.clear();
-
-			preferred_caps = {};
-			_disabled = false;
-			startTime = null;
-			up.stats.reset();
+			
+			self = _options = null; // purge these exclusively
 		}
 
 	}
