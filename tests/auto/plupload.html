@@ -10,16 +10,10 @@
 
 QUnit.config.reorder = false;
 
-o.Env.swf_url = "../../js/flash/Moxie.swf";
-o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+plupload.ua.xap_url = "../../js/silverlight/Moxie.xap";
 
-module("Plupload", {
-	setup: function() {
-	},
-
-	teardown: function() {
-	}
-});
+module("Plupload");
 
 test("xmlEncode()", function() {
 	expect(1);
