@@ -119,8 +119,7 @@ define('plupload/core/Queue', [
                 } 
 
                 oldValue = _options[option];
-
-                _options[option] = normalizeOption(option, value, _options);
+                _options[option] = value;
                 
                 self.trigger('OptionChanged', option, value, oldValue);
             },

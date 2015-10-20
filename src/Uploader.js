@@ -423,6 +423,8 @@ define('plupload/Uploader', [
 					});
 				}
 
+				value = normalizeOption(option, value, _options);
+
 				Uploader.prototype.setOption.apply(this, arguments);
 			},
 
