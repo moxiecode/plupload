@@ -214,17 +214,17 @@ define('plupload/Uploader', [
 ], function(plupload, Collection, mxiBlob, mxiFile, FileInput, FileDrop, Runtime, Queue, UploadingQueue, FileUploader) {
 
 	var fileFilters = {};
+	var undef;
 
 
 	function Uploader(options) {
 		var self = this;
 		var _uid = plupload.guid();
-		var _options;
 		var _fileInputs = [];
 		var _fileDrops = [];
 		var _disabled = false;
 
-		_options = plupload.extend(
+		var _options = plupload.extend(
 			{
 				runtimes: Runtime.order,
 				multi_selection: true,
@@ -311,7 +311,15 @@ define('plupload/Uploader', [
 			 * @deprecated There might be multiple runtimes per uploader
 			 */
 			runtime : null,
-			
+
+			/**
+			 * Current upload queue, an array of File instances.
+			 *
+			 * @property files
+			 * @deprecated
+			 * @type Array
+			 */
+			files: [],
 
 			/**
 			 * Initializes the Uploader instance and adds internal event listeners.
@@ -373,7 +381,7 @@ define('plupload/Uploader', [
 							auto_start: true,
 							max_retries: _options.max_retries,
 							max_slots: _options.max_upload_slots
-						});						
+						});					
 						
 						self.trigger('Init', { 
 							ruid: runtime.uid,
@@ -455,8 +463,7 @@ define('plupload/Uploader', [
 			 * @method disableBrowse
 			 * @param {Boolean} disable Whether to disable or enable (default: true)
 			 */
-			// TODO 
-			disableBrowse : function() {
+			disableBrowse: function() {
 				_disabled = arguments[0] !== undef ? arguments[0] : true;
 
 				if (_fileInputs.length) {
@@ -477,7 +484,7 @@ define('plupload/Uploader', [
 			@param {String|Object} file File object to upload.
 			@param {Object} [options] Options to take into account during the upload
 			*/
-			uploadFile : function(file, options) {
+			uploadFile: function(file, options) {
 				var up = this
 				, maxSlots = up.getOption('max_upload_slots')
 				;
@@ -513,7 +520,7 @@ define('plupload/Uploader', [
 			 * @param {String} id File id to look for.
 			 * @return {plupload.File} File object or undefined if it wasn't found;
 			 */
-			getFile : function(id) {
+			getFile: function(id) {
 				var item = self.getItem(id);
 				return item ? item.getFile() : null;
 			},
@@ -528,7 +535,7 @@ define('plupload/Uploader', [
 			 * @param {plupload.File|mOxie.File|File|Node|Array} file File or files to add to the queue.
 			 * @param {String} [fileName] If specified, will be used as a name for the file
 			 */
-			addFile : function(file, fileName) {
+			addFile: function(file, fileName) {
 				var self = this
 				, queue = []
 				, ruid // spare runtime uid, for those files that do not have their own
@@ -649,7 +656,7 @@ define('plupload/Uploader', [
 			 * @method removeFile
 			 * @param {plupload.File|String} file File to remove from queue.
 			 */
-			removeFile : function(file) {
+			removeFile: function(file) {
 				var id = typeof(file) === 'string' ? file : file.id;
 
 				for (var i = files.length - 1; i >= 0; i--) {
@@ -668,7 +675,7 @@ define('plupload/Uploader', [
 			 * @param {Number} length (Optional) Lengh of items to remove.
 			 * @return {Array} Array of files that was removed.
 			 */
-			splice : function(start, length) {
+			splice: function(start, length) {
 				// Splice and trigger events
 				var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
 
@@ -756,7 +763,7 @@ define('plupload/Uploader', [
 			bind: function(name, fn, scope, priority) {
 				// adapt moxie EventTarget style to Plupload-like
 				plupload.Uploader.prototype.bind.call(this, name, fn, priority, scope);
-			},
+			}
 
 			/**
 			Removes the specified event listener.
@@ -783,11 +790,24 @@ define('plupload/Uploader', [
 		}
 
 
+
+		function toArray() {
+			var arr = [];
+			this.eachItem(function(item) {
+				arr.push(item.getFile());
+			});
+			return arr;
+		}
+
+
 		function bindEventListeners() {
 			this.bind('FilesAdded FilesRemoved', function(up) {
+				// keepalive deprecated files property
+				up.files = toArray.call(up);
+
 				up.trigger('QueueChanged');
 				up.refresh();
-			});
+			}, this, 999);
 			
 			this.bind('BeforeUpload', onBeforeUpload);
 
@@ -925,6 +945,7 @@ define('plupload/Uploader', [
 				}
 			});
 		}
+
 
 		// Internal event handlers
 		function onBeforeUpload(up, file) {
