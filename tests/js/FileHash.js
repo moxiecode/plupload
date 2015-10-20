@@ -60,8 +60,8 @@ window.FileHash = new (function() {
 			}
 
 			// add runtime version
-			if (window.o && window.o.File) {
-				_runtimeFiles.push(new o.File(null, {
+			if (moxie && moxie.file.File) {
+				_runtimeFiles.push(new moxie.file.File(null, {
 					name: fileData.name,
 					type: type,
 					data: binStr
@@ -84,8 +84,8 @@ window.FileHash = new (function() {
 		getRuntimeFiles: function() {
 			var files = [];
 			// return fresh set
-			o.each(_runtimeFiles, function(file) {
-				files.push(new o.File(null, {
+			plupload.each(_runtimeFiles, function(file) {
+				files.push(new moxie.file.File(null, {
 					name: file.name,
 					data: file.getSource()
 				}));

@@ -19,8 +19,8 @@ FileHash.init({
 	}
 });
 
-o.Env.swf_url = "../../js/flash/Moxie.swf";
-o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+plupload.ua.xap_url = "../../js/silverlight/Moxie.xap";
 
 module("plupload.Uploader", {
 	setup: function() {
@@ -72,8 +72,7 @@ test('addFile()', function() {
 	, file
 	, files = FileHash.getRuntimeFiles()
 	, nFiles = FileHash.getNativeFiles()
-	, queue = []
-	;
+	, queue = [];
 
 	if (nFiles.length) {
 		queue.push(
@@ -87,12 +86,12 @@ test('addFile()', function() {
 				up.addFile(nFiles[0].blob, nFiles[0].name);
 			},
 			
-			// o.Blob
+			// moxie.file.Blob
 			function(cb) {
-				file = new o.Blob(null, files[0].getSource());
+				file = new moxie.file.Blob(null, files[0].getSource());
 				up.bind('TestFilesAdded', function(up) {
 					equal(up.files[0].name, files[0].name, "File name set properly through the second, optional argument.");
-					equal(up.files.length, 2, "o.Blob added (file name: " + up.files[1].name  + ").");
+					equal(up.files.length, 2, "moxie.file.Blob added (file name: " + up.files[1].name  + ").");
 					up.unbind('TestFilesAdded');
 					cb();
 				});
@@ -113,18 +112,6 @@ test('addFile()', function() {
 			up.addFile(files[0]);
 		},
 
-		// plupload.File
-		function(cb) {
-			file = new plupload.File(files[1]);
-			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 4, "plupload.File added (file name: " + up.files[3].name  + ").");
-				up.unbind('TestFilesAdded');
-				cb();
-			});
-
-			up.addFile(file);
-		},
-
 		// array of file objects
 		function(cb) {
 			var mixedArr = [];
@@ -132,13 +119,13 @@ test('addFile()', function() {
 			if (nFiles.length) {
 				[].push.apply(mixedArr, [
 					nFiles[0].blob,
-					new o.Blob(null, nFiles[0].blob)
+					new moxie.file.Blob(null, nFiles[0].blob)
 				]);
 			}
 
 			[].push.apply(mixedArr, [
 				files[0],
-				new plupload.File(files[1])
+				files[1]
 			]);
 
 			up.bind('TestQueueChanged', function() {
@@ -151,8 +138,8 @@ test('addFile()', function() {
 			});
 
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 8, "Mixed array of various file objects added.");
-				notEqual(up.files[7].name, files[0].name, "Second parameter (fileName) properly ignored, when first one is an array.");
+				equal(up.files.length, 7, "Mixed array of various file objects added.");
+				notEqual(up.files[6].name, files[0].name, "Second parameter (fileName) properly ignored, when first one is an array.");
 				up.unbind('TestFilesAdded');
 				cb();
 			});
@@ -162,7 +149,7 @@ test('addFile()', function() {
 	);
 
 	stop();
-	o.inSeries(queue, function() {
+	plupload.inSeries(queue, function() {
 		start();
 	});
 });
@@ -216,10 +203,8 @@ test('removeFile() / splice()', function() {
 
 	stop();
 	this.up.addFile([
-		new o.File(null, files[0]),
-		new o.File(null, files[1]),
-		new plupload.File(files[0]),
-		new plupload.File(files[1])
+		new moxie.file.File(null, files[0]),
+		new moxie.file.File(null, files[1])
 	]);
 });
 
