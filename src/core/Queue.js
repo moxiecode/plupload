@@ -68,16 +68,14 @@ define('plupload/core/Queue', [
      *      @param {Bool} [options.auto_start=false] Whether to start the queue as soon as the items are added
      *      @param {Bool} [options.finish_active=false] Whether to always wait until active items finish or stop immediately
      */
-    function Queue(options) {
-        var _options;
-    
+    function Queue(options) {    
         var _queue = new Collection();
         var _stats = new Stats();
         var _countProcessing = 0;
         var _countPaused = 0;
         var _startTime;
         
-        _options = Basic.extend({
+        var _options = Basic.extend({
             max_slots: 1,
             max_retries: 0, 
             auto_start: false,
@@ -177,9 +175,9 @@ define('plupload/core/Queue', [
                 
                 if (_options.finish_active) {
                     return;
-                } else if (!_countProcessing) {
+                } else if (_countProcessing || _countPaused) {
                     _queue.each(function(item) {
-                        self.pauseItem(item.uid);   
+                        self.stopItem(item.uid);   
                     });
                 }
                 
@@ -312,23 +310,7 @@ define('plupload/core/Queue', [
             countSpareSlots: function() {
                 return Math.max(_options.max_slots - _countProcessing, 0);
             },
-            
-            
-            clear: function() {
-                var self = this;
-                
-                if (self.state !== Queue.STOPPED) { 
-                    // stop the active queue first
-                    self.bindOnce('Stopped', function() {
-                        self.clear();
-                    });
-                    return self.stop();
-                } else {
-                    _queue.clear();
-                    _stats.reset();
-                }
-            },
-            
+                        
             
             calcStats: function() {
                 _stats.reset();
@@ -364,6 +346,42 @@ define('plupload/core/Queue', [
                // for backward compatibility     
                 _stats.loaded = _stats.processed;
                 _stats.size = _stats.total;
+            },
+
+
+            clear: function() {
+                var self = this;
+                
+                if (self.state !== Queue.STOPPED) { 
+                    // stop the active queue first
+                    self.bindOnce('Stopped', function() {
+                        self.clear();
+                    });
+                    return self.stop();
+                } else {
+                    _queue.clear();
+                    _stats.reset();
+                }
+            },
+
+
+            destroy: function() {
+                var self = this;
+                
+                if (self.state !== Queue.STOPPED) { 
+                    // stop the active queue first
+                    self.bindOnce('Stopped', function() {
+                        self.destroy();
+                    });
+                    return self.stop();
+                } else {
+                    self.clear();
+                    self.unbindAll();
+
+                    _options = _queue = _stats = _startTime = null;
+
+                    self.trigger('Destroy');
+                }
             }
         });
         
