@@ -113,7 +113,7 @@ _jQuery UI_ widget factory, there are some specifics. See examples below for mor
 		@param {Boolean} [settings.views.remember=true] Whether to remember the current view (requires jQuery Cookie plugin).
 	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
 */
-;(function(window, document, plupload, o, $) {
+;(function(window, document, plupload, $) {
 
 /**
 Dispatched when the widget is initialized and ready.
@@ -454,19 +454,19 @@ $.widget("ui.plupload", {
 				
 			switch (err.code) {
 				case plupload.FILE_EXTENSION_ERROR:
-					details = o.sprintf(_("File: %s"), err.file.name);
+					details = plupload.sprintf(_("File: %s"), err.file.name);
 					break;
 				
 				case plupload.FILE_SIZE_ERROR:
-					details = o.sprintf(_("File: %s, size: %d, max file size: %d"), err.file.name,  plupload.formatSize(err.file.size), plupload.formatSize(plupload.parseSize(up.getOption('filters').max_file_size)));
+					details = plupload.sprintf(_("File: %s, size: %d, max file size: %d"), err.file.name,  plupload.formatSize(err.file.size), plupload.formatSize(plupload.parseSize(up.getOption('filters').max_file_size)));
 					break;
 
 				case plupload.FILE_DUPLICATE_ERROR:
-					details = o.sprintf(_("%s already present in the queue."), err.file.name);
+					details = plupload.sprintf(_("%s already present in the queue."), err.file.name);
 					break;
 					
 				case self.FILE_COUNT_ERROR:
-					details = o.sprintf(_("Upload element accepts only %d file(s) at a time. Extra files were stripped."), up.getOption('filters').max_file_count || 0);
+					details = plupload.sprintf(_("Upload element accepts only %d file(s) at a time. Extra files were stripped."), up.getOption('filters').max_file_count || 0);
 					break;
 				
 				case plupload.IMAGE_FORMAT_ERROR :
@@ -479,7 +479,7 @@ $.widget("ui.plupload", {
 				
 				/* // This needs a review
 				case plupload.IMAGE_DIMENSIONS_ERROR :
-					details = o.sprintf(_('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.'), up.runtime, up.features.maxWidth, up.features.maxHeight);
+					details = plupload.sprintf(_('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.'), up.runtime, up.features.maxWidth, up.features.maxHeight);
 					break;	*/
 											
 				case plupload.HTTP_ERROR:
@@ -864,7 +864,7 @@ $.widget("ui.plupload", {
 				up.disableBrowse();
 			}
 							
-			$('.plupload_upload_status', this.element).html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
+			$('.plupload_upload_status', this.element).html(plupload.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
 			$('.plupload_header_content', this.element).addClass('plupload_header_content_bw');
 		} 
 		else if (plupload.STOPPED === up.state) {
@@ -895,7 +895,7 @@ $.widget("ui.plupload", {
 		if (up.total.queued === 0) {
 			$('.ui-button-text', this.browse_button).html(_('Add Files'));
 		} else {
-			$('.ui-button-text', this.browse_button).html(o.sprintf(_('%d files queued'), up.total.queued));
+			$('.ui-button-text', this.browse_button).html(plupload.sprintf(_('%d files queued'), up.total.queued));
 		}
 
 		up.refresh();
@@ -978,7 +978,7 @@ $.widget("ui.plupload", {
 				.html(plupload.formatSize(up.total.size))
 				.end()
 			.find('.plupload_upload_status')
-				.html(o.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
+				.html(plupload.sprintf(_('Uploaded %d/%d files'), up.total.uploaded, up.files.length));
 	},
 
 
@@ -1058,7 +1058,7 @@ $.widget("ui.plupload", {
 
 
 		function preloadThumb(file, cb) {
-			var img = new o.Image();
+			var img = new plupload.Image();
 
 			img.onload = function() {
 				var thumb = $('#' + file.id + ' .plupload_file_thumb', self.filelist);
@@ -1067,8 +1067,8 @@ $.widget("ui.plupload", {
 					height: self.options.thumb_height, 
 					crop: true,
 					preserveHeaders: false,
-					swf_url: o.resolveUrl(self.options.flash_swf_url),
-					xap_url: o.resolveUrl(self.options.silverlight_xap_url)
+					swf_url: plupload.resolveUrl(self.options.flash_swf_url),
+					xap_url: plupload.resolveUrl(self.options.silverlight_xap_url)
 				});
 			};
 
@@ -1198,7 +1198,7 @@ $.widget("ui.plupload", {
 		} 
 	
 		// ugly fix for IE6 - make content area stretchable
-		if (o.Env.browser === 'IE' && o.Env.version < 7) {
+		if (plupload.ua.browser === 'IE' && plupload.ua.version < 7) {
 			this.content.attr('style', 'height:expression(document.getElementById("' + this.id + '_container' + '").clientHeight - ' + (view === 'list' ? 132 : 102) + ')');
 		}
 
@@ -1340,4 +1340,4 @@ $.widget("ui.plupload", {
 	}
 });
 
-} (window, document, plupload, mOxie, jQuery));
+} (window, document, plupload, jQuery));
