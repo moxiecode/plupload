@@ -380,6 +380,7 @@ define('plupload/core/Queue', [
 
             destroy: function() {
                 var self = this;
+                var prevState = self.state;
                 
                 if (self.state !== Queue.STOPPED) { 
                     // stop the active queue first
@@ -393,6 +394,8 @@ define('plupload/core/Queue', [
 
                     _options = _queue = _stats = _startTime = null;
 
+                    self.state = Queue.DESTROYED;
+                    self.trigger('StateChanged', self.state, prevState);
                     self.trigger('Destroy');
                 }
             }
@@ -438,6 +441,7 @@ define('plupload/core/Queue', [
     
     Queue.STOPPED = 1;
     Queue.STARTED = 2;
+    Queue.DESTROYED = 8;
     Queue.prototype = new EventTarget();
     
     return Queue;

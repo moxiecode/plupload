@@ -157,6 +157,8 @@ define('plupload/core/QueueItem', [
             
             destroy: function() {
                 this.unbindAll();
+                this.state = QueueItem.DESTROYED;
+                this.trigger('destroy');
             }
             
         });
@@ -169,6 +171,7 @@ define('plupload/core/QueueItem', [
     QueueItem.RESUMED       = 3;
     QueueItem.DONE          = 4;
     QueueItem.FAILED        = 5;
+    QueueItem.DESTROYED     = 8;
     
     QueueItem.prototype = new EventTarget();
     
