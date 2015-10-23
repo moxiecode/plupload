@@ -73,7 +73,7 @@ define('plupload/FileUploader', [
 			        });
 	        		
 					up.bind('done', function(e, result) {
-						self.done();
+						self.done(result);
 						this.destroy();
 					});
 					
