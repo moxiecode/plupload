@@ -63,29 +63,15 @@ define('plupload/core/Queue', [
      * @class Queue
      * @constructor
      * @extends EventTarget
-     * @param {Object} [options]
-     *      @param {Number} [options.max_slots=1] Amount of simultaneously active slots
-     *      @param {Bool} [options.auto_start=false] Whether to start the queue as soon as the items are added
-     *      @param {Bool} [options.finish_active=false] Whether to always wait until active items finish or stop immediately
      */
-    function Queue(options) {    
+    function Queue() {    
         var _queue = new Collection();
         var _stats = new Stats();
         var _countProcessing = 0;
         var _countPaused = 0;
         var _startTime;
-        
-        var _options = Basic.extend({
-            max_slots: 1,
-            max_retries: 0, 
-            auto_start: false,
-            finish_active: false,
-            pause_before_start: true
-        }, options);
-        
-    
-        EventTarget.call(this);
-        
+        var _options;
+                
         
         Basic.extend(this, {
             /**
@@ -98,6 +84,29 @@ define('plupload/core/Queue', [
 
 
             stats: _stats,
+
+
+            /**
+             * (just to have this as prototype and keep a way to call its methods from ancestors)
+             *
+             * @method init
+             * @private
+             * @param {Object} [options]
+             *      @param {Number} [options.max_slots=1] Amount of simultaneously active slots
+             *      @param {Bool} [options.auto_start=false] Whether to start the queue as soon as the items are added
+             *      @param {Bool} [options.finish_active=false] Whether to always wait until active items finish or stop immediately
+             *
+            */
+            init: function(options) {
+                _options = Basic.extend({
+                    max_slots: 1,
+                    max_retries: 0, 
+                    auto_start: false,
+                    finish_active: false,
+                    pause_before_start: true
+                }, options);
+            },
+
 
             /**
              * Set the value for the specified option(s).
@@ -429,6 +438,7 @@ define('plupload/core/Queue', [
     
     Queue.STOPPED = 1;
     Queue.STARTED = 2;
+    Queue.prototype = new EventTarget();
     
     return Queue;
 });

@@ -35,7 +35,7 @@ define('plupload/ChunkUploader', [
         var _status;
         var _response;		
 		
-		QueueItem.call(this, _options);
+        ChunkUploader.prototype.init.call(this, _options);
        
         plupload.extend(this,  {
             

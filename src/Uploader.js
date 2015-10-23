@@ -258,9 +258,6 @@ define('plupload/Uploader', [
 		_options.preferred_caps = normalizeCaps(plupload.extend({}, _options, { required_features: true }));
 
 
-		Queue.call(this, _options);
-
-
 		/**
 		 * Total progess information. How many files has been uploaded, total percent etc.
 		 *
@@ -328,6 +325,10 @@ define('plupload/Uploader', [
 			 */
 			init : function() {
 				var self = this, opt, preinitOpt, err;
+
+
+				Uploader.prototype.init.call(this, _options);
+
 				
 				preinitOpt = self.getOption('preinit');
 				if (typeof(preinitOpt) == "function") {

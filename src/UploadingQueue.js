@@ -11,15 +11,15 @@ define('plupload/UploadingQueue', [
     var _instance;
     
     function UploadingQueue(options) {
-        Queue.call(this, options);
+        UploadingQueue.prototype.init.call(this, options);
     }
     
     
     UploadingQueue.getInstance = function(options, forceFresh) {
-        if (_instance && !forceFresh) {
-            return _instance;
+        if (!_instance || forceFresh) {
+            _instance = new UploadingQueue(options);
         }
-        return (_instance = new UploadingQueue(options));
+        return _instance;
     };
     
     UploadingQueue.prototype = new Queue();

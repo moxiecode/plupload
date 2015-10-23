@@ -71,11 +71,8 @@ define('plupload/core/QueueItem', [
 	];
 	
 	
-    function QueueItem(options) {
-        var _options;
-
-        _options = Basic.extend({}, options);
-        
+    function QueueItem() {
+        var _options;        
         
         Basic.extend(this, {
             
@@ -90,6 +87,12 @@ define('plupload/core/QueueItem', [
             percent: 0,
             
             retries: 0,
+
+
+            init: function(options) {
+                _options = Basic.extend({}, options);
+            },
+
             
             start: function() {
                 this.state = QueueItem.PROCESSING;

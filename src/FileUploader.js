@@ -47,8 +47,7 @@ define('plupload/FileUploader', [
 		}, options);
 		
 		
-		QueueItem.call(this, _options);
-       
+		FileUploader.prototype.init.call(this, _options);
        
         plupload.extend(this,  {
             
