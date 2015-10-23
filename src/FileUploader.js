@@ -56,12 +56,12 @@ define('plupload/FileUploader', [
             start: function(options) {
             	var self = this;
             	var up;
-            	
-            	FileUploader.prototype.start.call(self);
-            	
+            	            	
             	if (options) {
-            		plupload.extend(_options, options);
+            		plupload.extendIf(_options, options);
             	}
+
+            	FileUploader.prototype.start.call(self, _options);
 
             	if (_options.chunk_size) {
 					self.uploadChunk(false, false, true);

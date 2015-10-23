@@ -448,7 +448,7 @@ define('plupload/core/Queue', [
     		            }
     		        } else {
                         _countProcessing++;
-                        item.start();
+                        item.start(_options);
                     }
 		        } else if (!_countProcessing) { // we ran out of pending and active items too, so we are done
 		            this.trigger('Done');
