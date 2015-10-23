@@ -426,7 +426,7 @@ define('plupload/Uploader', [
 
 				value = normalizeOption(option, value, _options);
 
-				Uploader.prototype.setOption.apply(this, arguments);
+				Uploader.prototype.setOption.call(this, option, value);
 			},
 
 
