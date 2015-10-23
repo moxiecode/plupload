@@ -169,7 +169,22 @@ define('plupload/core/Queue', [
                 processNext.call(self);
                 return true;
             },
-            
+
+
+            pause: function() {
+                var self = this;
+                var prevState = self.state;
+
+                _queue.each(function(item) {
+                    if (Basic.inArray(item.state, [QueueItem.PROCESSING, QueueItem.RESUMED]) !== -1) {
+                        self.pauseItem(item);
+                    }
+                });
+
+                self.state = Queue.PAUSED;
+                this.trigger('StateChanged', self.state, prevState);
+                self.trigger('Paused');
+            },
             
             /**
              * Stop the queue. If `finish_active=true` the queue will wait until active items are done, before
@@ -190,7 +205,7 @@ define('plupload/core/Queue', [
                 }
                 
                 self.state = Queue.STOPPED;
-                this.trigger('StateChanged', self.state, prevState);
+                self.trigger('StateChanged', self.state, prevState);
                 self.trigger('Stopped');
             },
 
@@ -295,6 +310,10 @@ define('plupload/core/Queue', [
                     item.pause();
                 } else {
                     return false;
+                }
+
+                if (!_countProcessing) {
+                    this.pause();
                 }
 
                 return true;
@@ -441,7 +460,10 @@ define('plupload/core/Queue', [
     
     Queue.STOPPED = 1;
     Queue.STARTED = 2;
+    Queue.PAUSED = 3;
     Queue.DESTROYED = 8;
+
+
     Queue.prototype = new EventTarget();
     
     return Queue;
