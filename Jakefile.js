@@ -89,7 +89,7 @@ task("mkjs", [], function () {
 
 
 	[].push.apply(options.from, 
-		getExtensionPaths({ 
+		mkjs.getExtensionPaths({ 
 			baseDir: options.baseDir,
 			extensionsDir: options.libs.moxie.baseDir,
 			imageSupport: !flags['no-image']
@@ -133,27 +133,6 @@ task("mkjs", [], function () {
 		process.env.auth = "moxieuser:12345";
 		process.env.to = "./js/i18n";
 		jake.Task['i18n'].invoke();
-	}
-
-
-	function getExtensionPaths(options) {
-		var modules = ["file/FileInput", "file/FileDrop", "file/FileReader", "xhr/XMLHttpRequest"];
-		var extensions = [];
-
-		if (options.imageSupport) {
-			modules.push("image/Image");
-		}
-
-		extensions = mkjs.getExtensionPaths4(modules, {
-			runtimes: options.runtimes,
-			baseDir: options.extensionsDir
-		});
-
-		// we need to strip of the baseDir for plupload
-		var re = new RegExp('^' + options.baseDir.replace(/\//g, '\/') + '\/?');
-		return extensions.map(function(ext) {
-			return ext.replace(re, '');
-		});
 	}
 });
 
