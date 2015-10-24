@@ -43,6 +43,7 @@ define('plupload/ChunkUploader', [
             
             start: function(options) {
             	var self = this;
+                var url;
             	var formData;
             	
             	ChunkUploader.prototype.start.call(this);
@@ -80,18 +81,21 @@ define('plupload/ChunkUploader', [
                 _xhr.onloadend = function() {
                     _xhr = null;   
                 };
-                
-                
+
+
+                url = _options.multipart ? _options.url :  buildUrl(_options.url, _options.params);   
+
+                _xhr.open(_options.http_method, url, true);     
+
+                // headers must be set after request is already opened, otherwise INVALID_STATE_ERR exception will raise
                 if (!plupload.isEmptyObj(_options.headers)) {
-                	plupload.each(_options.headers, function(val, key) {
-            			_xhr.setRequestHeader(key, val);
-            		});
-                }
+                    plupload.each(_options.headers, function(val, key) {
+                        _xhr.setRequestHeader(key, val);
+                    });
+                }    
                 
                 
-                if (_options.multipart) {
-                    _xhr.open(_options.http_method, _options.url, true);
-                    
+                if (_options.multipart) {                    
                 	formData = new FormData();
                 	
                 	if (!plupload.isEmptyObj(_options.params)) {
@@ -103,9 +107,7 @@ define('plupload/ChunkUploader', [
                 	formData.append(_options.file_data_name, _blob);
            			
                 	_xhr.send(formData);
-                } else { // if no multipart, send as binary stream
-    				_xhr.open(_options.http_method, buildUrl(_options.url, _options.params), true);
-    
+                } else { // if no multipart, send as binary stream    
     				if (plupload.isEmptyObj(_options.headers) || !_options.headers['content-type']) {
     					_xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
     				}
