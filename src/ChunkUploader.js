@@ -84,8 +84,8 @@ define('plupload/ChunkUploader', [
 
 
                 url = _options.multipart ? _options.url :  buildUrl(_options.url, _options.params);   
-
-                _xhr.open(_options.http_method, url, true);     
+                _xhr.open(_options.http_method, url, true);  
+                 
 
                 // headers must be set after request is already opened, otherwise INVALID_STATE_ERR exception will raise
                 if (!plupload.isEmptyObj(_options.headers)) {

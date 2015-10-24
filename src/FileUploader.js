@@ -50,8 +50,30 @@ define('plupload/FileUploader', [
 		FileUploader.prototype.init.call(this, _options);
        
         plupload.extend(this,  {
-            
+            /**
+			Unique identifier.
+
+			@property uid
+			@type {String}
+            */
             uid: plupload.guid(),
+
+            /**
+			When send_file_name is set to true, will be sent with the request as `name` param. 
+            Can be used on server-side to override original file name.
+
+            @property name
+			@type {String}
+            */
+            name: _file.name,
+
+            /**
+			@property target_name
+			@type {String}
+			@deprecated use name
+            */
+            target_name: null,
+
             
             start: function(options) {
             	var self = this;
@@ -62,6 +84,11 @@ define('plupload/FileUploader', [
             	}
 
             	FileUploader.prototype.start.call(self, _options);
+
+            	 // send additional 'name' parameter only if required or explicitly requested
+                if (_options.send_file_name) {
+                    _options.params.name = self.target_name || self.name;
+                } 
 
             	if (_options.chunk_size) {
 					self.uploadChunk(false, false, true);
