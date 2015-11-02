@@ -1405,7 +1405,8 @@ plupload.Uploader = function(options) {
 
 			xhr.onload = function() {
 				// check if upload made itself through
-				if (xhr.status >= 400) {
+				var xhrStatus = xhr ? xhr.status : null;
+				if (xhrStatus && xhrStatus >= 400) {
 					handleError();
 					return;
 				}
@@ -1423,7 +1424,7 @@ plupload.Uploader = function(options) {
 						offset : file.loaded,
 						total : blob.size,
 						response : xhr.responseText,
-						status : xhr.status,
+						status : xhrStatus,
 						responseHeaders: xhr.getAllResponseHeaders()
 					});
 
@@ -1452,7 +1453,7 @@ plupload.Uploader = function(options) {
 
 					up.trigger('FileUploaded', file, {
 						response : xhr.responseText,
-						status : xhr.status,
+						status : xhrStatus,
 						responseHeaders: xhr.getAllResponseHeaders()
 					});
 				} else {
