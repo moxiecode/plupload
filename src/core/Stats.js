@@ -1,4 +1,3 @@
-
 /**
 @class plupload/core/Stats
 @constructor
@@ -6,7 +5,7 @@
 */
 define('plupload/core/Stats', [], function() {
 
-	 return function() {
+	return function() {
 		var self = this;
 
 		/**
@@ -16,7 +15,7 @@ define('plupload/core/Stats', [], function() {
 		 * @deprecated use total
 		 * @type Number
 		 */
-		self.size = 0;	
+		self.size = 0;
 
 		/**
 		 * Total size of the queue in units.
@@ -102,17 +101,17 @@ define('plupload/core/Stats', [], function() {
 		 * @method reset
 		 */
 		self.reset = function() {
-			self.size             = // deprecated
-			self.total            = 
-			self.loaded           = // deprecated
-			self.processed        =
-			self.uploaded         = // deprecated
-			self.done             =
-			self.failed           = 
-			self.queued           = 
-			self.percent          =
-			self.bytesPerSec      = // deprecated
-			self.processedPerSec  = 0;
+			self.size = // deprecated
+				self.total =
+				self.loaded = // deprecated
+				self.processed =
+				self.uploaded = // deprecated
+				self.done =
+				self.failed =
+				self.queued =
+				self.percent =
+				self.bytesPerSec = // deprecated
+				self.processedPerSec = 0;
 		};
 	};
 });

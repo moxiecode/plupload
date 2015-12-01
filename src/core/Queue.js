@@ -21,65 +21,65 @@ define('plupload/core/Queue', [
     'plupload/core/QueueItem',
     'plupload/core/Stats'
 ], function(Basic, Collection, EventTarget, QueueItem, Stats) {
-    
-    	var dispatches = [
-		/**
-		 * Dispatched as soon as activity starts
-		 * 
-		 * @event started
-		 * @param {Object} event
-		*/
-		'Started',
+
+    var dispatches = [
+        /**
+         * Dispatched as soon as activity starts
+         * 
+         * @event started
+         * @param {Object} event
+         */
+        'Started',
 
         'OptionChanged',
 
         'StateChanged',
-		
-		
-		/**
-		 * Dispatched as the activity progresses
-		 * 
-		 * @event
-		 * @param {Object} event
-		 *      @param {Number} event.percent
-		 *      @param {Number} event.processed
-		 *      @param {Number} event.total
-		 */
-		 'Progress',
-		 
-		 
-		 /**
-		  * 
-		  */
-		  'Paused',
-		  
-		  
-		  'Done',
-		  
-		  'Stopped'
-	];
-	
+
+
+        /**
+         * Dispatched as the activity progresses
+         * 
+         * @event
+         * @param {Object} event
+         *      @param {Number} event.percent
+         *      @param {Number} event.processed
+         *      @param {Number} event.total
+         */
+        'Progress',
+
+
+        /**
+         * 
+         */
+        'Paused',
+
+
+        'Done',
+
+        'Stopped'
+    ];
+
     /**
      * @class Queue
      * @constructor
      * @extends EventTarget
      */
-    function Queue() {    
+    function Queue() {
         var _queue = new Collection();
         var _stats = new Stats();
         var _countProcessing = 0;
         var _countPaused = 0;
         var _startTime;
         var _options;
-                
-        
+
+
         Basic.extend(this, {
             /**
              * @property state
              * @type {Number}
              * @default Queue.IDLE
              * @readOnly
-             */ 
+             */
             state: Queue.IDLE,
 
 
@@ -96,11 +96,11 @@ define('plupload/core/Queue', [
              *      @param {Bool} [options.auto_start=false] Whether to start the queue as soon as the items are added
              *      @param {Bool} [options.finish_active=false] Whether to always wait until active items finish or stop immediately
              *
-            */
+             */
             init: function(options) {
                 _options = Basic.extend({
                     max_slots: 1,
-                    max_retries: 0, 
+                    max_retries: 0,
                     auto_start: false,
                     finish_active: false,
                     pause_before_start: true
@@ -125,11 +125,11 @@ define('plupload/core/Queue', [
                         self.setOption(option, value);
                     });
                     return;
-                } 
+                }
 
                 oldValue = _options[option];
                 _options[option] = value;
-                
+
                 self.trigger('OptionChanged', option, value, oldValue);
             },
 
@@ -146,13 +146,13 @@ define('plupload/core/Queue', [
                     return _options;
                 }
                 return _options[option];
-            },            
-            
+            },
+
             /**
              * Start the queue
              * 
              * @method start
-             */ 
+             */
             start: function() {
                 var self = this;
                 var prevState = self.state;
@@ -185,7 +185,7 @@ define('plupload/core/Queue', [
                 this.trigger('StateChanged', self.state, prevState);
                 self.trigger('Paused');
             },
-            
+
             /**
              * Stop the queue. If `finish_active=true` the queue will wait until active items are done, before
              * stopping.
@@ -195,15 +195,15 @@ define('plupload/core/Queue', [
             stop: function() {
                 var self = this;
                 var prevState = self.state;
-                
+
                 if (_options.finish_active) {
                     return;
                 } else if (_countProcessing || _countPaused) {
                     _queue.each(function(item) {
-                        self.stopItem(item.uid);   
+                        self.stopItem(item.uid);
                     });
                 }
-                
+
                 self.state = Queue.STOPPED;
                 self.trigger('StateChanged', self.state, prevState);
                 self.trigger('Stopped');
@@ -218,70 +218,71 @@ define('plupload/core/Queue', [
             getItem: function(uid) {
                 return _queue.get(uid);
             },
-            
-            
+
+
             /**
              * Add instance of QueueItem to the queue. If `auto_start=true` queue will start as well.
              * 
              * @method addItem
              * @param {QueueItem} item
-             */ 
+             */
             addItem: function(item) {
                 var self = this;
 
                 item.bind('Progress', function() {
                     self.calcStats();
                 });
-                
-                item.bind('Failed', function () {
+
+                item.bind('Failed', function() {
                     if (_options.max_retries && this.retries < _options.max_retries) {
                         this.stop();
                         this.retries++;
                     }
                 });
-                
+
                 item.bind('Processed', function() {
+                    _countProcessing--;
                     self.calcStats();
                     processNext.call(this);
                 }, 0, this);
 
                 _queue.add(item.uid, item);
                 item.trigger('Queued');
-                
+
                 if (_options.auto_start) {
                     this.start();
                 }
             },
-            
-            
+
+
             /**
              * Removes an item from the queue by its uid
              * 
              * @method removeItem
              * @param {String} uid
              * @return {QueueItem} Item that was removed
-             */ 
+             */
             removeItem: function(uid) {
                 var item = _queue.get(uid);
-                
+
                 if (item) {
                     this.stopItem(item.uid);
-                    
+
                     if (this.state === Queue.STARTED) {
                         processNext.call(this);
                     }
                 } else {
                     return false;
                 }
-                
+
                 _queue.remove(uid);
                 item.destroy();
                 self.calcStats();
-                
+
                 return true;
             },
-            
-            
+
+
             stopItem: function(uid) {
                 var item = _queue.get(uid);
                 if (item) {
@@ -292,14 +293,14 @@ define('plupload/core/Queue', [
                 } else {
                     return false;
                 }
-                
+
                 if (!_countProcessing && !_countPaused) {
                     this.stop();
                 }
                 return true;
             },
-            
-            
+
+
             pauseItem: function(uid) {
                 var item = _queue.get(uid);
                 if (item) {
@@ -318,8 +319,8 @@ define('plupload/core/Queue', [
 
                 return true;
             },
-            
-            
+
+
             resumeItem: function(uid) {
                 var item = _queue.get(uid);
                 if (item && item.state === QueueItem.PAUSED) {
@@ -332,21 +333,21 @@ define('plupload/core/Queue', [
                 this.start();
                 return true;
             },
-            
+
 
             forEachItem: function(cb) {
                 _queue.each(cb);
             },
 
-            
+
             countSpareSlots: function() {
                 return Math.max(_options.max_slots - _countProcessing, 0);
             },
-                        
-            
+
+
             calcStats: function() {
                 _stats.reset();
-                
+
                 this.forEachItem(function(item) {
                     _stats.processed += item.processed;
                     _stats.total += item.total;
@@ -374,8 +375,8 @@ define('plupload/core/Queue', [
                         _stats.percent = Math.ceil(_stats.processed / _stats.total * 100);
                     }
                 });
-                   
-               // for backward compatibility     
+
+                // for backward compatibility     
                 _stats.loaded = _stats.processed;
                 _stats.size = _stats.total;
             },
@@ -383,8 +384,8 @@ define('plupload/core/Queue', [
 
             clear: function() {
                 var self = this;
-                
-                if (self.state !== Queue.STOPPED) { 
+
+                if (self.state !== Queue.STOPPED) {
                     // stop the active queue first
                     self.bindOnce('Stopped', function() {
                         self.clear();
@@ -400,8 +401,8 @@ define('plupload/core/Queue', [
             destroy: function() {
                 var self = this;
                 var prevState = self.state;
-                
-                if (self.state !== Queue.STOPPED) { 
+
+                if (self.state !== Queue.STOPPED) {
                     // stop the active queue first
                     self.bindOnce('Stopped', function() {
                         self.destroy();
@@ -419,8 +420,8 @@ define('plupload/core/Queue', [
                 }
             }
         });
-        
-        
+
+
         function getCandidate() {
             var nextItem;
             _queue.each(function(item) {
@@ -431,33 +432,33 @@ define('plupload/core/Queue', [
             });
             return nextItem;
         }
-        
-        
+
+
         function processNext() {
-		    var item;
-		    
-		    while (_countProcessing < _options.max_slots) {
-		        item = getCandidate();
-		        if (item) {
-    		        if (_options.pause_before_start && item.state === QueueItem.IDLE) {
-    		            this.pauseItem(item.uid);
-    		            
-    		            if (item.trigger('BeforeStart')) {
-    		                // if nothing has seized the item, continue
-    		                this.resumeItem(item.uid);
-    		            }
-    		        } else {
+            var item;
+
+            while (_countProcessing < _options.max_slots) {
+                item = getCandidate();
+                if (item) {
+                    if (_options.pause_before_start && item.state === QueueItem.IDLE) {
+                        this.pauseItem(item.uid);
+
+                        if (item.trigger('BeforeStart')) {
+                            // if nothing has seized the item, continue
+                            this.resumeItem(item.uid);
+                        }
+                    } else {
                         _countProcessing++;
                         item.start(_options);
                     }
-		        } else if (!_countProcessing) { // we ran out of pending and active items too, so we are done
-		            this.trigger('Done');
-		            return this.stop();
-		        }
-		    }
-        }        
+                } else if (!_countProcessing) { // we ran out of pending and active items too, so we are done
+                    this.trigger('Done');
+                    return this.stop();
+                }
+            }
+        }
     }
-    
+
     Queue.STOPPED = 1;
     Queue.STARTED = 2;
     Queue.PAUSED = 3;
@@ -465,6 +466,6 @@ define('plupload/core/Queue', [
 
 
     Queue.prototype = new EventTarget();
-    
+
     return Queue;
 });

@@ -18,13 +18,13 @@ Namespace for all Plupload related classes, methods and properties.
 define('plupload', [
 	'moxie/core/I18n',
 	'moxie/core/utils/Env',
-    'moxie/core/utils/Basic',
-    'moxie/core/utils/Dom',
-    'moxie/core/utils/Events',
-    'moxie/core/utils/Url',
-    'moxie/runtime/Runtime',
-    'moxie/file/FileInput',
-    'moxie/file/FileReader'
+	'moxie/core/utils/Basic',
+	'moxie/core/utils/Dom',
+	'moxie/core/utils/Events',
+	'moxie/core/utils/Url',
+	'moxie/runtime/Runtime',
+	'moxie/file/FileInput',
+	'moxie/file/FileReader'
 ], function(I18n, Env, Basic, Dom, Events, Url, Runtime, FileInput, FileReader) {
 
 	return {
@@ -292,9 +292,10 @@ define('plupload', [
 		 * @method get
 		 * @param {String} id Identifier of the DOM Element
 		 * @return {Array}
-		*/
+		 */
 		getAll: function get(ids) {
-			var els = [], el;
+			var els = [],
+				el;
 
 			if (plupload.typeOf(ids) !== 'array') {
 				ids = [ids];
@@ -361,7 +362,14 @@ define('plupload', [
 		 * @return {String} Encoded string.
 		 */
 		xmlEncode: function(str) {
-			var xmlEncodeChars = {'<' : 'lt', '>' : 'gt', '&' : 'amp', '"' : 'quot', '\'' : '#39'}, xmlEncodeRegExp = /[<>&\"\']/g;
+			var xmlEncodeChars = {
+					'<': 'lt',
+					'>': 'gt',
+					'&': 'amp',
+					'"': 'quot',
+					'\'': '#39'
+				},
+				xmlEncodeRegExp = /[<>&\"\']/g;
 
 			return str ? ('' + str).replace(xmlEncodeRegExp, function(chr) {
 				return xmlEncodeChars[chr] ? '&' + xmlEncodeChars[chr] + ';' : chr;
@@ -586,12 +594,12 @@ define('plupload', [
 			}
 
 			// GB
-			if (size > (boundary/=1024)) {
+			if (size > (boundary /= 1024)) {
 				return round(size / boundary, 1) + " " + plupload.translate('gb');
 			}
 
 			// MB
-			if (size > (boundary/=1024)) {
+			if (size > (boundary /= 1024)) {
 				return round(size / boundary, 1) + " " + plupload.translate('mb');
 			}
 
