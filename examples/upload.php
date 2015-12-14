@@ -68,6 +68,7 @@ $chunks = isset($_REQUEST["chunks"]) ? intval($_REQUEST["chunks"]) : 0;
 // Remove old temp files	
 if ($cleanupTargetDir) {
 	if (!is_dir($targetDir) || !$dir = opendir($targetDir)) {
+		http_response_code(500);
 		die('{"jsonrpc" : "2.0", "error" : {"code": 100, "message": "Failed to open temp directory."}, "id" : "id"}');
 	}
 
@@ -90,20 +91,24 @@ if ($cleanupTargetDir) {
 
 // Open temp file
 if (!$out = @fopen("{$filePath}.part", $chunks ? "ab" : "wb")) {
+	http_response_code(500);
 	die('{"jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."}, "id" : "id"}');
 }
 
 if (!empty($_FILES)) {
 	if ($_FILES["file"]["error"] || !is_uploaded_file($_FILES["file"]["tmp_name"])) {
+		http_response_code(500);
 		die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."}, "id" : "id"}');
 	}
 
 	// Read binary input stream and append it to temp file
 	if (!$in = @fopen($_FILES["file"]["tmp_name"], "rb")) {
+		http_response_code(500);
 		die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
 	}
 } else {	
 	if (!$in = @fopen("php://input", "rb")) {
+		http_response_code(500);
 		die('{"jsonrpc" : "2.0", "error" : {"code": 101, "message": "Failed to open input stream."}, "id" : "id"}');
 	}
 }
