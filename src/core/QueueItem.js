@@ -158,6 +158,10 @@ define('plupload/core/QueueItem', [
 
 
             destroy: function() {
+                if (self.state === Queue.DESTROYED) {
+                    return; // already destroyed
+                }
+                
                 this.unbindAll();
                 this.state = QueueItem.DESTROYED;
                 this.trigger('destroy');
