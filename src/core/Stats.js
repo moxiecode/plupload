@@ -69,6 +69,12 @@ define('plupload/core/Stats', [], function() {
 		 */
 		self.queued = 0;
 
+
+		self.processing = 0;
+
+
+		self.paused = 0;
+
 		/**
 		 * Percent of processed units.
 		 *
@@ -102,16 +108,18 @@ define('plupload/core/Stats', [], function() {
 		 */
 		self.reset = function() {
 			self.size = // deprecated
-				self.total =
-				self.loaded = // deprecated
-				self.processed =
-				self.uploaded = // deprecated
-				self.done =
-				self.failed =
-				self.queued =
-				self.percent =
-				self.bytesPerSec = // deprecated
-				self.processedPerSec = 0;
+			self.total =
+			self.loaded = // deprecated
+			self.processed =
+			self.uploaded = // deprecated
+			self.done =
+			self.failed =
+			self.queued =
+			self.processing =
+			self.paused = 
+			self.percent =
+			self.bytesPerSec = // deprecated
+			self.processedPerSec = 0;
 		};
 	};
 });
