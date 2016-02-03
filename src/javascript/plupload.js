@@ -11,7 +11,7 @@
 // JSLint defined globals
 /*global window:false, escape:false */
 
-/*!@@version@@*/
+/*!1.5.8*/
 
 (function() {
 	var count = 0, runtimes = [], i18n = {}, mimes = {},
@@ -106,7 +106,7 @@
 		/**
 		 * Plupload version will be replaced on build.
 		 */
-		VERSION : '@@version@@',
+		VERSION : '1.5.8',
 
 		/**
 		 * Inital state of the queue and also the state ones it's finished all it's uploads.
