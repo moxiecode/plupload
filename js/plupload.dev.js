@@ -72,17 +72,17 @@ function normalizeCaps(settings) {
 		if (settings.resize.enabled || !settings.multipart) {
 			caps.send_binary_string = true;
 		}
-		
+
 		plupload.each(settings, function(value, feature) {
 			resolve(feature, !!value, true); // strict check
 		});
 	}
-	
+
 	return caps;
 }
 
-/** 
- * @module plupload	
+/**
+ * @module plupload
  * @static
  */
 var plupload = {
@@ -1355,7 +1355,7 @@ plupload.Uploader = function(options) {
 
 		function handleError() {
 			if (retries-- > 0) {
-				delay(uploadNextChunk, 1000);
+				delay(startNextChunk, 1000);
 			} else {
 				file.loaded = offset; // reset all progress
 
@@ -1370,8 +1370,8 @@ plupload.Uploader = function(options) {
 			}
 		}
 
-		function uploadNextChunk() {
-			var chunkBlob, formData, args = {}, curChunkSize;
+		function startNextChunk() {
+			var chunkBlob, args = {}, curChunkSize;
 
 			// make sure that file wasn't cancelled and upload is not stopped in general
 			if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
@@ -1403,6 +1403,25 @@ plupload.Uploader = function(options) {
 				}
 			}
 
+			if (up.settings.hash) {
+				var reader = new FileReader();
+				reader.addEventListener('loadend', function (e)
+				{
+					var spark = new SparkMD5.ArrayBuffer();
+					spark.append(e.target.result);
+					var hash = spark.end();
+					args.hash = hash;
+					uploadNextChunk(args, chunkBlob, curChunkSize);
+				});
+				reader.readAsArrayBuffer(chunkBlob.getSource());
+         } else {
+				uploadNextChunk(args, chunkBlob, curChunkSize);
+			}
+		}
+
+		//args,chunkBlob,curChunkSize
+		function uploadNextChunk(args, chunkBlob, curChunkSize) {
+			var formData;
 			xhr = new o.XMLHttpRequest();
 
 			// Do we have upload progress support
@@ -1467,7 +1486,7 @@ plupload.Uploader = function(options) {
 					});
 				} else {
 					// Still chunks left
-					delay(uploadNextChunk, 1); // run detached, otherwise event handlers interfere
+					delay(startNextChunk, 1); // run detached, otherwise event handlers interfere
 				}
 			};
 
@@ -1536,10 +1555,10 @@ plupload.Uploader = function(options) {
 			resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
 				blob = resizedBlob;
 				file.size = resizedBlob.size;
-				uploadNextChunk();
+				startNextChunk();
 			});
 		} else {
-			uploadNextChunk();
+			startNextChunk();
 		}
 	}
 
@@ -2051,7 +2070,7 @@ plupload.Uploader = function(options) {
 		@method trigger
 		@param {String} name Event name to fire.
 		@param {Object..} Multiple arguments to pass along to the listener functions.
-		*/
+		 */
 
 		// override the parent method to match Plupload-like event logic
 		dispatchEvent: function(type) {
@@ -2085,7 +2104,7 @@ plupload.Uploader = function(options) {
 
 		@method hasEventListener
 		@param {String} name Event name to check for.
-		*/
+		 */
 
 
 		/**
@@ -2096,7 +2115,7 @@ plupload.Uploader = function(options) {
 		@param {function} fn Function to call ones the event gets fired.
 		@param {Object} [scope] Optional scope to execute the specified function in.
 		@param {Number} [priority=0] Priority of the event handler - handlers with higher priorities will be called first
-		*/
+		 */
 		bind: function(name, fn, scope, priority) {
 			// adapt moxie EventTarget style to Plupload-like
 			plupload.Uploader.prototype.bind.call(this, name, fn, priority, scope);
@@ -2108,13 +2127,13 @@ plupload.Uploader = function(options) {
 		@method unbind
 		@param {String} name Name of event to remove.
 		@param {function} fn Function to remove from listener.
-		*/
+		 */
 
 		/**
 		Removes all event listeners.
 
 		@method unbindAll
-		*/
+		 */
 
 
 		/**
