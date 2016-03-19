@@ -128,7 +128,7 @@ Sometimes it is easier to notice the problem when bug report is accompained by t
 We are open to suggestions and code revisions, however there are some rules and limitations that you might 
 want to consider first.
 
-* Code that you contribute will automatically be licensed under the LGPL, but will not be limited to LGPL.
+* Code that you contribute will automatically be licensed under the GPL, but will not be limited to GPL.
 * Although all contributors will get the credit for their work, copyright notices will be changed to [Moxiecode Systems AB](http://www.moxiecode.com/).
 * Third party code will be reviewed, tested and possibly modified before being released.
 
