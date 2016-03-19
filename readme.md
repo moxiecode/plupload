@@ -132,7 +132,7 @@ want to consider first.
 * Although all contributors will get the credit for their work, copyright notices will be changed to [Moxiecode Systems AB](http://www.moxiecode.com/).
 * Third party code will be reviewed, tested and possibly modified before being released.
 
-These basic rules help us earn a living and ensure that code remains Open Source and compatible with LGPL license. All contributions will be added to the changelog and appear in every release and on the site. 
+These basic rules help us earn a living and ensure that code remains Open Source and compatible with GPL license. All contributions will be added to the changelog and appear in every release and on the site. 
 
 An easy place to start is to [translate Plupload to your language](https://github.com/moxiecode/plupload/wiki/Plupload-in-Your-Language#contribute).
 
