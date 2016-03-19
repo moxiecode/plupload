@@ -129,7 +129,7 @@ We are open to suggestions and code revisions, however there are some rules and 
 want to consider first.
 
 * Code that you contribute will automatically be licensed under the GPL, but will not be limited to GPL.
-* Although all contributors will get the credit for their work, copyright notices will be changed to [Moxiecode Systems AB](http://www.moxiecode.com/).
+* Although all contributors will get the credit for their work, copyright notices will be changed to [Ephox](http://www.ephox.com/).
 * Third party code will be reviewed, tested and possibly modified before being released.
 
 These basic rules help us earn a living and ensure that code remains Open Source and compatible with GPL license. All contributions will be added to the changelog and appear in every release and on the site. 
@@ -141,7 +141,7 @@ You can read more about how to contribute at: [http://www.plupload.com/contribut
 <a name="license" />
 ### License
 
-Copyright 2013, [Moxiecode Systems AB](http://www.moxiecode.com/)  
+Copyright 2016, [Ephox](http://www.ephox.com/)  
 Released under [GPLv2 License](https://github.com/moxiecode/plupload/blob/master/license.txt).
 
 We also provide [commercial license](http://www.plupload.com/commercial.php).
