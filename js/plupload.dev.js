@@ -734,6 +734,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
 	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
+	@param {Boolean} [settings.with_credentials=false] Whether to set the withCredentials flag on the XMLHttpRequest object to true
 */
 plupload.Uploader = function(options) {
 	/**
@@ -1404,6 +1405,12 @@ plupload.Uploader = function(options) {
 			}
 
 			xhr = new o.XMLHttpRequest();
+
+			// If with_credentials setting has been set, reflect that
+			// into the XMLHttpRequest
+			if (up.settings.with_credentials) {
+				xhr.withCredentials = true;
+			}
 
 			// Do we have upload progress support
 			if (xhr.upload) {
