@@ -150,7 +150,7 @@ test('options.filters.mime_types', function() {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
 				equal(up.files.length, 0, "No files were added to the queue.");
-				equal(plupload.typeOf(up.settings.filters.mime_types), 'array', "Legacy 'filters' format successfully parsed.");
+				equal(plupload.typeOf(up.getOption('filters').mime_types), 'array', "Legacy 'filters' format successfully parsed.");
 				up.unbind('TestError');
 				cb();
 			});

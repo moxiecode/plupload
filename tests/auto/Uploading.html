@@ -19,8 +19,8 @@ FileHash.init({
 	}
 });
 
-o.Env.swf_url = "../../js/flash/Moxie.swf";
-o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+plupload.ua.xap_url = "../../js/silverlight/Moxie.xap"
 
 module("Uploading");
 
@@ -178,7 +178,7 @@ test("multipart=false", function() {
 
 function extractMeta(headers) {
 	var meta = {};
-	o.each(headers, function(header) {
+	plupload.each(headers, function(header) {
 		if (/^meta\-/.test(header)) {
 			var parts = header.split(/::/);
 			meta[parts[0].replace(/^meta\-/, '')] = JSON.parse(parts[1]);

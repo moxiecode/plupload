@@ -19,10 +19,8 @@ FileHash.init({
 	}
 });
 
-
-o.Env.swf_url = "../../js/flash/Moxie.swf";
-o.Env.xap_url = "../../js/silverlight/Moxie.xap";
-
+plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+plupload.ua.xap_url = "../../js/silverlight/Moxie.xap";
 
 module("Methods", {
 	setup: function() {
@@ -168,7 +166,7 @@ test('Init, PostInit', function(assert) {
 				ok(true, "Init fired.");
 				deepEqual(up, uploader, 
 					"First argument is plupload.Uploader instance.");
-				ok(typeof(info) === 'object' && !o.isEmptyObj(info), 
+				ok(typeof(info) === 'object' && !plupload.isEmptyObj(info), 
 					"Second arguments is object.");
 				equal(info.runtime, 'test', 
 					"Runtime identifier passed in as second argument.");
@@ -210,7 +208,7 @@ test('Error (plupload.INIT_ERROR)', function(assert) {
 
 				deepEqual(up, uploader, 
 					"First argument is plupload.Uploader instance.");
-				ok(typeof(err) === 'object' && !o.isEmptyObj(err), 
+				ok(typeof(err) === 'object' && !plupload.isEmptyObj(err), 
 					"Second arguments is object.");
 
 				equal(err.code, plupload.INIT_ERROR, 
