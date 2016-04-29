@@ -12,42 +12,28 @@
  * @class plupload/FileUploader
  * @constructor 
  * @private 
- * @extends plupload/core/QueueItem
+ * @final
+ * @extends plupload/core/Queueable
  */
 define('plupload/FileUploader', [
 	'plupload',
 	'plupload/core/Collection',
-	'plupload/core/QueueItem',
+	'plupload/core/Queueable',
 	'plupload/UploadingQueue',
 	'plupload/ChunkUploader'
-], function(plupload, Collection, QueueItem, UploadingQueue, ChunkUploader) {
+], function(plupload, Collection, Queueable, UploadingQueue, ChunkUploader) {
 
 	var dispatches = [
 
 	];
 
 	function FileUploader(fileRef, options) {
-		var _options;
 		var _file = fileRef;
 		var _offset = 0;
 		var _chunks = new Collection();
-
 		var _queue = UploadingQueue.getInstance();
+		var _options;
 
-		_options = plupload.extendIf({
-			url: false,
-			chunk_size: 0,
-			multipart: true,
-			http_method: 'POST',
-			params: {},
-			headers: false,
-			file_data_name: 'file',
-			send_file_name: true,
-			stop_on_fail: true
-		}, options);
-
-
-		FileUploader.prototype.init.call(this, _options);
 
 		plupload.extend(this, {
 			/**
@@ -83,7 +69,7 @@ define('plupload/FileUploader', [
 					plupload.extendIf(_options, options);
 				}
 
-				FileUploader.prototype.start.call(self, _options);
+				FileUploader.prototype.start.call(self);
 
 				// send additional 'name' parameter only if required or explicitly requested
 				if (_options.send_file_name) {
@@ -150,7 +136,7 @@ define('plupload/FileUploader', [
 
 				up.bind('failed', function(e, result) {
 					_chunks.add(chunk.seq, plupload.extend({
-						state: QueueItem.FAILED
+						state: Queueable.FAILED
 					}, chunk));
 
 					self.trigger('chunkuploadfailed', plupload.extend({}, chunk, result));
@@ -162,7 +148,7 @@ define('plupload/FileUploader', [
 
 				up.bind('done', function(e, result) {
 					_chunks.add(chunk.seq, plupload.extend({
-						state: QueueItem.DONE
+						state: Queueable.DONE
 					}, chunk));
 
 					self.trigger('chunkuploaded', plupload.extend({}, chunk, result));
@@ -183,7 +169,7 @@ define('plupload/FileUploader', [
 
 
 				_chunks.add(chunk.seq, plupload.extend({
-					state: QueueItem.PROCESSING
+					state: Queueable.PROCESSING
 				}, chunk));
 				_queue.addItem(up);
 
@@ -203,11 +189,30 @@ define('plupload/FileUploader', [
 		});
 
 
+		Queueable.call(this);
+
+		this.setOption(plupload.extendIf({
+			url: false,
+			chunk_size: 0,
+			multipart: true,
+			http_method: 'POST',
+			params: {},
+			headers: false,
+			file_data_name: 'file',
+			send_file_name: true,
+			stop_on_fail: true
+		}, options));
+
+		// have a shortcut to the options object for internal uses
+		_options = this.getOptions();
+
+
+
 		function calcProcessed() {
 			var processed = 0;
 
 			_chunks.each(function(item) {
-				if (item.state === QueueItem.DONE) {
+				if (item.state === Queueable.DONE) {
 					processed += (item.end - item.start);
 				}
 			});
@@ -275,7 +280,7 @@ define('plupload/FileUploader', [
 	});
 
 
-	FileUploader.prototype = new QueueItem();
+	FileUploader.prototype = new Queueable();
 
 	return FileUploader;
 });

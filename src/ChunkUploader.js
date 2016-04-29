@@ -12,16 +12,17 @@
  * @class plupload/ChunkUploader
  * @constructor 
  * @private 
+ * @final
  * @constructor
- * @extends plupload/core/QueueItem
+ * @extends plupload/core/Queueable
  */
 define('plupload/ChunkUploader', [
     'plupload',
     'plupload/core/Collection',
-    'plupload/core/QueueItem',
+    'plupload/core/Queueable',
     'moxie/xhr/XMLHttpRequest',
     'moxie/xhr/FormData'
-], function(plupload, Collection, QueueItem, XMLHttpRequest, FormData) {
+], function(plupload, Collection, Queueable, XMLHttpRequest, FormData) {
 
     var dispatches = [
 
@@ -30,13 +31,11 @@ define('plupload/ChunkUploader', [
 
     function ChunkUploader(blob, options) {
         var _xhr;
-        var _options = options;
+        var _options;
         var _blob = blob;
 
         var _status;
         var _response;
-
-        ChunkUploader.prototype.init.call(this, _options);
 
         plupload.extend(this, {
 
@@ -128,6 +127,14 @@ define('plupload/ChunkUploader', [
             }
         });
 
+
+        Queueable.call(this);
+
+        this.setOption(options);
+
+        // have a shortcut to the options object for internal uses
+        _options = this.getOptions();
+
         /**
          * Builds a full url out of a base URL and an object with items to append as query string items.
          *
@@ -153,7 +160,7 @@ define('plupload/ChunkUploader', [
 
     }
 
-    ChunkUploader.prototype = new QueueItem();
+    ChunkUploader.prototype = new Queueable();
 
     return ChunkUploader;
 });
