@@ -17,10 +17,10 @@
 define('plupload/core/Queue', [
     'moxie/core/utils/Basic',
     'plupload/core/Collection',
-    'moxie/core/EventTarget',
-    'plupload/core/QueueItem',
+    'plupload/core/Optionable',
+    'plupload/core/Queueable',
     'plupload/core/Stats'
-], function(Basic, Collection, EventTarget, QueueItem, Stats) {
+], function(Basic, Collection, Optionable, Queueable, Stats) {
 
     var dispatches = [
         /**
@@ -30,8 +30,6 @@ define('plupload/core/Queue', [
          * @param {Object} event
          */
         'Started',
-
-        'OptionChanged',
 
         'StateChanged',
 
@@ -64,90 +62,52 @@ define('plupload/core/Queue', [
      * @constructor
      * @extends EventTarget
      */
-    function Queue() {
-        var _queue = new Collection();
-        var _stats = new Stats();
-        var _countProcessing = 0;
-        var _countPaused = 0;
-        var _startTime;
-        var _options;
+    return (function(Parent) {
+        Basic.inherit(Queue, Parent);
+    
 
+        function Queue() {
+            Parent.apply(this, arguments);
 
-        Basic.extend(this, {
+            /**
+            @property _queue
+            @type {Collection}
+            @private
+            */
+            this._queue = new Collection();
+
             /**
              * @property state
              * @type {Number}
              * @default Queue.IDLE
              * @readOnly
              */
-            state: Queue.IDLE,
-
-
-            stats: _stats,
+            this.state = Queue.IDLE;
 
 
             /**
-             * (just to have this as prototype and keep a way to call its methods from ancestors)
-             *
-             * @method init
-             * @private
-             * @param {Object} [options]
-             *      @param {Number} [options.max_slots=1] Amount of simultaneously active slots
-             *      @param {Bool} [options.auto_start=false] Whether to start the queue as soon as the items are added
-             *      @param {Bool} [options.finish_active=false] Whether to always wait until active items finish or stop immediately
-             *
-             */
-            init: function(options) {
-                _options = Basic.extend({
-                    max_slots: 1,
-                    max_retries: 0,
-                    auto_start: false,
-                    finish_active: false,
-                    pause_before_start: true
-                }, options);
-            },
+            @property stats
+            @type {Stats}
+            @readOnly
+            */
+            this.stats = new Stats();
 
 
-            /**
-             * Set the value for the specified option(s).
-             *
-             * @method setOption
-             * @since 2.1
-             * @param {String|Object} option Name of the option to change or the set of key/value pairs
-             * @param {Mixed} [value] Value for the option (is ignored, if first argument is object)
-             */
-            setOption: function(option, value) {
-                var self = this;
-                var oldValue;
+            this.setOption({
+                max_slots: 1,
+                max_retries: 0,
+                auto_start: false,
+                finish_active: false,
+                pause_before_start: true
+            });
 
-                if (typeof(option) === 'object') {
-                    Basic.each(option, function(value, option) {
-                        self.setOption(option, value);
-                    });
-                    return;
-                }
+            this.handleEventProps(dispatches);
+        }            
 
-                oldValue = _options[option];
-                _options[option] = value;
+            
 
-                self.trigger('OptionChanged', option, value, oldValue);
-            },
-
-            /**
-             * Get the value for the specified option or the whole configuration, if not specified.
-             * 
-             * @method getOption
-             * @since 2.1
-             * @param {String} [option] Name of the option to get
-             * @return {Mixed} Value for the option or the whole set
-             */
-            getOption: function(option) {
-                if (!option) {
-                    return _options;
-                }
-                return _options[option];
-            },
-
+        
+        Basic.extend(Queue.prototype, {            
             /**
              * Start the queue
              * 
@@ -164,7 +124,7 @@ define('plupload/core/Queue', [
                 self.state = Queue.STARTED;
                 self.trigger('StateChanged', self.state, prevState);
 
-                _startTime = new Date();
+                self._startTime = new Date();
 
                 processNext.call(self);
                 return true;
@@ -175,8 +135,8 @@ define('plupload/core/Queue', [
                 var self = this;
                 var prevState = self.state;
 
-                _queue.each(function(item) {
-                    if (Basic.inArray(item.state, [QueueItem.PROCESSING, QueueItem.RESUMED]) !== -1) {
+                this._queue.each(function(item) {
+                    if (Basic.inArray(item.state, [Queueable.PROCESSING, Queueable.RESUMED]) !== -1) {
                         self.pauseItem(item);
                     }
                 });
@@ -196,10 +156,10 @@ define('plupload/core/Queue', [
                 var self = this;
                 var prevState = self.state;
 
-                if (_options.finish_active) {
+                if (self.getOption('finish_active')) {
                     return;
-                } else if (_countProcessing || _countPaused) {
-                    _queue.each(function(item) {
+                } else if (self.stats.processing || self.stats.paused) {
+                    self._queue.each(function(item) {
                         self.stopItem(item.uid);
                     });
                 }
@@ -211,45 +171,45 @@ define('plupload/core/Queue', [
 
 
             eachItem: function(cb) {
-                return _queue.each(cb);
+                return this._queue.each(cb);
             },
 
 
             getItem: function(uid) {
-                return _queue.get(uid);
+                return this._queue.get(uid);
             },
 
 
             /**
-             * Add instance of QueueItem to the queue. If `auto_start=true` queue will start as well.
+             * Add instance of Queueable to the queue. If `auto_start=true` queue will start as well.
              * 
              * @method addItem
-             * @param {QueueItem} item
+             * @param {Queueable} item
              */
             addItem: function(item) {
                 var self = this;
 
                 item.bind('Progress', function() {
-                    self.calcStats();
+                    calcStats();
                 });
 
                 item.bind('Failed', function() {
-                    if (_options.max_retries && this.retries < _options.max_retries) {
+                    if (self.getOption('max_retries') && this.retries < self.getOption('max_retries')) {
                         this.stop();
                         this.retries++;
                     }
                 });
 
                 item.bind('Processed', function() {
-                    _countProcessing--;
-                    self.calcStats();
-                    processNext.call(this);
+                    me.stats.processing--;
+                    calcStats.call(self);
+                    processNext.call(self);
                 }, 0, this);
 
-                _queue.add(item.uid, item);
+                this._queue.add(item.uid, item);
                 item.trigger('Queued');
 
-                if (_options.auto_start) {
+                if (self.getOption('auto_start')) {
                     this.start();
                 }
             },
@@ -260,10 +220,10 @@ define('plupload/core/Queue', [
              * 
              * @method removeItem
              * @param {String} uid
-             * @return {QueueItem} Item that was removed
+             * @return {Queueable} Item that was removed
              */
             removeItem: function(uid) {
-                var item = _queue.get(uid);
+                var item = this._queue.get(uid);
 
                 if (item) {
                     this.stopItem(item.uid);
@@ -275,26 +235,26 @@ define('plupload/core/Queue', [
                     return false;
                 }
 
-                _queue.remove(uid);
+                this._queue.remove(uid);
                 item.destroy();
-                self.calcStats();
+                calcStats();
 
                 return true;
             },
 
 
             stopItem: function(uid) {
-                var item = _queue.get(uid);
+                var item = this._queue.get(uid);
                 if (item) {
-                    if (item.state === QueueItem.PROCESSING) {
-                        _countProcessing--;
+                    if (item.state === Queueable.PROCESSING) {
+                        this.stats.processing--;
                     }
                     item.stop();
                 } else {
                     return false;
                 }
 
-                if (!_countProcessing && !_countPaused) {
+                if (!this.stats.processing && !this.stats.paused) {
                     this.stop();
                 }
                 return true;
@@ -302,18 +262,18 @@ define('plupload/core/Queue', [
 
 
             pauseItem: function(uid) {
-                var item = _queue.get(uid);
+                var item = this._queue.get(uid);
                 if (item) {
-                    if (item.state === QueueItem.PROCESSING) {
-                        _countProcessing--;
+                    if (item.state === Queueable.PROCESSING) {
+                        this.stats.processing--;
                     }
-                    _countPaused++;
+                    this.stats.paused++;
                     item.pause();
                 } else {
                     return false;
                 }
 
-                if (!_countProcessing) {
+                if (!this.stats.processing) {
                     this.pause();
                 }
 
@@ -322,10 +282,10 @@ define('plupload/core/Queue', [
 
 
             resumeItem: function(uid) {
-                var item = _queue.get(uid);
-                if (item && item.state === QueueItem.PAUSED) {
-                    item.state = QueueItem.RESUMED; // mark the item to be picked up on next iteration
-                    _countPaused--;
+                var item = this._queue.get(uid);
+                if (item && item.state === Queueable.PAUSED) {
+                    item.state = Queueable.RESUMED; // mark the item to be picked up on next iteration
+                    this.stats.paused--;
                 } else {
                     return false;
                 }
@@ -336,49 +296,12 @@ define('plupload/core/Queue', [
 
 
             forEachItem: function(cb) {
-                _queue.each(cb);
+                this._queue.each(cb);
             },
 
 
             countSpareSlots: function() {
-                return Math.max(_options.max_slots - _countProcessing, 0);
-            },
-
-
-            calcStats: function() {
-                _stats.reset();
-
-                this.forEachItem(function(item) {
-                    _stats.processed += item.processed;
-                    _stats.total += item.total;
-
-                    switch (item.status) {
-                        case QueueItem.DONE:
-                            _stats.done++;
-                            _stats.uploaded = _stats.done; // for backward compatibility
-                            break;
-
-                        case QueueItem.FAILED:
-                            _stats.failed++;
-                            break;
-
-                        default:
-                            _stats.queued++;
-                    }
-
-                    if (_startTime) {
-                        _stats.processedPerSec = Math.ceil(_stats.processed / ((+new Date() - _startTime || 1) / 1000.0));
-                        _stats.bytesPerSec = _stats.processedPerSec; // for backward compatibility
-                    }
-
-                    if (_stats.total) {
-                        _stats.percent = Math.ceil(_stats.processed / _stats.total * 100);
-                    }
-                });
-
-                // for backward compatibility     
-                _stats.loaded = _stats.processed;
-                _stats.size = _stats.total;
+                return Math.max(this.getOption('max_slots') - self.stats.processing, 0);
             },
 
 
@@ -392,8 +315,8 @@ define('plupload/core/Queue', [
                     });
                     return self.stop();
                 } else {
-                    _queue.clear();
-                    _stats.reset();
+                    self._queue.clear();
+                    self.stats.reset();
                 }
             },
 
@@ -401,6 +324,10 @@ define('plupload/core/Queue', [
             destroy: function() {
                 var self = this;
                 var prevState = self.state;
+
+                if (self.state === Queue.DESTROYED) {
+                    return; // already destroyed
+                }
 
                 if (self.state !== Queue.STOPPED) {
                     // stop the active queue first
@@ -412,7 +339,7 @@ define('plupload/core/Queue', [
                     self.clear();
                     self.unbindAll();
 
-                    _options = _queue = _stats = _startTime = null;
+                    self._queue = self.stats = self._startTime = null;
 
                     self.state = Queue.DESTROYED;
                     self.trigger('StateChanged', self.state, prevState);
@@ -422,10 +349,11 @@ define('plupload/core/Queue', [
         });
 
 
+
         function getCandidate() {
             var nextItem;
-            _queue.each(function(item) {
-                if (item.state === QueueItem.IDLE || item.state === QueueItem.RESUMED) {
+            this._queue.each(function(item) {
+                if (item.state === Queueable.IDLE || item.state === Queueable.RESUMED) {
                     nextItem = item;
                     return false;
                 }
@@ -435,37 +363,75 @@ define('plupload/core/Queue', [
 
 
         function processNext() {
+            var self = this;
             var item;
 
-            while (_countProcessing < _options.max_slots) {
-                item = getCandidate();
+            while (self.stats.processing < self.getOption('max_slots')) {
+                item = getCandidate.call(self);
                 if (item) {
-                    if (_options.pause_before_start && item.state === QueueItem.IDLE) {
-                        this.pauseItem(item.uid);
+                    if (self.getOption('pause_before_start') && item.state === Queueable.IDLE) {
+                        self.pauseItem(item.uid);
 
                         if (item.trigger('BeforeStart')) {
                             // if nothing has seized the item, continue
-                            this.resumeItem(item.uid);
+                            self.resumeItem(item.uid);
                         }
                     } else {
-                        _countProcessing++;
-                        item.start(_options);
+                        self.stats.processing++;
+                        item.start(self.getOptions());
                     }
-                } else if (!_countProcessing) { // we ran out of pending and active items too, so we are done
-                    this.trigger('Done');
-                    return this.stop();
+                } else if (!self.stats.processing) { // we ran out of pending and active items too, so we are done
+                    self.trigger('Done');
+                    return self.stop();
                 }
             }
         }
-    }
-
-    Queue.STOPPED = 1;
-    Queue.STARTED = 2;
-    Queue.PAUSED = 3;
-    Queue.DESTROYED = 8;
 
 
-    Queue.prototype = new EventTarget();
+        function calcStats() {
+            var self = this;
+            self.stats.reset();
 
-    return Queue;
+            self.forEachItem(function(item) {
+                self.stats.processed += item.processed;
+                self.stats.total += item.total;
+
+                switch (item.status) {
+                    case Queueable.DONE:
+                        self.stats.done++;
+                        self.stats.uploaded = self.stats.done; // for backward compatibility
+                        break;
+
+                    case Queueable.FAILED:
+                        self.stats.failed++;
+                        break;
+
+                    default:
+                        self.stats.queued++;
+                }
+
+                if (self._startTime) {
+                    self.stats.processedPerSec = Math.ceil(self.stats.processed / ((+new Date() - self._startTime || 1) / 1000.0));
+                    self.stats.bytesPerSec = self.stats.processedPerSec; // for backward compatibility
+                }
+
+                if (self.stats.total) {
+                    self.stats.percent = Math.ceil(self.stats.processed / self.stats.total * 100);
+                }
+            });
+
+            // for backward compatibility     
+            self.stats.loaded = self.stats.processed;
+            self.stats.size = self.stats.total;
+        }
+
+
+        Queue.STOPPED = 1;
+        Queue.STARTED = 2;
+        Queue.PAUSED = 3;
+        Queue.DESTROYED = 8;
+
+        return Queue;
+
+    }(Optionable));
 });
