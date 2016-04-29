@@ -11,7 +11,7 @@ define('plupload/UploadingQueue', [
     var _instance;
 
     function UploadingQueue(options) {
-        UploadingQueue.prototype.init.call(this, options);
+        Queue.call(this, options);
     }
 
 

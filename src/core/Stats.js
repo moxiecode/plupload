@@ -70,9 +70,21 @@ define('plupload/core/Stats', [], function() {
 		self.queued = 0;
 
 
+		/**
+		 * Number of items being processed.
+		 *
+		 * @property processing
+		 * @type Number
+		 */
 		self.processing = 0;
 
 
+		/**
+		 * Number of items being paused.
+		 *
+		 * @property paused
+		 * @type Number
+		 */
 		self.paused = 0;
 
 		/**

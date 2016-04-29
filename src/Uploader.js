@@ -12,6 +12,7 @@
 /**
 @class plupload/Uploader
 @public
+@final
 @constructor
 @extends plupload/core/Queue
 
@@ -218,7 +219,6 @@ define('plupload/Uploader', [
 
 
 	function Uploader(options) {
-		var self = this;
 		var _uid = plupload.guid();
 		var _fileInputs = [];
 		var _fileDrops = [];
@@ -230,7 +230,7 @@ define('plupload/Uploader', [
 				flash_swf_url: 'js/Moxie.swf',
 				silverlight_xap_url: 'js/Moxie.xap',
 				filters: {
-					mime_types: false,
+					mime_types: null,
 					prevent_duplicates: false,
 					max_file_size: 0
 				},
@@ -243,7 +243,7 @@ define('plupload/Uploader', [
 				file_data_name: 'file',
 				chunk_size: 0,
 				send_file_name: true,
-				send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
+				send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
 				max_retries: 0,
 				resize: false
 			},
@@ -258,6 +258,10 @@ define('plupload/Uploader', [
 			required_features: true
 		}));
 
+
+		Queue.call(this);
+
+		this.setOptions(_options);
 
 		/**
 		 * Total progess information. How many files has been uploaded, total percent etc.
@@ -329,9 +333,6 @@ define('plupload/Uploader', [
 					opt, preinitOpt, err;
 
 
-				Uploader.prototype.init.call(this, _options);
-
-
 				preinitOpt = self.getOption('preinit');
 				if (typeof(preinitOpt) == "function") {
 					preinitOpt(self);
@@ -359,7 +360,7 @@ define('plupload/Uploader', [
 				}
 
 
-				if (!_options.browse_button && !_options.drop_element) {
+				if (!self.getOption('browse_button') && !self.getOption('drop_element')) {
 					return self.trigger('Error', {
 						code: plupload.INIT_ERROR,
 						message: plupload.translate("You must specify either browse_button or drop_element.")
@@ -382,8 +383,8 @@ define('plupload/Uploader', [
 
 						UploadingQueue.getInstance({
 							auto_start: true,
-							max_retries: _options.max_retries,
-							max_slots: _options.max_upload_slots
+							max_retries: self.getOption('max_retries'),
+							max_slots: self.getOption('max_upload_slots')
 						});
 
 						self.trigger('Init', {
@@ -830,29 +831,29 @@ define('plupload/Uploader', [
 
 			// common settings
 			var options = {
-				runtime_order: _options.runtimes,
-				required_caps: _options.required_features,
-				preferred_caps: _options.preferred_caps,
-				swf_url: _options.flash_swf_url,
-				xap_url: _options.silverlight_xap_url
+				runtime_order: self.getOption('runtimes'),
+				required_caps: self.getOption('required_features'),
+				preferred_caps: self.getOption('preferred_caps'),
+				swf_url: self.getOption('flash_swf_url'),
+				xap_url: self.getOption('silverlight_xap_url')
 			};
 
 			// add runtime specific options if any
-			plupload.each(_options.runtimes.split(/\s*,\s*/), function(runtime) {
+			plupload.each(self.getOption('runtimes').split(/\s*,\s*/), function(runtime) {
 				if (_options[runtime]) {
 					options[runtime] = _options[runtime];
 				}
 			});
 
 			// initialize file pickers - there can be many
-			if (_options.browse_button) {
-				plupload.each(_options.browse_button, function(el) {
+			if (self.getOption('browse_button')) {
+				plupload.each(self.getOption('browse_button'), function(el) {
 					queue.push(function(cb) {
 						var fileInput = new FileInput(plupload.extend({}, options, {
-							accept: _options.filters.mime_types,
-							name: _options.file_data_name,
-							multiple: _options.multi_selection,
-							container: _options.container,
+							accept: self.getOption('filters').mime_types,
+							name: self.getOption('file_data_name'),
+							multiple: self.getOption('multi_selection'),
+							container: self.getOption('container'),
 							browse_button: el
 						}));
 
@@ -877,19 +878,19 @@ define('plupload/Uploader', [
 
 						fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
 							if (!_disabled) {
-								if (_options.browse_button_hover) {
+								if (self.getOption('browse_button_hover')) {
 									if ('mouseenter' === e.type) {
-										plupload.addClass(el, _options.browse_button_hover);
+										plupload.addClass(el, self.getOption('browse_button_hover'));
 									} else if ('mouseleave' === e.type) {
-										plupload.removeClass(el, _options.browse_button_hover);
+										plupload.removeClass(el, self.getOption('browse_button_hover'));
 									}
 								}
 
-								if (_options.browse_button_active) {
+								if (self.getOption('browse_button_active')) {
 									if ('mousedown' === e.type) {
-										plupload.addClass(el, _options.browse_button_active);
+										plupload.addClass(el, self.getOption('browse_button_active'));
 									} else if ('mouseup' === e.type) {
-										plupload.removeClass(el, _options.browse_button_active);
+										plupload.removeClass(el, self.getOption('browse_button_active'));
 									}
 								}
 							}
@@ -910,8 +911,8 @@ define('plupload/Uploader', [
 			}
 
 			// initialize drop zones
-			if (_options.drop_element) {
-				plupload.each(_options.drop_element, function(el) {
+			if (self.getOption('drop_element')) {
+				plupload.each(self.getOption('drop_element'), function(el) {
 					queue.push(function(cb) {
 						var fileDrop = new FileDrop(plupload.extend({}, options, {
 							drop_zone: el
@@ -1225,7 +1226,7 @@ define('plupload/Uploader', [
 		var up, runtime;
 
 		up = new Uploader(config);
-		runtime = Runtime.thatCan(up.getOption().required_features, runtimes || config.runtimes);
+		runtime = Runtime.thatCan(up.getOption('required_features'), runtimes || config.runtimes);
 		up.destroy();
 		return runtime;
 	}
