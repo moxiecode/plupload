@@ -396,7 +396,9 @@ $.widget("ui.plupload", {
 		, uploader
 		, options = { 
 			container: id + '_buttons',
-			browse_button: id + '_browse'
+			browse_button: id + '_browse',
+			required_features: {},
+			filters: {}
 		}
 		;
 
@@ -414,21 +416,21 @@ $.widget("ui.plupload", {
 			}
 		});
 
-		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
-
-		// retrieve full normalized set of options
-		this.options = uploader.getOption();
 
 		if (self.options.views.thumbs) {
-			uploader.settings.required_features.display_media = true;
+			options.required_features.display_media = true;
 		}
 
 		// for backward compatibility
 		if (self.options.max_file_count) {
-			plupload.extend(uploader.getOption('filters'), {
-				max_file_count: self.options.max_file_count
-			});
+			options.filters.max_file_count = self.options.max_file_count
 		}
+
+		uploader = this.uploader = uploaders[id] = new plupload.Uploader($.extend(this.options, options));
+
+		// retrieve full normalized set of options
+		this.options = uploader.getOption();
+		
 
 		plupload.addFileFilter('max_file_count', function(maxCount, file, cb) {
 			if (maxCount <= this.files.length - (this.total.uploaded + this.total.failed)) {
