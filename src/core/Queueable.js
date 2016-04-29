@@ -1,5 +1,5 @@
 /**
- * QueueItem.js
+ * Queueable.js
  *
  * Copyright 2015, Moxiecode Systems AB
  * Released under GPL License.
@@ -13,16 +13,15 @@
 Every queue item must have properties, implement methods and fire events defined in this class
 
 @contsructor
-@class plupload/core/QueueItem
+@class plupload/core/Queueable
 @private
 @decorator
 @extends EventTarget
 */
-define('plupload/core/QueueItem', [
+define('plupload/core/Queueable', [
     'moxie/core/utils/Basic',
-    'plupload/core/Collection',
-    'moxie/core/EventTarget'
-], function(Basic, Collection, EventTarget) {
+    'plupload/core/Optionable'
+], function(Basic, Optionable) {
 
     var dispatches = [
         /**
@@ -71,14 +70,15 @@ define('plupload/core/QueueItem', [
     ];
 
 
-    function QueueItem() {
-        var _options;
+    function Queueable() {
+
+        Optionable.call(this);
 
         Basic.extend(this, {
 
             uid: Basic.guid(),
 
-            state: QueueItem.IDLE,
+            state: Queueable.IDLE,
 
             processed: 0,
 
@@ -89,13 +89,8 @@ define('plupload/core/QueueItem', [
             retries: 0,
 
 
-            init: function(options) {
-                _options = Basic.extend({}, options);
-            },
-
-
             start: function() {
-                this.state = QueueItem.PROCESSING;
+                this.state = Queueable.PROCESSING;
                 this.trigger('started');
             },
 
@@ -104,7 +99,7 @@ define('plupload/core/QueueItem', [
                 this.processed = this.percent = 0; // by default reset all progress
                 this.loaded = this.processed; // for backward compatibility
 
-                this.state = QueueItem.PAUSED;
+                this.state = Queueable.PAUSED;
                 this.trigger('paused');
             },
 
@@ -113,7 +108,7 @@ define('plupload/core/QueueItem', [
                 this.processed = this.percent = 0;
                 this.loaded = this.processed; // for backward compatibility
 
-                this.state = QueueItem.IDLE;
+                this.state = Queueable.IDLE;
                 this.trigger('stopped');
             },
 
@@ -123,7 +118,7 @@ define('plupload/core/QueueItem', [
                 this.loaded = this.processed; // for backward compatibility
                 this.percent = 100;
 
-                this.state = QueueItem.DONE;
+                this.state = Queueable.DONE;
                 this.trigger('done', result);
                 this.trigger('processed');
             },
@@ -133,7 +128,7 @@ define('plupload/core/QueueItem', [
                 this.processed = this.percent = 0; // reset the progress
                 this.loaded = this.processed; // for backward compatibility
 
-                this.state = QueueItem.FAILED;
+                this.state = Queueable.FAILED;
                 this.trigger('failed', result);
                 this.trigger('processed');
             },
@@ -163,23 +158,24 @@ define('plupload/core/QueueItem', [
                 }
                 
                 this.unbindAll();
-                this.state = QueueItem.DESTROYED;
+                this.state = Queueable.DESTROYED;
                 this.trigger('destroy');
             }
 
         });
+        
     }
 
 
-    QueueItem.IDLE = 0;
-    QueueItem.PROCESSING = 1;
-    QueueItem.PAUSED = 2;
-    QueueItem.RESUMED = 3;
-    QueueItem.DONE = 4;
-    QueueItem.FAILED = 5;
-    QueueItem.DESTROYED = 8;
+    Queueable.IDLE = 0;
+    Queueable.PROCESSING = 1;
+    Queueable.PAUSED = 2;
+    Queueable.RESUMED = 3;
+    Queueable.DONE = 4;
+    Queueable.FAILED = 5;
+    Queueable.DESTROYED = 8;
 
-    QueueItem.prototype = new EventTarget();
+    Queueable.prototype = new Optionable();
 
-    return QueueItem;
+    return Queueable;
 });
