@@ -22,10 +22,16 @@ define('plupload', [
 	'moxie/core/utils/Dom',
 	'moxie/core/utils/Events',
 	'moxie/core/utils/Url',
+	'moxie/core/EventTarget',
 	'moxie/runtime/Runtime',
 	'moxie/file/FileInput',
 	'moxie/file/FileReader'
-], function(I18n, Env, Basic, Dom, Events, Url, Runtime, FileInput, FileReader) {
+], function(I18n, Env, Basic, Dom, Events, Url, EventTarget, Runtime, FileInput, FileReader) {
+
+
+	// redifine event dispatcher for Flash/Silverlight runtimes
+	Env.global_event_dispatcher = 'plupload.EventTarget.instance.dispatchEvent';
+
 
 	return {
 		/**
@@ -633,10 +639,19 @@ define('plupload', [
 
 		delay: Basic.delay,
 
+
+		/**
+		Parent object for all event dispatching components and objects
+
+		@class plupload/EventTarget
+		@constructor EventTarget
+		*/
+		EventTarget: EventTarget,
+
 		/**
 		Common set of methods and properties for every runtime instance
 
-		@class moxie/runtime/Runtime
+		@class plupload/Runtime
 
 		@param {Object} options
 		@param {String} type Sanitized name of the runtime
