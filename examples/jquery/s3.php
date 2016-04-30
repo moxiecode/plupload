@@ -17,6 +17,7 @@ to the same crossdomain.xml as last resort.
 
 // important variables that will be used throughout this example
 $bucket = 'BUCKET';
+$region = "REGION" //S3 region e.g. eu-west-1
 
 // these can be found on your Account page, under Security Credentials > Access Keys
 $accessKeyId = 'ACCESS_KEY_ID';
@@ -83,7 +84,11 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 $(function() {
 	$("#uploader").plupload({
 		runtimes : 'html5,flash,silverlight',
-		url : 'http://<?php echo $bucket; ?>.s3.amazonaws.com/',
+		/*
+		 * Sometime S3 will redirect the bucker url 'http://<?php echo $bucket; ?>.s3.amazonaws.com/' to
+		 * https://<?= $bucket ?>.{region}.amazonaws.com the header sent is a 307 and it will break pupload
+		 */
+		url : 'https://<?= $bucket ?>.<?= $region ?>.amazonaws.com/',
 		
 		multipart: true,
 		multipart_params: {
