@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.1.8
+ * v2.1.9
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2015-07-21
+ * Date: 2016-05-15
  */
 /**
  * Plupload.js
@@ -94,7 +94,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.1.8',
+	VERSION : '2.1.9',
 
 	/**
 	 * The state of the queue before it has started and after it has finished
@@ -303,20 +303,19 @@ var plupload = {
 	 * Get array of DOM Elements by their ids.
 	 * 
 	 * @method get
-	 * @for Utils
 	 * @param {String} id Identifier of the DOM Element
 	 * @return {Array}
 	*/
-	get : function get(ids) {
+	getAll : function get(ids) {
 		var els = [], el;
 
-		if (o.typeOf(ids) !== 'array') {
+		if (plupload.typeOf(ids) !== 'array') {
 			ids = [ids];
 		}
 
 		var i = ids.length;
 		while (i--) {
-			el = o.get(ids[i]);
+			el = plupload.get(ids[i]);
 			if (el) {
 				els.push(el);
 			}
@@ -324,6 +323,15 @@ var plupload = {
 
 		return els.length ? els : null;
 	},
+
+	/**
+	Get DOM element by id
+
+	@method get
+	@param {String} id Identifier of the DOM Element
+	@return {Node}
+	*/
+	get: o.get,
 
 	/**
 	 * Executes the callback function for each item in array/object. If you return false in the
@@ -1120,7 +1128,12 @@ plupload.Uploader = function(options) {
 					fileDrop.onready = function() {
 						var info = o.Runtime.getInfo(this.ruid);
 
-						self.features.dragdrop = info.can('drag_and_drop'); // for backward compatibility
+						// for backward compatibility
+						o.extend(self.features, {
+							chunks: info.can('slice_blob'),
+							multipart: info.can('send_multipart'),
+							dragdrop: info.can('drag_and_drop')
+						});
 
 						inited++;
 						fileDrops.push(this);
@@ -1267,11 +1280,15 @@ plupload.Uploader = function(options) {
 					settings.prevent_duplicates = settings.filters.prevent_duplicates = !!value;
 					break;
 
+				// options that require reinitialisation
+				case 'container':
 				case 'browse_button':
 				case 'drop_element':
-						value = plupload.get(value);
-
-				case 'container':
+						value = 'container' === option
+							? plupload.get(value)
+							: plupload.getAll(value)
+							; 
+				
 				case 'runtimes':
 				case 'multi_selection':
 				case 'flash_swf_url':
@@ -1735,32 +1752,49 @@ plupload.Uploader = function(options) {
 		 * @method init
 		 */
 		init : function() {
-			var self = this;
-
-			if (typeof(settings.preinit) == "function") {
-				settings.preinit(self);
+			var self = this, opt, preinitOpt, err;
+			
+			preinitOpt = self.getOption('preinit');
+			if (typeof(preinitOpt) == "function") {
+				preinitOpt(self);
 			} else {
-				plupload.each(settings.preinit, function(func, name) {
+				plupload.each(preinitOpt, function(func, name) {
 					self.bind(name, func);
 				});
 			}
 
-			bindEventListeners.call(this);
+			bindEventListeners.call(self);
 
 			// Check for required options
-			if (!settings.browse_button || !settings.url) {
-				this.trigger('Error', {
-					code : plupload.INIT_ERROR,
-					message : plupload.translate('Init error.')
-				});
-				return;
+			plupload.each(['container', 'browse_button', 'drop_element'], function(el) {
+				if (self.getOption(el) === null) {
+					err = {
+						code : plupload.INIT_ERROR,
+						message : plupload.translate("'%' specified, but cannot be found.")
+					}
+					return false;
+				}
+			});
+
+			if (err) {
+				return self.trigger('Error', err);
 			}
 
-			initControls.call(this, settings, function(inited) {
-				if (typeof(settings.init) == "function") {
-					settings.init(self);
+
+			if (!settings.browse_button && !settings.drop_element) {
+				return self.trigger('Error', {
+					code : plupload.INIT_ERROR,
+					message : plupload.translate("You must specify either 'browse_button' or 'drop_element'.")
+				});
+			}
+
+
+			initControls.call(self, settings, function(inited) {
+				var initOpt = self.getOption('init');
+				if (typeof(initOpt) == "function") {
+					initOpt(self);
 				} else {
-					plupload.each(settings.init, function(func, name) {
+					plupload.each(initOpt, function(func, name) {
 						self.bind(name, func);
 					});
 				}
@@ -2062,7 +2096,7 @@ plupload.Uploader = function(options) {
 			list = this.hasEventListener(type);
 
 			if (list) {
-				// sort event list by prority
+				// sort event list by priority
 				list.sort(function(a, b) { return b.priority - a.priority; });
 				
 				// first argument should be current plupload.Uploader instance
