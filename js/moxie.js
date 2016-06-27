@@ -130,7 +130,7 @@ define('moxie/core/utils/Basic', [], function() {
 		// the snippet below is awesome, however it fails to detect null, undefined and arguments types in IE lte 8
 		return ({}).toString.call(o).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
 	};
-		
+
 	/**
 	Extends the specified object with another object.
 
@@ -158,7 +158,7 @@ define('moxie/core/utils/Basic', [], function() {
 		});
 		return target;
 	};
-		
+
 	/**
 	Executes the callback function for each item in array/object. If you return false in the
 	callback it will break the loop.
@@ -194,7 +194,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Checks if object is empty.
-	
+
 	@method isEmptyObj
 	@static
 	@param {Object} o Object to check.
@@ -251,7 +251,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Recieve an array of functions (usually async) to call in parallel, each  function
-	receives a callback as first argument that it should call, when it completes. After 
+	receives a callback as first argument that it should call, when it completes. After
 	everything is complete, main callback is called. Passing truthy value to the
 	callback as a first argument will interrupt the process and invoke main callback
 	immediately.
@@ -269,7 +269,7 @@ define('moxie/core/utils/Basic', [], function() {
 				if (error) {
 					return cb(error);
 				}
-				
+
 				var args = [].slice.call(arguments);
 				args.shift(); // strip error - undefined or not
 
@@ -279,15 +279,15 @@ define('moxie/core/utils/Basic', [], function() {
 				if (count === num) {
 					cbArgs.unshift(null);
 					cb.apply(this, cbArgs);
-				} 
+				}
 			});
 		});
 	};
-	
-	
+
+
 	/**
 	Find an element in array and return it's index if present, otherwise return -1.
-	
+
 	@method inArray
 	@static
 	@param {Mixed} needle Element to find
@@ -299,7 +299,7 @@ define('moxie/core/utils/Basic', [], function() {
 			if (Array.prototype.indexOf) {
 				return Array.prototype.indexOf.call(array, needle);
 			}
-		
+
 			for (var i = 0, length = array.length; i < length; i++) {
 				if (array[i] === needle) {
 					return i;
@@ -333,7 +333,7 @@ define('moxie/core/utils/Basic', [], function() {
 		for (var i in needles) {
 			if (inArray(needles[i], array) === -1) {
 				diff.push(needles[i]);
-			}	
+			}
 		}
 		return diff.length ? diff : false;
 	};
@@ -357,11 +357,11 @@ define('moxie/core/utils/Basic', [], function() {
 		});
 		return result.length ? result : null;
 	};
-	
-	
+
+
 	/**
 	Forces anything into an array.
-	
+
 	@method toArray
 	@static
 	@param {Object} obj Object with length field.
@@ -376,14 +376,14 @@ define('moxie/core/utils/Basic', [], function() {
 
 		return arr;
 	};
-	
-			
+
+
 	/**
 	Generates an unique ID. The only way a user would be able to get the same ID is if the two persons
-	at the same exact millisecond manage to get the same 5 random numbers between 0-65535; it also uses 
-	a counter so each ID is guaranteed to be unique for the given page. It is more probable for the earth 
+	at the same exact millisecond manage to get the same 5 random numbers between 0-65535; it also uses
+	a counter so each ID is guaranteed to be unique for the given page. It is more probable for the earth
 	to be hit with an asteroid.
-	
+
 	@method guid
 	@static
 	@param {String} prefix to prepend (by default 'o' will be prepended).
@@ -392,22 +392,22 @@ define('moxie/core/utils/Basic', [], function() {
 	*/
 	var guid = (function() {
 		var counter = 0;
-		
+
 		return function(prefix) {
 			var guid = new Date().getTime().toString(32), i;
 
 			for (i = 0; i < 5; i++) {
 				guid += Math.floor(Math.random() * 65535).toString(32);
 			}
-			
+
 			return (prefix || 'o_') + guid + (counter++).toString(32);
 		};
 	}());
-	
+
 
 	/**
 	Trims white spaces around the string
-	
+
 	@method trim
 	@static
 	@param {String} str
@@ -423,7 +423,7 @@ define('moxie/core/utils/Basic', [], function() {
 
 	/**
 	Parses the specified size string into a byte value. For example 10kb becomes 10240.
-	
+
 	@method parseSizeStr
 	@static
 	@param {String/Number} size String to parse or number to just pass through.
@@ -433,7 +433,7 @@ define('moxie/core/utils/Basic', [], function() {
 		if (typeof(size) !== 'string') {
 			return size;
 		}
-		
+
 		var muls = {
 				t: 1099511627776,
 				g: 1073741824,
@@ -446,7 +446,7 @@ define('moxie/core/utils/Basic', [], function() {
 		size = /^([0-9\.]+)([tmgk]?)$/.exec(size.toLowerCase().replace(/[^0-9\.tmkg]/g, ''));
 		mul = size[2];
 		size = +size[1];
-		
+
 		if (muls.hasOwnProperty(mul)) {
 			size *= muls[mul];
 		}
@@ -468,7 +468,7 @@ define('moxie/core/utils/Basic', [], function() {
 			return typeOf(value) !== 'undefined' ? value : '';
 		});
 	};
-	
+
 
 	return {
 		guid: guid,
@@ -503,7 +503,7 @@ define('moxie/core/utils/Basic', [], function() {
 define("moxie/core/utils/Env", [
 	"moxie/core/utils/Basic"
 ], function(Basic) {
-	
+
 	/**
 	 * UAParser.js v0.7.7
 	 * Lightweight JavaScript-based User-Agent string parser
@@ -706,7 +706,7 @@ define("moxie/core/utils/Env", [
 	    var regexes = {
 
 	        browser : [[
-	        
+
 	            // Presto based
 	            /(opera\smini)\/([\w\.-]+)/i,                                       // Opera Mini
 	            /(opera\s[mobiletab]+).+version\/([\w\.-]+)/i,                      // Opera Mobi/Tablet
@@ -1136,14 +1136,14 @@ define("moxie/core/utils/Env", [
 		can: can,
 
 		uaParser: UAParser,
-		
+
 		browser: uaResult.browser.name,
 		version: uaResult.browser.version,
 		os: uaResult.os.name, // everybody intuitively types it in a lowercase for some reason
 		osVersion: uaResult.os.version,
 
 		verComp: version_compare,
-		
+
 		swf_url: "../flash/Moxie.swf",
 		xap_url: "../silverlight/Moxie.xap",
 		global_event_dispatcher: "moxie.core.EventTarget.instance.dispatchEvent"
@@ -1160,7 +1160,7 @@ define("moxie/core/utils/Env", [
 		};
 
 		Env.log = function() {
-			
+
 			function logObj(data) {
 				// TODO: this should recursively print out the object in a pretty way
 				console.appendChild(document.createTextNode(data + "\n"));
@@ -1276,7 +1276,7 @@ define("moxie/core/utils/Mime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/I18n"
 ], function(Basic, I18n) {
-	
+
 	var mimeData = "" +
 		"application/msword,doc dot," +
 		"application/pdf,pdf," +
@@ -1327,12 +1327,12 @@ define("moxie/core/utils/Mime", [
 		"video/3gpp,3gpp 3gp," +
 		"video/3gpp2,3g2," +
 		"video/vnd.rn-realvideo,rv," +
-		"video/ogg,ogv," + 
+		"video/ogg,ogv," +
 		"video/x-matroska,mkv," +
 		"application/vnd.oasis.opendocument.formula-template,otf," +
 		"application/octet-stream,exe";
-	
-	
+
+
 	var Mime = {
 
 		mimes: {},
@@ -1342,7 +1342,7 @@ define("moxie/core/utils/Mime", [
 		// Parses the default mime types string into a mimes and extensions lookup maps
 		addMimeType: function (mimeData) {
 			var items = mimeData.split(/,/), i, ii, ext;
-			
+
 			for (i = 0; i < items.length; i += 2) {
 				ext = items[i + 1].split(/ /);
 
@@ -1358,13 +1358,13 @@ define("moxie/core/utils/Mime", [
 
 		extList2mimes: function (filters, addMissingExtensions) {
 			var self = this, ext, i, ii, type, mimes = [];
-			
+
 			// convert extensions to mime types list
 			for (i = 0; i < filters.length; i++) {
 				ext = filters[i].extensions.split(/\s*,\s*/);
 
 				for (ii = 0; ii < ext.length; ii++) {
-					
+
 					// if there's an asterisk in the list, then accept attribute is not required
 					if (ext[ii] === '*') {
 						return [];
@@ -1390,7 +1390,7 @@ define("moxie/core/utils/Mime", [
 
 		mimes2exts: function(mimes) {
 			var self = this, exts = [];
-			
+
 			Basic.each(mimes, function(mime) {
 				if (mime === '*') {
 					exts = [];
@@ -1400,7 +1400,7 @@ define("moxie/core/utils/Mime", [
 				// check if this thing looks like mime type
 				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
 				if (m) {
-					if (m[2] === '*') { 
+					if (m[2] === '*') {
 						// wildcard mime type detected
 						Basic.each(self.extensions, function(arr, mime) {
 							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
@@ -1424,12 +1424,12 @@ define("moxie/core/utils/Mime", [
 			}
 
 			exts = this.mimes2exts(mimes);
-			
+
 			accept.push({
 				title: I18n.translate('Files'),
 				extensions: exts.length ? exts.join(',') : '*'
 			});
-			
+
 			// save original mimes string
 			accept.mimes = mimes;
 
@@ -1676,25 +1676,25 @@ define('moxie/core/Exceptions', [
 				this.name = _findKey(namecodes, code);
 				this.message = this.name + ": RuntimeError " + this.code;
 			}
-			
+
 			Basic.extend(RuntimeError, namecodes);
 			RuntimeError.prototype = Error.prototype;
 			return RuntimeError;
 		}()),
-		
+
 		OperationNotAllowedException: (function() {
-			
+
 			function OperationNotAllowedException(code) {
 				this.code = code;
 				this.name = 'OperationNotAllowedException';
 			}
-			
+
 			Basic.extend(OperationNotAllowedException, {
 				NOT_ALLOWED_ERR: 1
 			});
-			
+
 			OperationNotAllowedException.prototype = Error.prototype;
-			
+
 			return OperationNotAllowedException;
 		}()),
 
@@ -1739,7 +1739,7 @@ define('moxie/core/Exceptions', [
 			FileException.prototype = Error.prototype;
 			return FileException;
 		}()),
-		
+
 		DOMException: (function() {
 			var namecodes = {
 				INDEX_SIZE_ERR: 1,
@@ -1774,12 +1774,12 @@ define('moxie/core/Exceptions', [
 				this.name = _findKey(namecodes, code);
 				this.message = this.name + ": DOMException " + this.code;
 			}
-			
+
 			Basic.extend(DOMException, namecodes);
 			DOMException.prototype = Error.prototype;
 			return DOMException;
 		}()),
-		
+
 		EventException: (function() {
 			function EventException(code) {
 				this.code = code;
@@ -1789,9 +1789,9 @@ define('moxie/core/Exceptions', [
 			Basic.extend(EventException, {
 				UNSPECIFIED_EVENT_TYPE_ERR: 0
 			});
-			
+
 			EventException.prototype = Error.prototype;
-			
+
 			return EventException;
 		}())
 	};
@@ -1823,7 +1823,7 @@ define('moxie/core/EventTarget', [
 	function EventTarget() {
 		// hash of event listeners by object uid
 		var eventpool = {};
-				
+
 		Basic.extend(this, {
 			
 			/**
@@ -1833,7 +1833,7 @@ define('moxie/core/EventTarget', [
 			@type String
 			*/
 			uid: null,
-			
+
 			/**
 			Can be called from within a child  in order to acquire uniqie id in automated manner
 
@@ -1905,7 +1905,7 @@ define('moxie/core/EventTarget', [
 			*/
 			removeEventListener: function(type, fn) {
 				type = type.toLowerCase();
-	
+
 				var list = eventpool[this.uid] && eventpool[this.uid][type], i;
 	
 				if (list) {
@@ -1919,11 +1919,11 @@ define('moxie/core/EventTarget', [
 					} else {
 						list = [];
 					}
-	
+
 					// delete event list if it has become empty
 					if (!list.length) {
 						delete eventpool[this.uid][type];
-						
+
 						// and object specific entry in a hash if it has no more listeners attached
 						if (Basic.isEmptyObj(eventpool[this.uid])) {
 							delete eventpool[this.uid];
@@ -1953,7 +1953,7 @@ define('moxie/core/EventTarget', [
 			*/
 			dispatchEvent: function(type) {
 				var uid, list, args, tmpEvt, evt = {}, result = true, undef;
-				
+
 				if (Basic.typeOf(type) !== 'string') {
 					// we can't use original object directly (because of Silverlight)
 					tmpEvt = type;
@@ -1980,7 +1980,7 @@ define('moxie/core/EventTarget', [
 				} else {
 					uid = this.uid;
 				}
-				
+
 				type = type.toLowerCase();
 								
 				list = eventpool[uid] && eventpool[uid][type];
@@ -1988,16 +1988,16 @@ define('moxie/core/EventTarget', [
 				if (list) {
 					// sort event list by prority
 					list.sort(function(a, b) { return b.priority - a.priority; });
-					
+
 					args = [].slice.call(arguments);
-					
+
 					// first argument will be pseudo-event object
 					args.shift();
 					evt.type = type;
 					args.unshift(evt);
 
 					if (MXI_DEBUG && Env.debug.events) {
-						Env.log("Event '%s' fired on %u", evt.type, uid);	
+						Env.log("Event '%s' fired on %u", evt.type, uid);
 					}
 
 					// Dispatch event to all listeners
@@ -2046,7 +2046,7 @@ define('moxie/core/EventTarget', [
 			unbind: function() {
 				this.removeEventListener.apply(this, arguments);
 			},
-			
+
 			/**
 			Alias for removeAllEventListeners
 
@@ -2066,7 +2066,7 @@ define('moxie/core/EventTarget', [
 			trigger: function() {
 				return this.dispatchEvent.apply(this, arguments);
 			},
-			
+
 
 			/**
 			Handle properties of on[event] type.
@@ -2092,7 +2092,7 @@ define('moxie/core/EventTarget', [
 					}
 				});
 			}
-			
+
 		});
 	}
 
@@ -2166,10 +2166,10 @@ define('moxie/runtime/Runtime', [
 		@type Object
 		*/
 		caps = Basic.extend({
-			// Runtime can: 
+			// Runtime can:
 			// provide access to raw binary data of the file
 			access_binary: false,
-			// provide access to raw binary data of the image (image extension is optional) 
+			// provide access to raw binary data of the image (image extension is optional)
 			access_image_binary: false,
 			// display binary data as thumbs for example
 			display_media: false,
@@ -2183,7 +2183,7 @@ define('moxie/runtime/Runtime', [
 			resize_image: false,
 			// periodically report how many bytes of total in the file were uploaded (loaded)
 			report_upload_progress: false,
-			// provide access to the headers of http response 
+			// provide access to the headers of http response
 			return_response_headers: false,
 			// support response of specific type, which should be passed as an argument
 			// e.g. runtime.can('return_response_type', 'blob')
@@ -2461,7 +2461,7 @@ define('moxie/runtime/Runtime', [
 		// once we got the mode, test against all caps
 		if (this.mode && options.required_caps && !this.can(options.required_caps)) {
 			this.mode = false;
-		}	
+		}
 	}
 
 
@@ -2643,15 +2643,15 @@ define('moxie/runtime/Runtime', [
 						// if cap requires conflicting mode - runtime cannot fulfill required caps
 
 						if (MXI_DEBUG && Env.debug.runtime) {
-							Env.log("\t\t%c: %v (conflicting mode requested: %s)", cap, value, capMode);	
+							Env.log("\t\t%c: %v (conflicting mode requested: %s)", cap, value, capMode);
 						}
 
 						return (mode = false);
-					}					
+					}
 				}
 
 				if (MXI_DEBUG && Env.debug.runtime) {
-					Env.log("\t\t%c: %v (compatible modes: %s)", cap, value, mode);	
+					Env.log("\t\t%c: %v (compatible modes: %s)", cap, value, mode);
 				}
 			});
 
@@ -2795,7 +2795,7 @@ define('moxie/runtime/RuntimeClient', [
 					/*runtime.bind('Exception', function() { });*/
 
 					if (MXI_DEBUG && Env.debug.runtime) {
-						Env.log("\tselected mode: %s", runtime.mode);	
+						Env.log("\tselected mode: %s", runtime.mode);
 					}
 
 					// check if runtime managed to pick-up operational mode
@@ -2862,7 +2862,7 @@ define('moxie/runtime/RuntimeClient', [
 
 			/**
 			Handy shortcut to safely invoke runtime extension methods.
-			
+
 			@private
 			@method exec
 			@return {Mixed} Whatever runtime extension method returns
@@ -2918,7 +2918,7 @@ define('moxie/file/FileInput', [
 		@param {String} [options.file='file'] Name of the file field (not the filename).
 		@param {Boolean} [options.multiple=false] Enable selection of multiple files.
 		@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
-		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+		@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode
 		for _browse\_button_.
 		@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 
@@ -2955,7 +2955,7 @@ define('moxie/file/FileInput', [
 		'ready',
 
 		/**
-		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked. 
+		Dispatched right after [ready](#event_ready) event, and whenever [refresh()](#method_refresh) is invoked.
 		Check [corresponding documentation entry](#method_refresh) for more info.
 
 		@event refresh
@@ -3038,14 +3038,14 @@ define('moxie/file/FileInput', [
 			required_caps: false,
 			container: browseButton.parentNode || document.body
 		};
-		
+
 		options = Basic.extend({}, defaults, options);
 
 		// convert to object representation
 		if (typeof(options.required_caps) === 'string') {
 			options.required_caps = Runtime.parseCaps(options.required_caps);
 		}
-					
+
 		// normalize accept option (could be list of mime types or array of title/extensions pairs)
 		if (typeof(options.accept) === 'string') {
 			options.accept = Mime.mimes2extList(options.accept);
@@ -3063,9 +3063,9 @@ define('moxie/file/FileInput', [
 		}
 
 		container = browseButton = null; // IE
-						
+
 		RuntimeClient.call(self);
-		
+
 		Basic.extend(self, {
 			/**
 			Unique id of the component
@@ -3077,7 +3077,7 @@ define('moxie/file/FileInput', [
 			@default UID
 			*/
 			uid: Basic.guid('uid_'),
-			
+
 			/**
 			Unique id of the connected runtime, if any.
 
@@ -3141,7 +3141,7 @@ define('moxie/file/FileInput', [
 						}
 						shimContainer = browseButton = null;
 					});
-					
+
 					runtime.exec.call(self, 'FileInput', 'init', options);
 				});
 
@@ -3194,7 +3194,7 @@ define('moxie/file/FileInput', [
 					Basic.each(this.files, function(file) {
 						file.destroy();
 					});
-				} 
+				}
 				this.files = null;
 
 				this.unbindAll();
@@ -3406,7 +3406,7 @@ define('moxie/file/Blob', [
 	'moxie/core/utils/Encode',
 	'moxie/runtime/RuntimeClient'
 ], function(Basic, Encode, RuntimeClient) {
-	
+
 	var blobpool = {};
 
 	/**
@@ -3481,7 +3481,7 @@ define('moxie/file/Blob', [
 			@default ''
 			*/
 			type: blob.type || '',
-			
+
 			/**
 			@method slice
 			@param {Number} [start=0]
@@ -3536,7 +3536,7 @@ define('moxie/file/Blob', [
 
 			/**
 			Checks if blob is standalone (detached of any runtime)
-			
+
 			@method isDetached
 			@protected
 			@return {Boolean}
@@ -6756,23 +6756,23 @@ define("moxie/runtime/html5/file/FileDrop", [
 					if (e.dataTransfer.items && e.dataTransfer.items[0].webkitGetAsEntry) {
 						_readItems(e.dataTransfer.items, function() {
 							comp.files = _files;
-							comp.trigger("drop");
+							comp.trigger("drop",[e]);
 						});
 					} else {
 						Basic.each(e.dataTransfer.files, function(file) {
 							_addFile(file);
 						});
 						comp.files = _files;
-						comp.trigger("drop");
+						comp.trigger("drop",[e]);
 					}
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'dragenter', function(e) {
-					comp.trigger("dragenter");
+					comp.trigger("dragenter",[e]);
 				}, comp.uid);
 
 				Events.addEvent(dropZone, 'dragleave', function(e) {
-					comp.trigger("dragleave");
+					comp.trigger("dragleave",[e]);
 				}, comp.uid);
 			},
 
