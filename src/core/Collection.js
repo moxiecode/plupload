@@ -28,6 +28,10 @@ define('plupload/core/Collection', [
 
         Basic.extend(this, {
 
+            count: function() {
+                return _length;
+            },
+
             hasKey: function(key) {
                 return _registry.hasOwnProperty(key)
             },
