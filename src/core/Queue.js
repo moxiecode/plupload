@@ -170,10 +170,9 @@ define('plupload/core/Queue', [
             },
 
 
-            eachItem: function(cb) {
-                return this._queue.each(cb);
+            forEachItem: function(cb) {
+                this._queue.each(cb);
             },
-
 
             getItem: function(uid) {
                 return this._queue.get(uid);
@@ -295,13 +294,17 @@ define('plupload/core/Queue', [
             },
 
 
-            forEachItem: function(cb) {
-                this._queue.each(cb);
+            countSpareSlots: function() {
+                return Math.max(this.getOption('max_slots') - self.stats.processing, 0);
             },
 
 
-            countSpareSlots: function() {
-                return Math.max(this.getOption('max_slots') - self.stats.processing, 0);
+            toArray: function() {
+                var arr = [];
+                this.forEachItem(function(item) {
+                    arr.push(item);
+                });
+                return arr;
             },
 
 
