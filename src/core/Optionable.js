@@ -13,7 +13,7 @@
 @contsructor
 @class plupload/core/Optionable
 @private
-@since >3.0
+@since 3.0
 */
 define('plupload/core/Optionable', [
     'moxie/core/utils/Basic',
