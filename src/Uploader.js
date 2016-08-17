@@ -266,15 +266,6 @@ define('plupload/Uploader', [
 
 		this.setOptions(_options);
 
-		/**
-		 * Total progess information. How many files has been uploaded, total percent etc.
-		 *
-		 * @property total
-		 * @deprecated use stats (see plupload/core/Stats)
-		 * @type plupload.QueueProgress
-		 */
-		this.total = this.stats; // for backward compatibility
-
 
 		// Add public methods
 		plupload.extend(this, {
@@ -325,6 +316,15 @@ define('plupload/Uploader', [
 			 * @type Array
 			 */
 			files: [],
+
+			/**
+			 * Total progess information. How many files has been uploaded, total percent etc.
+			 *
+			 * @property total
+			 * @deprecated use stats
+			 * @type plupload.QueueProgress
+			 */
+			total: this.stats,
 
 			/**
 			 * Initializes the Uploader instance and adds internal event listeners.
