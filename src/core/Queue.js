@@ -215,13 +215,13 @@ define('plupload/core/Queue', [
 
 
             /**
-             * Removes an item from the queue by its uid
-             * 
-             * @method removeItem
+             * Extracts item from the queue by its uid and returns it.
+             *
+             * @method extractItem
              * @param {String} uid
              * @return {Queueable} Item that was removed
              */
-            removeItem: function(uid) {
+            extractItem: function(uid) {
                 var item = this._queue.get(uid);
 
                 if (item) {
@@ -230,15 +230,24 @@ define('plupload/core/Queue', [
                     if (this.state === Queue.STARTED) {
                         processNext.call(this);
                     }
-                } else {
-                    return false;
+
+                    this._queue.remove(uid);
+                    calcStats.call(this);
                 }
+                return item;
+            },
 
-                this._queue.remove(uid);
-                item.destroy();
-                calcStats();
-
-                return true;
+            /**
+             * Removes item from the queue and destroys it
+             *
+             * @method removeItem
+             * @param {String} uid
+             */
+            removeItem: function(uid) {
+                var item = this.extractItem(uid);
+                if (item) {
+                    item.destroy();
+                }
             },
 
 
