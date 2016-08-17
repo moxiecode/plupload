@@ -66,41 +66,37 @@ define('plupload', [
 		File is queued for upload
 
 		@property QUEUED
-		@deprecated
 		@static
 		@final
 		*/
-		//QUEUED: plupload.File.QUEUED,
+		QUEUED: 1,
 
 		/**
 		File is being uploaded
 
 		@property UPLOADING
-		@deprecated
 		@static
 		@final
 		 */
-		//UPLOADING: plupload.File.UPLOADING,
+		UPLOADING: 2,
 
 		/**
 		File has failed to be uploaded
 
 		@property FAILED
-		@deprecated
 		@static
 		@final
 		 */
-		//FAILED: plupload.File.FAILED,
+		FAILED: 4,
 
 		/**
 		File has been uploaded successfully
 
 		@property DONE
-		@deprecated
 		@static
 		@final
 		 */
-		//DONE: plupload.File.DONE,
+		DONE: 5,
 
 		// Error constants used by the Error event
 
