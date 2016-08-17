@@ -11,7 +11,7 @@
 /**
  * @class plupload/FileUploader
  * @constructor 
- * @private 
+ * @since 3.0
  * @final
  * @extends plupload/core/Queueable
  */
