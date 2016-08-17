@@ -3,10 +3,10 @@
     "description": "Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering, request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and Flash.",
     "version": "2.1.8",
     "releaseDate": "2015-07-10",
-    "author": "Moxiecode Systems AB <support@moxiecode.com>",
+    "author": "Ephox",
     "contributors": [{
         "name": "Davit Barbakadze",
-        "email": "david@moxiecode.com"
+        "email": "davit.barbakadze@ephox.com"
     }],
     "homepage": "http://plupload.com",
     "repository": {
@@ -17,7 +17,7 @@
         "url": "https://github.com/moxiecode/plupload/issues"
     },
     "licenses": [{
-        "type": "GPLv2",
+        "type": "AGPLv3",
         "url": "https://github.com/moxiecode/plupload/blob/master/license.txt"
     }, {
         "type": "Single Website",
