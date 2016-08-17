@@ -318,10 +318,10 @@ define('plupload/Uploader', [
 			runtime: null,
 
 			/**
-			 * Current upload queue, an array of File instances.
+			 * Current upload queue, an array of File instances
 			 *
 			 * @property files
-			 * @deprecated
+			 * @deprecated use forEachItem(callback) to cycle over the items in the queue
 			 * @type Array
 			 */
 			files: [],
@@ -800,20 +800,10 @@ define('plupload/Uploader', [
 		}
 
 
-
-		function toArray() {
-			var arr = [];
-			this.eachItem(function(item) {
-				arr.push(item.getFile());
-			});
-			return arr;
-		}
-
-
 		function bindEventListeners() {
 			this.bind('FilesAdded FilesRemoved', function(up) {
-				// keepalive deprecated files property
-				up.files = toArray.call(up);
+				// keep alive deprecated files property
+				up.files = up.toArray();
 
 				up.trigger('QueueChanged');
 				up.refresh();
