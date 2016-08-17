@@ -32,7 +32,7 @@
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
 	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
-	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
+	@param {Object} [settings.params] Hash of key/value pairs to send with every file upload.
 	@param {String} [settings.http_method="POST"] HTTP method to use during upload (only PUT or POST allowed).
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
 	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
@@ -204,6 +204,7 @@ Fires when destroy method is called.
 define('plupload/Uploader', [
 	'plupload',
 	'plupload/core/Collection',
+	'moxie/core/utils/Mime',
 	'moxie/file/Blob',
 	'moxie/file/File',
 	'moxie/file/FileInput',
@@ -212,7 +213,7 @@ define('plupload/Uploader', [
 	'plupload/core/Queue',
 	'plupload/UploadingQueue',
 	'plupload/FileUploader'
-], function(plupload, Collection, mxiBlob, mxiFile, FileInput, FileDrop, Runtime, Queue, UploadingQueue, FileUploader) {
+], function(plupload, Collection, Mime, mxiBlob, mxiFile, FileInput, FileDrop, Runtime, Queue, UploadingQueue, FileUploader) {
 
 	var fileFilters = {};
 	var undef;
@@ -1117,7 +1118,7 @@ define('plupload/Uploader', [
 				// if file format filters are being updated, regenerate the matching expressions
 				if (value.mime_types) {
 					if (plupload.typeOf(value.mime_types) === 'string') {
-						value.mime_types = o.Mime.mimes2extList(value.mime_types);
+						value.mime_types = Mime.mimes2extList(value.mime_types);
 					}
 
 					value.mime_types.regexp = (function(filters) {

@@ -212,7 +212,10 @@ test("Test how default values are assigned to missing options", function() {
 		silverlight_xap_url : 'js/Moxie.xap',
 		max_upload_slots: 1,
 		filters : {
-			mime_types: false,
+			mime_types: [{
+				extensions: "*",
+				title: "Files"
+			}],
 			prevent_duplicates: false,
 			max_file_size: 0
 		},
@@ -222,6 +225,7 @@ test("Test how default values are assigned to missing options", function() {
 		chunk_size: 0,
 		max_retries: 0,
 		multipart: true,
+		params: {},
 		multipart_params: {},
 		required_features:  {},
 		resize: false,
@@ -240,7 +244,7 @@ test("Test how default values are assigned to missing options", function() {
 			drag_and_drop: true,
 			select_multiple: true,
 			use_http_method: "POST"
-		},
+		}
 	}, "Proper defaults set.");
 });
 
