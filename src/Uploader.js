@@ -659,61 +659,64 @@ define('plupload/Uploader', [
 			},
 
 			/**
-			 * Removes a specific file.
+			 * Removes a specific item from the queue
 			 *
 			 * @method removeFile
-			 * @param {plupload.File|String} file File to remove from queue.
+			 * @param {plupload.FileUploader|String} file
 			 */
 			removeFile: function(file) {
-				var id = typeof(file) === 'string' ? file : file.id;
-
-				for (var i = files.length - 1; i >= 0; i--) {
-					if (files[i].id === id) {
-						return this.splice(i, 1)[0];
-					}
+				var item = this.extractItem(typeof(file) === 'string' ? file : file.uid);
+				if (item) {
+					this.trigger("FilesRemoved", [item]);
+					item.destroy();
 				}
 			},
 
-			// TODO
 			/**
-			 * Removes part of the queue and returns the files removed. This will also trigger the FilesRemoved and QueueChanged events.
+			 * Removes part of the queue and returns removed files.
+			 * Triggers FilesRemoved and consequently QueueChanged events.
 			 *
 			 * @method splice
-			 * @param {Number} start (Optional) Start index to remove from.
-			 * @param {Number} length (Optional) Lengh of items to remove.
-			 * @return {Array} Array of files that was removed.
+			 * @param {Number} start (Optional) Start index to remove from
+			 * @param {Number} length (Optional) Length of items to remove
 			 */
 			splice: function(start, length) {
-				// Splice and trigger events
-				var removed = files.splice(start === undef ? 0 : start, length === undef ? files.length : length);
+				var self = this;
+				var i = 0;
+				var removed = [];
+				var shouldRestart = plupload.STARTED == this.state;
 
-				// if upload is in progress we need to stop it and restart after files are removed
-				var restartRequired = false;
-				if (this.state == plupload.STARTED) { // upload in progress
-					plupload.each(removed, function(file) {
-						if (file.status === plupload.UPLOADING) {
-							restartRequired = true; // do not restart, unless file that is being removed is uploading
-							return false;
-						}
-					});
+				start === undef ? 0 : Math.max(start, 0);
+				var end = length === undef ? this.count() : Math.min(start + length, this.count());
 
-					if (restartRequired) {
-						this.stop();
+				this.forEachItem(function(item) {
+					if (i < start) {
+						return true; // continue
 					}
-				}
+					if (i > end) {
+						return false; // finish here
+					}
 
-				this.trigger("FilesRemoved", removed);
-
-				// Dispose any resources allocated by those files
-				plupload.each(removed, function(file) {
-					file.destroy();
+					self.extractItem(item.uid); // extracts but not destroys (we still need to fire FilesRemoved with these)
+					removed.push(item);
+					i++;
 				});
 
-				if (restartRequired) {
-					this.start();
-				}
+				if (removed.length) {
+					this.trigger("FilesRemoved", removed);
 
-				return removed;
+					if (shouldRestart) {
+						this.stop();
+					}
+
+					for (i = 0; i < removed.length; i++) {
+						removed[i].destroy();
+					}
+
+					if (shouldRestart) {
+						this.start();
+					}
+				}
 			},
 
 			/**
