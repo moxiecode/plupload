@@ -54,6 +54,7 @@ task("moxie", [], function (params) {
 desc("Build release files");
 task("mkjs", [], function () {
 	var amdlc = require('amdlc');
+	var uglify = tools.uglify;
 	var targetDir = "js";
 	var flags = utils.asFlags(arguments);
 
@@ -113,6 +114,26 @@ task("mkjs", [], function () {
 		tools.copySync("src/moxie/bin/flash/Moxie.swf", "js/Moxie.swf");
 		tools.copySync("src/moxie/bin/silverlight/Moxie.xap", "js/Moxie.xap");
 	}
+
+
+	// Copy UI Plupload
+	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
+
+	uglify([
+		'jquery.ui.plupload.js'
+	], targetDir + "/jquery.ui.plupload/jquery.ui.plupload.min.js", {
+		sourceBase: targetDir + "/jquery.ui.plupload/"
+	});
+
+	// Copy Queue Plupload
+	jake.cpR("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
+
+	uglify([
+		'jquery.plupload.queue.js'
+	], targetDir + "/jquery.plupload.queue/jquery.plupload.queue.min.js", {
+		sourceBase: targetDir + "/jquery.plupload.queue/"
+	});
+
 
 
 	// add debug constant to dev source
