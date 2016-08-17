@@ -520,7 +520,7 @@ define('plupload/Uploader', [
 				}
 			},
 
-
+			/**
 			 * Returns the specified FileUploader object by id
 			 *
 			 * @method getFile
