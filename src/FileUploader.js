@@ -284,63 +284,6 @@ define('plupload/FileUploader', [
 	}
 
 
-	plupload.extend(FileUploader, {
-		/**
-		File is queued for upload
-		
-		@property QUEUED
-		@static
-		@final
-		*/
-		QUEUED: 1,
-
-		/**
-		File is being uploaded
-		
-		@property UPLOADING
-		@static
-		@final
-		*/
-		UPLOADING: 2,
-
-		/**
-		File has failed to be uploaded
-		
-		@property FAILED
-		@static
-		@final
-		*/
-		FAILED: 4,
-
-		/**
-		File has been uploaded successfully
-		
-		@property DONE
-		@static
-		@final
-		*/
-		DONE: 5,
-
-		/**
-		File (Image) is being resized
-		
-		@property RESIZING
-		@static
-		@final
-		*/
-		RESIZING: 6,
-
-		/**
-		File is paused
-
-		@property PAUSED
-		@static
-		@final
-		*/
-		PAUSED: 7
-	});
-
-
 	FileUploader.prototype = new Queueable();
 
 	return FileUploader;
