@@ -224,20 +224,22 @@ define('plupload/Uploader', [
 		var _fileDrops = [];
 		var _disabled = false;
 
-		var _options = plupload.extend({
+		var _options = normalizeOptions(plupload.extend({
 				runtimes: Runtime.order,
 				multi_selection: true,
 				flash_swf_url: 'js/Moxie.swf',
 				silverlight_xap_url: 'js/Moxie.xap',
 				filters: {
-					mime_types: null,
+					mime_types: '*',
 					prevent_duplicates: false,
 					max_file_size: 0
 				},
 				// headers: false, // Plupload had a required feature with the same name, comment it to avoid confusion
 				max_upload_slots: 1,
 				multipart: true,
-				multipart_params: {},
+				multipart_params: {}, // deprecated, use - params,
+				// @since 3
+				params: {},
 				// @since 2.3
 				http_method: 'POST',
 				file_data_name: 'file',
@@ -247,8 +249,8 @@ define('plupload/Uploader', [
 				max_retries: 0,
 				resize: false
 			},
-			normalizeOptions(plupload.extend({}, options)) // we shouldn't alter original config
-		);
+			options
+		));
 
 		// Normalize the list of required capabilities
 		_options.required_features = normalizeCaps(plupload.extend({}, _options));
