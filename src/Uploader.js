@@ -115,7 +115,7 @@ Fires after files were filtered and added to the queue.
 
 @event FilesAdded
 @param {plupload.Uploader} uploader Uploader instance sending the event.
-@param {Array} files Array of file objects that were added to queue by the user.
+@param {Array} files Array of FileUploader objects that were added to the queue by user.
  */
 
 /**
@@ -300,7 +300,7 @@ define('plupload/Uploader', [
 			features: {},
 
 			/**
-			 * Current runtime name.
+			 * Current runtime name
 			 *
 			 * @property runtime
 			 * @type String
@@ -985,7 +985,7 @@ define('plupload/Uploader', [
 
 
 		function onDestroy(up) {
-			up.eachItem(function(file) {
+			up.forEachItem(function(file) {
 				file.destroy();
 			});
 
@@ -1003,7 +1003,7 @@ define('plupload/Uploader', [
 				_fileDrops = [];
 			}
 
-			self = _options = null; // purge these exclusively
+			_options = null; // purge these exclusively
 		}
 
 	}
