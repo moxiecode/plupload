@@ -521,16 +521,15 @@ define('plupload/Uploader', [
 			},
 
 
-			/**
-			 * Returns the specified file object by id.
+			 * Returns the specified FileUploader object by id
 			 *
 			 * @method getFile
-			 * @param {String} id File id to look for.
-			 * @return {plupload.File} File object or undefined if it wasn't found;
+			 * @deprecated use getItem()
+			 * @param {String} id FileUploader id to look for
+			 * @return {plupload.FileUploader}
 			 */
 			getFile: function(id) {
-				var item = self.getItem(id);
-				return item ? item.getFile() : null;
+				return this.getItem(id);
 			},
 
 			/**
@@ -544,11 +543,10 @@ define('plupload/Uploader', [
 			 * @param {String} [fileName] If specified, will be used as a name for the file
 			 */
 			addFile: function(file, fileName) {
-				var self = this,
-					queue = [],
-					ruid // spare runtime uid, for those files that do not have their own
-					, filesAdded = [] // here we track the files that got filtered and are added to the queue
-				;
+				var self = this;
+				var queue = [];
+				var ruid; // spare runtime uid, for those files that do not have their own
+				var filesAdded = []; // here we track the files that got filtered and are added to the queue
 
 
 				function bindListeners(fileUp) {
@@ -614,7 +612,7 @@ define('plupload/Uploader', [
 									bindListeners(fileUp);
 									// make files available for the filters by updating the main queue directly
 									self.addItem(fileUp);
-									filesAdded.push(file);
+									filesAdded.push(fileUp);
 
 									self.trigger("FileFiltered", file);
 								}
