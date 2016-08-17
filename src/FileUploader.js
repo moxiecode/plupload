@@ -33,16 +33,27 @@ define('plupload/FileUploader', [
 		var _chunks = new Collection();
 		var _queue = UploadingQueue.getInstance();
 		var _options;
+		var _uid = plupload.guid();
 
+		Queueable.call(this);
 
 		plupload.extend(this, {
 			/**
-			Unique identifier.
+			 * For backward compatibility
+			 *
+			 * @property id
+			 * @type {String}
+			 * @deprecated
+			 */
+			id: _uid,
+
+			/**
+			Unique identifier
 
 			@property uid
 			@type {String}
             */
-			uid: plupload.guid(),
+			uid: _uid,
 
 			/**
 			When send_file_name is set to true, will be sent with the request as `name` param. 
@@ -59,6 +70,30 @@ define('plupload/FileUploader', [
 			@deprecated use name
             */
 			target_name: null,
+
+			/**
+			 * File type, `e.g image/jpeg`
+			 *
+			 * @property type
+			 * @type String
+			 */
+			type: _file.type,
+
+			/**
+			 * File size in bytes (may change after client-side manupilation).
+			 *
+			 * @property size
+			 * @type Number
+			 */
+			size: _file.size,
+
+			/**
+			 * Original file size in bytes.
+			 *
+			 * @property origSize
+			 * @type Number
+			 */
+			origSize: _file.size,
 
 
 			start: function(options) {
@@ -99,7 +134,36 @@ define('plupload/FileUploader', [
 				}
 			},
 
+			/**
+			 * Get the file for which this FileUploader is responsible
+			 *
+			 * @method getSource
+			 * @deprecated use getFile()
+			 * @returns {moxie.file.File}
+			 */
+			getSource: function() {
+				return this.getFile();
+			},
 
+			/**
+			 * Returns file representation of the current runtime. For HTML5 runtime
+			 * this is going to be native browser File object
+			 * (for backward compatibility)
+			 *
+			 * @method getNative
+			 * @deprecated
+			 * @returns {File|Blob|Object}
+			 */
+			getNative: function() {
+				return this.getFile().getSource();
+			},
+
+			/**
+			 * Get the file for which this FileUploader is responsible
+			 *
+			 * @method getFile
+			 * @returns {moxie.file.File}
+			 */
 			getFile: function() {
 				return fileRef;
 			},
@@ -187,9 +251,6 @@ define('plupload/FileUploader', [
 				_queue = _file = null;
 			}
 		});
-
-
-		Queueable.call(this);
 
 		this.setOption(plupload.extendIf({
 			url: false,
