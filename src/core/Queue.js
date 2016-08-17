@@ -104,10 +104,19 @@ define('plupload/core/Queue', [
             this.handleEventProps(dispatches);
         }            
 
-            
-
         
-        Basic.extend(Queue.prototype, {            
+        Basic.extend(Queue.prototype, {
+
+            /**
+             * Returns number of items in the queue
+             *
+             * @method count
+             * @returns {Number}
+             */
+            count: function() {
+                return this._queue.count();
+            },
+
             /**
              * Start the queue
              * 
@@ -189,7 +198,7 @@ define('plupload/core/Queue', [
                 var self = this;
 
                 item.bind('Progress', function() {
-                    calcStats();
+                    calcStats.call(self);
                 });
 
                 item.bind('Failed', function() {
@@ -206,6 +215,7 @@ define('plupload/core/Queue', [
                 }, 0, this);
 
                 this._queue.add(item.uid, item);
+                calcStats.call(this);
                 item.trigger('Queued');
 
                 if (self.getOption('auto_start')) {
