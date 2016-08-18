@@ -223,6 +223,7 @@ define('plupload/Uploader', [
 		var _uid = plupload.guid();
 		var _fileInputs = [];
 		var _fileDrops = [];
+		var _initialized = false;
 		var _disabled = false;
 
 		var _options = plupload.extend({
@@ -248,7 +249,8 @@ define('plupload/Uploader', [
 				send_file_name: true,
 				send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
 				max_retries: 0,
-				resize: false
+				resize: false,
+				backward_compatibility: true
 			},
 			options
 		);
@@ -263,9 +265,6 @@ define('plupload/Uploader', [
 
 
 		Queue.call(this);
-
-		this.setOptions(_options);
-
 
 		// Add public methods
 		plupload.extend(this, {
@@ -300,6 +299,15 @@ define('plupload/Uploader', [
 			features: {},
 
 			/**
+			 * Object with name/value settings.
+			 *
+			 * @property settings
+			 * @type Object
+			 * @deprecated Use `getOption()/setOption()`
+			 */
+			settings : {},
+
+			/**
 			 * Current runtime name
 			 *
 			 * @property runtime
@@ -332,9 +340,7 @@ define('plupload/Uploader', [
 			 * @method init
 			 */
 			init: function() {
-				var self = this,
-					opt, preinitOpt, err;
-
+				var self = this, preinitOpt, err;
 
 				preinitOpt = self.getOption('preinit');
 				if (typeof(preinitOpt) == "function") {
@@ -371,8 +377,10 @@ define('plupload/Uploader', [
 				}
 
 
-				initControls.call(self, function(inited) {
+				initControls.call(self, function(initialized) {
+					var runtime;
 					var initOpt = self.getOption('init');
+
 					if (typeof(initOpt) == "function") {
 						initOpt(self);
 					} else {
@@ -381,8 +389,9 @@ define('plupload/Uploader', [
 						});
 					}
 
-					if (inited) {
-						var runtime = Runtime.getInfo(getRUID());
+					if (initialized) {
+						_initialized = true;
+						runtime = Runtime.getInfo(getRUID());
 
 						UploadingQueue.getInstance({
 							auto_start: true,
@@ -414,23 +423,29 @@ define('plupload/Uploader', [
 			 * @param {Mixed} [value] Value for the option (is ignored, if first argument is object)
 			 */
 			setOption: function(option, value) {
-				if (plupload.inArray(option, [
-						'container',
-						'browse_button',
-						'drop_element',
-						'runtimes',
-						'multi_selection',
-						'flash_swf_url',
-						'silverlight_xap_url'
-					]) !== -1) {
-					return this.trigger('Error', {
-						code: plupload.OPTION_ERROR,
-						message: plupload.sprintf(plupload.translate("%s option cannot be changed.")),
-						option: option
-					});
+				if (_initialized) {
+					// following options cannot be changed after initialization
+					if (plupload.inArray(option, [
+							'container',
+							'browse_button',
+							'drop_element',
+							'runtimes',
+							'multi_selection',
+							'flash_swf_url',
+							'silverlight_xap_url'
+						]) !== -1)
+					{
+						return this.trigger('Error', {
+							code: plupload.OPTION_ERROR,
+							message: plupload.sprintf(plupload.translate("%s option cannot be changed.")),
+							option: option
+						});
+					}
 				}
 
-				value = normalizeOption(option, value, _options);
+				if (typeof(option) !== 'object') {
+					value = normalizeOption(option, value, _options);
+				}
 
 				Uploader.prototype.setOption.call(this, option, value);
 			},
@@ -756,6 +771,21 @@ define('plupload/Uploader', [
 		});
 
 
+		// keep alive deprecated properties
+		if (_options.backward_compatibility) {
+			this.bind('FilesAdded FilesRemoved', function (up) {
+				up.files = up.toArray();
+			}, this, 999);
+
+			this.bind('OptionChanged', function (up, name, value) {
+				up.settings[name] = typeof(value) == 'object' ? plupload.extend({}, value) : value;
+			}, this, 999);
+		}
+
+
+		this.setOptions(_options);
+
+
 		function getRUID() {
 			var ctrl = _fileInputs[0] || _fileDrops[0];
 			if (ctrl) {
@@ -767,9 +797,6 @@ define('plupload/Uploader', [
 
 		function bindEventListeners() {
 			this.bind('FilesAdded FilesRemoved', function(up) {
-				// keep alive deprecated files property
-				up.files = up.toArray();
-
 				up.trigger('QueueChanged');
 				up.refresh();
 			}, this, 999);
@@ -783,9 +810,9 @@ define('plupload/Uploader', [
 
 
 		function initControls(cb) {
-			var self = this,
-				inited = 0,
-				queue = [];
+			var self = this;
+			var initialized = 0;
+			var queue = [];
 
 			// common settings
 			var options = {
@@ -825,7 +852,7 @@ define('plupload/Uploader', [
 								multi_selection: info.can('select_multiple')
 							});
 
-							inited++;
+							initialized++;
 							_fileInputs.push(this);
 							cb();
 						};
@@ -886,7 +913,7 @@ define('plupload/Uploader', [
 								dragdrop: info.can('drag_and_drop')
 							});
 
-							inited++;
+							initialized++;
 							_fileDrops.push(this);
 							cb();
 						};
@@ -908,7 +935,7 @@ define('plupload/Uploader', [
 
 			plupload.inParallel(queue, function() {
 				if (typeof(cb) === 'function') {
-					cb(inited);
+					cb(initialized);
 				}
 			});
 		}
@@ -967,6 +994,7 @@ define('plupload/Uploader', [
 				_fileDrops = [];
 			}
 
+			_initialized = false;
 			_options = null; // purge these exclusively
 		}
 
