@@ -178,11 +178,19 @@ Fires when a file is successfully uploaded.
  */
 
 /**
-Fires when all files in a queue are uploaded.
+Fires when all files in a queue are uploaded
 
 @event UploadComplete
 @param {plupload.Uploader} uploader Uploader instance sending the event.
 @param {Array} files Array of file objects that was added to queue/selected by the user.
+ */
+
+
+/**
+Fires whenever upload is aborted for some reason
+
+@event CancelUpload
+@param {plupload.Uploader} uploader Uploader instance sending the event.
  */
 
 /**
@@ -783,6 +791,7 @@ define('plupload/Uploader', [
 		}
 
 
+		// normalize options
 		this.setOptions(_options);
 
 
@@ -959,18 +968,8 @@ define('plupload/Uploader', [
 			if (err.code === plupload.INIT_ERROR) {
 				up.destroy();
 			}
-			// Set failed status if an error occured on a file
-			else if (err.code === plupload.HTTP_ERROR) {
-				up.calcStats();
-
-				// Upload next file but detach it from the error event
-				// since other custom listeners might want to stop the queue
-				if (up.state == plupload.STARTED) { // upload in progress
-					up.trigger('CancelUpload');
-					delay(function() {
-						uploadNext.call(up);
-					}, 1);
-				}
+			else if (err.code === plupload.HTTP_ERROR && up.state == plupload.STARTED) {
+				up.trigger('CancelUpload');
 			}
 		}
 
