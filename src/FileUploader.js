@@ -122,12 +122,10 @@ define('plupload/FileUploader', [
 
 					up.bind('done', function(e, result) {
 						self.done(result);
-						this.destroy();
 					});
 
 					up.bind('failed', function(e, result) {
 						self.failed(result);
-						this.destroy();
 					});
 
 					_queue.addItem(up);
