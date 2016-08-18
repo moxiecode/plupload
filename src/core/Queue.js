@@ -209,7 +209,7 @@ define('plupload/core/Queue', [
                 });
 
                 item.bind('Processed', function() {
-                    me.stats.processing--;
+                    self.stats.processing--;
                     calcStats.call(self);
                     processNext.call(self);
                 }, 0, this);
