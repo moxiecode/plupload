@@ -225,7 +225,7 @@ define('plupload/Uploader', [
 		var _fileDrops = [];
 		var _disabled = false;
 
-		var _options = normalizeOptions(plupload.extend({
+		var _options = plupload.extend({
 				runtimes: Runtime.order,
 				multi_selection: true,
 				flash_swf_url: 'js/Moxie.swf',
@@ -251,7 +251,7 @@ define('plupload/Uploader', [
 				resize: false
 			},
 			options
-		));
+		);
 
 		// Normalize the list of required capabilities
 		_options.required_features = normalizeCaps(plupload.extend({}, _options));
@@ -1142,14 +1142,6 @@ define('plupload/Uploader', [
 		}
 
 		return value;
-	}
-
-
-	function normalizeOptions(options) {
-		plupload.each(options, function(value, option) {
-			options[option] = normalizeOption(option, value, options);
-		});
-		return options;
 	}
 
 
