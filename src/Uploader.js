@@ -576,10 +576,6 @@ define('plupload/Uploader', [
 							file.connectRuntime(ruid);
 						}
 
-						if (fileName) {
-							file.name = fileName;
-						}
-
 						queue.push(function(cb) {
 							// run through the internal and user-defined filters, if any
 							filterFile(file, function(err) {
@@ -587,6 +583,10 @@ define('plupload/Uploader', [
 
 								if (!err) {
 									fileUp = new FileUploader(file, _options);
+
+									if (fileName) {
+										fileUp.name = fileName;
+									}
 
 									bindListeners(fileUp);
 									// make files available for the filters by updating the main queue directly
