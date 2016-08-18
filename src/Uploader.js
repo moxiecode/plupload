@@ -484,42 +484,6 @@ define('plupload/Uploader', [
 				this.trigger('DisableBrowse', _disabled);
 			},
 
-
-			/**
-			Returns the specified file object by id.
-
-			@method uploadFile
-			@since 2.3
-			@param {String|Object} file File object to upload.
-			@param {Object} [options] Options to take into account during the upload
-			*/
-			uploadFile: function(file, options) {
-				var up = this,
-					maxSlots = up.getOption('max_upload_slots');
-
-				if (typeof(file) === 'string') {
-					file = this.getFile(file);
-				}
-
-				if (activeUploads.length < maxSlots) {
-					if (up.trigger('BeforeUpload', file)) {
-						activeUploads.add(file.id, file);
-						file.upload(options || up.getOption());
-
-						up.trigger('UploadFile', file); // for backward compatibility really
-					}
-
-					// if we still got the slots, enqueue more
-					if (activeUploads.length < maxSlots) {
-						delay(function() {
-							uploadNext.call(up);
-						});
-					}
-				} else {
-					pendingUploads.add(file.id, file);
-				}
-			},
-
 			/**
 			 * Returns the specified FileUploader object by id
 			 *
