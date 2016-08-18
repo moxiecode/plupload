@@ -75,11 +75,10 @@ test('options.filters', function() {
 	var queue = [];
 
 	queue.push(
-		// plupload.File
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
-				equal(up.files.length, 0, "No files were added to the queue.");
+				equal(up.count(), 0, "No files were added to the queue.");
 				equal(plupload.typeOf(up.getOption('filters').mime_types), 'array', "Legacy 'filters' format successfully parsed.");
 				up.unbind('TestError');
 				cb();
@@ -87,10 +86,9 @@ test('options.filters', function() {
 			up.addFile(files[1]); // adding "03.jpg.zip"
 		},
 
-		// plupload.File
 		function(cb) {
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
+				equal(up.count(), 1, "Asterisk wildcard as one of the extensions filters allows any file.");
 				up.unbind('TestFilesAdded');
 				cb();
 			});
@@ -145,11 +143,10 @@ test('options.filters.mime_types', function() {
 	var queue = [];
 
 	queue.push(
-		// plupload.File
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, "Error triggered, code: FILE_EXTENSION_ERROR.");
-				equal(up.files.length, 0, "No files were added to the queue.");
+				equal(up.count(), 0, "No files were added to the queue.");
 				equal(plupload.typeOf(up.getOption('filters').mime_types), 'array', "Legacy 'filters' format successfully parsed.");
 				up.unbind('TestError');
 				cb();
@@ -157,10 +154,9 @@ test('options.filters.mime_types', function() {
 			up.addFile(files[1]); // adding "03.jpg.zip"
 		},
 
-		// plupload.File
 		function(cb) {
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 1, "Asterisk wildcard as one of the extensions filters allows any file.");
+				equal(up.count(), 1, "Asterisk wildcard as one of the extensions filters allows any file.");
 				up.unbind('TestFilesAdded');
 				cb();
 			});
@@ -213,12 +209,11 @@ test('options.filters.mime_types (passing actual mime types directly)', function
 	var queue = [];
 
 	queue.push(
-		// plupload.File
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_EXTENSION_ERROR, 
 					"Error triggered, code: FILE_EXTENSION_ERROR.");
-				equal(up.files.length, 0, 
+				equal(up.count(), 0,
 					"No files were added to the queue.");
 				equal(plupload.typeOf(up.settings.filters.mime_types), 'array', 
 					"Alternative (mime_types: 'image/*') format successfully parsed.");
@@ -229,11 +224,10 @@ test('options.filters.mime_types (passing actual mime types directly)', function
 			up.addFile(files[1]); // adding "03.jpg.zip"
 		},
 
-		// plupload.File
 		function(cb) {
-			file = new plupload.File(files[1]);
+			file = new moxie.file.File(null, files[1]);
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 1, "Image (jpeg) successfully added.");
+				equal(up.count(), 1, "Image (jpeg) successfully added.");
 				up.unbind('TestFilesAdded');
 				cb();
 			});
@@ -280,14 +274,14 @@ test('options.max_file_size', function() {
 
 	up.bind('TestFilesAdded', function() {
 		start();
-		equal(up.files.length, 0, "No files were added to the queue.");
+		equal(up.count(), 0, "No files were added to the queue.");
 		up.unbind('TestFilesAdded');
 	});
 
 	up.bind('Error', function(up, error) {
 		start();
 		equal(error.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
-		equal(up.files.length, 0, "No files were added to the queue.");
+		equal(up.count(), 0, "No files were added to the queue.");
 	});
 
 	stop();
@@ -317,14 +311,14 @@ test('options.filters.max_file_size', function() {
 
 	up.bind('TestFilesAdded', function() {
 		start();
-		equal(up.files.length, 0, "No files were added to the queue.");
+		equal(up.count(), 0, "No files were added to the queue.");
 		up.unbind('TestFilesAdded');
 	});
 
 	up.bind('Error', function(up, error) {
 		start();
 		equal(error.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
-		equal(up.files.length, 0, "No files were added to the queue.");
+		equal(up.count(), 0, "No files were added to the queue.");
 	});
 
 	stop();
@@ -361,18 +355,31 @@ test('options.prevent_duplicates', function() {
 
 		function(cb) {
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
-				up.unbind('TestFilesAdded');
+				equal(up.count(), 2, "Another file, with the same name still added, 'cause sizes differ.");
+				up.unbind('TestFilesAdded TestError');
 				cb();
 			});
+
+			up.bind('TestError', function(up, err) {
+				up.unbind('TestFilesAdded TestError');
+				ok(false, "Another file, with the same name still added, 'cause sizes differ.");
+				cb();
+			});
+
 
 			up.addFile(files[0], files[1].name); // another file but with the same name
 		},
 
 		function(cb) {
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
-				up.unbind('TestFilesAdded');
+				equal(up.count(), 3, "The same file, but with another name still added, 'cause names must differ.");
+				up.unbind('TestFilesAdded TestError');
+				cb();
+			});
+
+			up.bind('TestError', function(up, err) {
+				up.unbind('TestFilesAdded TestError');
+				ok(false, "The same file, but with another name still added, 'cause names must differ.");
 				cb();
 			});
 
@@ -382,7 +389,7 @@ test('options.prevent_duplicates', function() {
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
-				equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
+				equal(up.count(), 3, "File ignored, 'cause a file with the same name and size already in the queue.");
 				up.unbind('TestError');
 				cb();
 			});
@@ -439,8 +446,14 @@ test('options.filters.prevent_duplicates', function() {
 
 		function(cb) {
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 2, "Another file, with the same name still added, 'cause sizes differ.");
-				up.unbind('TestFilesAdded');
+				equal(up.count(), 2, "Another file, with the same name still added, 'cause sizes differ.");
+				up.unbind('TestFilesAdded TestError');
+				cb();
+			});
+
+			up.bind('TestError', function(up, err) {
+				up.unbind('TestFilesAdded TestError');
+				ok(false, "Another file, with the same name still added, 'cause sizes differ.");
 				cb();
 			});
 
@@ -449,8 +462,14 @@ test('options.filters.prevent_duplicates', function() {
 
 		function(cb) {
 			up.bind('TestFilesAdded', function(up) {
-				equal(up.files.length, 3, "The same file, but with another name still added, 'cause names must differ.");
-				up.unbind('TestFilesAdded');
+				equal(up.count(), 3, "The same file, but with another name still added, 'cause names must differ.");
+				up.unbind('TestFilesAdded TestError');
+				cb();
+			});
+
+			up.bind('TestError', function(up, err) {
+				up.unbind('TestFilesAdded TestError');
+				ok(false, "The same file, but with another name still added, 'cause names must differ.");
 				cb();
 			});
 
@@ -460,7 +479,7 @@ test('options.filters.prevent_duplicates', function() {
 		function(cb) {
 			up.bind('TestError', function(up, err) {
 				equal(err.code, plupload.FILE_DUPLICATE_ERROR, "Error triggered, code: FILE_DUPLICATE_ERROR.");
-				equal(up.files.length, 3, "File ignored, 'cause a file with the same name and size already in the queue.");
+				equal(up.count(), 3, "File ignored, 'cause a file with the same name and size already in the queue.");
 				up.unbind('TestError');
 				cb();
 			});
