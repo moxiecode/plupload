@@ -23,9 +23,6 @@ define('plupload/FileUploader', [
 	'plupload/ChunkUploader'
 ], function(plupload, Collection, Queueable, UploadingQueue, ChunkUploader) {
 
-	var dispatches = [
-
-	];
 
 	function FileUploader(fileRef, options) {
 		var _file = fileRef;

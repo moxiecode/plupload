@@ -24,10 +24,6 @@ define('plupload/ChunkUploader', [
     'moxie/xhr/FormData'
 ], function(plupload, Collection, Queueable, XMLHttpRequest, FormData) {
 
-    var dispatches = [
-
-    ];
-
 
     function ChunkUploader(blob, options) {
         var _xhr;

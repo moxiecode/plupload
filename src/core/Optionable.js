@@ -38,8 +38,6 @@ define('plupload/core/Optionable', [
             
             this.uid = Basic.guid();
             this._options = {};
-
-            this.handleEventProps(dispatches);
         }
 
 

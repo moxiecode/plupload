@@ -100,9 +100,13 @@ define('plupload/core/Queue', [
                 finish_active: false,
                 pause_before_start: true
             });
+        }
 
-            this.handleEventProps(dispatches);
-        }            
+
+        Queue.STOPPED = 1;
+        Queue.STARTED = 2;
+        Queue.PAUSED = 3;
+        Queue.DESTROYED = 8;
 
         
         Basic.extend(Queue.prototype, {
@@ -446,12 +450,6 @@ define('plupload/core/Queue', [
             self.stats.loaded = self.stats.processed;
             self.stats.size = self.stats.total;
         }
-
-
-        Queue.STOPPED = 1;
-        Queue.STARTED = 2;
-        Queue.PAUSED = 3;
-        Queue.DESTROYED = 8;
 
         return Queue;
 
