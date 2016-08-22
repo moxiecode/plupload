@@ -149,7 +149,6 @@ test("unbindAll()", function(assert) {
 });
 
 
-
 module("Events");
 
 
@@ -253,26 +252,47 @@ test('Refresh', function(assert) {
 
 
 test('Destroy', function(assert) {
+	expect(4);
+
+	var runtimeFiles = FileHash.getRuntimeFiles();
+
 	var uploader = new plupload.Uploader({
 		browse_button: 'qunit-fixture',
 		runtimes: 'test',
 		url: '../upload.php',
 
 		preinit: {
-			PostInit: function() {
-				uploader.destroy();
+			PostInit: function(up) {
+				up.addFile(runtimeFiles);
 			},
 
 			Error: function() {
 				start();
-				ok(false, "Plupload cannot be initialized.");
+				assert.ok(false, "Plupload cannot be initialized.");
 			}
 		},
 
 		init: {
-			Destroy: function() {
+			FilesAdded: function(up, files) {
+				assert.ok(true, "FilesAdded fired.");
+				assert.equal(files.length, 2, files.length + " files were added");
+
+				up.destroy();
+			},
+
+			Destroy: function(up) {
 				start();
-				ok(true, "Destroy fired.");
+				assert.ok(true, "Destroy fired.");
+
+				// all files should be destroyed by this moment
+				var allDestroyed = true;
+				up.forEachItem(function(file) {
+					console.info(file.state);
+					if (file.state !== 8) { //  Queueable.DESTROYED = 8;
+						allDestroyed = false;
+					}
+				});
+				assert.ok(allDestroyed, "All files have been destroyed.");
 			}
 		}
 	});
@@ -311,7 +331,8 @@ test("FilesAdded, QueueChanged", function() {
 			FileFiltered: function(up, file) {
 				if (!events.FileFiltered) {
 					ok(true, "FileFiltered fired.");
-					ok(file instanceof plupload.File, "Second argument is plupload.File instance.");
+					ok(file instanceof plupload.FileUploader,
+							"Second argument is plupload.FileUploader instance.");
 				}
 
 				events.FileFiltered++;
@@ -323,7 +344,8 @@ test("FilesAdded, QueueChanged", function() {
 				ok(true, "FilesAdded fired.");
 
 				equal(files.length, runtimeFiles.length, runtimeFiles.length + " files added to the queue.");
-				ok(files[0] instanceof plupload.File, "Files in the queue are plupload.File instances.");
+				ok(files[0] instanceof plupload.FileUploader,
+						"Files in the queue are plupload.FileUploader instances.");
 			},
 
 			QueueChanged: function() {
@@ -389,6 +411,8 @@ test("FilesRemoved, QueueChanged", function() {
 
 
 test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", function() {
+	expect(10);
+
 	var events = {
 		StateChanged: 0,
 		BeforeUpload: 0,
@@ -454,7 +478,7 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 				start();
 
 				ok(events.UploadProgress > 0, "UploadProgress fired " + events.UploadProgress + " times.");
-				equal(events.StateChanged, 2, "StateChanged fired 2 times.");
+				equal(events.StateChanged, 4, "StateChanged fired " + events.StateChanged + " times.");
 
 				ok(true, "UploadComplete fired.");
 			},
@@ -464,6 +488,21 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 				if (!events.StateChanged) {
 					ok(true, "StateChanged fired.");
 				}
+
+				switch(up.state) {
+					case 1:
+						ok(true, "Uploader state changed to Queue.STOPPED");
+						break;
+
+					case 2:
+						ok(true, "Uploader state changed to Queue.STARTED");
+						break;
+
+					case 3:
+						ok(true, "Uploader state changed to Queue.PAUSED");
+						break;
+				}
+
 				events.StateChanged++;
 			}			
 		}
@@ -475,14 +514,7 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 
 
 test("Error (HTTP error)", function() {
-	var events = {
-		StateChanged: 0,
-		BeforeUpload: 0,
-		UploadFile: 0,
-		UploadProgress: 0,
-		FileUploaded: 0,
-		UploadComplete: 0
-	};
+	expect(5);
 
 	var uploader = new plupload.Uploader({
 		browse_button: 'qunit-fixture',
@@ -503,11 +535,16 @@ test("Error (HTTP error)", function() {
 				up.start();
 			},
 
+			CancelUpload: function() {
+				ok(true, "CancelUpload fired.");
+			},
+
 			Error: function(up, err) {
 				start();
 				ok(true, "Error fired.");
-				equal(err.code, plupload.HTTP_ERROR, "Error is of plupload.HTTP_ERROR type.");
-				ok(err.file instanceof plupload.File, "File passed along.");
+				equal(err.code, plupload.HTTP_ERROR, "Error code is plupload.HTTP_ERROR.");
+				equal(err.message, plupload.translate('HTTP Error.'), "Error message is present");
+				ok(err.file instanceof plupload.File, "Erroneous file passed as property of error object.");
 			}
 		}
 	});
