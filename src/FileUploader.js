@@ -284,5 +284,8 @@ define('plupload/FileUploader', [
 
 	FileUploader.prototype = new Queueable();
 
+	// for backward compatibility
+	plupload.File = FileUploader; // have an alias
+
 	return FileUploader;
 });

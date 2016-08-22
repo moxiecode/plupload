@@ -1264,11 +1264,11 @@ define('plupload/Uploader', [
 
 	Uploader.addFileFilter = addFileFilter;
 
+	Uploader.prototype = new Queue();
+
 	// for backward compatibility
 	plupload.addFileFilter = addFileFilter;
 	plupload.predictRuntime = predictRuntime;
-
-	Uploader.prototype = new Queue();
 
 	return Uploader;
 });
