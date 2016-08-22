@@ -182,7 +182,6 @@ Fires when all files in a queue are uploaded
 
 @event UploadComplete
 @param {plupload.Uploader} uploader Uploader instance sending the event.
-@param {Array} files Array of file objects that was added to queue/selected by the user.
  */
 
 
