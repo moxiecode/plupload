@@ -128,7 +128,7 @@
 									loaded: upSize,
 									total: upSize
 								});
-								updateDownProgress();
+								setTimeout(updateDownProgress, interval);
 							}
 						}
 
@@ -169,7 +169,7 @@
 
 						target.trigger('LoadStart');
 						_state = XMLHttpRequest.LOADING;
-						updateUpProgress();
+						setTimeout(updateUpProgress, interval);
 					},
 
 					getStatus: function() {
