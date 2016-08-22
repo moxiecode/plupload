@@ -70,11 +70,25 @@ define('plupload/core/Queueable', [
     ];
 
 
-    function Queueable() {
+    return (function(Parent) {
+        Basic.inherit(Queueable, Parent);
 
-        Optionable.call(this);
 
-        Basic.extend(this, {
+        function Queueable() {
+            Parent.apply(this, arguments);
+        }
+
+
+        Queueable.IDLE = 0;
+        Queueable.PROCESSING = 1;
+        Queueable.PAUSED = 2;
+        Queueable.RESUMED = 3;
+        Queueable.DONE = 4;
+        Queueable.FAILED = 5;
+        Queueable.DESTROYED = 8;
+
+
+        Basic.extend(Queueable.prototype, {
 
             uid: Basic.guid(),
 
@@ -163,19 +177,8 @@ define('plupload/core/Queueable', [
             }
 
         });
-        
-    }
 
+        return Queueable;
 
-    Queueable.IDLE = 0;
-    Queueable.PROCESSING = 1;
-    Queueable.PAUSED = 2;
-    Queueable.RESUMED = 3;
-    Queueable.DONE = 4;
-    Queueable.FAILED = 5;
-    Queueable.DESTROYED = 8;
-
-    Queueable.prototype = new Optionable();
-
-    return Queueable;
+    }(Optionable));
 });
