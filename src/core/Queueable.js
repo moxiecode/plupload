@@ -156,10 +156,10 @@ define('plupload/core/Queueable', [
                 if (self.state === Queueable.DESTROYED) {
                     return; // already destroyed
                 }
-                
-                this.unbindAll();
+
                 this.state = Queueable.DESTROYED;
                 this.trigger('destroy');
+                this.unbindAll();
             }
 
         });

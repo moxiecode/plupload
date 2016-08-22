@@ -362,14 +362,15 @@ define('plupload/core/Queue', [
                     });
                     return self.stop();
                 } else {
-                    self.clear();
-                    self.unbindAll();
+                    self.trigger('Destroy');
 
-                    self._queue = self.stats = self._startTime = null;
+                    self.clear();
 
                     self.state = Queue.DESTROYED;
                     self.trigger('StateChanged', self.state, prevState);
-                    self.trigger('Destroy');
+
+                    self.unbindAll();
+                    self._queue = self.stats = self._startTime = null;
                 }
             }
         });
