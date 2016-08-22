@@ -601,7 +601,7 @@ define('plupload/Uploader', [
 									self.addItem(fileUp);
 									filesAdded.push(fileUp);
 
-									self.trigger("FileFiltered", file);
+									self.trigger("FileFiltered", fileUp);
 								}
 
 								plupload.delay(cb); // do not build up recursions or eventually we might hit the limits
