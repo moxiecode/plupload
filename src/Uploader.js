@@ -457,7 +457,6 @@ define('plupload/Uploader', [
 				Uploader.prototype.setOption.call(this, option, value);
 			},
 
-
 			/**
 			 * Refreshes the upload instance by dispatching out a refresh event to all runtimes.
 			 * This would for example reposition flash/silverlight shims on the page.
@@ -470,9 +469,15 @@ define('plupload/Uploader', [
 						fileInput.trigger('Refresh');
 					});
 				}
+
+				if (_fileDrops.length) {
+					plupload.each(_fileDrops, function(fileDrops) {
+						fileDrops.trigger('Refresh');
+					});
+				}
+
 				this.trigger('Refresh');
 			},
-
 
 			/**
 			 * Stops the upload of the queued files.
