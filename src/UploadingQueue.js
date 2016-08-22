@@ -11,7 +11,11 @@ define('plupload/UploadingQueue', [
     var _instance;
 
     function UploadingQueue(options) {
-        Queue.call(this, options);
+        Queue.call(this);
+
+        if (options) {
+            this.setOption(options);
+        }
     }
 
 
