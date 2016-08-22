@@ -30,9 +30,6 @@ define('plupload/ChunkUploader', [
         var _options;
         var _blob = blob;
 
-        var _status;
-        var _response;
-
         plupload.extend(this, {
 
             uid: plupload.guid(),
