@@ -812,6 +812,10 @@ define('plupload/Uploader', [
 
 			this.bind('BeforeUpload', onBeforeUpload);
 
+			this.bind('Done', function(up) {
+				up.trigger('UploadComplete');
+			});
+
 			this.bind('Error', onError);
 
 			this.bind('Destroy', onDestroy);
