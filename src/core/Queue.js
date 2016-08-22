@@ -408,8 +408,8 @@ define('plupload/core/Queue', [
                         item.start(self.getOptions());
                     }
                 } else if (!self.stats.processing) { // we ran out of pending and active items too, so we are done
-                    self.trigger('Done');
-                    return self.stop();
+                    self.stop();
+                    return self.trigger('Done');
                 }
             }
         }
