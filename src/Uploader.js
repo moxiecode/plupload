@@ -545,8 +545,11 @@ define('plupload/Uploader', [
 					});
 
 					fileUp.bind('failed', function(e, err) {
-						err.file = this;
-						self.trigger('Error', err);
+						self.trigger('Error', plupload.extend({
+							code: plupload.HTTP_ERROR,
+							message: plupload.translate('HTTP Error.'),
+							file: this
+						}, err));
 					});
 				}
 
