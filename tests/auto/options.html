@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Plupload: Test Options</title>
+
+    <script src="../loader.js"></script>
+
+    <script type="text/javascript">
+
+        QUnit.config.reorder = false;
+        QUnit.config.autostart = false;
+        QUnit.config.testTimeout = 10000;
+
+        FileHash.init({
+            files: ['files/01.min.js', 'files/02.min.js'],
+            onready: function() {
+                QUnit.start();
+            }
+        });
+
+        plupload.ua.swf_url = "../../js/flash/Moxie.swf";
+        plupload.ua.xap_url = "../../js/silverlight/Moxie.xap";
+
+        module("plupload.Uploader", {
+            setup: function() {
+                var options, up, runtimeInfo;
+
+                $('#qunit-fixture').html('<div id="uploader" />');
+
+                options = this.options = {
+                    browse_button: 'uploader',
+                    container: 'qunit-fixture',
+                    runtimes: 'test',
+                    url: '../upload.php',
+                    http_method: 'POST',
+
+                    preinit: {
+                        Init: function(up, info) {
+                            runtimeInfo = info;
+                        },
+
+                        PostInit: function() {
+                            QUnit.start();
+                        },
+
+                        Error: function(up, err) {
+                            if (err.code == plupload.INIT_ERROR) {
+                                start();
+                                ok(false, "Plupload cannot be initialized.");
+                            }
+                        }
+                    },
+
+                    init: {
+                        // introduce special event that can be binded or unbinded without problems
+                        FilesAdded: function(up, files) {
+                            up.trigger('TestFilesAdded', files);
+                        },
+
+                        FilesRemoved: function(up, files) {
+                            up.trigger('TestFilesRemoved', files);
+                        },
+
+                        FileUploaded: function(up, file) {
+                            up.trigger('TestFileUploaded', file);
+                        },
+
+                        QueueChanged: function(up) {
+                            up.trigger('TestQueueChanged');
+                        },
+
+                        Error: function(up, err) {
+                            up.trigger('TestError', err);
+                        }
+                    }
+                };
+
+                up = this.up = new plupload.Uploader(options);
+
+                // rewire up.addFile() to accept fake files as if they were originated from test runtime
+                var addFile = up.addFile;
+                up.addFile = function(file) {
+                    file.ruid = runtimeInfo.ruid;
+                    file.connectRuntime(file.ruid);
+                    addFile.call(up, file);
+                };
+
+                QUnit.stop();
+                up.init();
+            },
+
+            teardown: function() {
+                this.up.destroy();
+            }
+        });
+
+
+        test("Test how default values are assigned to missing options", function() {
+
+            var up = new plupload.Uploader({
+                browse_button: 'uploader',
+                drop_element: 'uploader',
+                container: 'qunit-fixture',
+                url: "Plupload/upload.php"
+            });
+
+            up.bind('Init', function() {
+                start();
+
+                deepEqual(up.getOptions(), {
+                    browse_button: plupload.getAll('uploader'),
+                    drop_element: plupload.getAll('uploader'),
+                    container: plupload.get('qunit-fixture'),
+                    url: "Plupload/upload.php",
+                    runtimes: plupload.Runtime.order,
+                    multi_selection : true,
+                    flash_swf_url : 'js/Moxie.swf',
+                    silverlight_xap_url : 'js/Moxie.xap',
+                    max_upload_slots: 1,
+                    max_resize_slots: 1,
+                    filters : {
+                        mime_types: [{
+                            extensions: "*",
+                            title: "Files"
+                        }],
+                        prevent_duplicates: false,
+                        max_file_size: 0
+                    },
+                    required_features: {},
+                    http_method: "POST",
+                    file_data_name: "file",
+                    chunk_size: 0,
+                    max_retries: 0,
+                    multipart: true,
+                    params: {},
+                    multipart_params: {},
+                    required_features:  {},
+                    resize: false,
+                    send_chunk_number: true,
+                    send_file_name: true,
+
+                    // default options from Queue
+                    max_slots: 1,
+                    max_retries: 0,
+                    auto_start: false,
+                    finish_active: false,
+                    pause_before_start: true,
+
+                    // preferred caps are now part of the config
+                    preferred_caps: {
+                        drag_and_drop: true,
+                        select_multiple: true,
+                        use_http_method: "POST"
+                    },
+
+                    backward_compatibility: true
+                }, "Proper defaults set.");
+            });
+
+            stop();
+            up.init();
+        });
+
+
+        test("Test how defaults are set for resize object", function() {
+            var options = {
+                browse_button: 'uploader',
+                drop_element: 'uploader',
+                container: 'qunit-fixture',
+                url: "Plupload/upload.php"
+            };
+
+            var up = new plupload.Uploader(plupload.extend(options, {
+                resize: {
+                    width: 100,
+                    height: 60
+                }
+            }));
+
+            deepEqual(up.getOption('resize'), {
+                width: 100,
+                height: 60,
+                crop: false,
+                preserve_headers: true
+            }, "Proper defaults set for resize property.");
+        });
+
+
+        test('setOption() - set option that requires reinitialization', function(assert) {
+            var oldValue = this.up.getOption('multi_selection');
+            var newValue = !oldValue;
+
+            this.up.bind('TestError', function(up, err) {
+                start();
+
+                assert.equal(err.code, plupload.OPTION_ERROR,
+                        "Options that require reinitialisation throw plupload.OPTION_ERROR.");
+            });
+
+            stop();
+            this.up.setOption('multi_selection', newValue);
+        });
+
+
+        test('When http_method is changed it should also change for FileUploader', function(assert) {
+            QUnit.expect(3);
+
+            var files = FileHash.getRuntimeFiles();
+            var up = this.up;
+            var queue = [];
+
+            queue.push(
+                function(cb) {
+                    up.bind('TestFileUploaded', function(up, file) {
+                        up.unbind('TestFileUploaded');
+                        assert.equal(file.getOption('http_method'), 'POST',
+                            "http_method set to a default value of - POST");
+                        cb();
+                    });
+
+                    up.addFile(files[0]);
+                    up.start();
+                },
+
+                function(cb) {
+                    up.bind('TestFileUploaded', function(up, file) {
+                        up.unbind('TestFileUploaded');
+                        assert.equal(file.getOption('http_method'), 'PUT',
+                            "http_method on File changed to - PUT");
+                        cb();
+                    });
+
+                    up.setOption('http_method', 'PUT');
+
+                    assert.equal(up.getOption('http_method'), 'PUT',
+                        "http_method on Uploader changed to PUT as expected");
+
+                    up.addFile(files[1]);
+                    up.start();
+                }
+            );
+
+            stop();
+            plupload.inSeries(queue, function() {
+                start();
+            });
+        });
+
+    </script>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>
