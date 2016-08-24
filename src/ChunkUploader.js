@@ -27,7 +27,6 @@ define('plupload/ChunkUploader', [
 
     function ChunkUploader(blob, options) {
         var _xhr;
-        var _options;
         var _blob = blob;
 
         plupload.extend(this, {
@@ -38,12 +37,14 @@ define('plupload/ChunkUploader', [
                 var self = this;
                 var url;
                 var formData;
-
-                ChunkUploader.prototype.start.call(this);
+                var _options;
 
                 if (options) {
-                    plupload.extend(_options, options);
+                    this.setOptions(options);
                 }
+                _options = this.getOptions();
+
+                ChunkUploader.prototype.start.call(this);
 
                 _xhr = new XMLHttpRequest();
 
@@ -125,8 +126,6 @@ define('plupload/ChunkUploader', [
 
         this.setOption(options);
 
-        // have a shortcut to the options object for internal uses
-        _options = this.getOptions();
 
         /**
          * Builds a full url out of a base URL and an object with items to append as query string items.
