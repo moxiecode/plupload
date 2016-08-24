@@ -604,17 +604,16 @@ define('plupload/Uploader', [
 								var fileUp;
 
 								if (!err) {
-									fileUp = new FileUploader(file, _options);
+									fileUp = new PluploadFile(file, _queueUpload, _queueResize);
 
 									if (fileName) {
 										fileUp.name = fileName;
 									}
 
 									bindListeners(fileUp);
-									// make files available for the filters by updating the main queue directly
-									self.addItem(fileUp);
-									filesAdded.push(fileUp);
 
+									self.addItem(fileUp); // make files available for the filters by updating the main queue directly
+									filesAdded.push(fileUp);
 									self.trigger("FileFiltered", fileUp);
 								}
 

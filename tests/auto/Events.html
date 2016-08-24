@@ -302,7 +302,7 @@ test('Destroy', function(assert) {
 });
 
 
-test("FilesAdded, QueueChanged", function() {
+test("FileFiltered, FilesAdded, QueueChanged", function() {
 	expect(7);
 
 	var events = {
@@ -331,8 +331,8 @@ test("FilesAdded, QueueChanged", function() {
 			FileFiltered: function(up, file) {
 				if (!events.FileFiltered) {
 					ok(true, "FileFiltered fired.");
-					ok(file instanceof plupload.FileUploader,
-							"Second argument is plupload.FileUploader instance.");
+					ok(file instanceof plupload.File,
+							"Second argument is plupload.File instance.");
 				}
 
 				events.FileFiltered++;
@@ -344,8 +344,8 @@ test("FilesAdded, QueueChanged", function() {
 				ok(true, "FilesAdded fired.");
 
 				equal(files.length, runtimeFiles.length, runtimeFiles.length + " files added to the queue.");
-				ok(files[0] instanceof plupload.FileUploader,
-						"Files in the queue are plupload.FileUploader instances.");
+				ok(files[0] instanceof plupload.File,
+						"Files in the queue are plupload.File instances.");
 			},
 
 			QueueChanged: function() {

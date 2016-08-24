@@ -164,8 +164,8 @@ test('getFile()', function() {
 		start();
 		var file = up.getFile(files[0].id);
 
-		ok((files[0] instanceof plupload.FileUploader), "Objects passed in the second argument are plupload.FileUploader instances.");
-		deepEqual(file, files[0], "FileUploader item retrieved by id with getFile().");
+		ok((files[0] instanceof plupload.File), "Objects passed in the second argument are plupload.FileUploader instances.");
+		deepEqual(file, files[0], "File item retrieved by id with getFile().");
 
 		up.unbind('TestFilesAdded');
 	});
@@ -185,7 +185,7 @@ test('removeFile()', function() {
 		countFiles = up.files.length;
 
 		up.removeFile(up.files[0]);
-		equal(up.files.length, --countFiles, "File removed from the queue by passing a plupload.FileUploader object.");
+		equal(up.files.length, --countFiles, "File removed from the queue by passing a plupload.File object.");
 
 		up.removeFile(up.files[0].id);
 		equal(up.files.length, --countFiles, "File removed from the queue by passing file id.");

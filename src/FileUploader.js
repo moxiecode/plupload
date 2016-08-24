@@ -27,7 +27,6 @@ define('plupload/FileUploader', [
 		var _file = fileRef;
 		var _offset = 0;
 		var _chunks = new Collection();
-		var _uid = plupload.guid();
 
 		Queueable.call(this);
 
@@ -44,14 +43,6 @@ define('plupload/FileUploader', [
 		};
 
 		plupload.extend(this, {
-			/**
-			 * For backward compatibility
-			 *
-			 * @property id
-			 * @type {String}
-			 * @deprecated
-			 */
-			id: _uid,
 
 			/**
 			Unique identifier
@@ -59,7 +50,7 @@ define('plupload/FileUploader', [
 			@property uid
 			@type {String}
             */
-			uid: _uid,
+			uid: plupload.guid(),
 
 			/**
 			When send_file_name is set to true, will be sent with the request as `name` param. 
@@ -69,37 +60,6 @@ define('plupload/FileUploader', [
 			@type {String}
             */
 			name: _file.name,
-
-			/**
-			@property target_name
-			@type {String}
-			@deprecated use name
-            */
-			target_name: null,
-
-			/**
-			 * File type, `e.g image/jpeg`
-			 *
-			 * @property type
-			 * @type String
-			 */
-			type: _file.type,
-
-			/**
-			 * File size in bytes (may change after client-side manupilation).
-			 *
-			 * @property size
-			 * @type Number
-			 */
-			size: _file.size,
-
-			/**
-			 * Original file size in bytes.
-			 *
-			 * @property origSize
-			 * @type Number
-			 */
-			origSize: _file.size,
 
 
 			start: function(options) {
@@ -132,42 +92,8 @@ define('plupload/FileUploader', [
 						self.failed(result);
 					});
 
-					_queue.addItem(up);
+					queue.addItem(up);
 				}
-			},
-
-			/**
-			 * Get the file for which this FileUploader is responsible
-			 *
-			 * @method getSource
-			 * @deprecated use getFile()
-			 * @returns {moxie.file.File}
-			 */
-			getSource: function() {
-				return this.getFile();
-			},
-
-			/**
-			 * Returns file representation of the current runtime. For HTML5 runtime
-			 * this is going to be native browser File object
-			 * (for backward compatibility)
-			 *
-			 * @method getNative
-			 * @deprecated
-			 * @returns {File|Blob|Object}
-			 */
-			getNative: function() {
-				return this.getFile().getSource();
-			},
-
-			/**
-			 * Get the file for which this FileUploader is responsible
-			 *
-			 * @method getFile
-			 * @returns {moxie.file.File}
-			 */
-			getFile: function() {
-				return fileRef;
 			},
 
 
@@ -280,9 +206,6 @@ define('plupload/FileUploader', [
 
 
 	FileUploader.prototype = new Queueable();
-
-	// for backward compatibility
-	plupload.File = FileUploader; // have an alias
 
 	return FileUploader;
 });
