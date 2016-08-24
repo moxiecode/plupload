@@ -505,6 +505,63 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 });
 
 
+test("It should be possible to abort file upload if false is returned from BeforeUpload handler", function(assert) {
+	expect(2);
+
+	var events = {
+		BeforeUpload: 0,
+		UploadFile: 0
+	};
+
+	var uploader = new plupload.Uploader({
+		browse_button: 'qunit-fixture',
+		runtimes: 'test',
+		url: '../upload.php',
+
+		preinit: {
+			Init: function(up, info) {
+				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme
+				runtimeFiles[0].connectRuntime(info.ruid);
+				up.addFile(runtimeFiles[0]);
+			},
+
+			Error: function() {
+				start();
+				ok(false, "Plupload cannot be initialized.");
+			}
+		},
+
+		init: {
+			FilesAdded: function(up) {
+				up.start();
+			},
+
+
+			BeforeUpload: function(up, file) {
+				events.BeforeUpload++;
+				return false;
+			},
+
+
+			UploadFile: function(up, file) {
+				events.UploadFile++;
+			},
+
+			UploadComplete: function() {
+				start();
+
+				assert.ok(events.BeforeUpload > 0, "BeforeUpload has fired.");
+				assert.equal(events.UploadFile, 0, "Upload successfully stopped by returning false from BeforeUpload.");
+			}
+		}
+	});
+
+	stop();
+	uploader.init();
+});
+
+
 test("Error (HTTP error)", function() {
 	expect(5);
 
