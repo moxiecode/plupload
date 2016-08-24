@@ -29,6 +29,10 @@ define('plupload/ChunkUploader', [
         var _xhr;
         var _blob = blob;
 
+        Queueable.call(this);
+
+        this.setOptions(options);
+
         plupload.extend(this, {
 
             uid: plupload.guid(),
@@ -120,11 +124,6 @@ define('plupload/ChunkUploader', [
                 }
             }
         });
-
-
-        Queueable.call(this);
-
-        this.setOption(options);
 
 
         /**

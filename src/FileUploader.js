@@ -25,8 +25,8 @@ define('plupload/FileUploader', [
 
 	function FileUploader(fileRef, queue) {
 		var _file = fileRef;
-		var _offset = 0;
 		var _chunks = new Collection();
+		var _totalChunks = 1;
 
 		Queueable.call(this);
 
@@ -76,6 +76,7 @@ define('plupload/FileUploader', [
 				}
 
 				if (self._options.chunk_size) {
+					_totalChunks = Math.ceil(_file.size / self._options.chunk_size);
 					self.uploadChunk(false, false, true);
 				} else {
 					up = new ChunkUploader(_file, self._options);
@@ -99,20 +100,20 @@ define('plupload/FileUploader', [
 
 			uploadChunk: function(seq, options, dontStop) {
 				var self = this;
-				var chunkSize;
+				var chunkSize = this.getOption('chunk_size');
 				var up;
-				var chunk;
-				var _options = this._options;
+				var chunk = {};
+				var _options;
 
 				if (options) {
 					// chunk_size cannot be changed on the fly
 					delete options.chunk_size;
-					plupload.extend(_options, options);
+					plupload.extend(this._options, options);
 				}
 
-				chunk.seq = parseInt(seq, 10) || Math.floor(_offset / chunkSize) + 1; // advance by one if undefined,
+				chunk.seq = parseInt(seq, 10) || getNextChunk();
 				chunk.start = chunk.seq * chunkSize;
-				chunk.end = Math.max(chunk.start + chunkSize, _file.size);
+				chunk.end = Math.min(chunk.start + chunkSize, _file.size);
 				chunk.total = _file.size;
 
 				// do not proceed for weird chunks
@@ -120,11 +121,17 @@ define('plupload/FileUploader', [
 					return false;
 				}
 
+				_options = plupload.extend({}, this.getOptions(), {
+					params: {
+						chunk: seq,
+						chunks: _totalChunks
+					}
+				});
 
-				up = ChunkUploader(_file.slice(chunk.start, chunk.end, _file.type), _options);
+				up = new ChunkUploader(_file.slice(chunk.start, chunk.end, _file.type), _options);
 
 				up.bind('progress', function(e) {
-					self.progress(calcProcessed() + e.processed, e.total);
+					self.progress(calcProcessed() + e.loaded, _file.size);
 				});
 
 				up.bind('failed', function(e, result) {
@@ -149,14 +156,13 @@ define('plupload/FileUploader', [
 					if (calcProcessed() >= _file.size) {
 						self.done(result); // obviously we are done
 					} else if (dontStop) {
-						plupload.delay.call(self, self.uploadChunk);
+						plupload.delay(function() {
+							self.uploadChunk(getNextChunk(), false, dontStop);
+						});
 					}
-
-					this.destroy();
 				});
 
-				up.bind('failed', function(e, result) {
-					self.progress(calcProcessed());
+				up.bind('processed', function() {
 					this.destroy();
 				});
 
@@ -168,7 +174,7 @@ define('plupload/FileUploader', [
 
 				// enqueue even more chunks if slots available
 				if (dontStop && queue.countSpareSlots()) {
-					self.uploadChunk();
+					self.uploadChunk(getNextChunk(), false, dontStop);
 				}
 
 				return true;
@@ -200,6 +206,15 @@ define('plupload/FileUploader', [
 			});
 
 			return processed;
+		}
+
+
+		function getNextChunk() {
+			var i = 0;
+			while (i < _totalChunks && _chunks.hasKey(i)) {
+				i++;
+			}
+			return i;
 		}
 
 	}
