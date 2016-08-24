@@ -852,8 +852,8 @@ define('plupload/Uploader', [
 
 			// add runtime specific options if any
 			plupload.each(self.getOption('runtimes').split(/\s*,\s*/), function(runtime) {
-				if (_options[runtime]) {
-					options[runtime] = _options[runtime];
+				if (self.getOption(runtime)) {
+					options[runtime] = self.getOption(runtime);
 				}
 			});
 
