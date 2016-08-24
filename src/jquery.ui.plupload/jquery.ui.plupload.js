@@ -1145,7 +1145,8 @@ $.widget("ui.plupload", {
 		}
 
 		$.each(files, function(i, file) {
-			var ext = o.Mime.getFileExtension(file.name) || 'none';
+			var m = file.name.match(/\.([^.]+)$/);
+			var ext = m && m[1].toLowerCase() || 'none';
 
 			html += file_html.replace(/\{(\w+)\}/g, function($0, $1) {
 				switch ($1) {
