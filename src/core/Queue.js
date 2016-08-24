@@ -318,7 +318,7 @@ define('plupload/core/Queue', [
 
 
             countSpareSlots: function() {
-                return Math.max(this.getOption('max_slots') - self.stats.processing, 0);
+                return Math.max(this.getOption('max_slots') - this.stats.processing, 0);
             },
 
 
