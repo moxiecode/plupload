@@ -548,6 +548,14 @@ define('plupload/Uploader', [
 
 
 				function bindListeners(fileUp) {
+					fileUp.bind('beforestart', function(e) {
+						return self.trigger('BeforeUpload', e.target);
+					});
+
+					fileUp.bind('started', function() {
+						self.trigger('UploadFile', this);
+					});
+
 					fileUp.bind('progress', function() {
 						self.trigger('UploadProgress', this);
 					});

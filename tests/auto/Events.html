@@ -411,7 +411,7 @@ test("FilesRemoved, QueueChanged", function() {
 
 
 test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", function() {
-	expect(10);
+	expect(12);
 
 	var events = {
 		StateChanged: 0,
@@ -449,45 +449,37 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 
 			BeforeUpload: function(up, file) {
 				events.BeforeUpload++;
-				ok(true, "BeforeUpload fired.");
-				ok(file instanceof plupload.File, "File to upload is plupload.File instance.");
+				ok(file instanceof plupload.File, "Second argument in BeforeUpload handler is plupload.File instance.");
 			},
 
 
 			UploadFile: function(up, file) {
 				events.UploadFile++;
-				ok(true, "UploadFile fired.");
-				ok(file instanceof plupload.File, "File to upload is plupload.File instance.");
+				ok(file instanceof plupload.File, "Second argument in UploadFile handler is plupload.File instance.");
 			},
 
 
 			UploadProgress: function() {
-				if (!events.UploadProgress) {
-					ok(true, "UploadProgress fired.");
-				}
 				events.UploadProgress++;
 			},
 
-
 			FileUploaded: function() {
-				ok(true, "FileUploaded fired.");
+				events.FileUploaded++;
 			},
 
 
 			UploadComplete: function() {
+				events.UploadComplete++;
+
 				start();
 
-				ok(events.UploadProgress > 0, "UploadProgress fired " + events.UploadProgress + " times.");
-				equal(events.StateChanged, 4, "StateChanged fired " + events.StateChanged + " times.");
-
-				ok(true, "UploadComplete fired.");
+				plupload.each(events, function(count, name) {
+					ok(count > 0, name + " fired " + count + " times.");
+				});
 			},
 
 
 			StateChanged: function(up, file) {
-				if (!events.StateChanged) {
-					ok(true, "StateChanged fired.");
-				}
 
 				switch(up.state) {
 					case 1:
