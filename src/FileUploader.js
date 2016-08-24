@@ -29,10 +29,21 @@ define('plupload/FileUploader', [
 		var _offset = 0;
 		var _chunks = new Collection();
 		var _queue = UploadingQueue.getInstance();
-		var _options;
 		var _uid = plupload.guid();
 
 		Queueable.call(this);
+
+		this._options = {
+			url: false,
+			chunk_size: 0,
+			multipart: true,
+			http_method: 'POST',
+			params: {},
+			headers: false,
+			file_data_name: 'file',
+			send_file_name: true,
+			stop_on_fail: true
+		};
 
 		plupload.extend(this, {
 			/**
@@ -97,21 +108,19 @@ define('plupload/FileUploader', [
 				var self = this;
 				var up;
 
-				if (options) {
-					plupload.extendIf(_options, options);
-				}
+				this.setOptions(options);
 
 				FileUploader.prototype.start.call(self);
 
 				// send additional 'name' parameter only if required or explicitly requested
-				if (_options.send_file_name) {
-					_options.params.name = self.target_name || self.name;
+				if (self._options.send_file_name) {
+					self._options.params.name = self.target_name || self.name;
 				}
 
-				if (_options.chunk_size) {
+				if (self._options.chunk_size) {
 					self.uploadChunk(false, false, true);
 				} else {
-					up = new ChunkUploader(_file, _options);
+					up = new ChunkUploader(_file, self._options);
 
 					up.bind('progress', function(e) {
 						self.progress(e.loaded, e.total);
@@ -169,6 +178,7 @@ define('plupload/FileUploader', [
 				var chunkSize;
 				var up;
 				var chunk;
+				var _options = this._options;
 
 				if (options) {
 					// chunk_size cannot be changed on the fly
@@ -241,27 +251,19 @@ define('plupload/FileUploader', [
 			},
 
 
+			setOption: function(option, value) {
+				if (typeof(option) !== 'object' && !this._options.hasOwnProperty(option)) {
+					return;
+				}
+				FileUploader.prototype.setOption.apply(this, arguments);
+			},
+
+
 			destroy: function() {
 				FileUploader.prototype.destroy.call(this);
 				_queue = _file = null;
 			}
 		});
-
-		this.setOption(plupload.extendIf({
-			url: false,
-			chunk_size: 0,
-			multipart: true,
-			http_method: 'POST',
-			params: {},
-			headers: false,
-			file_data_name: 'file',
-			send_file_name: true,
-			stop_on_fail: true
-		}, options));
-
-		// have a shortcut to the options object for internal uses
-		_options = this.getOptions();
-
 
 
 		function calcProcessed() {
