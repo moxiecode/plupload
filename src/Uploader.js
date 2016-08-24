@@ -218,9 +218,10 @@ define('plupload/Uploader', [
 	'moxie/file/FileDrop',
 	'moxie/runtime/Runtime',
 	'plupload/core/Queue',
-	'plupload/UploadingQueue',
-	'plupload/FileUploader'
-], function(plupload, Collection, Mime, mxiBlob, mxiFile, FileInput, FileDrop, Runtime, Queue, UploadingQueue, FileUploader) {
+	'plupload/QueueUpload',
+	'plupload/QueueResize',
+	'plupload/File'
+], function(plupload, Collection, Mime, mxiBlob, mxiFile, FileInput, FileDrop, Runtime, Queue, QueueUpload, QueueResize, PluploadFile) {
 
 	var fileFilters = {};
 	var undef;
@@ -230,6 +231,7 @@ define('plupload/Uploader', [
 		var _uid = plupload.guid();
 		var _fileInputs = [];
 		var _fileDrops = [];
+		var _queueUpload, _queueResize;
 		var _initialized = false;
 		var _disabled = false;
 
@@ -245,6 +247,7 @@ define('plupload/Uploader', [
 				},
 				// headers: false, // Plupload had a required feature with the same name, comment it to avoid confusion
 				max_upload_slots: 1,
+				max_resize_slots: 1,
 				multipart: true,
 				multipart_params: {}, // deprecated, use - params,
 				// @since 3
@@ -269,7 +272,6 @@ define('plupload/Uploader', [
 		_options.preferred_caps = normalizeCaps(plupload.extend({}, _options, {
 			required_features: true
 		}));
-
 
 		Queue.call(this);
 
@@ -387,6 +389,7 @@ define('plupload/Uploader', [
 				initControls.call(self, function(initialized) {
 					var runtime;
 					var initOpt = self.getOption('init');
+					var queueOpts = plupload.extend({}, self.getOption(), { auto_start: true });
 
 					if (typeof(initOpt) == "function") {
 						initOpt(self);
@@ -400,11 +403,8 @@ define('plupload/Uploader', [
 						_initialized = true;
 						runtime = Runtime.getInfo(getRUID());
 
-						UploadingQueue.getInstance({
-							auto_start: true,
-							max_retries: self.getOption('max_retries'),
-							max_slots: self.getOption('max_upload_slots')
-						});
+						_queueUpload = new QueueUpload(queueOpts);
+						_queueResize = new QueueResize(queueOpts);
 
 						self.trigger('Init', {
 							ruid: runtime.uid,
@@ -433,15 +433,14 @@ define('plupload/Uploader', [
 				if (_initialized) {
 					// following options cannot be changed after initialization
 					if (plupload.inArray(option, [
-							'container',
-							'browse_button',
-							'drop_element',
-							'runtimes',
-							'multi_selection',
-							'flash_swf_url',
-							'silverlight_xap_url'
-						]) !== -1)
-					{
+						'container',
+						'browse_button',
+						'drop_element',
+						'runtimes',
+						'multi_selection',
+						'flash_swf_url',
+						'silverlight_xap_url'
+					]) > -1) {
 						return this.trigger('Error', {
 							code: plupload.OPTION_ERROR,
 							message: plupload.sprintf(plupload.translate("%s option cannot be changed.")),
@@ -452,6 +451,14 @@ define('plupload/Uploader', [
 
 				if (typeof(option) !== 'object') {
 					value = normalizeOption(option, value, _options);
+
+					// queues will take in only appropriate options
+					if (_queueUpload) {
+						_queueUpload.setOption(option, value);
+					}
+					if (_queueResize) {
+						_queueResize.setOption(option, value);
+					}
 				}
 
 				Uploader.prototype.setOption.call(this, option, value);
@@ -1005,7 +1012,17 @@ define('plupload/Uploader', [
 			}
 
 			_initialized = false;
-			_options = null; // purge these exclusively
+
+			if (_queueUpload) {
+				_queueUpload.destroy();
+			}
+
+			if (_queueResize) {
+				_queueResize.destroy();
+			}
+
+			_options = _queueUpload = _queueResize = null; // purge these exclusively
+
 		}
 
 	}
