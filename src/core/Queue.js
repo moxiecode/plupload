@@ -66,7 +66,7 @@ define('plupload/core/Queue', [
         Basic.inherit(Queue, Parent);
     
 
-        function Queue() {
+        function Queue(options) {
             Parent.apply(this, arguments);
 
             /**
@@ -93,13 +93,13 @@ define('plupload/core/Queue', [
             this.stats = new Stats();
 
 
-            this.setOption({
+            this._options = Basic.extend({
                 max_slots: 1,
                 max_retries: 0,
                 auto_start: false,
                 finish_active: false,
                 pause_before_start: true
-            });
+            }, options);
         }
 
 
