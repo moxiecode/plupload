@@ -24,7 +24,7 @@ define("plupload/ImageResizer", [
 	@class plupload/Image
 	@constructor
 	*/
-	function ImageResizer(fileRef, options) {
+	function ImageResizer(fileRef) {
 
 		Queueable.call(this);
 
@@ -44,25 +44,26 @@ define("plupload/ImageResizer", [
 			if (typeof(option) !== 'object' && !this._options.hasOwnProperty(option)) {
 				return;
 			}
-			ImageResizer.prototype.setOption.call(this);
+			ImageResizer.prototype.setOption.apply(this, arguments);
 		};
 
 
 		this.start = function(options) {
 			var self = this;
-			var options = self.getOptions();
 			var img;
 
-			this.setOptions(options.resize);
+			if (options) {
+				this.setOptions(options.resize);
+			}
 
 			img = new mxiImage();
 
 			img.bind('load', function() {
-				this.resize(options);
+				this.resize(self.getOptions());
 			});
 
 			img.bind('resize', function() {
-				self.done(this.getAsBlob(options.type, options.quality));
+				self.done(this.getAsBlob(self.getOption('type'), self.getOption('quality')));
 				this.destroy();
 			});
 
@@ -71,15 +72,11 @@ define("plupload/ImageResizer", [
 				this.destroy();
 			});
 
-			img.load(file);
+			img.load(fileRef);
 		};
-
-		this.setOptions(option.resize);
 	}
 
-
-	File.prototype = new Queueable();
-
+	ImageResizer.prototype = new Queueable();
 
 	return ImageResizer;
 });
