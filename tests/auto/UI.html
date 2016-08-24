@@ -50,32 +50,6 @@ test("getUploader()", function(assert) {
 });
 
 
-test("refresh()", function(assert) {
-	stop();
-	$('#qunit-fixture').plupload({
-		runtimes: 'test',
-		url: '../upload.php',
-
-		ready: function(e, o) {
-			o.up.bind('refresh', function() {
-				start();
-				assert.ok(true, 
-					'Refresh has been triggered.');
-			});
-
-			$(this).plupload('refresh');
-		},
-
-		error: function() {
-			start();
-			assert.ok(false, "Plupload didn't initialise.");
-		}
-	});
-});
-
-
-
-
 
 module("Events", {
 	teardown: function() {
@@ -85,20 +59,20 @@ module("Events", {
 
 test('ready', function(assert) {
 	expect(2);
-	stop();
+	QUnit.stop();
 	$('#qunit-fixture').plupload({
 		runtimes: 'test',
 		url: '../upload.php',
 
 		ready: function(e, o) {
-			start();
+			QUnit.start();
 			assert.ok(true, 'ready fired.');
 			assert.ok(o.up instanceof plupload.Uploader, 
 				'Second arguments up property is plupload.Uploader object.');
 		},
 
 		error: function() {
-			start();
+			QUnit.start();
 			assert.ok(false, "Plupload didn't initialise.");
 		}
 	});
@@ -108,7 +82,7 @@ test('ready', function(assert) {
 test('selected (uses - event:ready)', function(assert) {
 	var files = FileHash.getRuntimeFiles();
 
-	stop();
+	QUnit.stop();
 	$('#qunit-fixture').plupload({
 		runtimes: 'test',
 		url: '../upload.php',
@@ -118,7 +92,7 @@ test('selected (uses - event:ready)', function(assert) {
 		},
 
 		selected: function(e, o) {
-			start();
+			QUnit.start();
 			assert.ok(true, 'selected fired.');
 			assert.ok(o.files, "Event object contains files property.");
 			assert.equal(o.files.length, files.length, 
@@ -127,7 +101,7 @@ test('selected (uses - event:ready)', function(assert) {
 		},
 
 		error: function() {
-			start();
+			QUnit.start();
 			assert.ok(false, "Plupload didn't initialise.");
 		}
 	});
@@ -145,7 +119,7 @@ test('started, stopped, progress, uploaded, complete (uses - event:ready, prop:a
 
 	var ruid;
 
-	stop();
+	QUnit.stop();
 	$('#qunit-fixture').plupload({
 		runtimes: 'test',
 		url: '../upload.php',
@@ -194,18 +168,16 @@ test('started, stopped, progress, uploaded, complete (uses - event:ready, prop:a
 		},
 
 		complete: function(e, o) {
-			start();
+			QUnit.start();
 			events[e.type]++;
 
-			assert.equal(events.started, 1, "start fired 1 time.");
-			assert.equal(events.stopped, 1, "stop fired 1 time.");
-			assert.ok(events.progress, "progress fired "+events.progress+" time(s).");
-			assert.equal(events.uploaded, 1, "uploaded fired 1 time.");
-			assert.equal(events.complete, 1, "complete fired 1 time.");
+			plupload.each(events, function(count, name) {
+				assert.ok(count > 0, name + " fired " + count + " time(s).");
+			});
 		},
 
 		error: function() {
-			start();
+			QUnit.start();
 			assert.ok(false, "Plupload didn't initialise.");
 		}
 	});
