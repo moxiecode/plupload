@@ -19,16 +19,14 @@ define('plupload/FileUploader', [
 	'plupload',
 	'plupload/core/Collection',
 	'plupload/core/Queueable',
-	'plupload/UploadingQueue',
 	'plupload/ChunkUploader'
-], function(plupload, Collection, Queueable, UploadingQueue, ChunkUploader) {
+], function(plupload, Collection, Queueable, ChunkUploader) {
 
 
-	function FileUploader(fileRef, options) {
+	function FileUploader(fileRef, queue) {
 		var _file = fileRef;
 		var _offset = 0;
 		var _chunks = new Collection();
-		var _queue = UploadingQueue.getInstance();
 		var _uid = plupload.guid();
 
 		Queueable.call(this);
@@ -240,10 +238,10 @@ define('plupload/FileUploader', [
 				_chunks.add(chunk.seq, plupload.extend({
 					state: Queueable.PROCESSING
 				}, chunk));
-				_queue.addItem(up);
+				queue.addItem(up);
 
 				// enqueue even more chunks if slots available
-				if (dontStop && _queue.countSpareSlots()) {
+				if (dontStop && queue.countSpareSlots()) {
 					self.uploadChunk();
 				}
 
@@ -261,7 +259,7 @@ define('plupload/FileUploader', [
 
 			destroy: function() {
 				FileUploader.prototype.destroy.call(this);
-				_queue = _file = null;
+				queue = _file = null;
 			}
 		});
 
