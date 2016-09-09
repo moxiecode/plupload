@@ -10,11 +10,12 @@
 
 
 /**
-@class plupload/Uploader
+@class plupload.Uploader
+@extends plupload.core.Queue
+@constructor
 @public
 @final
-@constructor
-@extends plupload/core/Queue
+
 
 @param {Object} settings For detailed information about each option check documentation.
 	@param {String|DOMElement} settings.browse_button id of the DOM element or DOM element itself to use as file dialog trigger.
@@ -36,12 +37,17 @@
 	@param {String} [settings.http_method="POST"] HTTP method to use during upload (only PUT or POST allowed).
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
 	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
-	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
-		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
-		@param {Number} [settings.resize.height] If image is bigger, it will be resized.
-		@param {Number} [settings.resize.quality=90] Compression quality for jpegs (1-100).
-		@param {Boolean} [settings.resize.crop=false] Whether to crop images to exact dimensions. By default they will be resized proportionally.
-	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
+	@param {Object} [settings.resize] Enable resizing of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
+		 @param {Number} settings.resize.width Resulting width
+		 @param {Number} [settings.resize.height=width] Resulting height (optional, if not supplied will default to width)
+		 @param {String} [settings.resize.type='image/jpeg'] MIME type of the resulting image
+		 @param {Number} [settings.resize.quality=90] In the case of JPEG, controls the quality of resulting image
+		 @param {Boolean} [settings.resize.crop='cc'] If not falsy, image will be cropped, by default from center
+		 @param {Boolean} [settings.resize.fit=true] In case of crop whether to upscale the image to fit the exact dimensions
+		 @param {Boolean} [settings.resize.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
+		 @param {String} [settings.resize.resample='default'] Resampling algorithm to use during resize
+		 @param {Boolean} [settings.resize.multipass=true] Whether to scale the image in steps (results in better quality)
+ 	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
 	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
 	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
@@ -339,7 +345,6 @@ define('plupload/Uploader', [
 			 *
 			 * @property total
 			 * @deprecated use stats
-			 * @type plupload.QueueProgress
 			 */
 			total: this.stats,
 

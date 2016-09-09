@@ -10,20 +10,19 @@
 
 
 /**
- @contsructor
- @class plupload/QueueUpload
+ @class plupload.QueueUpload
+ @extends plupload.core.Queue
+ @constructor
  @private
+ @final
+ @since 3.0
+ @param {Object} options
  */
 define('plupload/QueueUpload', [
     'moxie/core/utils/Basic',
     'plupload/core/Queue'
 ], function(Basic, Queue) {
 
-    /**
-     * @class QueueUpload
-     * @constructor
-     * @extends Queue
-     */
     return (function(Parent) {
         Basic.inherit(QueueUpload, Parent);
 

@@ -9,8 +9,13 @@
  */
 
 /**
-@class plupload/ImageResizer
-@constructor 
+ @class plupload.ImageResizer
+ @extends plupload.core.Queueable
+ @constructor
+ @private
+ @final
+ @since 3.0
+ @param {plupload.File} fileRef
 */
 define("plupload/ImageResizer", [
 	'plupload',
@@ -18,12 +23,7 @@ define("plupload/ImageResizer", [
 	'moxie/image/Image'
 ], function(plupload, Queueable, mxiImage) {
 
-	/**
-	Image preloading and manipulation utility. Additionally it provides access to image meta info (Exif, GPS) and raw binary data.
 
-	@class plupload/Image
-	@constructor
-	*/
 	function ImageResizer(fileRef) {
 
 		Queueable.call(this);

@@ -13,7 +13,7 @@
 Every queue item must have properties, implement methods and fire events defined in this class
 
 @contsructor
-@class plupload/core/Queueable
+@class plupload.core.Queueable
 @private
 @decorator
 @extends EventTarget

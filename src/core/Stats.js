@@ -1,5 +1,5 @@
 /**
-@class plupload/core/Stats
+@class plupload.core.Stats
 @constructor
 @private
 */

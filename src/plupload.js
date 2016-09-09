@@ -38,7 +38,6 @@ define('plupload', [
 		 * Plupload version will be replaced on build.
 		 *
 		 * @property VERSION
-		 * @for Plupload
 		 * @static
 		 * @final
 		 */
@@ -639,15 +638,17 @@ define('plupload', [
 		/**
 		Parent object for all event dispatching components and objects
 
-		@class plupload/EventTarget
-		@constructor EventTarget
+		@class plupload.EventTarget
+		@private
+		@constructor
 		*/
 		EventTarget: EventTarget,
 
 		/**
 		Common set of methods and properties for every runtime instance
 
-		@class plupload/Runtime
+		@class plupload.Runtime
+		@private
 
 		@param {Object} options
 		@param {String} type Sanitized name of the runtime
@@ -662,7 +663,8 @@ define('plupload', [
 		converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
 		with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
 
-		@class plupload/FileInput
+		@class plupload.FileInput
+		@private
 		@constructor
 		@extends EventTarget
 		@uses RuntimeClient
@@ -682,8 +684,9 @@ define('plupload', [
 		Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
 		interface. Where possible uses native FileReader, where - not falls back to shims.
 
-		@class plupload/FileReader
-		@constructor FileReader
+		@class plupload.FileReader
+		@private
+		@constructor
 		@extends EventTarget
 		@uses RuntimeClient
 		*/

@@ -9,11 +9,11 @@
  */
 
 /**
- * @class plupload/FileUploader
+ * @class plupload.FileUploader
+ * @extends plupload.core.Queueable
  * @constructor 
  * @since 3.0
  * @final
- * @extends plupload/core/Queueable
  */
 define('plupload/FileUploader', [
 	'plupload',

@@ -11,7 +11,7 @@
 
 /**
 @contsructor
-@class plupload/core/Optionable
+@class plupload.core.Optionable
 @private
 @since 3.0
 */

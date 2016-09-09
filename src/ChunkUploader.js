@@ -9,12 +9,12 @@
  */
 
 /**
- * @class plupload/ChunkUploader
+ * @class plupload.ChunkUploader
+ * @extends plupload.core.Queueable
  * @constructor 
  * @private 
  * @final
  * @constructor
- * @extends plupload/core/Queueable
  */
 define('plupload/ChunkUploader', [
     'plupload',
@@ -23,7 +23,6 @@ define('plupload/ChunkUploader', [
     'moxie/xhr/XMLHttpRequest',
     'moxie/xhr/FormData'
 ], function(plupload, Collection, Queueable, XMLHttpRequest, FormData) {
-
 
     function ChunkUploader(blob, options) {
         var _xhr;

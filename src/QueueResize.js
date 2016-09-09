@@ -10,20 +10,19 @@
 
 
 /**
- @contsructor
- @class plupload/QueueResize
+ @class plupload.QueueResize
+ @extends plupload.core.Queue
+ @constructor
  @private
- */
+ @final
+ @since 3.0
+ @param {Object} options
+*/
 define('plupload/QueueResize', [
     'moxie/core/utils/Basic',
     'plupload/core/Queue'
 ], function(Basic, Queue) {
 
-    /**
-     * @class QueueResize
-     * @constructor
-     * @extends Queue
-     */
     return (function(Parent) {
         Basic.inherit(QueueResize, Parent);
 

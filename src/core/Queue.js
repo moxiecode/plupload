@@ -11,7 +11,7 @@
 
 /**
 @contsructor
-@class plupload/core/Queue
+@class plupload.core.Queue
 @private
 */
 define('plupload/core/Queue', [

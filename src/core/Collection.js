@@ -13,7 +13,7 @@
 Helper collection class - in a way a mix of object and array
 
 @contsructor
-@class plupload/core/Collection
+@class plupload.core.Collection
 @private
 */
 define('plupload/core/Collection', [
