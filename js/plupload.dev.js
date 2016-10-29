@@ -825,6 +825,18 @@ plupload.Uploader = function(options) {
 	 */
 
 	/**
+	 * Fires when just before a chunk is uploaded. This event enables you to override settings
+	 * on the uploader instance before the chunk is uploaded.
+	 *
+	 * @event BeforeChunkUpload
+	 * @param {plupload.Uploader} uploader Uploader instance sending the event.
+	 * @param {plupload.File} file File to be uploaded.
+	 * @param {Object} POST params to be sent.
+	 * @param {Blob} current Blob.
+	 * @param {offset} current Slice offset.
+	 */
+
+	/**
 	 * Fires when a file is to be uploaded by the runtime.
 	 *
 	 * @event UploadFile
@@ -1361,7 +1373,7 @@ plupload.Uploader = function(options) {
 		}
 
 		function uploadNextChunk() {
-			var chunkBlob, formData, args = {}, curChunkSize;
+			var chunkBlob, args = {}, curChunkSize;
 
 			// make sure that file wasn't cancelled and upload is not stopped in general
 			if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
@@ -1392,6 +1404,16 @@ plupload.Uploader = function(options) {
 					args.total = blob.size;
 				}
 			}
+			if(up.trigger('BeforeChunkUpload', file, args, chunkBlob, offset)){
+				up.trigger('UploadChunk', args, chunkBlob, curChunkSize);
+			}
+		}
+
+		//prevent rebind event
+		up.unbind('UploadChunk');
+		up.bind('UploadChunk', onUploadChunk);
+		function onUploadChunk(up, args, chunkBlob, curChunkSize) {
+			var formData;
 
 			xhr = new o.XMLHttpRequest();
 
