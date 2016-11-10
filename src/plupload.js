@@ -8,13 +8,12 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-/*global mOxie:true */
-
 ;(function(window, o, undef) {
 
-var delay = window.setTimeout
-, fileFilters = {}
-;
+var delay = window.setTimeout;
+var fileFilters = {};
+var u = o.core.utils;
+var Runtime = o.runtime.Runtime;
 
 // convert plupload features to caps acceptable by mOxie
 function normalizeCaps(settings) {
@@ -245,12 +244,12 @@ var plupload = {
 	 * @type Object
 	 * @final
 	 */
-	mimeTypes : o.mimes,
+	mimeTypes : u.Mime.mimes,
 
 	/**
 	 * In some cases sniffing is the only way around :(
 	 */
-	ua: o.Env,
+	ua: u.Env,
 
 	/**
 	 * Gets the true type of the built-in object (better version of typeof).
@@ -261,7 +260,7 @@ var plupload = {
 	 * @param {Object} o Object to check.
 	 * @return {String} Object [[Class]]
 	 */
-	typeOf: o.typeOf,
+	typeOf: u.Basic.typeOf,
 
 	/**
 	 * Extends the specified object with another object.
@@ -272,7 +271,7 @@ var plupload = {
 	 * @param {Object..} obj Multiple objects to extend with.
 	 * @return {Object} Same as target, the extended object.
 	 */
-	extend : o.extend,
+	extend : u.Basic.extend,
 
 	/**
 	 * Generates an unique ID. This is 99.99% unique since it takes the current time and 5 random numbers.
@@ -285,7 +284,7 @@ var plupload = {
 	 * @static
 	 * @return {String} Virtually unique id.
 	 */
-	guid : o.guid,
+	guid : u.Basic.guid,
 
 	/**
 	 * Get array of DOM Elements by their ids.
@@ -319,7 +318,7 @@ var plupload = {
 	@param {String} id Identifier of the DOM Element
 	@return {Node}
 	*/
-	get: o.get,
+	get: u.Dom.get,
 
 	/**
 	 * Executes the callback function for each item in array/object. If you return false in the
@@ -330,7 +329,7 @@ var plupload = {
 	 * @param {Object} obj Object to iterate.
 	 * @param {function} callback Callback function to execute for each item.
 	 */
-	each : o.each,
+	each : u.Basic.each,
 
 	/**
 	 * Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
@@ -341,7 +340,7 @@ var plupload = {
 	 * @param {Element} root Optional root element to stop calculations at.
 	 * @return {object} Absolute position of the specified element object with x, y fields.
 	 */
-	getPos : o.getPos,
+	getPos : u.Dom.getPos,
 
 	/**
 	 * Returns the size of the specified node in pixels.
@@ -351,7 +350,7 @@ var plupload = {
 	 * @param {Node} node Node to get the size of.
 	 * @return {Object} Object with a w and h property.
 	 */
-	getSize : o.getSize,
+	getSize : u.Dom.getSize,
 
 	/**
 	 * Encodes the specified string.
@@ -377,7 +376,7 @@ var plupload = {
 	 * @param {Object} obj Object with length field.
 	 * @return {Array} Array object containing all items.
 	 */
-	toArray : o.toArray,
+	toArray : u.Basic.toArray,
 
 	/**
 	 * Find an element in array and return its index if present, otherwise return -1.
@@ -388,7 +387,21 @@ var plupload = {
 	 * @param {Array} array
 	 * @return {Int} Index of the element, or -1 if not found
 	 */
-	inArray : o.inArray,
+	inArray : u.Basic.inArray,
+
+	/**
+	Recieve an array of functions (usually async) to call in sequence, each  function
+	receives a callback as first argument that it should call, when it completes. Finally,
+	after everything is complete, main callback is called. Passing truthy value to the
+	callback as a first argument will interrupt the sequence and invoke main callback
+	immediately.
+
+	@method inSeries
+	@static
+	@param {Array} queue Array of functions to call in sequence
+	@param {Function} cb Main callback that is called in the end, or in case of error
+	*/
+	inSeries: u.Basic.inSeries,
 
 	/**
 	 * Extends the language pack object with new items.
@@ -398,7 +411,7 @@ var plupload = {
 	 * @param {Object} pack Language pack items to add.
 	 * @return {Object} Extended language pack object.
 	 */
-	addI18n : o.addI18n,
+	addI18n : o.core.I18n.addI18n,
 
 	/**
 	 * Translates the specified string by checking for the english string in the language pack lookup.
@@ -408,7 +421,7 @@ var plupload = {
 	 * @param {String} str String to look for.
 	 * @return {String} Translated string or the input string if it wasn't found.
 	 */
-	translate : o.translate,
+	translate : o.core.I18n.translate,
 
 	/**
 	 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
@@ -416,7 +429,7 @@ var plupload = {
 	 * @param {String} str String with tokens
 	 * @return {String} String with replaced tokens
 	 */
-	sprintf : o.sprintf,
+	sprintf : u.Basic.sprintf,
 
 	/**
 	 * Checks if object is empty.
@@ -426,7 +439,7 @@ var plupload = {
 	 * @param {Object} obj Object to check.
 	 * @return {Boolean}
 	 */
-	isEmptyObj : o.isEmptyObj,
+	isEmptyObj : u.Basic.isEmptyObj,
 
 	/**
 	 * Checks if specified DOM element has specified class.
@@ -436,7 +449,7 @@ var plupload = {
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Class name
 	 */
-	hasClass : o.hasClass,
+	hasClass : u.Dom.hasClass,
 
 	/**
 	 * Adds specified className to specified DOM element.
@@ -446,7 +459,7 @@ var plupload = {
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Class name
 	 */
-	addClass : o.addClass,
+	addClass : u.Dom.addClass,
 
 	/**
 	 * Removes specified className from specified DOM element.
@@ -456,7 +469,7 @@ var plupload = {
 	 * @param {Object} obj DOM element like object to add handler to.
 	 * @param {String} name Class name
 	 */
-	removeClass : o.removeClass,
+	removeClass : u.Dom.removeClass,
 
 	/**
 	 * Returns a given computed style of a DOM element.
@@ -466,7 +479,7 @@ var plupload = {
 	 * @param {Object} obj DOM element like object.
 	 * @param {String} name Style you want to get from the DOM element
 	 */
-	getStyle : o.getStyle,
+	getStyle : u.Dom.getStyle,
 
 	/**
 	 * Adds an event handler to the specified object and store reference to the handler
@@ -479,7 +492,7 @@ var plupload = {
 	 * @param {Function} callback Function to call when event occurs.
 	 * @param {String} (optional) key that might be used to add specifity to the event record.
 	 */
-	addEvent : o.addEvent,
+	addEvent : u.Events.addEvent,
 
 	/**
 	 * Remove event handler from the specified object. If third argument (callback)
@@ -491,7 +504,7 @@ var plupload = {
 	 * @param {String} name Name of event listener to remove.
 	 * @param {Function|String} (optional) might be a callback or unique key to match.
 	 */
-	removeEvent: o.removeEvent,
+	removeEvent: u.Events.removeEvent,
 
 	/**
 	 * Remove all kind of events from the specified object
@@ -501,7 +514,7 @@ var plupload = {
 	 * @param {Object} obj DOM element to remove event listeners from.
 	 * @param {String} (optional) unique key to match, when removing events.
 	 */
-	removeAllEvents: o.removeAllEvents,
+	removeAllEvents: u.Events.removeAllEvents,
 
 	/**
 	 * Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
@@ -547,7 +560,7 @@ var plupload = {
 	 * @param {Object} items Name/value object to serialize as a querystring.
 	 * @return {String} String with url + serialized query string items.
 	 */
-	buildUrl : function(url, items) {
+	buildUrl: function(url, items) {
 		var query = '';
 
 		plupload.each(items, function(value, name) {
@@ -613,7 +626,7 @@ var plupload = {
 	 * @param {String|Number} size String to parse or number to just pass through.
 	 * @return {Number} Size in bytes.
 	 */
-	parseSize : o.parseSizeStr,
+	parseSize : u.Basic.parseSizeStr,
 
 
 	/**
@@ -630,7 +643,7 @@ var plupload = {
 		var up, runtime;
 
 		up = new plupload.Uploader(config);
-		runtime = o.Runtime.thatCan(up.getOption().required_features, runtimes || config.runtimes);
+		runtime = Runtime.thatCan(up.getOption().required_features, runtimes || config.runtimes);
 		up.destroy();
 		return runtime;
 	},
@@ -994,7 +1007,7 @@ plupload.Uploader = function(options) {
 
 	function runtimeCan(file, cap) {
 		if (file.ruid) {
-			var info = o.Runtime.getInfo(file.ruid);
+			var info = Runtime.getInfo(file.ruid);
 			if (info) {
 				return info.can(cap);
 			}
@@ -1052,7 +1065,7 @@ plupload.Uploader = function(options) {
 		if (settings.browse_button) {
 			plupload.each(settings.browse_button, function(el) {
 				queue.push(function(cb) {
-					var fileInput = new o.FileInput(plupload.extend({}, options, {
+					var fileInput = new o.file.FileInput(plupload.extend({}, options, {
 						accept: settings.filters.mime_types,
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
@@ -1061,10 +1074,10 @@ plupload.Uploader = function(options) {
 					}));
 
 					fileInput.onready = function() {
-						var info = o.Runtime.getInfo(this.ruid);
+						var info = Runtime.getInfo(this.ruid);
 
 						// for backward compatibility
-						o.extend(self.features, {
+						plupload.extend(self.features, {
 							chunks: info.can('slice_blob'),
 							multipart: info.can('send_multipart'),
 							multi_selection: info.can('select_multiple')
@@ -1083,17 +1096,17 @@ plupload.Uploader = function(options) {
 						if (!disabled) {
 							if (settings.browse_button_hover) {
 								if ('mouseenter' === e.type) {
-									o.addClass(el, settings.browse_button_hover);
+									plupload.addClass(el, settings.browse_button_hover);
 								} else if ('mouseleave' === e.type) {
-									o.removeClass(el, settings.browse_button_hover);
+									plupload.removeClass(el, settings.browse_button_hover);
 								}
 							}
 
 							if (settings.browse_button_active) {
 								if ('mousedown' === e.type) {
-									o.addClass(el, settings.browse_button_active);
+									plupload.addClass(el, settings.browse_button_active);
 								} else if ('mouseup' === e.type) {
-									o.removeClass(el, settings.browse_button_active);
+									plupload.removeClass(el, settings.browse_button_active);
 								}
 							}
 						}
@@ -1117,15 +1130,15 @@ plupload.Uploader = function(options) {
 		if (settings.drop_element) {
 			plupload.each(settings.drop_element, function(el) {
 				queue.push(function(cb) {
-					var fileDrop = new o.FileDrop(plupload.extend({}, options, {
+					var fileDrop = new o.file.FileDrop(plupload.extend({}, options, {
 						drop_zone: el
 					}));
 
 					fileDrop.onready = function() {
-						var info = o.Runtime.getInfo(this.ruid);
+						var info = Runtime.getInfo(this.ruid);
 
 						// for backward compatibility
-						o.extend(self.features, {
+						plupload.extend(self.features, {
 							chunks: info.can('slice_blob'),
 							multipart: info.can('send_multipart'),
 							dragdrop: info.can('drag_and_drop')
@@ -1151,7 +1164,7 @@ plupload.Uploader = function(options) {
 		}
 
 
-		o.inSeries(queue, function() {
+		plupload.inSeries(queue, function() {
 			if (typeof(cb) === 'function') {
 				cb(inited);
 			}
@@ -1160,7 +1173,7 @@ plupload.Uploader = function(options) {
 
 
 	function resizeImage(blob, params, cb) {
-		var img = new o.Image();
+		var img = new o.image.Image();
 
 		try {
 			img.onload = function() {
@@ -1245,7 +1258,7 @@ plupload.Uploader = function(options) {
 					// if file format filters are being updated, regenerate the matching expressions
 					if (value.mime_types) {
 						if (plupload.typeOf(value.mime_types) === 'string') {
-							value.mime_types = o.Mime.mimes2extList(value.mime_types);
+							value.mime_types = o.core.util.Mime.mimes2extList(value.mime_types);
 						}
 
 						value.mime_types.regexp = (function(filters) {
@@ -1332,7 +1345,7 @@ plupload.Uploader = function(options) {
 
 			initControls.call(self, settings, function(inited) {
 				if (inited) {
-					self.runtime = o.Runtime.getInfo(getRUID()).type;
+					self.runtime = Runtime.getInfo(getRUID()).type;
 					self.trigger('Init', { runtime: self.runtime });
 					self.trigger('PostInit');
 				} else {
@@ -1423,7 +1436,7 @@ plupload.Uploader = function(options) {
 				}
 			}
 
-			xhr = new o.XMLHttpRequest();
+			xhr = new o.xhr.XMLHttpRequest();
 
 			// Do we have upload progress support
 			if (xhr.upload) {
@@ -1458,7 +1471,7 @@ plupload.Uploader = function(options) {
 					});
 
 					// stock Android browser doesn't fire upload progress events, but in chunking mode we can fake them
-					if (o.Env.browser === 'Android Browser') {
+					if (plupload.ua.browser === 'Android Browser') {
 						// doesn't harm in general, but is not required anywhere else
 						up.trigger('UploadProgress', file);
 					}
@@ -1509,7 +1522,7 @@ plupload.Uploader = function(options) {
 					xhr.setRequestHeader(name, value);
 				});
 
-				formData = new o.FormData();
+				formData = new o.xhr.FormData();
 
 				// Add multipart params
 				plupload.each(plupload.extend(args, up.settings.multipart_params), function(value, name) {
@@ -1551,7 +1564,7 @@ plupload.Uploader = function(options) {
 		blob = file.getSource();
 
 		// Start uploading chunks
-		if (!plupload.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && o.inArray(blob.type, ['image/jpeg', 'image/png']) !== -1) {
+		if (!plupload.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && plupload.inArray(blob.type, ['image/jpeg', 'image/png']) !== -1) {
 			// Resize if required
 			resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
 				blob = resizedBlob;
@@ -1656,7 +1669,7 @@ plupload.Uploader = function(options) {
 
 	// Default settings
 	settings = {
-		runtimes: o.Runtime.order,
+		runtimes: Runtime.order,
 		max_retries: 0,
 		chunk_size: 0,
 		multipart: true,
@@ -1799,7 +1812,7 @@ plupload.Uploader = function(options) {
 				}
 
 				if (inited) {
-					self.runtime = o.Runtime.getInfo(getRUID()).type;
+					self.runtime = Runtime.getInfo(getRUID()).type;
 					self.trigger('Init', { runtime: self.runtime });
 					self.trigger('PostInit');
 				} else {
@@ -1934,7 +1947,7 @@ plupload.Uploader = function(options) {
 
 			function filterFile(file, cb) {
 				var queue = [];
-				o.each(self.settings.filters, function(rule, name) {
+				plupload.each(self.settings.filters, function(rule, name) {
 					if (fileFilters[name]) {
 						queue.push(function(cb) {
 							fileFilters[name].call(self, rule, file, function(res) {
@@ -1943,19 +1956,19 @@ plupload.Uploader = function(options) {
 						});
 					}
 				});
-				o.inSeries(queue, cb);
+				plupload.inSeries(queue, cb);
 			}
 
 			/**
 			 * @method resolveFile
 			 * @private
-			 * @param {o.File|o.Blob|plupload.File|File|Blob|input[type="file"]} file
+			 * @param {moxie.file.File|moxie.file.Blob|plupload.File|File|Blob|input[type="file"]} file
 			 */
 			function resolveFile(file) {
-				var type = o.typeOf(file);
+				var type = plupload.typeOf(file);
 
-				// o.File
-				if (file instanceof o.File) {
+				// moxie.file.File
+				if (file instanceof o.file.File) {
 					if (!file.ruid && !file.isDetached()) {
 						if (!ruid) { // weird case
 							return false;
@@ -1965,8 +1978,8 @@ plupload.Uploader = function(options) {
 					}
 					resolveFile(new plupload.File(file));
 				}
-				// o.Blob
-				else if (file instanceof o.Blob) {
+				// moxie.file.Blob
+				else if (file instanceof o.file.Blob) {
 					resolveFile(file.getSource());
 					file.destroy();
 				}
@@ -1992,18 +2005,18 @@ plupload.Uploader = function(options) {
 					});
 				}
 				// native File or blob
-				else if (o.inArray(type, ['file', 'blob']) !== -1) {
-					resolveFile(new o.File(null, file));
+				else if (plupload.inArray(type, ['file', 'blob']) !== -1) {
+					resolveFile(new o.file.File(null, file));
 				}
 				// input[type="file"]
-				else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
+				else if (type === 'node' && plupload.typeOf(file.files) === 'filelist') {
 					// if we are dealing with input[type="file"]
-					o.each(file.files, resolveFile);
+					plupload.each(file.files, resolveFile);
 				}
 				// mixed array of any supported types (see above)
 				else if (type === 'array') {
 					fileName = null; // should never happen, but unset anyway to avoid funny situations
-					o.each(file, resolveFile);
+					plupload.each(file, resolveFile);
 				}
 			}
 
@@ -2012,7 +2025,7 @@ plupload.Uploader = function(options) {
 			resolveFile(file);
 
 			if (queue.length) {
-				o.inSeries(queue, function() {
+				plupload.inSeries(queue, function() {
 					// if any files left after filtration, trigger FilesAdded
 					if (filesAdded.length) {
 						self.trigger("FilesAdded", filesAdded);
@@ -2163,7 +2176,7 @@ plupload.Uploader = function(options) {
 	});
 };
 
-plupload.Uploader.prototype = o.EventTarget.instance;
+plupload.Uploader.prototype = o.core.EventTarget.instance;
 
 /**
  * Constructs a new file instance.
@@ -2263,7 +2276,7 @@ plupload.File = (function() {
 			 */
 			getNative: function() {
 				var file = this.getSource().getSource();
-				return o.inArray(o.typeOf(file), ['blob', 'file']) !== -1 ? file : null;
+				return plupload.inArray(plupload.typeOf(file), ['blob', 'file']) !== -1 ? file : null;
 			},
 
 			/**
@@ -2377,4 +2390,4 @@ plupload.File = (function() {
 
 window.plupload = plupload;
 
-}(window, mOxie));
+}(window, moxie));
