@@ -43,8 +43,6 @@
     "devDependencies": {
         "moxie-zip": "0.0.x",
         "fileset": "0.1.x",
-        "uglify-js": "1.x",
-        "amdlc": "0.1.x",
         "coverjs": "0.0.x",
         "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
         "dateformat": "1.x",
