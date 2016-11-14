@@ -8,7 +8,7 @@
  * Contributing: http://www.plupload.com/contributing
  */
 
-;(function(window, o, undef) {
+;(function(exports, o, undef) {
 
 var delay = window.setTimeout;
 var fileFilters = {};
@@ -2388,6 +2388,6 @@ plupload.File = (function() {
 	};
 };
 
-window.plupload = plupload;
+exports.plupload = plupload;
 
-}(window, moxie));
+}(this, moxie));
