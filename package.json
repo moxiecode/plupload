@@ -1,5 +1,5 @@
 {
-    "name": "Plupload",
+    "name": "plupload",
     "description": "Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering, request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and Flash.",
     "version": "2.2.0",
     "releaseDate": "2016-11-14",
@@ -29,7 +29,6 @@
         "type": "Custom Licensing",
         "url": "http://www.moxiecode.com/contact.php"
     }],
-    "private": true,
     "engines": {
         "node": ">=0.8.0"
     },
