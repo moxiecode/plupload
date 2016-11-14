@@ -1,6 +1,7 @@
 {
-	"title": "Plupload", 
+	"title": "Plupload",
 	"tests": [
+		{"title": "AMD loader", "url": "AMD.html"},
 		{"title": "plupload", "url": "plupload.html"},
 		{"title": "plupload.Uploader.init()", "url": "Uploader.init.html"},
 		{"title": "plupload.Uploader", "url": "Uploader.html"},
