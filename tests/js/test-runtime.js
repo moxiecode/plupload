@@ -2,7 +2,7 @@
 
 	var type = "test", extensions = {};
 
-	
+
 	function TestRuntime(options) {
 		var I = this
 		, True = Runtime.capTrue
@@ -52,7 +52,7 @@
 
 			},
 
-		
+
 			FileInput: function() {
 				var _files = [];
 
@@ -68,7 +68,7 @@
 					setFiles: function(files) {
 						var comp = this, I = this.getRuntime();
 
-						Basic.each(this.files, function(file) {							
+						Basic.each(this.files, function(file) {
 							file = new File(I.uid, file);
 							file.relativePath = '/fakepath';
 
@@ -88,7 +88,7 @@
 
 
 			XMLHttpRequest: function() {
-				var _state = XMLHttpRequest.OPENED, _status = 0;
+				var _state = XMLHttpRequest.OPENED, _status = 0, _meta;
 
 				Basic.extend(this, {
 					send: function(meta, data) {
@@ -103,6 +103,8 @@
 						, upDelta = interval / 1000 * upSpeed
 						, downDelta = interval / 1000 * downSpeed
 						;
+
+						_meta = meta;
 
 						if (data instanceof Blob) {
 							upSize = data.size;
@@ -164,7 +166,7 @@
 								} else {
 									_status = 200;
 								}
-								
+
 								target.trigger('Load');
 							}
 						}
@@ -179,12 +181,12 @@
 					},
 
 					getResponse: function(responseType) {
-						var response = '{"jsonrpc" : "2.0", "result" : null, "id" : "id"}';
+						var response = JSON && JSON.stringify(_meta) || '{"jsonrpc" : "2.0", "result" : null, "id" : "id"}';
 
 						if (_state !== XMLHttpRequest.DONE) {
 							return Basic.inArray(responseType, ["", "text"]) !== -1 ? '' : null;
 						}
-						return responseType === 'json' && !!window.JSON ? JSON.parse(response) : response;
+						return responseType === 'json' && JSON ? JSON.parse(response) : response;
 					},
 
 					getAllResponseHeaders: function() {

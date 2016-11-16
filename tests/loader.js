@@ -3,6 +3,7 @@
 		"//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js",
 		"//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js",
 		"//code.jquery.com/qunit/qunit-1.14.0.js",
+		"//cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js",
 		"js/testrunner/reporter.js",
 		"js/FileHash.js",
 		"js/test-runtime.js"
