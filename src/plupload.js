@@ -1544,12 +1544,15 @@ plupload.Uploader = function(options) {
 
 				xhr.open("post", url, true);
 
-				xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
-
 				// Set custom headers
 				plupload.each(up.settings.headers, function(value, name) {
 					xhr.setRequestHeader(name, value);
 				});
+
+				// do not set Content-Type, if it was defined previously (see #1203)
+				if (!xhr.hasRequestHeader('Content-Type')) {
+					xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+				}
 
 				xhr.send(chunkBlob, {
 					runtime_order: up.settings.runtimes,

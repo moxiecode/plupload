@@ -7,7 +7,8 @@
 		{"title": "plupload.Uploader", "url": "Uploader.html"},
 		{"title": "Filters", "url": "filters.html"},
 		{"title": "Events", "url": "events.html"},
-		{"title": "Image Resizing", "url": "Resizing.html"},
+		{"title": "Image Resizing", "url": "resizing.html"},
+		{"title": "Uploading", "url": "uploading.html"},
 		{"title": "UI Widget", "url": "UI.html"}
 	]
 }
