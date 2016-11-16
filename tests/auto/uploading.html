@@ -22,10 +22,10 @@ FileHash.init({
 o.Env.swf_url = "../../js/flash/Moxie.swf";
 o.Env.xap_url = "../../js/silverlight/Moxie.xap";
 
-module("Client-side image resizing");
+module("Test uploading");
 
 
-test("Enable or disable client-side resizing in BeforeUpload", function() {
+test("multipart=false", function() {
 	var up = new plupload.Uploader({
 		runtimes: 'test',
 		browse_button: 'qunit-fixture',
