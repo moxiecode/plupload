@@ -17,7 +17,7 @@ to the same crossdomain.xml as last resort.
 
 // important variables that will be used throughout this example
 $bucket = 'BUCKET';
-$region = "REGION" //S3 region e.g. eu-west-1
+$region = 'REGION'; //S3 region e.g. eu-west-1
 
 // these can be found on your Account page, under Security Credentials > Access Keys
 $accessKeyId = 'ACCESS_KEY_ID';
