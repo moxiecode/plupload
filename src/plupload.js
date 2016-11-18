@@ -1258,7 +1258,7 @@ plupload.Uploader = function(options) {
 					// if file format filters are being updated, regenerate the matching expressions
 					if (value.mime_types) {
 						if (plupload.typeOf(value.mime_types) === 'string') {
-							value.mime_types = o.core.util.Mime.mimes2extList(value.mime_types);
+							value.mime_types = o.core.utils.Mime.mimes2extList(value.mime_types);
 						}
 
 						value.mime_types.regexp = (function(filters) {
