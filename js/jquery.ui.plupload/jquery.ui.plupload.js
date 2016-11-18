@@ -1214,7 +1214,7 @@ $.widget("ui.plupload", {
 				view = $.cookie('plupload_ui_view');
 			}
 
-			// if wierd case, bail out to default
+			// if weird case, bail out to default
 			if (!~plupload.inArray(view, ['list', 'thumbs'])) {
 				view = this.options.views.active;
 			}
