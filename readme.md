@@ -119,7 +119,7 @@ In addition to dedicated support for those who dare to buy our OEM licenses, we 
 covering every possible application case. Of course, you are welcome to file a bug report or feature request, 
 here on [GitHub](https://github.com/moxiecode/plupload/issues).
 
-Sometimes it is easier to notice the problem when bug report is accompained by the actual code. Consider providing 
+Sometimes it is easier to notice the problem when bug report is accompanied by the actual code. Consider providing 
 [a Plupload fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle) for the troublesome code.
 
 <a name="contribute" />
