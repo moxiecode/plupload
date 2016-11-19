@@ -262,7 +262,7 @@ define('plupload', [
 
 		/**
 		Recieve an array of functions (usually async) to call in parallel, each  function
-		receives a callback as first argument that it should call, when it completes. After 
+		receives a callback as first argument that it should call, when it completes. After
 		everything is complete, main callback is called. Passing truthy value to the
 		callback as a first argument will interrupt the process and invoke main callback
 		immediately.
@@ -289,7 +289,7 @@ define('plupload', [
 
 		/**
 		 * Get array of DOM Elements by their ids.
-		 * 
+		 *
 		 * @method get
 		 * @param {String} id Identifier of the DOM Element
 		 * @return {Array}
@@ -298,13 +298,13 @@ define('plupload', [
 			var els = [],
 				el;
 
-			if (plupload.typeOf(ids) !== 'array') {
+			if (Basic.typeOf(ids) !== 'array') {
 				ids = [ids];
 			}
 
 			var i = ids.length;
 			while (i--) {
-				el = plupload.get(ids[i]);
+				el = Dom.get(ids[i]);
 				if (el) {
 					els.push(el);
 				}
@@ -558,7 +558,7 @@ define('plupload', [
 		buildUrl: function(url, items) {
 			var query = '';
 
-			plupload.each(items, function(value, name) {
+			Basic.each(items, function(value, name) {
 				query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
 			});
 
@@ -584,32 +584,32 @@ define('plupload', [
 
 			size = parseInt(size, 10);
 			if (isNaN(size)) {
-				return plupload.translate('N/A');
+				return I18n.translate('N/A');
 			}
 
 			var boundary = Math.pow(1024, 4);
 
 			// TB
 			if (size > boundary) {
-				return round(size / boundary, 1) + " " + plupload.translate('tb');
+				return round(size / boundary, 1) + " " + I18n.translate('tb');
 			}
 
 			// GB
 			if (size > (boundary /= 1024)) {
-				return round(size / boundary, 1) + " " + plupload.translate('gb');
+				return round(size / boundary, 1) + " " + I18n.translate('gb');
 			}
 
 			// MB
 			if (size > (boundary /= 1024)) {
-				return round(size / boundary, 1) + " " + plupload.translate('mb');
+				return round(size / boundary, 1) + " " + I18n.translate('mb');
 			}
 
 			// KB
 			if (size > 1024) {
-				return Math.round(size / 1024) + " " + plupload.translate('kb');
+				return Math.round(size / 1024) + " " + I18n.translate('kb');
 			}
 
-			return size + " " + plupload.translate('b');
+			return size + " " + I18n.translate('b');
 		},
 
 		/**
@@ -674,7 +674,7 @@ define('plupload', [
 			@param {String} [options.file='file'] Name of the file field (not the filename).
 			@param {Boolean} [options.multiple=false] Enable selection of multiple files.
 			@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
-			@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode 
+			@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode
 			for _browse\_button_.
 			@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 		*/
