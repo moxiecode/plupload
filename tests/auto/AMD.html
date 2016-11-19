@@ -35,13 +35,11 @@
 
     test("test AMD loader", function() {
         var self = this;
-        var matches = document.location.search.match(/src=(min|dev)/);
-	    var mode = matches ? matches[1] : 'min';
 
         requirejs.config({
             "baseUrl": "../../js/",
             "paths": {
-                "plupload": "plupload." + mode
+                "plupload": "plupload.min"
             }
         });
 
