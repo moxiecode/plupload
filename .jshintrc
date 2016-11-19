@@ -1,6 +1,6 @@
 {
 	"browser": true,
-	"undef": true, 
+	"undef": true,
 	"unused": true,
 	"curly": true,
 	"laxcomma": true,
@@ -16,6 +16,7 @@
 		"moxie": true,
 		"o": true,
 		"mOxie": true,
-		"plupload": true
+		"plupload": true,
+		"MXI_DEBUG": true
 	}
 }
