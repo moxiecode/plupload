@@ -11,7 +11,7 @@
 /**
  * @class plupload.FileUploader
  * @extends plupload.core.Queueable
- * @constructor 
+ * @constructor
  * @since 3.0
  * @final
  */
@@ -53,7 +53,7 @@ define('plupload/FileUploader', [
 			uid: plupload.guid(),
 
 			/**
-			When send_file_name is set to true, will be sent with the request as `name` param. 
+			When send_file_name is set to true, will be sent with the request as `name` param.
             Can be used on server-side to override original file name.
 
             @property name
@@ -123,7 +123,7 @@ define('plupload/FileUploader', [
 
 				_options = plupload.extend({}, this.getOptions(), {
 					params: {
-						chunk: seq,
+						chunk: chunk.seq,
 						chunks: _totalChunks
 					}
 				});
