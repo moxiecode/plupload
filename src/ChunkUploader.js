@@ -17,12 +17,12 @@
  * @constructor
  */
 define('plupload/ChunkUploader', [
-    'plupload',
+    'moxie/core/utils/Basic',
     'plupload/core/Collection',
     'plupload/core/Queueable',
     'moxie/xhr/XMLHttpRequest',
     'moxie/xhr/FormData'
-], function(plupload, Collection, Queueable, XMLHttpRequest, FormData) {
+], function(Basic, Collection, Queueable, XMLHttpRequest, FormData) {
 
     function ChunkUploader(blob, options) {
         var _xhr;
@@ -32,9 +32,9 @@ define('plupload/ChunkUploader', [
 
         this.setOptions(options);
 
-        plupload.extend(this, {
+        Basic.extend(this, {
 
-            uid: plupload.guid(),
+            uid: Basic.guid(),
 
             start: function(options) {
                 var self = this;
@@ -85,8 +85,8 @@ define('plupload/ChunkUploader', [
 
 
                 // headers must be set after request is already opened, otherwise INVALID_STATE_ERR exception will raise
-                if (!plupload.isEmptyObj(_options.headers)) {
-                    plupload.each(_options.headers, function(val, key) {
+                if (!Basic.isEmptyObj(_options.headers)) {
+                    Basic.each(_options.headers, function(val, key) {
                         _xhr.setRequestHeader(key, val);
                     });
                 }
@@ -95,8 +95,8 @@ define('plupload/ChunkUploader', [
                 if (_options.multipart) {
                     formData = new FormData();
 
-                    if (!plupload.isEmptyObj(_options.params)) {
-                        plupload.each(_options.params, function(val, key) {
+                    if (!Basic.isEmptyObj(_options.params)) {
+                        Basic.each(_options.params, function(val, key) {
                             formData.append(key, val);
                         });
                     }
@@ -105,7 +105,7 @@ define('plupload/ChunkUploader', [
 
                     _xhr.send(formData);
                 } else { // if no multipart, send as binary stream    
-                    if (plupload.isEmptyObj(_options.headers) || !_options.headers['content-type']) {
+                    if (Basic.isEmptyObj(_options.headers) || !_options.headers['content-type']) {
                         _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
                     }
 
@@ -137,7 +137,7 @@ define('plupload/ChunkUploader', [
         function buildUrl(url, items) {
             var query = '';
 
-            plupload.each(items, function(value, name) {
+            Basic.each(items, function(value, name) {
                 query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
             });
 
