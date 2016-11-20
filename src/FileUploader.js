@@ -154,6 +154,7 @@ define('plupload/FileUploader', [
 					self.trigger('chunkuploaded', Basic.extendImmutable({}, chunk, result));
 
 					if (calcProcessed() >= _file.size) {
+						self.progress(_file.size, _file.size);
 						self.done(result); // obviously we are done
 					} else if (dontStop) {
 						Basic.delay(function() {
