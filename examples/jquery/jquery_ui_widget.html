@@ -15,7 +15,7 @@
 <script type="text/javascript" src="../../js/plupload.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 
-<!-- debug 
+<!-- debug
 <script type="text/javascript" src="../../js/plupload.dev.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 -->
@@ -41,21 +41,21 @@ $(function() {
 	$("#uploader").plupload({
 		// General settings
 		runtimes : 'html5,flash,silverlight,html4',
-		url : '../upload.php',
+		url : '../handler-php/upload.php',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 20,
-		
+
 		chunk_size: '1mb',
 
 		// Resize images on clientside if we can
 		resize : {
-			width : 200, 
-			height : 200, 
+			width : 200,
+			height : 200,
 			quality : 90,
 			crop: true // crop to exact dimensions
 		},
-		
+
 		filters : {
 			// Maximum file size
 			max_file_size : '1000mb',
@@ -68,7 +68,7 @@ $(function() {
 
 		// Rename files by clicking on their titles
 		rename: true,
-		
+
 		// Sort files
 		sortable: true,
 

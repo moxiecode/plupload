@@ -18,7 +18,7 @@
 <h1>Events example</h1>
 
 <div id="container">
-    <a id="pickfiles" href="javascript:;">[Select files]</a> 
+    <a id="pickfiles" href="javascript:;">[Select files]</a>
     <a id="uploadfiles" href="javascript:;">[Upload files]</a>
 </div>
 
@@ -30,7 +30,7 @@
         // General settings
         runtimes : 'silverlight,html4',
 		browse_button : 'pickfiles', // you can pass in id...
-        url : 'upload.php',
+        url : 'handler-php/upload.php',
         chunk_size : '1mb',
         unique_names : true,
  
@@ -70,7 +70,7 @@
 			PostInit: function() {
 				// Called after initialization is finished and internal event handlers bound
 				log('[PostInit]');
-				
+
 				document.getElementById('uploadfiles').onclick = function() {
 					uploader.start();
 					return false;

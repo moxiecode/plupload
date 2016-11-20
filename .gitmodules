@@ -4,3 +4,6 @@
 [submodule "tests/js/testrunner"]
 	path = tests/js/testrunner
 	url = https://github.com/moxiecode/testrunner.git
+[submodule "examples/handler-php"]
+	path = examples/handler-php
+	url = https://github.com/moxiecode/plupload-handler-php.git

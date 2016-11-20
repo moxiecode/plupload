@@ -25,7 +25,7 @@ define('plupload/core/Queue', [
     var dispatches = [
         /**
          * Dispatched as soon as activity starts
-         * 
+         *
          * @event started
          * @param {Object} event
          */
@@ -36,7 +36,7 @@ define('plupload/core/Queue', [
 
         /**
          * Dispatched as the activity progresses
-         * 
+         *
          * @event
          * @param {Object} event
          *      @param {Number} event.percent
@@ -47,7 +47,7 @@ define('plupload/core/Queue', [
 
 
         /**
-         * 
+         *
          */
         'Paused',
 
@@ -64,7 +64,7 @@ define('plupload/core/Queue', [
      */
     return (function(Parent) {
         Basic.inherit(Queue, Parent);
-    
+
 
         function Queue(options) {
             Parent.apply(this, arguments);
@@ -108,7 +108,7 @@ define('plupload/core/Queue', [
         Queue.PAUSED = 3;
         Queue.DESTROYED = 8;
 
-        
+
         Basic.extend(Queue.prototype, {
 
             /**
@@ -123,7 +123,7 @@ define('plupload/core/Queue', [
 
             /**
              * Start the queue
-             * 
+             *
              * @method start
              */
             start: function() {
@@ -162,7 +162,7 @@ define('plupload/core/Queue', [
             /**
              * Stop the queue. If `finish_active=true` the queue will wait until active items are done, before
              * stopping.
-             * 
+             *
              * @method stop
              */
             stop: function() {
@@ -194,7 +194,7 @@ define('plupload/core/Queue', [
 
             /**
              * Add instance of Queueable to the queue. If `auto_start=true` queue will start as well.
-             * 
+             *
              * @method addItem
              * @param {Queueable} item
              */
@@ -393,7 +393,7 @@ define('plupload/core/Queue', [
             var self = this;
             var item;
 
-            while (self.stats.processing < self.getOption('max_slots')) {
+            if (self.stats.processing < self.getOption('max_slots')) {
                 item = getCandidate.call(self);
                 if (item) {
                     if (self.getOption('pause_before_start') && item.state === Queueable.IDLE) {
@@ -411,6 +411,8 @@ define('plupload/core/Queue', [
                     self.stop();
                     return self.trigger('Done');
                 }
+
+                Basic.delay.call(self, processNext);
             }
         }
 
@@ -447,7 +449,7 @@ define('plupload/core/Queue', [
                 }
             });
 
-            // for backward compatibility     
+            // for backward compatibility
             self.stats.loaded = self.stats.processed;
             self.stats.size = self.stats.total;
         }

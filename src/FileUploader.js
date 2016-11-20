@@ -11,16 +11,16 @@
 /**
  * @class plupload.FileUploader
  * @extends plupload.core.Queueable
- * @constructor 
+ * @constructor
  * @since 3.0
  * @final
  */
 define('plupload/FileUploader', [
-	'plupload',
+	'moxie/core/utils/Basic',
 	'plupload/core/Collection',
 	'plupload/core/Queueable',
 	'plupload/ChunkUploader'
-], function(plupload, Collection, Queueable, ChunkUploader) {
+], function(Basic, Collection, Queueable, ChunkUploader) {
 
 
 	function FileUploader(fileRef, queue) {
@@ -42,7 +42,7 @@ define('plupload/FileUploader', [
 			stop_on_fail: true
 		};
 
-		plupload.extend(this, {
+		Basic.extend(this, {
 
 			/**
 			Unique identifier
@@ -50,10 +50,10 @@ define('plupload/FileUploader', [
 			@property uid
 			@type {String}
             */
-			uid: plupload.guid(),
+			uid: Basic.guid(),
 
 			/**
-			When send_file_name is set to true, will be sent with the request as `name` param. 
+			When send_file_name is set to true, will be sent with the request as `name` param.
             Can be used on server-side to override original file name.
 
             @property name
@@ -108,7 +108,7 @@ define('plupload/FileUploader', [
 				if (options) {
 					// chunk_size cannot be changed on the fly
 					delete options.chunk_size;
-					plupload.extend(this._options, options);
+					Basic.extendImmutable(this._options, options);
 				}
 
 				chunk.seq = parseInt(seq, 10) || getNextChunk();
@@ -121,9 +121,9 @@ define('plupload/FileUploader', [
 					return false;
 				}
 
-				_options = plupload.extend({}, this.getOptions(), {
+				_options = Basic.extendImmutable({}, this.getOptions(), {
 					params: {
-						chunk: seq,
+						chunk: chunk.seq,
 						chunks: _totalChunks
 					}
 				});
@@ -135,11 +135,11 @@ define('plupload/FileUploader', [
 				});
 
 				up.bind('failed', function(e, result) {
-					_chunks.add(chunk.seq, plupload.extend({
+					_chunks.add(chunk.seq, Basic.extend({
 						state: Queueable.FAILED
 					}, chunk));
 
-					self.trigger('chunkuploadfailed', plupload.extend({}, chunk, result));
+					self.trigger('chunkuploadfailed', Basic.extendImmutable({}, chunk, result));
 
 					if (_options.stop_on_fail) {
 						self.failed(result);
@@ -147,16 +147,17 @@ define('plupload/FileUploader', [
 				});
 
 				up.bind('done', function(e, result) {
-					_chunks.add(chunk.seq, plupload.extend({
+					_chunks.add(chunk.seq, Basic.extend({
 						state: Queueable.DONE
 					}, chunk));
 
-					self.trigger('chunkuploaded', plupload.extend({}, chunk, result));
+					self.trigger('chunkuploaded', Basic.extendImmutable({}, chunk, result));
 
 					if (calcProcessed() >= _file.size) {
+						self.progress(_file.size, _file.size);
 						self.done(result); // obviously we are done
 					} else if (dontStop) {
-						plupload.delay(function() {
+						Basic.delay(function() {
 							self.uploadChunk(getNextChunk(), false, dontStop);
 						});
 					}
@@ -167,7 +168,7 @@ define('plupload/FileUploader', [
 				});
 
 
-				_chunks.add(chunk.seq, plupload.extend({
+				_chunks.add(chunk.seq, Basic.extend({
 					state: Queueable.PROCESSING
 				}, chunk));
 				queue.addItem(up);

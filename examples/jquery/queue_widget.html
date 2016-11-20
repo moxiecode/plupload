@@ -13,7 +13,7 @@
 <script type="text/javascript" src="../../js/plupload.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 
-<!-- debug 
+<!-- debug
 <script type="text/javascript" src="../../js/plupload.dev.js"></script>
 <script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 -->
@@ -22,7 +22,7 @@
 </head>
 <body style="font: 13px Verdana; background: #eee; color: #333">
 
-<form method="post" action="dump.php">	
+<form method="post" action="dump.php">
 	<div id="uploader">
 		<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
 	</div>
@@ -31,16 +31,16 @@
 
 <script type="text/javascript">
 $(function() {
-	
+
 	// Setup html5 version
 	$("#uploader").pluploadQueue({
 		// General settings
 		runtimes : 'html5,flash,silverlight,html4',
-		url : '../upload.php',
+		url : '../handler-php/upload.php',
 		chunk_size: '1mb',
 		rename : true,
 		dragdrop: true,
-		
+
 		filters : {
 			// Maximum file size
 			max_file_size : '10mb',

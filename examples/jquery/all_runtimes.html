@@ -13,7 +13,7 @@
 <script type="text/javascript" src="../../js/plupload.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 
-<!-- debug 
+<!-- debug
 <script type="text/javascript" src="../../js/plupload.dev.js"></script>
 <script type="text/javascript" src="../../js/jquery.plupload.queue/jquery.plupload.queue.js"></script>
 -->
@@ -37,7 +37,7 @@
 	<div style="float: left; margin-right: 20px">
 		<h3>HTML 4 runtime</h3>
 		<div id="html4_uploader" style="width: 500px; height: 330px;">Your browser doesn't have HTML 4 support.</div>
-		
+
 		<h3>HTML 5 runtime</h3>
 		<div id="html5_uploader" style="width: 500px; height: 330px;">Your browser doesn't support native upload.</div>
 	</div>
@@ -53,10 +53,10 @@ $(function() {
 	$("#flash_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'flash',
-		url : '../upload.php',
+		url : '../handler-php/upload.php',
 		chunk_size : '1mb',
 		unique_names : true,
-		
+
 		filters : {
 			max_file_size : '10mb',
 			mime_types: [
@@ -77,10 +77,10 @@ $(function() {
 	$("#silverlight_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'silverlight',
-		url : '../upload.php',
+		url : '../handler-php/upload.php',
 		chunk_size : '1mb',
 		unique_names : true,
-		
+
 		filters : {
 			max_file_size : '10mb',
 			mime_types: [
@@ -100,10 +100,10 @@ $(function() {
 	$("#html5_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'html5',
-		url : '../upload.php',
+		url : '../handler-php/upload.php',
 		chunk_size : '1mb',
 		unique_names : true,
-		
+
 		filters : {
 			max_file_size : '10mb',
 			mime_types: [
@@ -121,9 +121,9 @@ $(function() {
 	$("#html4_uploader").pluploadQueue({
 		// General settings
 		runtimes : 'html4',
-		url : '../upload.php',
+		url : '../handler-php/upload.php',
 		unique_names : true,
-		
+
 		filters : {
 			mime_types: [
 				{title : "Image files", extensions : "jpg,gif,png"},

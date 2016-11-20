@@ -26,7 +26,7 @@ define('plupload/core/Queueable', [
     var dispatches = [
         /**
          * Dispatched when the item is put on pending list
-         * 
+         *
          * @event queued
          * @param {Object} event
          */
@@ -35,7 +35,7 @@ define('plupload/core/Queueable', [
 
         /**
          * Dispatched as soon as activity starts
-         * 
+         *
          * @event started
          * @param {Object} event
          */
@@ -50,7 +50,7 @@ define('plupload/core/Queueable', [
 
         /**
          * Dispatched as the activity progresses
-         * 
+         *
          * @event
          * @param {Object} event
          *      @param {Number} event.percent
@@ -149,14 +149,13 @@ define('plupload/core/Queueable', [
 
 
             progress: function(processed, total) {
-                this.processed = processed;
-                this.loaded = this.processed; // for backward compatibility
-
                 if (total) {
                     this.total = total;
                 }
 
-                this.percent = Math.min(Math.ceil(this.processed / this.total * 100), 100);
+                this.processed = Math.min(processed, this.total);
+                this.loaded = this.processed; // for backward compatibility
+                this.percent = Math.ceil(this.processed / this.total * 100);
 
                 this.trigger({
                     type: 'progress',
