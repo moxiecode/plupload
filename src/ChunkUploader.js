@@ -11,8 +11,8 @@
 /**
  * @class plupload.ChunkUploader
  * @extends plupload.core.Queueable
- * @constructor 
- * @private 
+ * @constructor
+ * @private
  * @final
  * @constructor
  */
@@ -40,12 +40,9 @@ define('plupload/ChunkUploader', [
                 var self = this;
                 var url;
                 var formData;
-                var _options;
 
-                if (options) {
-                    this.setOptions(options);
-                }
-                _options = this.getOptions();
+                // have the options ovverride local to start() method only
+                var _options = options ? Basic.extendImmutable({}, this.getOptions(), options) : this.getOptions();
 
                 ChunkUploader.prototype.start.call(this);
 
@@ -104,7 +101,7 @@ define('plupload/ChunkUploader', [
                     formData.append(_options.file_data_name, _blob);
 
                     _xhr.send(formData);
-                } else { // if no multipart, send as binary stream    
+                } else { // if no multipart, send as binary stream
                     if (Basic.isEmptyObj(_options.headers) || !_options.headers['content-type']) {
                         _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
                     }
