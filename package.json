@@ -33,14 +33,12 @@
     "engines": {
         "node": ">=0.8.0"
     },
-    "dependencies": {
+    "devDependencies": {
         "jake": "0.5.x",
         "glob": "3.2.x",
         "jshint": "2.1.x",
         "yuidocjs": "0.3.x",
-        "handlebars": "1.0.x"
-    },
-    "devDependencies": {
+        "handlebars": "1.0.x",
         "moxie-zip": "0.0.x",
         "fileset": "0.1.x",
         "coverjs": "0.0.x",
