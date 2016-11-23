@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.2.0
+ * v2.2.1
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2016-11-14
+ * Date: 2016-11-23
  */
 ;(function (global, factory) {
 	var extract = function() {
@@ -108,7 +108,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.2.0',
+	VERSION : '2.2.1',
 
 	/**
 	 * The state of the queue before it has started and after it has finished
@@ -1285,7 +1285,7 @@ plupload.Uploader = function(options) {
 					// if file format filters are being updated, regenerate the matching expressions
 					if (value.mime_types) {
 						if (plupload.typeOf(value.mime_types) === 'string') {
-							value.mime_types = o.core.util.Mime.mimes2extList(value.mime_types);
+							value.mime_types = o.core.utils.Mime.mimes2extList(value.mime_types);
 						}
 
 						value.mime_types.regexp = (function(filters) {
@@ -1571,12 +1571,15 @@ plupload.Uploader = function(options) {
 
 				xhr.open("post", url, true);
 
-				xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
-
 				// Set custom headers
 				plupload.each(up.settings.headers, function(value, name) {
 					xhr.setRequestHeader(name, value);
 				});
+
+				// do not set Content-Type, if it was defined previously (see #1203)
+				if (!xhr.hasRequestHeader('Content-Type')) {
+					xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
+				}
 
 				xhr.send(chunkBlob, {
 					runtime_order: up.settings.runtimes,
