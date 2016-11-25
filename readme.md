@@ -134,7 +134,7 @@ You can read more about how to contribute at: [http://www.plupload.com/contribut
 
 ### License
 
-Copyright 2016, [Ephox](http://www.ephox.com/)
+Copyright 2016, [Ephox](http://www.ephox.com/).  
 Released under [AGPL-3.0 License](https://github.com/moxiecode/plupload/blob/master/license.txt).
 
 We also provide [commercial license](http://www.plupload.com/commercial.php).
