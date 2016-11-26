@@ -864,6 +864,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {String} [settings.flash_swf_url] URL of the Flash swf.
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
 	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
+	@param {Number} [settings.retry_interval=1] Number of seconds between retries
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
 	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
 	@param {String} [settings.http_method="POST"] HTTP method to use during upload (only PUT or POST allowed).
@@ -1069,6 +1070,7 @@ plupload.Uploader = function(settings) {
 			send_file_name: true,
 			send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
 			max_retries: 0,
+			retry_interval: 1,
 			resize: false
 		}, 
 		normalizeOptions(plupload.extend({}, settings)) // we shouldn't alter original config
@@ -2062,6 +2064,7 @@ plupload.File = (function() {
 			send_file_name: true,
 			send_chunk_number: true, // whether to send chunks and chunk numbers, or total and offset bytes
 			max_retries: 0,
+			retry_interval: 1,
 			resize: false
 		};
 
@@ -2226,6 +2229,7 @@ plupload.File = (function() {
 			@param {Object} options
 				@param {String} options.url
 				@param {Number} options.max_retries
+				@param {Number} options.retry_interval
 				@param {Boolean} [options.multipart=true]
 				@param {Boolean} [options.file_data_name='file']
 				@param {String} [options.http_method="POST"]
@@ -2247,6 +2251,7 @@ plupload.File = (function() {
 				, canSendMultipart = runtimeCan(blob, 'send_multipart')
 				, chunkSize = _options.chunk_size
 				, retries = _options.max_retries
+				, interval = _options.retry_interval
 				, offset = 0
 				;
 
@@ -2256,7 +2261,7 @@ plupload.File = (function() {
 
 				function handleError() {
 					if (retries-- > 0) {
-						delay(uploadNextChunk, 1000);
+						delay(uploadNextChunk, interval * 1000);
 					} else {
 						file.loaded = offset; // reset all progress
 
