@@ -958,6 +958,8 @@ plupload.Uploader = function(options) {
 
 	function calc() {
 		var i, file;
+		var loaded;
+		var loadedDuringCurrentSession = 0;
 
 		// Reset stats
 		total.reset();
@@ -972,7 +974,13 @@ plupload.Uploader = function(options) {
 
 				// Since we cannot predict file size after resize, we do opposite and
 				// interpolate loaded amount to match magnitude of total
-				total.loaded += file.loaded * file.origSize / file.size;
+				loaded = file.loaded * file.origSize / file.size;
+
+				if (!file.completeTimestamp || file.completeTimestamp > startTime) {
+					loadedDuringCurrentSession += loaded;
+				}
+
+				total.loaded += loaded;
 			} else {
 				total.size = undef;
 			}
@@ -990,7 +998,7 @@ plupload.Uploader = function(options) {
 		if (total.size === undef) {
 			total.percent = files.length > 0 ? Math.ceil(total.uploaded / files.length * 100) : 0;
 		} else {
-			total.bytesPerSec = Math.ceil(total.loaded / ((+new Date() - startTime || 1) / 1000.0));
+			total.bytesPerSec = Math.ceil(loadedDuringCurrentSession / ((+new Date() - startTime || 1) / 1000.0));
 			total.percent = total.size > 0 ? Math.ceil(total.loaded / total.size * 100) : 0;
 		}
 	}
@@ -1492,6 +1500,7 @@ plupload.Uploader = function(options) {
 					up.trigger('UploadProgress', file);
 
 					file.status = plupload.DONE;
+					file.completeTimestamp = +new Date();
 
 					up.trigger('FileUploaded', file, {
 						response : xhr.responseText,
@@ -1626,6 +1635,7 @@ plupload.Uploader = function(options) {
 		// Set failed status if an error occured on a file
 		else if (err.code === plupload.HTTP_ERROR) {
 			err.file.status = plupload.FAILED;
+			err.file.completeTimestamp = +new Date();
 			calcFile(err.file);
 
 			// Upload next file but detach it from the error event
@@ -2270,6 +2280,15 @@ plupload.File = (function() {
 			 * @type {String}
 			 */
 			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString(), // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
+
+
+			/**
+			 * Set when file becomes plupload.DONE or plupload.FAILED. Is used to calculate proper plupload.QueueProgress.bytesPerSec.
+			 * @private
+			 * @property completeTimestamp
+			 * @type {Number}
+			 */
+			completeTimestamp: 0,
 
 			/**
 			 * Returns native window.File object, when it's available.
