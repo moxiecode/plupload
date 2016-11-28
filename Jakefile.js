@@ -205,6 +205,18 @@ task("package", [], function (params) {
 }, true);
 
 
+desc("Create NuGet package");
+task('mknuget', [], function() {
+	var mknuget = require('./src/moxie/build/mknuget');
+
+	mknuget.pack(require('./package.json'), function(err, nugetPath) {
+		console.info(nugetPath);
+		complete();
+	});
+
+}, true);
+
+
 
 
 
