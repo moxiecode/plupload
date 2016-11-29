@@ -858,6 +858,15 @@ plupload.Uploader = function(options) {
 	 */
 
 	/**
+	* Fires just before a chunk is uploaded. This event enables you to override settings
+	* on the uploader instance before the chunk is uploaded.
+	*
+	* @event BeforeChunkUpload
+	* @param {plupload.Uploader} uploader Uploader instance sending the event.
+	* @param {plupload.File} file File to be uploaded.
+	*/
+
+	/**
 	Fires when file chunk is uploaded.
 
 	@event ChunkUploaded
@@ -1411,7 +1420,7 @@ plupload.Uploader = function(options) {
 			}
 		}
 
-		function uploadNextChunk() {
+		up.bind("UploadChunk", function() {
 			var chunkBlob, formData, args = {}, curChunkSize;
 
 			// make sure that file wasn't cancelled and upload is not stopped in general
@@ -1570,6 +1579,12 @@ plupload.Uploader = function(options) {
 					swf_url: up.settings.flash_swf_url,
 					xap_url: up.settings.silverlight_xap_url
 				});
+			}
+		});
+
+		function uploadNextChunk(){
+			if(up.trigger('BeforeChunkUpload', file)) {
+				up.trigger('UploadChunk');
 			}
 		}
 
