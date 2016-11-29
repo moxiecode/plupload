@@ -864,6 +864,9 @@ plupload.Uploader = function(options) {
 	* @event BeforeChunkUpload
 	* @param {plupload.Uploader} uploader Uploader instance sending the event.
 	* @param {plupload.File} file File to be uploaded.
+	* @param {Object} POST params to be sent.
+	* @param {Blob} current Blob.
+	* @param {offset} current Slice offset.
 	*/
 
 	/**
@@ -1420,8 +1423,8 @@ plupload.Uploader = function(options) {
 			}
 		}
 
-		up.bind("UploadChunk", function() {
-			var chunkBlob, formData, args = {}, curChunkSize;
+		function uploadNextChunk() {
+			var chunkBlob, args = {}, curChunkSize;
 
 			// make sure that file wasn't cancelled and upload is not stopped in general
 			if (file.status !== plupload.UPLOADING || up.state === plupload.STOPPED) {
@@ -1452,6 +1455,14 @@ plupload.Uploader = function(options) {
 					args.total = blob.size;
 				}
 			}
+
+			if (up.trigger('BeforeChunkUpload', file, args, chunkBlob, offset)) {
+				up.trigger('UploadChunk', args, chunkBlob, curChunkSize);
+			}
+		}
+
+		function onUploadChunk(up, args, chunkBlob, curChunkSize) {
+			var formData;
 
 			xhr = new o.xhr.XMLHttpRequest();
 
@@ -1580,13 +1591,10 @@ plupload.Uploader = function(options) {
 					xap_url: up.settings.silverlight_xap_url
 				});
 			}
-		});
-
-		function uploadNextChunk(){
-			if(up.trigger('BeforeChunkUpload', file)) {
-				up.trigger('UploadChunk');
-			}
 		}
+
+		up.unbind('UploadChunk');
+		up.bind('UploadChunk', onUploadChunk);
 
 		blob = file.getSource();
 
