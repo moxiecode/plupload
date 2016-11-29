@@ -1593,7 +1593,7 @@ plupload.Uploader = function(options) {
 			}
 		}
 
-		up.unbind('UploadChunk');
+		up.unbind('UploadChunk', onUploadChunk); // make sure that we bind only once per file
 		up.bind('UploadChunk', onUploadChunk);
 
 		blob = file.getSource();
