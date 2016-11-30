@@ -38,8 +38,7 @@ test("multipart=false", function() {
 	});
 
     up.bind('PostInit', function() {
-		console.info('hi');
-		var files = files = FileHash.getRuntimeFiles();
+		var files = FileHash.getRuntimeFiles();
 		up.addFile(files[0]);
 	});
 
@@ -65,6 +64,65 @@ test("multipart=false", function() {
 
         up.destroy();
     });
+});
+
+test("http_method='PUT'", function() {
+    expect(3);
+
+    var uploader = new plupload.Uploader({
+        browse_button: 'qunit-fixture',
+        runtimes: 'test',
+        url: '../upload.php',
+
+        http_method: 'GRAB', // arbitrary bullshit method
+
+        preinit: {
+            Init: function(up, info) {
+                var files = FileHash.getRuntimeFiles();
+				up.addFile(files[0]);
+            },
+
+            Error: function(up, err) {
+                start();
+                ok(false, "Plupload failed to initialize.");
+            }
+        },
+
+        init: {
+            FilesAdded: function(up) {
+                equal(up.getOption('http_method'), 'POST',
+                    "http_method should be either PUT or POST.");
+
+                up.setOption('http_method', 'put');
+
+                equal(up.getOption('http_method'), 'PUT',
+                    "http_method set to PUT and upper-cased.");
+
+                up.start();
+            },
+
+            FileUploaded: function(up, file, result) {
+                start();
+
+                var meta = (function(headers) {
+                    var meta = {};
+                    o.each(headers, function(header) {
+                        if (/^meta\-/.test(header)) {
+                            var parts = header.split(/:/);
+                            meta[parts[0].replace(/^meta\-/, '')] = parts[1];
+                        }
+                    });
+                    return meta;
+                }(result.responseHeaders.split(/\r\n/)));
+
+                equal(up.getOption('http_method'), 'PUT',
+                    "PUT was used as HTTP method.");
+            }
+        }
+    });
+
+    stop();
+    uploader.init();
 });
 
 
