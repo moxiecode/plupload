@@ -1713,23 +1713,23 @@ plupload.Uploader = function(options) {
 
 	// Default settings
 	settings = {
-		runtimes: Runtime.order,
-		max_retries: 0,
 		chunk_size: 0,
-		http_method: 'POST',
-		multipart: true,
-		multi_selection: true,
 		file_data_name: 'file',
-		flash_swf_url: 'js/Moxie.swf',
-		silverlight_xap_url: 'js/Moxie.xap',
 		filters: {
 			mime_types: [],
 			prevent_duplicates: false,
 			max_file_size: 0
 		},
+		flash_swf_url: 'js/Moxie.swf',
+		http_method: 'POST',
+		max_retries: 0,
+		multipart: true,
+		multi_selection: true,
 		resize: false,
+		runtimes: Runtime.order,
 		send_file_name: true,
-		send_chunk_number: true
+		send_chunk_number: true,
+		silverlight_xap_url: 'js/Moxie.xap'
 	};
 
 
