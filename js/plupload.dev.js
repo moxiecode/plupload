@@ -1157,16 +1157,20 @@ plupload.Uploader = function(options) {
 
 		try {
 			img.onload = function() {
-				// no manipulation required if...
-				if (params.width > this.width &&
-					params.height > this.height &&
-					params.quality === undef &&
-					params.preserve_headers &&
-					!params.crop
-				) {
-					this.destroy();
-					return cb(blob);
-				}
+                if(img.meta && img.meta.exif && img.meta.exif.ColorSpace && img.meta.exif.ColorSpace==='sRGB'){
+                    // no manipulation required if...
+                    if (params.width > this.width &&
+                        params.height > this.height &&
+                        params.quality === undef &&
+                        params.preserve_headers &&
+                        !params.crop
+                        ) {
+                        this.destroy();
+                        return cb(blob);
+                    }
+                }else{
+                    return cb(blob);
+                }
 				// otherwise downsize
 				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
 			};
