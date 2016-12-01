@@ -98,7 +98,8 @@ $(function() {
 			'Content-Type': 'image/jpeg',
 			'AWSAccessKeyId' : '<?php echo $accessKeyId; ?>',		
 			'policy': '<?php echo $policy; ?>',
-			'signature': '<?php echo $signature; ?>'
+			'signature': '<?php echo $signature; ?>',
+			'success_action_status': '201'
 		},
 		
 		// !!!Important!!! 
