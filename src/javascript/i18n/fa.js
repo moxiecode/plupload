@@ -29,7 +29,7 @@ plupload.addI18n({
    'Close': 'بستن',
    '%d files queued': '%d فایل در صف',
    'Using runtime: ': 'استفاده میکنید از : ',
-   'File: %f, size: %s, max file size: %m': فایل: %f, سایز: %s, بزرگترین سایز فایل: %m',
+   'File: %f, size: %s, max file size: %m': 'فایل: %f, سایز: %s, بزرگترین سایز فایل: %m',
    'Upload element accepts only %d file(s) at a time. Extra files were stripped.': 'عنصر بارگذار فقط %d فایل رو در یک زمان  می پذیرد. سایر فایل ها مجرد از این موضوع هستند.',
    'Upload URL might be wrong or doesn\'t exist': 'آدرس آپلود اشتباه می باشد یا وجود ندارد',
    'Error: File too large: ': 'خطا: فایل حجیم است :: ',
