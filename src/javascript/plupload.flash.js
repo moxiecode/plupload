@@ -234,7 +234,7 @@
 				uploader.bind("Flash:UploadProcess", function(up, flash_file) {
 					var file = up.getFile(lookup[flash_file.id]);
 
-					if (file.status != plupload.FAILED) {
+					if (file !== undefined && file.status != plupload.FAILED) {
 						file.loaded = flash_file.loaded;
 						file.size = flash_file.size;
 
