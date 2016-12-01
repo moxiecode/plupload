@@ -5,7 +5,7 @@ plupload.addI18n({
     'Filename' : 'Nome file',
     'Status' : 'Stato',
     'Size' : 'Dimensione',
-    'Add Files' : 'Aggiungi file',
+    'Add files' : 'Aggiungi file',
     'Stop current upload' : 'Interrompi il caricamento',
     'Start uploading queue' : 'Avvia il caricamento',
     'Uploaded %d/%d files': 'Caricati %d/%d file',
@@ -19,6 +19,7 @@ plupload.addI18n({
     'Generic error.': 'Errore generico.',
     'IO error.': 'Errore IO.',
 	'Stop Upload': 'Ferma Upload',
-	'Start Upload': 'Inizia Upload',
-	'%d files queued': '%d file in lista'
+	'Start upload': 'Inizia Upload',
+	'%d files queued': '%d file in lista',
+	'Error: File too large: ': 'Errore, il file supera le dimensioni massime consentite: '
 });
