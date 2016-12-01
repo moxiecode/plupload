@@ -94,8 +94,8 @@ if (!$out = @fopen("{$filePath}.part", $chunks ? "ab" : "wb")) {
 }
 
 if (!empty($_FILES)) {
-	if ($_FILES["file"]["error"] || !is_uploaded_file($_FILES["file"]["tmp_name"])) {
-		die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."}, "id" : "id"}');
+	if ($_FILES["file"]["error"] !== UPLOAD_ERR_OK || !is_uploaded_file($_FILES["file"]["tmp_name"])) {
+		die('{"jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file ('.$_FILES["file"]["error"].')."}, "id" : "id"}');
 	}
 
 	// Read binary input stream and append it to temp file
