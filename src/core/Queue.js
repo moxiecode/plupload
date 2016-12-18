@@ -425,7 +425,7 @@ define('plupload/core/Queue', [
                 self.stats.processed += item.processed;
                 self.stats.total += item.total;
 
-                switch (item.status) {
+                switch (item.state) {
                     case Queueable.DONE:
                         self.stats.done++;
                         self.stats.uploaded = self.stats.done; // for backward compatibility
