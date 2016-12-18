@@ -102,7 +102,7 @@ define('plupload/core/Queue', [
             }, options);
         }
 
-
+        Queue.IDLE = 0;
         Queue.STOPPED = 1;
         Queue.STARTED = 2;
         Queue.PAUSED = 3;
