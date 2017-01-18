@@ -1068,6 +1068,7 @@ $.widget("ui.plupload", {
 					width: self.options.thumb_width, 
 					height: self.options.thumb_height, 
 					crop: true,
+					fit: true,
 					preserveHeaders: false,
 					swf_url: plupload.resolveUrl(self.options.flash_swf_url),
 					xap_url: plupload.resolveUrl(self.options.silverlight_xap_url)
