@@ -408,9 +408,13 @@ $.widget("ui.plupload", {
 		}
 
 		this.filelist.on('click', function(e) {
-			if ($(e.target).hasClass('plupload_action_icon')) {
-				self.removeFile($(e.target).closest('.plupload_file').attr('id'));
-				e.preventDefault();
+			var me = $(e.target), fileContainer;
+			if (me.hasClass('plupload_action_icon')) {
+				fileContainer = me.closest('.plupload_file');
+				if (fileContainer.hasClass('plupload_delete')) {
+					self.removeFile(fileContainer.attr('id'));
+					e.preventDefault();
+				}
 			}
 		});
 
@@ -1067,6 +1071,7 @@ $.widget("ui.plupload", {
 					width: self.options.thumb_width,
 					height: self.options.thumb_height,
 					crop: true,
+					fit: true,
 					preserveHeaders: false,
 					swf_url: resolveUrl(self.options.flash_swf_url),
 					xap_url: resolveUrl(self.options.silverlight_xap_url)
@@ -1271,14 +1276,20 @@ $.widget("ui.plupload", {
 		var self = this;
 
 		this.filelist.dblclick(function(e) {
-			var nameSpan = $(e.target), nameInput, file, parts, name, ext = "";
+			var nameInput, fileContainer, file, parts, name, ext = "";
+			var nameSpan = $(e.target);
 
 			if (!nameSpan.hasClass('plupload_file_name_wrapper')) {
 				return;
 			}
 
+			fileContainer = nameSpan.closest('.plupload_file');
+			if (!fileContainer.hasClass('plupload_delete')) {
+				return;
+			}
+
 			// Get file name and split out name and extension
-			file = self.uploader.getFile(nameSpan.closest('.plupload_file')[0].id);
+			file = self.uploader.getFile(fileContainer[0].id);
 			name = file.name;
 			parts = /^(.+)(\.[^.]+)$/.exec(name);
 			if (parts) {

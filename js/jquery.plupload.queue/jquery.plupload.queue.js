@@ -279,6 +279,11 @@ used as it is.
 					if (!settings.unique_names && settings.rename) {
 						target.on('click', '#' + id + '_filelist div.plupload_file_name span', function(e) {
 							var targetSpan = $(e.target), file, parts, name, ext = "";
+							var fileContainer = targetSpan.closest('li');
+
+							if (!fileContainer.hasClass('plupload_delete')) {
+								return;
+							}
 
 							// Get file name and split out name and extension
 							file = up.getFile(targetSpan.parents('li')[0].id);
