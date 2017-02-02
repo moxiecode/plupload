@@ -31,7 +31,7 @@ module("plupload.Uploader", {
 			drop_element: 'uploader',
 			container: 'qunit-fixture',
 			url: "Plupload/upload.php"
-		};	
+		};
 
 		this.up = null;
 	},
@@ -49,7 +49,7 @@ test("'url' is not a required option anymore so uploader shouldn't trigger plupl
 	expect(1);
 
 	delete this.options['url'];
-	
+
 	this.up = new plupload.Uploader(this.options);
 
 	this.up.bind("Init", function() {
@@ -72,18 +72,18 @@ test("If both 'browse_button' and 'drop_element' are missing, uploader should tr
 
 	delete this.options['browse_button'];
 	delete this.options['drop_element'];
-	
+
 	this.up = new plupload.Uploader(this.options);
 
 	this.up.bind("Init", function() {
 		start();
-		ok(false, 
+		ok(false,
 			"One must specify either 'browse_button' or 'drop_element'.");
 	});
 
 	this.up.bind("Error", function(up, err) {
 		start();
-		equal(err.code, plupload.INIT_ERROR, 
+		equal(err.code, plupload.INIT_ERROR,
 			"One must specify either 'browse_button' or 'drop_element'.");
 	});
 
@@ -117,7 +117,7 @@ test("Normalize required_features when passed as object", function() {
 	this.up = new plupload.Uploader(o.extend(this.options, {
 		required_features: {
 			chunks: true,
-			jpgresize: true, 
+			jpgresize: true,
 			progress: true,
 			dragdrop: true,
 			multi_selection: true,
@@ -143,7 +143,7 @@ test("Consider special settings as required_features when required_features is b
 	this.up = new plupload.Uploader(o.extend(this.options, {
 		multi_selection: true,
 		drop_element: 'uploader',
-		multipart: false,	
+		multipart: false,
 		chunk_size: '1mb',
 		max_file_size: '1gb',
 		resize: {
@@ -161,7 +161,8 @@ test("Consider special settings as required_features when required_features is b
 		drag_and_drop: true,
 		slice_blob: true,
 		send_binary_string: true,
-		send_custom_headers: true
+		send_custom_headers: true,
+		use_http_method: "POST"
 	}, "required_features properly normalized and translated to caps.");
 });
 
@@ -206,6 +207,7 @@ test("Test how default values are assigned to missing options", function() {
 		container: plupload.get('qunit-fixture'),
 		url: "Plupload/upload.php",
 		runtimes: o.Runtime.order,
+		http_method: "POST",
 		max_retries: 0,
 		multipart : true,
 		send_file_name : true,
@@ -285,7 +287,7 @@ test("Test preinit and init callbacks", function() {
 	});
 
 	stop();
-	this.up.init();	
+	this.up.init();
 });
 
 
@@ -308,7 +310,7 @@ test("Test preinit and init set of event handlers", function() {
 	}));
 
 	stop();
-	this.up.init();	
+	this.up.init();
 });
 
 
@@ -329,7 +331,7 @@ module("up.features must be set for backward compatibility", {
 					ok(false, "Runtime failed to initialise.");
 				}
 			}
-		};	
+		};
 
 		this.up = null;
 	},
