@@ -163,7 +163,7 @@ task("docs", [], function (params) {
 
 desc("Generate wiki pages");
 task("wiki", ["docs"], function() {
-	wiki("git@github.com:moxiecode/plupload.wiki.git", "wiki", "docs");
+	wiki("https://github.com/moxiecode/plupload.wiki.git", "wiki", "docs");
 });
 
 
