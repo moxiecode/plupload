@@ -870,9 +870,9 @@ plupload.Uploader = function(options) {
 	* @event BeforeChunkUpload
 	* @param {plupload.Uploader} uploader Uploader instance sending the event.
 	* @param {plupload.File} file File to be uploaded.
-	* @param {Object} POST params to be sent.
-	* @param {Blob} current Blob.
-	* @param {offset} current Slice offset.
+	* @param {Object} args POST params to be sent.
+	* @param {Blob} chunkBlob Current blob.
+	* @param {offset} offset Current offset.
 	*/
 
 	/**
