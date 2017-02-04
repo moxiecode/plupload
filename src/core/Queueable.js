@@ -88,6 +88,16 @@ define('plupload/core/Queueable', [
         Queueable.DESTROYED = 8;
 
 
+        /**
+         * Set when item becomes Queueable.DONE or Queueable.FAILED.
+         * Used to calculate proper processedPerSec for the queue stats.
+         * @private
+         * @property doneTimestamp
+         * @type {Number}
+         */
+        this.doneTimestamp = 0;
+
+
         Basic.extend(Queueable.prototype, {
 
             uid: Basic.guid(),
@@ -132,6 +142,8 @@ define('plupload/core/Queueable', [
                 this.loaded = this.processed; // for backward compatibility
                 this.percent = 100;
 
+                this.doneTimestamp = +new Date();
+
                 this.state = Queueable.DONE;
                 this.trigger('done', result);
                 this.trigger('processed');
@@ -141,6 +153,8 @@ define('plupload/core/Queueable', [
             failed: function(result) {
                 this.processed = this.percent = 0; // reset the progress
                 this.loaded = this.processed; // for backward compatibility
+
+                this.doneTimestamp = +new Date();
 
                 this.state = Queueable.FAILED;
                 this.trigger('failed', result);

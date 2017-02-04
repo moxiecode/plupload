@@ -77,6 +77,15 @@ define('plupload/core/Queue', [
             this._queue = new Collection();
 
             /**
+             * Initialized when queue is started
+             *
+             * @property _startTime
+             * @type {Date}
+             * @private
+             */
+            this._startTime;
+
+            /**
              * @property state
              * @type {Number}
              * @default Queue.IDLE
@@ -155,7 +164,7 @@ define('plupload/core/Queue', [
                 });
 
                 self.state = Queue.PAUSED;
-                this.trigger('StateChanged', self.state, prevState);
+                self.trigger('StateChanged', self.state, prevState);
                 self.trigger('Paused');
             },
 
@@ -419,39 +428,46 @@ define('plupload/core/Queue', [
 
         function calcStats() {
             var self = this;
-            self.stats.reset();
+            var stats = self.stats;
+            var processed = 0;
+            var processedDuringThisSession = 0;
+
+            stats.reset();
 
             self.forEachItem(function(item) {
-                self.stats.processed += item.processed;
-                self.stats.total += item.total;
-
                 switch (item.state) {
                     case Queueable.DONE:
-                        self.stats.done++;
-                        self.stats.uploaded = self.stats.done; // for backward compatibility
+                        stats.done++;
+                        stats.uploaded = stats.done; // for backward compatibility
                         break;
 
                     case Queueable.FAILED:
-                        self.stats.failed++;
+                        stats.failed++;
                         break;
 
                     default:
-                        self.stats.queued++;
+                        stats.queued++;
                 }
 
-                if (self._startTime) {
-                    self.stats.processedPerSec = Math.ceil(self.stats.processed / ((+new Date() - self._startTime || 1) / 1000.0));
-                    self.stats.bytesPerSec = self.stats.processedPerSec; // for backward compatibility
+                processed += item.processed;
+
+                if (!item.doneTimestamp || item.doneTimestamp > self._startTime) {
+                    processedDuringThisSession += processed;
                 }
 
-                if (self.stats.total) {
-                    self.stats.percent = Math.ceil(self.stats.processed / self.stats.total * 100);
+                stats.processedPerSec = Math.ceil(processedDuringThisSession / ((+new Date() - self._startTime || 1) / 1000.0));
+
+                stats.processed = processed;
+                stats.total += item.total;
+                if (stats.total) {
+                    stats.percent = Math.ceil(stats.processed / stats.total * 100);
                 }
             });
 
             // for backward compatibility
-            self.stats.loaded = self.stats.processed;
-            self.stats.size = self.stats.total;
+            stats.loaded = stats.processed;
+            stats.size = stats.total;
+            stats.bytesPerSec = stats.processedPerSec;
         }
 
         return Queue;
