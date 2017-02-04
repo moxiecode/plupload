@@ -89,9 +89,15 @@ define('plupload/core/Queueable', [
 
 
         /**
+         * Can be 0-Infinity - item with higher priority will have well... higher priority
+         * @property [priority=0]
+         * @type {Number}
+         */
+        this.priority = 0;
+
+        /**
          * Set when item becomes Queueable.DONE or Queueable.FAILED.
          * Used to calculate proper processedPerSec for the queue stats.
-         * @private
          * @property doneTimestamp
          * @type {Number}
          */

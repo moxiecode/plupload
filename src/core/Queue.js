@@ -16,11 +16,11 @@
 */
 define('plupload/core/Queue', [
     'moxie/core/utils/Basic',
-    'plupload/core/Collection',
+    'plupload/core/ArrCollection',
     'plupload/core/Optionable',
     'plupload/core/Queueable',
     'plupload/core/Stats'
-], function(Basic, Collection, Optionable, Queueable, Stats) {
+], function(Basic, ArrCollection, Optionable, Queueable, Stats) {
 
     var dispatches = [
         /**
@@ -74,7 +74,7 @@ define('plupload/core/Queue', [
             @type {Collection}
             @private
             */
-            this._queue = new Collection();
+            this._queue = new ArrCollection();
 
             /**
              * Initialized when queue is started
@@ -332,11 +332,7 @@ define('plupload/core/Queue', [
 
 
             toArray: function() {
-                var arr = [];
-                this.forEachItem(function(item) {
-                    arr.push(item);
-                });
-                return arr;
+                return this._queue.toArray();
             },
 
 
