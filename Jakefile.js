@@ -71,7 +71,7 @@ task("mkjs", [], function () {
 		compress: uglifyOptions,
 		baseDir: 'src',
 		rootNS: "plupload",
-		expose: "public",
+		expose: "all",
 		libs: {
 			'moxie': {
 				rootNS: 'moxie',
@@ -81,7 +81,7 @@ task("mkjs", [], function () {
 			}
 		},
 		verbose: true,
-		outputSource: targetDir + "/plupload.js",
+		outputSource: false,
 		outputMinified: false,
 		outputDev: targetDir + "/plupload.dev.js",
 		outputCoverage: targetDir + "/plupload.cov.js"
@@ -107,6 +107,15 @@ task("mkjs", [], function () {
 	jake.mkdirP(targetDir);
 
 	amdlc.compile(options);
+
+	// Compile source
+	amdlc.compile(utils.extend({}, options, {
+		expose: 'public',
+		outputSource: targetDir + "/plupload.js",
+		outputMinified: false,
+		outputDev: false,
+		outputCoverage: false
+	}));
 
 	// Include Plupload source
 	var sourceCode = fs.readFileSync(targetDir +  '/plupload.js').toString();
