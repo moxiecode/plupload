@@ -166,7 +166,7 @@ define('plupload/core/Queueable', [
 
 
             destroy: function() {
-                if (self.state === Queueable.DESTROYED) {
+                if (this.state === Queueable.DESTROYED) {
                     return; // already destroyed
                 }
 
