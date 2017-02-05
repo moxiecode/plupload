@@ -21,7 +21,15 @@ define('plupload/core/Optionable', [
 ], function(Basic, EventTarget) {
 
     var dispatches = [
-
+        /**
+         * Dispatched when option is being changed.
+         *
+         * @event OptionChanged
+         * @param {Object} event
+         * @param {String} name Name of the option being changed
+         * @param {Mixed} value
+         * @param {Mixed} oldValue
+         */
         'OptionChanged'
     ];
 
@@ -35,17 +43,12 @@ define('plupload/core/Optionable', [
          */
         function Optionable() {
             Parent.apply(this, arguments);
-            
-            this.uid = Basic.guid();
+
             this._options = {};
         }
 
 
         Basic.extend(Optionable.prototype, {
-
-            uid: Basic.guid(),
-
-
             /**
              * Set the value for the specified option(s).
              *
@@ -73,7 +76,7 @@ define('plupload/core/Optionable', [
 
             /**
              * Get the value for the specified option or the whole configuration, if not specified.
-             * 
+             *
              * @method getOption
              * @since 2.1
              * @param {String} [option] Name of the option to get
@@ -110,7 +113,7 @@ define('plupload/core/Optionable', [
             getOptions: function() {
                 return this.getOption();
             }
-        }); 
+        });
 
         return Optionable;
 
