@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: Queue</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+var Queue = plupload.core.Queue;
+var Queueable = plupload.core.Queueable;
+
+
+function QueueItem() {
+    var self = this;
+    var timer;
+    var speed = 200; // kbps
+    var dispatched = {
+        'queued': 0,
+        'started': 0,
+        'paused': 0,
+        'stopped': 0,
+        'progress': 0,
+        'failed': 0,
+        'done': 0,
+        'processed': 0,
+        'destroy': 0
+    };
+
+    // monitor events
+    plupload.each(dispatched, function(num, type) {
+        self.bind(type, function() {
+            dispatched[type]++;
+        });
+    });
+
+    Queueable.apply(this, arguments);
+
+    this.dispatched = dispatched;
+    this.total = random(500, 1000); // kbs kinda
+
+    this.start = function() {
+        var self = this;
+        // setup process that will simulate progress
+        timer = setInterval(function() {
+            self.progress(self.processed + speed, self.total);
+        }, 10);
+
+        QueueItem.prototype.start.call(this);
+    };
+
+    this.progress = function(loaded, total) {
+        QueueItem.prototype.progress.apply(this, arguments);
+
+        if (loaded >= total) {
+            this.done();
+        }
+    };
+
+    // make sure we cleanup
+    this.bind('processed', function() {
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+    });
+
+    function random(min, max) {
+        return Math.round(Math.random() * (max - min) + min);
+    }
+}
+
+moxie.core.utils.Basic.inherit(QueueItem, Queueable);
+
+
+module("Queue");
+
+
+test("Create instance", function() {
+    expect(3);
+
+    var queue = new Queue();
+
+    equal(queue.state, Queue.IDLE,
+        "Initial state is Queue.IDLE");
+
+    equal(typeof queue.getOptions, 'function',
+        "Queue inherits from Optionable");
+
+    deepEqual(queue.getOptions(), {
+            max_slots: 1,
+            max_retries: 0,
+            auto_start: false,
+            finish_active: false,
+            pause_before_start: true
+        },
+        "Default options are as expected");
+});
+
+
+test("addItem()/count()/toArray()", function() {
+    var queue = new Queue();
+    var item, i, arr, numItems = 5;
+
+    for (i = 0; i < numItems; i++) {
+        queue.addItem(new Queueable());
+    }
+
+    equal(queue.count(), numItems,
+        numItems + " items added to the queue");
+
+    equal(queue.stats.queued, numItems,
+        "stats.queued is valid");
+
+    arr = queue.toArray();
+    item = arr[0];
+    item.start();
+    item.done();
+
+    ok(plupload.typeOf(arr) === 'array',
+        "Queue sucessfully converted to array");
+
+    equal(arr.length, numItems,
+        "Array length corresponds to that of the queue");
+
+    equal(queue.stats.queued, numItems - 1,
+        "stats.queued is valid, after one item was removed");
+
+    equal(queue.stats.done, 1,
+        "stats.done is valid");
+
+    equal(queue.stats.uploaded, queue.stats.done,
+        "stats.uploaded is valid (for backward compatibility)");
+});
+
+
+test("removeItem()", function() {
+    var queue = new Queue();
+    var item, i, numItems = 5;
+
+    for (i = 0; i < numItems; i++) {
+        queue.addItem(new Queueable());
+    }
+
+    item = queue.toArray()[0];
+
+    ok(queue.removeItem(item.uid),
+        "Remove operation successful");
+
+    equal(queue.count(), numItems - 1,
+        "Item removed from the queue");
+
+    equal(queue.stats.queued, numItems - 1,
+        "Stats updated.");
+
+    equal(item.state, Queueable.DESTROYED,
+        "Item state changed to Queueable.DESTROYED");
+});
+
+
+test("start()/stop()", function() {
+    var dispatched = {
+        'started': 0,
+        'statechanged': 0,
+        'progress': 0,
+        'paused': 0,
+        'stopped': 0,
+    };
+
+    var item, i, arr, numItems = 5;
+    var queue = new Queue();
+
+    // monitor events
+    plupload.each(dispatched, function(num, type) {
+        queue.bind(type, function() {
+            dispatched[type]++;
+        });
+    });
+
+    for (i = 0; i < numItems - 1; i++) {
+        queue.addItem(new QueueItem());
+    }
+
+    // last item should fail
+    var item = new QueueItem();
+    item.progress = function(loaded, total) {
+        QueueItem.prototype.progress.apply(this, arguments);
+        if (loaded >= total) {
+            this.failed();
+        }
+    };
+    queue.addItem(item);
+
+    queue.bind('progress', function(e, processed, total, stats) {
+        if (stats !== this.stats || processed !== stats.processed || total !== stats.total) {
+            ok(false, "Progress handler received invalid arguments.");
+        }
+    });
+
+    queue.bind('stopped', function() {
+        QUnit.start();
+
+        plupload.each(dispatched, function(num, type) {
+            ok(num > 0, type + ' has been dispatched ' + num + ' times.');
+        });
+
+        // check stats
+        equal(this.stats.processing, 0,
+            "No items left in processing.");
+
+        equal(this.stats.done, numItems - 1,
+            numItems + " processed successfully.");
+
+         equal(this.stats.failed, 1,
+            1 + " processed successfully.");
+
+        var total = 0;
+        this.forEachItem(function(item) {
+            total += item.total;
+        });
+
+        equal(this.stats.total, total,
+            "Queue weighs as much as all its items combined.");
+    });
+
+    QUnit.stop();
+    queue.start();
+});
+
+test("Options: pause_before_start=false", function() {
+    var dispatched = {
+        'started': 0,
+        'statechanged': 0,
+        'progress': 0,
+        'paused': 0,
+        'stopped': 0,
+    };
+
+    var item, i, arr, numItems = 5;
+    var queue = new Queue({
+        pause_before_start: false
+    });
+
+    // monitor events
+    plupload.each(dispatched, function(num, type) {
+        queue.bind(type, function() {
+            dispatched[type]++;
+        });
+    });
+
+    for (i = 0; i < numItems; i++) {
+        queue.addItem(new QueueItem());
+    }
+
+
+    queue.bind('stopped', function() {
+        QUnit.start();
+
+        equal(dispatched.started, 1,
+            "Queue has been started only once.");
+
+        equal(dispatched.paused, 0,
+            "Queue has not been paused.");
+    });
+
+    QUnit.stop();
+    queue.start();
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

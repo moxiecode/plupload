@@ -1,6 +1,7 @@
 {
 	"title": "Plupload",
 	"tests": [
+		{"title": "Queue", "url": "Queue.html"},
 		{"title": "AMD loader", "url": "AMD.html"},
 		{"title": "plupload", "url": "plupload.html"},
 		{"title": "plupload.Uploader.init()", "url": "Uploader.init.html"},

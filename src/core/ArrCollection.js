@@ -33,7 +33,7 @@ define('plupload/core/ArrCollection', [
 
 
             get: function(key) {
-                var idx = this.getIdx(idx);
+                var idx = this.getIdx(key);
                 return idx > -1 ? _registry[idx] : null;
             },
 
@@ -77,7 +77,7 @@ define('plupload/core/ArrCollection', [
 
             extract: function(key) {
                 var idx = this.getIdx(key);
-                if (idx > 0) {
+                if (idx > -1) {
                     return _registry.splice(idx, 1);
                 }
                 return null;
@@ -89,7 +89,7 @@ define('plupload/core/ArrCollection', [
 
             update: function(key, obj) {
                 var idx = this.getIdx(key);
-                if (idx > 0) {
+                if (idx > -1) {
                     _registry[idx] = obj;
                     return true;
                 }

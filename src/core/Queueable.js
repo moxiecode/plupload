@@ -66,18 +66,49 @@ define('plupload/core/Queueable', [
         'done',
 
 
-        'processed'
+        'processed',
+
+        'destroy'
     ];
 
 
     return (function(Parent) {
-        Basic.inherit(Queueable, Parent);
-
 
         function Queueable() {
             Parent.apply(this, arguments);
-        }
 
+            /**
+            Unique identifier
+            @property uid
+            @type {String}
+            */
+            this.uid = Basic.guid();
+
+            this.state = Queueable.IDLE;
+
+            this.processed = 0;
+
+            this.total = 0;
+
+            this.percent = 0;
+
+            this.retries = 0;
+
+            /**
+             * Can be 0-Infinity - item with higher priority will have well... higher priority
+             * @property [priority=0]
+             * @type {Number}
+             */
+            this.priority = 0;
+
+            /**
+             * Set when item becomes Queueable.DONE or Queueable.FAILED.
+             * Used to calculate proper processedPerSec for the queue stats.
+             * @property doneTimestamp
+             * @type {Number}
+             */
+            this.doneTimestamp = 0;
+        }
 
         Queueable.IDLE = 0;
         Queueable.PROCESSING = 1;
@@ -87,37 +118,9 @@ define('plupload/core/Queueable', [
         Queueable.FAILED = 5;
         Queueable.DESTROYED = 8;
 
-
-        /**
-         * Can be 0-Infinity - item with higher priority will have well... higher priority
-         * @property [priority=0]
-         * @type {Number}
-         */
-        this.priority = 0;
-
-        /**
-         * Set when item becomes Queueable.DONE or Queueable.FAILED.
-         * Used to calculate proper processedPerSec for the queue stats.
-         * @property doneTimestamp
-         * @type {Number}
-         */
-        this.doneTimestamp = 0;
-
+        Basic.inherit(Queueable, Parent);
 
         Basic.extend(Queueable.prototype, {
-
-            uid: Basic.guid(),
-
-            state: Queueable.IDLE,
-
-            processed: 0,
-
-            total: 0,
-
-            percent: 0,
-
-            retries: 0,
-
 
             start: function() {
                 this.state = Queueable.PROCESSING;
@@ -170,7 +173,7 @@ define('plupload/core/Queueable', [
 
             progress: function(processed, total) {
                 if (total) {
-                    this.total = total;
+                    this.total = total; // is this even required?
                 }
 
                 this.processed = Math.min(processed, this.total);

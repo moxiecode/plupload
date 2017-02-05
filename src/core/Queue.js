@@ -31,30 +31,50 @@ define('plupload/core/Queue', [
          */
         'Started',
 
+        /**
+         * Dispatched every time the state of queue changes
+         *
+         * @event statechanged
+         * @param {Object} event
+         * @param {Number} state New state
+         * @param {Number} prevState Previous state
+         */
         'StateChanged',
 
-
         /**
-         * Dispatched as the activity progresses
+         * Dispatched as activity progresses
          *
-         * @event
+         * @event progress
          * @param {Object} event
-         *      @param {Number} event.percent
-         *      @param {Number} event.processed
-         *      @param {Number} event.total
+         * @param {Number} processed
+         * @param {Number} total
+         * @param {plupload.core.Stats} stats
          */
         'Progress',
 
-
         /**
+         * Dispatched when activity is paused
          *
+         * @event paused
+         * @param {Object} event
          */
         'Paused',
 
+        /**
+         * Dispatched as soon as activity ends
+         *
+         * @event stopped
+         * @param {Object} event
+         */
+        'Stopped',
 
-        'Done',
-
-        'Stopped'
+        /**
+         * Dispatched when queue is destroyed
+         *
+         * @event destroy
+         * @param {Object} event
+         */
+        'Destroy'
     ];
 
     /**
@@ -144,9 +164,9 @@ define('plupload/core/Queue', [
                 }
 
                 self.state = Queue.STARTED;
-                self.trigger('StateChanged', self.state, prevState);
-
                 self._startTime = new Date();
+                self.trigger('StateChanged', self.state, prevState);
+                self.trigger('Started');
 
                 processNext.call(self);
                 return true;
@@ -157,7 +177,7 @@ define('plupload/core/Queue', [
                 var self = this;
                 var prevState = self.state;
 
-                this._queue.each(function(item) {
+                this.forEachItem(function(item) {
                     if (Basic.inArray(item.state, [Queueable.PROCESSING, Queueable.RESUMED]) !== -1) {
                         self.pauseItem(item);
                     }
@@ -181,7 +201,7 @@ define('plupload/core/Queue', [
                 if (self.getOption('finish_active')) {
                     return;
                 } else if (self.stats.processing || self.stats.paused) {
-                    self._queue.each(function(item) {
+                    self.forEachItem(function(item) {
                         self.stopItem(item.uid);
                     });
                 }
@@ -212,6 +232,7 @@ define('plupload/core/Queue', [
 
                 item.bind('Progress', function() {
                     calcStats.call(self);
+                    self.trigger('Progress', self.stats.processed, self.stats.total, self.stats);
                 });
 
                 item.bind('Failed', function() {
@@ -265,12 +286,15 @@ define('plupload/core/Queue', [
              *
              * @method removeItem
              * @param {String} uid
+             * @returns {Boolean} Result of the operation
              */
             removeItem: function(uid) {
                 var item = this.extractItem(uid);
                 if (item) {
                     item.destroy();
+                    return true;
                 }
+                return false;
             },
 
 
@@ -317,12 +341,13 @@ define('plupload/core/Queue', [
                 if (item && item.state === Queueable.PAUSED) {
                     item.state = Queueable.RESUMED; // mark the item to be picked up on next iteration
                     this.stats.paused--;
+                    // we do not increment number of processing items here, since item is not resumed immediately
+                    // it is marked ready to be picked up as the queue progresses
+                    this.start();
+                    return true;
                 } else {
                     return false;
                 }
-
-                this.start();
-                return true;
             },
 
 
@@ -381,16 +406,18 @@ define('plupload/core/Queue', [
         });
 
 
-
+        /**
+         * Returns another Queueable.IDLE or Queueable.RESUMED item, or null.
+         */
         function getCandidate() {
             var nextItem;
-            this._queue.each(function(item) {
+            this.forEachItem(function(item) {
                 if (item.state === Queueable.IDLE || item.state === Queueable.RESUMED) {
                     nextItem = item;
                     return false;
                 }
             });
-            return nextItem;
+            return nextItem ? nextItem : null;
         }
 
 

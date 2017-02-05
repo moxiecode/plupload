@@ -43,15 +43,6 @@ define('plupload/FileUploader', [
 		};
 
 		Basic.extend(this, {
-
-			/**
-			Unique identifier
-
-			@property uid
-			@type {String}
-            */
-			uid: Basic.guid(),
-
 			/**
 			When send_file_name is set to true, will be sent with the request as `name` param.
             Can be used on server-side to override original file name.
