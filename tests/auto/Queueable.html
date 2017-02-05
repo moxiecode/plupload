@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: Queueable</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 1000;
+
+var Queueable = plupload.core.Queueable;
+
+
+module("Queueable");
+
+test("Test States and Events", function() {
+    var item = new Queueable();
+    var processedFired = false;
+
+    item.total = 400;
+
+    item.bind('started', function() {
+        ok(true, "started has been dispatched.");
+
+        equal(this.state, Queueable.PROCESSING,
+            "State changed to Queueable.PROCESSING");
+
+        this.progress(100, 400);
+    });
+
+    item.bind('progress', function(e, processed, total) {
+        ok(true, "progress has been dispatched.");
+
+        equal(this.processed, 100,
+            "Progress properly reflected in processed property.");
+
+        equal(this.percent, 25,
+            "Progress percent calculated properly.");
+
+        this.pause();
+    });
+
+    item.bind('paused', function() {
+        ok(true, "paused has been dispatched.");
+
+        equal(this.state, Queueable.PAUSED,
+            "State changed to Queueable.PAUSED");
+
+        this.done();
+    });
+
+    item.bind('done', function() {
+        ok(true, "done has been dispatched.");
+
+        equal(this.state, Queueable.DONE,
+            "State changed to Queueable.DONE");
+
+        equal(this.processed, 400,
+            "Progress properly reflected in processed property.");
+
+        equal(this.percent, 100,
+            "Progress percent calculated properly.");
+
+        ok(this.processedTimestamp, "Timestamp of completion has been set.");
+    });
+
+    item.bind('failed', function() {
+        ok(true, "failed has been dispatched.");
+
+        equal(this.state, Queueable.FAILED,
+            "State changed to Queueable.FAILED");
+
+        ok(this.processedTimestamp, "Timestamp of completion has been set.");
+    });
+
+    item.bind('processed', function() {
+        ok(true, "processed has been dispatched.");
+
+        if (!processedFired) {
+            this.processedTimestamp = 0;
+            processedFired = true;
+            this.failed();
+        } else {
+            this.destroy();
+        }
+    });
+
+    item.bind('destroy', function() {
+        ok(true, "destroy has been dispatched.");
+
+        equal(this.state, Queueable.DESTROYED,
+            "State changed to Queueable.DESTROYED");
+
+        // events are unbinded after all handlers have run, so we let it finish and then check
+        setTimeout(function() {
+            QUnit.start();
+            ok(!item.hasEventListener('started'), "Event listeneres have been unbinded.");
+
+            // the following should have no effect
+            item.destroy();
+            item = null;
+        }, 1)
+    });
+
+    QUnit.stop();
+    item.start();
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

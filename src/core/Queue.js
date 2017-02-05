@@ -474,7 +474,7 @@ define('plupload/core/Queue', [
 
                 processed += item.processed;
 
-                if (!item.doneTimestamp || item.doneTimestamp > self._startTime) {
+                if (!item.processedTimestamp || item.processedTimestamp > self._startTime) {
                     processedDuringThisSession += processed;
                 }
 
