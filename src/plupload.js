@@ -1467,11 +1467,11 @@ plupload.Uploader = function(options) {
 			}
 
 			if (up.trigger('BeforeChunkUpload', file, args, chunkBlob, offset)) {
-				up.trigger('UploadChunk', args, chunkBlob, curChunkSize);
+				uploadChunk(args, chunkBlob, curChunkSize);
 			}
 		}
 
-		function onUploadChunk(up, args, chunkBlob, curChunkSize) {
+		function uploadChunk(args, chunkBlob, curChunkSize) {
 			var formData;
 
 			xhr = new o.xhr.XMLHttpRequest();
@@ -1603,8 +1603,6 @@ plupload.Uploader = function(options) {
 			}
 		}
 
-		up.unbind('UploadChunk', onUploadChunk); // make sure that we bind only once per file
-		up.bind('UploadChunk', onUploadChunk);
 
 		blob = file.getSource();
 
