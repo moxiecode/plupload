@@ -1273,12 +1273,12 @@ define('plupload/Uploader', [
 
 
 	addFileFilter('prevent_duplicates', function(value, file, cb) {
+		var self = this;
 		if (value) {
-			var ii = this.files.length;
-			while (ii--) {
+			this.forEachItem(function(item) {
 				// Compare by name and size (size might be 0 or undefined, but still equivalent for both)
-				if (file.name === this.files[ii].name && file.size === this.files[ii].size) {
-					this.trigger('Error', {
+				if (file.name === item.name && file.size === item.size) {
+					self.trigger('Error', {
 						code: plupload.FILE_DUPLICATE_ERROR,
 						message: plupload.translate('Duplicate file error.'),
 						file: file
@@ -1286,7 +1286,7 @@ define('plupload/Uploader', [
 					cb(false);
 					return;
 				}
-			}
+			});
 		}
 		cb(true);
 	});
