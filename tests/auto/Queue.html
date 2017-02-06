@@ -167,7 +167,7 @@ test("start()/stop()", function() {
         'started': 0,
         'statechanged': 0,
         'progress': 0,
-        'paused': 0,
+        //'paused': 0,
         'stopped': 0,
     };
 
@@ -269,6 +269,35 @@ test("Options: pause_before_start=false", function() {
 
     QUnit.stop();
     queue.start();
+});
+
+
+test("Options: auto_start=true", function() {
+    var item, i, arr, numItems = 5;
+    var queue = new Queue({
+        auto_start: true
+    });
+
+    queue.bind('started', function() {
+        ok(true, "Queue has started automatically.");
+    });
+
+    queue.bind('stopped', function() {
+        QUnit.start();
+
+        setTimeout(function() {
+            queue.destroy();
+        }, 1);
+    });
+
+
+    QUnit.stop();
+    for (i = 0; i < numItems; i++) {
+        queue.addItem(new QueueItem());
+    }
+
+
+
 });
 
 
