@@ -1,6 +1,6 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v2.3.0
+ * v2.3.1
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -8,7 +8,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2017-02-02
+ * Date: 2017-02-06
  */
 ;(function (global, factory) {
 	var extract = function() {
@@ -112,7 +112,7 @@ var plupload = {
 	 * @static
 	 * @final
 	 */
-	VERSION : '2.3.0',
+	VERSION : '2.3.1',
 
 	/**
 	 * The state of the queue before it has started and after it has finished
@@ -897,9 +897,9 @@ plupload.Uploader = function(options) {
 	* @event BeforeChunkUpload
 	* @param {plupload.Uploader} uploader Uploader instance sending the event.
 	* @param {plupload.File} file File to be uploaded.
-	* @param {Object} POST params to be sent.
-	* @param {Blob} current Blob.
-	* @param {offset} current Slice offset.
+	* @param {Object} args POST params to be sent.
+	* @param {Blob} chunkBlob Current blob.
+	* @param {offset} offset Current offset.
 	*/
 
 	/**
@@ -1494,11 +1494,11 @@ plupload.Uploader = function(options) {
 			}
 
 			if (up.trigger('BeforeChunkUpload', file, args, chunkBlob, offset)) {
-				up.trigger('UploadChunk', args, chunkBlob, curChunkSize);
+				uploadChunk(args, chunkBlob, curChunkSize);
 			}
 		}
 
-		function onUploadChunk(up, args, chunkBlob, curChunkSize) {
+		function uploadChunk(args, chunkBlob, curChunkSize) {
 			var formData;
 
 			xhr = new o.xhr.XMLHttpRequest();
@@ -1630,8 +1630,6 @@ plupload.Uploader = function(options) {
 			}
 		}
 
-		up.unbind('UploadChunk', onUploadChunk); // make sure that we bind only once per file
-		up.bind('UploadChunk', onUploadChunk);
 
 		blob = file.getSource();
 

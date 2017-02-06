@@ -4354,7 +4354,9 @@ define('moxie/file/FileReader', [
  * Contributing: http://www.plupload.com/contributing
  */
 
-define('moxie/core/utils/Url', [], function() {
+define('moxie/core/utils/Url', [
+	'moxie/core/utils/Basic'
+], function(Basic) {
 	/**
 	Parse url into separate components and fill in absent parts with parts from current url,
 	based on https://raw.github.com/kvz/phpjs/master/functions/url/parse_url.js
@@ -4375,7 +4377,19 @@ define('moxie/core/utils/Url', [], function() {
 		, uri = {}
 		, regex = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@\/]*):?([^:@\/]*))?@)?(\[[\da-fA-F:]+\]|[^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)/
 		, m = regex.exec(url || '')
+		, isRelative
+		, isSchemeLess = /^\/\/\w/.test(url)
 		;
+
+		switch (Basic.typeOf(currentUrl)) {
+			case 'undefined':
+				currentUrl = parseUrl(document.location.href, false);
+				break;
+
+			case 'string':
+				currentUrl = parseUrl(currentUrl, false);
+				break;
+		}
 
 		while (i--) {
 			if (m[i]) {
@@ -4383,14 +4397,14 @@ define('moxie/core/utils/Url', [], function() {
 			}
 		}
 
-		// when url is relative, we set the origin and the path ourselves
-		if (!uri.scheme) {
-			// come up with defaults
-			if (!currentUrl || typeof(currentUrl) === 'string') {
-				currentUrl = parseUrl(currentUrl || document.location.href);
-			}
+		isRelative = !isSchemeLess && !uri.scheme;
 
+		if (isSchemeLess || isRelative) {
 			uri.scheme = currentUrl.scheme;
+		}
+
+		// when url is relative, we set the origin and the path ourselves
+		if (isRelative) {
 			uri.host = currentUrl.host;
 			uri.port = currentUrl.port;
 
