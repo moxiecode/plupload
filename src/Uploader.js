@@ -240,48 +240,43 @@ define('plupload/Uploader', [
 		var _initialized = false;
 		var _disabled = false;
 
-		var _options = plupload.extend({
-				runtimes: Runtime.order,
-				multi_selection: true,
-				flash_swf_url: 'js/Moxie.swf',
-				silverlight_xap_url: 'js/Moxie.xap',
-				filters: {
-					mime_types: '*',
-					prevent_duplicates: false,
-					max_file_size: 0
-				},
-				// headers: false, // Plupload had a required feature with the same name, comment it to avoid confusion
-				max_upload_slots: 1,
-				max_resize_slots: 1,
-				multipart: true,
-				multipart_params: {}, // deprecated, use - params,
-				// @since 3
-				params: {},
-				// @since 2.3
-				http_method: 'POST',
-				file_data_name: 'file',
-				chunk_size: 0,
-				send_file_name: true,
-				send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
-				max_retries: 0,
-				resize: false,
-				backward_compatibility: true
+		var _options = normalizeOptions(plupload.extend({
+			backward_compatibility: true,
+			chunk_size: 0,
+			file_data_name: 'file',
+			filters: {
+				mime_types: '*',
+				prevent_duplicates: false,
+				max_file_size: 0
 			},
-			options
-		);
-
-		// Normalize the list of required capabilities
-		_options.required_features = normalizeCaps(plupload.extend({}, _options));
-
-		// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
-		_options.preferred_caps = normalizeCaps(plupload.extend({}, _options, {
-			required_features: true
-		}));
+			flash_swf_url: 'js/Moxie.swf',
+			// @since 2.3
+			http_method: 'POST',
+			// headers: false, // Plupload had a required feature with the same name, comment it to avoid confusion
+			max_resize_slots: 1,
+			max_retries: 0,
+			max_upload_slots: 1,
+			multipart: true,
+			multipart_params: {}, // deprecated, use - params,
+			multi_selection: true,
+			// @since 3
+			params: {},
+			preferred_caps: false,
+			required_features: false,
+			resize: false,
+			runtimes: Runtime.order,
+			send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
+			send_file_name: true,
+			silverlight_xap_url: 'js/Moxie.xap'
+		}, options));
 
 		Queue.call(this);
 
+
 		// Add public methods
 		plupload.extend(this, {
+
+			_options: _options,
 
 			/**
 			 * Unique id for the Uploader instance.
@@ -319,7 +314,7 @@ define('plupload/Uploader', [
 			 * @type Object
 			 * @deprecated Use `getOption()/setOption()`
 			 */
-			settings : {},
+			settings : _options,
 
 			/**
 			 * Current runtime name
@@ -799,10 +794,6 @@ define('plupload/Uploader', [
 		}
 
 
-		// normalize options
-		this.setOptions(_options);
-
-
 		function getRUID() {
 			var ctrl = _fileInputs[0] || _fileDrops[0];
 			if (ctrl) {
@@ -1080,6 +1071,13 @@ define('plupload/Uploader', [
 		return caps;
 	}
 
+	function normalizeOptions(options) {
+		plupload.each(options, function(value, option) {
+			options[option] = normalizeOption(option, value, options);
+		});
+		return options;
+	}
+
 	/**
 	Normalize an option.
 
@@ -1182,6 +1180,16 @@ define('plupload/Uploader', [
 					options.send_file_name = true;
 				}
 				break;
+
+			case 'required_features':
+				// Normalize the list of required capabilities
+				return normalizeCaps(plupload.extend({}, options));
+
+			case 'preferred_caps':
+				// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
+				return normalizeCaps(plupload.extend({}, options, {
+					required_features: true
+				}));
 
 				// options that require reinitialisation
 			case 'container':
