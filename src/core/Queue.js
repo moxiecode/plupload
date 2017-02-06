@@ -328,10 +328,6 @@ define('plupload/core/Queue', [
                     return false;
                 }
 
-                if (!this.stats.processing) {
-                    this.pause();
-                }
-
                 return true;
             },
 
