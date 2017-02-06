@@ -75,6 +75,13 @@ define('plupload/core/ArrCollection', [
                 return !!this.extract(key);
             },
 
+            splice: function(start, length) {
+                start = Basic.typeOf(start) === 'undefinded' ? 0 : Math.max(start, 0);
+                length = Basic.typeOf(length) !== 'undefinded' && start + length < _registry.length ? length : _registry.length - start;
+
+                return _registry.splice(start, length);
+            },
+
             extract: function(key) {
                 var idx = this.getIdx(key);
                 if (idx > -1) {

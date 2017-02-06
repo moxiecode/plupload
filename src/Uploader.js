@@ -691,27 +691,10 @@ define('plupload/Uploader', [
 			 * @param {Number} length (Optional) Length of items to remove
 			 */
 			splice: function(start, length) {
-				var self = this;
 				var i = 0;
-				var removed = [];
 				var shouldRestart = plupload.STARTED == this.state;
 
-				start === undef ? 0 : Math.max(start, 0);
-				var end = length === undef ? this.count() : Math.min(start + length, this.count());
-
-				this.forEachItem(function(item) {
-					if (i < start) {
-						return true; // continue
-					}
-					if (i > end) {
-						return false; // finish here
-					}
-
-					self.extractItem(item.uid); // extracts but not destroys (we still need to fire FilesRemoved with these)
-					removed.push(item);
-					i++;
-				});
-
+				var removed = Queue.prototype.splice.apply(this, arguments);
 				if (removed.length) {
 					this.trigger("FilesRemoved", removed);
 

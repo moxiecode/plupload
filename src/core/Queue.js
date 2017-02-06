@@ -360,6 +360,11 @@ define('plupload/core/Queue', [
             },
 
 
+            splice: function(start, length) {
+                return this._queue.splice(start, length);
+            },
+
+
             countSpareSlots: function() {
                 return Math.max(this.getOption('max_slots') - this.stats.processing, 0);
             },
