@@ -61,6 +61,14 @@ define('plupload/core/Queue', [
         'Paused',
 
         /**
+         * Dispatched when there's no more items in processing
+         *
+         * @event done
+         * @param {Object} event
+         */
+        'Done',
+
+        /**
          * Dispatched as soon as activity ends
          *
          * @event stopped
@@ -103,7 +111,7 @@ define('plupload/core/Queue', [
              * @type {Date}
              * @private
              */
-            this._startTime;
+            this._startTime = 0;
 
             /**
              * @property state
@@ -163,8 +171,11 @@ define('plupload/core/Queue', [
                     return false;
                 }
 
+                if (!self._startTime) {
+                    self._startTime = new Date();
+                }
+
                 self.state = Queue.STARTED;
-                self._startTime = new Date();
                 self.trigger('StateChanged', self.state, prevState);
                 self.trigger('Started');
 
@@ -205,6 +216,8 @@ define('plupload/core/Queue', [
                         self.stopItem(item.uid);
                     });
                 }
+
+                self._startTime = 0;
 
                 self.state = Queue.STOPPED;
                 self.trigger('StateChanged', self.state, prevState);

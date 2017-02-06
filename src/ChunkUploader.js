@@ -34,14 +34,12 @@ define('plupload/ChunkUploader', [
 
         Basic.extend(this, {
 
-            uid: Basic.guid(),
-
             start: function(options) {
                 var self = this;
                 var url;
                 var formData;
 
-                // have the options ovverride local to start() method only
+                // have the options override local for the start() method only
                 var _options = options ? Basic.extendImmutable({}, this.getOptions(), options) : this.getOptions();
 
                 ChunkUploader.prototype.start.call(this);
