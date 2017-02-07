@@ -26,7 +26,6 @@ define('plupload/ChunkUploader', [
 
     function ChunkUploader(blob, options) {
         var _xhr;
-        var _blob = blob;
 
         Queueable.call(this);
 
@@ -71,7 +70,13 @@ define('plupload/ChunkUploader', [
                 };
 
                 _xhr.onloadend = function() {
-                    _xhr = null;
+                    // we do not need _xhr anymore, so destroy it
+                    setTimeout(function() { // we detach to sustain reference until all handlers are done
+                        if (_xhr) {
+                            _xhr.destroy();
+                            _xhr = null;
+                        }
+                    }, 1);
                 };
 
 
@@ -96,7 +101,7 @@ define('plupload/ChunkUploader', [
                         });
                     }
 
-                    formData.append(_options.file_data_name, _blob);
+                    formData.append(_options.file_data_name, blob);
 
                     _xhr.send(formData);
                 } else { // if no multipart, send as binary stream
@@ -104,18 +109,24 @@ define('plupload/ChunkUploader', [
                         _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
                     }
 
-                    _xhr.send(_blob);
+                    _xhr.send(blob);
                 }
             },
 
 
             stop: function() {
-                ChunkUploader.prototype.stop.call(this);
-
                 if (_xhr) {
                     _xhr.abort();
+                    _xhr.destroy();
                     _xhr = null;
                 }
+                ChunkUploader.prototype.stop.call(this);
+            },
+
+
+            destroy: function() {
+                this.stop();
+                ChunkUploader.prototype.destroy.call(this);
             }
         });
 
