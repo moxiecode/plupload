@@ -205,7 +205,7 @@
 
 						Basic.each(_meta, function(value, key) {
 							if (Basic.typeOf(value) !== 'undefined') {
-								headers.push('meta-' + key + '::' + JSON.stringify(value));
+								headers.push('meta-' + key + ':' + (typeof(value) === 'string' ? value : JSON.stringify(value)));
 							}
 						});
 
