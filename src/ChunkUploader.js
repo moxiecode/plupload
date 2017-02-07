@@ -105,7 +105,7 @@ define('plupload/ChunkUploader', [
 
                     _xhr.send(formData);
                 } else { // if no multipart, send as binary stream
-                    if (Basic.isEmptyObj(_options.headers) || !_options.headers['content-type']) {
+                    if (Basic.isEmptyObj(_options.headers) || !_xhr.hasRequestHeader('content-type')) {
                         _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
                     }
 

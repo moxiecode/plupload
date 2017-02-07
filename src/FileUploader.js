@@ -31,15 +31,15 @@ define('plupload/FileUploader', [
 		Queueable.call(this);
 
 		this._options = {
-			url: false,
 			chunk_size: 0,
-			multipart: true,
-			http_method: 'POST',
-			params: {},
-			headers: false,
 			file_data_name: 'file',
+			headers: false,
+			http_method: 'POST',
+			multipart: true,
+			params: {},
 			send_file_name: true,
-			stop_on_fail: true
+			stop_on_fail: true,
+			url: false
 		};
 
 		Basic.extend(this, {

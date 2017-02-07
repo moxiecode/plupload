@@ -34,7 +34,6 @@ define('plupload/core/Optionable', [
     ];
 
     return (function(Parent) {
-        Basic.inherit(Optionable, Parent);
 
         /**
          * @class Optionable
@@ -47,6 +46,7 @@ define('plupload/core/Optionable', [
             this._options = {};
         }
 
+        Basic.inherit(Optionable, Parent);
 
         Basic.extend(Optionable.prototype, {
             /**
