@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: ChunkUploader</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+module('ChunkUploader', {
+    setup: function() {
+        var self = this;
+        var rt = new moxie.runtime.RuntimeTarget();
+
+        rt.bind('RuntimeInit', function() {
+            self.blob = new moxie.file.Blob(rt.ruid, {
+                size: Utils.random(1, 3) * Math.pow(2, 15) // bytes
+            });
+            QUnit.start();
+        });
+
+        QUnit.stop();
+        rt.connectRuntime({
+            runtime_order: 'test'
+        });
+
+        self.options = {
+            url: '../upload.php',
+            multipart: true,
+            http_method: 'POST',
+            params: {},
+            headers: false,
+            file_data_name: 'file'
+        };
+    },
+
+    teardown: function() {
+        this.blob.destroy();
+    }
+});
+
+test("If options are passed to start() method, they extend existing ones.", function() {
+    var self = this;
+    var up = new plupload.ChunkUploader(this.blob, this.options);
+
+    up.bind('done', function(e, result) {
+        var headers = Utils.parseHeaders(result.responseHeaders);
+
+        equal(headers['meta-method'], 'put',
+            "Option successfully overriden.");
+
+        equal(self.options.http_method.toLowerCase(), 'post',
+            "Original option left intact.");
+
+        QUnit.start();
+    });
+
+    QUnit.stop();
+    up.start({
+        http_method: 'put'
+    });
+});
+
+test("Test start() and events", function() {
+    var self = this;
+    var up = new plupload.ChunkUploader(this.blob, this.options);
+
+    var dispatched = {
+        //'queued': 0,
+        'started': 0,
+        //'paused': 0,
+        //'stopped': 0,
+        'progress': 0,
+        //'failed': 0,
+        'done': 0,
+        'processed': 0,
+        //'destroy': 0
+    };
+
+    // monitor events
+    plupload.each(dispatched, function(num, type) {
+        up.bind(type, function() {
+            dispatched[type]++;
+        });
+    });
+
+    up.bind('processed', function() {
+        QUnit.start();
+
+        plupload.each(dispatched, function(num, type) {
+            ok(num > 0, type + ' has been dispatched ' + num + ' times.');
+        });
+    });
+
+    QUnit.stop();
+    up.start();
+});
+
+test("Test failed event", function() {
+    expect(5);
+
+    var self = this;
+    var up = new plupload.ChunkUploader(this.blob, this.options);
+
+    var dispatched = {
+        //'queued': 0,
+        'started': 0,
+        //'paused': 0,
+        //'stopped': 0,
+        'progress': 0,
+        'failed': 0,
+        //'done': 0,
+        'processed': 0,
+        //'destroy': 0
+    };
+
+    // monitor events
+    plupload.each(dispatched, function(num, type) {
+        up.bind(type, function() {
+            dispatched[type]++;
+        });
+    });
+
+    up.bind('failed', function(e, result) {
+        equal(result.status, 404,
+            "Request failed with HTTP status of 404.");
+    });
+
+    up.bind('processed', function() {
+        QUnit.start();
+
+        plupload.each(dispatched, function(num, type) {
+            ok(num > 0, type + ' has been dispatched ' + num + ' times.');
+        });
+    });
+
+    QUnit.stop();
+    up.start({
+        url: 404
+    });
+});
+
+
+test("stop()/destroy()", function() {
+    var self = this;
+    var up = new plupload.ChunkUploader(this.blob, this.options);
+
+    up.bind('progress', function(e, result) {
+        up.destroy();
+        up = null;
+    });
+
+    up.bind('done', function() {
+        ok(false, "done event shouldn't have been triggered.");
+    });
+
+    up.bind('destroy', function() {
+        ok(true, "destroy has been triggered.");
+        QUnit.start();
+    });
+
+    QUnit.stop();
+    up.start({
+        http_method: 'put'
+    });
+});
+
+
+test("Options: multipart=false", function() {
+    var self = this;
+    var up = new plupload.ChunkUploader(this.blob, this.options);
+
+    up.bind('done', function(e, result) {
+         var headers = Utils.parseHeaders(result.responseHeaders);
+          var requestHeaders = JSON.parse(headers['meta-headers']);
+
+         ok(/\?one=1&two=2$/.test(headers['meta-url']),
+            "params appended to the url as query string.");
+
+        equal(requestHeaders['content-type'], 'application/octet-stream',
+            "By default Content-Type for multipart=false is set to application/octet-stream.");
+
+        QUnit.start();
+    });
+
+    QUnit.stop();
+    up.start({
+        multipart: false,
+        params: {
+            one: 1,
+            two: 2
+        }
+    });
+});
+
+
+test("Options: headers, also test custom Content-Type", function() {
+    var self = this;
+    var up = new plupload.ChunkUploader(this.blob, this.options);
+
+    up.bind('done', function(e, result) {
+         var headers = Utils.parseHeaders(result.responseHeaders);
+         var requestHeaders = JSON.parse(headers['meta-headers']);
+
+         equal(requestHeaders['content-type'], 'image/jpeg',
+            "Content-Type overriden successfully.");
+
+        QUnit.start();
+    });
+
+    QUnit.stop();
+    up.start({
+        multipart: false,
+        headers: {
+            "Content-Type": "image/jpeg"
+        }
+    });
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

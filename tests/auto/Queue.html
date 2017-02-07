@@ -41,7 +41,7 @@ function QueueItem() {
     Queueable.apply(this, arguments);
 
     this.dispatched = dispatched;
-    this.total = random(500, 1000); // kbs kinda
+    this.total = Utils.random(500, 1000); // kbs kinda
 
     this.start = function() {
         var self = this;
@@ -68,10 +68,6 @@ function QueueItem() {
             timer = null;
         }
     });
-
-    function random(min, max) {
-        return Math.round(Math.random() * (max - min) + min);
-    }
 }
 
 moxie.core.utils.Basic.inherit(QueueItem, Queueable);
