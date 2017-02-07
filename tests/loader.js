@@ -5,7 +5,8 @@
 		"//code.jquery.com/qunit/qunit-1.14.0.js",
 		"js/testrunner/reporter.js",
 		"js/FileHash.js",
-		"js/test-runtime.js"
+		"js/test-runtime.js",
+		"js/utils.js"
 	];
 
 	var styles = [
