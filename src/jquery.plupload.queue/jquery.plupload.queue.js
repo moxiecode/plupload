@@ -1,8 +1,8 @@
 /**
  * jquery.plupload.queue.js
  *
- * Copyright 2009, Moxiecode Systems AB
- * Released under GPL License.
+ * Copyright 2017, Ephox
+ * Released under AGPLv3 License.
  *
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing

@@ -1,8 +1,8 @@
 /**
  * File.js
  *
- * Copyright 2015, Moxiecode Systems AB
- * Released under GPL License.
+ * Copyright 2017, Ephox
+ * Released under AGPLv3 License.se.
  *
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
