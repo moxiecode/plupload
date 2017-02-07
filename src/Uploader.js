@@ -261,13 +261,15 @@ define('plupload/Uploader', [
 			multi_selection: true,
 			// @since 3
 			params: {},
-			preferred_caps: false,
-			required_features: false,
 			resize: false,
 			runtimes: Runtime.order,
 			send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
 			send_file_name: true,
-			silverlight_xap_url: 'js/Moxie.xap'
+			silverlight_xap_url: 'js/Moxie.xap',
+
+			// during normalization, these should be processed last
+			required_features: false,
+			preferred_caps: false
 		}, options));
 
 		Queue.call(this);
