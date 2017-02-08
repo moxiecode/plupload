@@ -65,9 +65,9 @@ test("PUT method", function() {
 			FileUploaded: function(up, file, result) {
 				start();
 
-				var meta = extractMeta(result.responseHeaders.split(/\r\n/));
+				var headers = Utils.parseHeaders(result.responseHeaders);
 
-				equal(meta.method, 'PUT', 
+				equal(headers['meta-method'], 'put',
 					"PUT was used as HTTP method.");
 			}
 		}
@@ -110,9 +110,10 @@ test("multipart=false (default content-type)", function() {
 			FileUploaded: function(up, file, result) {
 				start();
 
-				var meta = extractMeta(result.responseHeaders.split(/\r\n/));
+				var headers = Utils.parseHeaders(result.responseHeaders);
+				var requestHeaders = JSON.parse(headers['meta-headers']);
 
-				equal(meta.headers['content-type'], 'application/octet-stream',
+				equal(requestHeaders['content-type'], 'application/octet-stream',
 					"By default Content-Type is set to application/octet-stream.");
 			}
 		}
@@ -158,13 +159,14 @@ test("multipart=false", function() {
 			FileUploaded: function(up, file, result) {
 				start();
 
-				var meta = extractMeta(result.responseHeaders.split(/\r\n/));
+				var headers = Utils.parseHeaders(result.responseHeaders);
+				var requestHeaders = JSON.parse(headers['meta-headers']);
 
-				equal(meta.headers['content-type'], 'custom/mime-type',
+				equal(requestHeaders['content-type'], 'custom/mime-type',
 					"If Content-Type supplied it should be used instead of default (application/octet-stream).");
 
-				var urlParts = meta.url.split(/\?/);
-				ok(urlParts[1] && /(?:^|[\?&]?)name=/.test(urlParts[1]), 
+				var urlParts = headers['meta-url'].split(/\?/);
+				ok(urlParts[1] && /(?:^|[\?&]?)name=/.test(urlParts[1]),
 					"name argument will be sent even if send_file_name=false.");
 			}
 		}
@@ -173,19 +175,6 @@ test("multipart=false", function() {
 	stop();
 	uploader.init();
 });
-
-
-
-function extractMeta(headers) {
-	var meta = {};
-	plupload.each(headers, function(header) {
-		if (/^meta\-/.test(header)) {
-			var parts = header.split(/::/);
-			meta[parts[0].replace(/^meta\-/, '')] = JSON.parse(parts[1]);
-		}
-	});
-	return meta;
-}
 
 </script>
 </head>

@@ -127,7 +127,10 @@
                         prevent_duplicates: false,
                         max_file_size: 0
                     },
-                    required_features: {},
+                    re_ext_filter: /(\.*)$/i,
+                    required_features: {
+                        "select_file": true
+                    },
                     http_method: "POST",
                     file_data_name: "file",
                     chunk_size: 0,

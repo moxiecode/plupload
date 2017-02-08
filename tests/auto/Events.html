@@ -411,7 +411,7 @@ test("FilesRemoved, QueueChanged", function() {
 
 
 test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", function() {
-	expect(12);
+	expect(10);
 
 	var events = {
 		StateChanged: 0,
@@ -491,12 +491,12 @@ test("StateChanged, BeforeUpload, UploadFile, UploadProgress, FileUploaded", fun
 						break;
 
 					case 3:
-						ok(true, "Uploader state changed to Queue.PAUSED");
+						ok(false, "Uploader state changed to Queue.PAUSED"); // this one shouldn't fire
 						break;
 				}
 
 				events.StateChanged++;
-			}			
+			}
 		}
 	});
 
