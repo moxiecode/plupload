@@ -86,7 +86,13 @@ define('plupload/core/Optionable', [
                 if (!option) {
                     return this._options;
                 }
-                return this._options[option];
+
+                var value = this._options[option];
+                if (Basic.inArray(Basic.typeOf(value), ['array', 'object']) > -1) {
+                    return Basic.extendImmutable({}, value);
+                } else {
+                    return value;
+                }
             },
 
 
