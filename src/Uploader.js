@@ -1125,7 +1125,8 @@ define('plupload/Uploader', [
 						value.mime_types = Mime.mimes2extList(value.mime_types);
 					}
 
-					value.mime_types.regexp = (function(filters) {
+					// generate and cache regular expression for filtering file extensions
+					options.re_ext_filter = (function(filters) {
 						var extensionsRegExp = [];
 
 						plupload.each(filters, function(filter) {
@@ -1242,7 +1243,7 @@ define('plupload/Uploader', [
 
 
 	addFileFilter('mime_types', function(filters, file, cb) {
-		if (filters.length && !filters.regexp.test(file.name)) {
+		if (filters.length && !this.getOption('re_ext_filter').test(file.name)) {
 			this.trigger('Error', {
 				code: plupload.FILE_EXTENSION_ERROR,
 				message: plupload.translate('File extension error.'),
