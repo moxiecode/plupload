@@ -451,7 +451,7 @@ define('plupload/Uploader', [
 				}
 
 				if (typeof(option) !== 'object') {
-					value = normalizeOption(option, value, _options);
+					value = normalizeOption(option, value, this._options);
 
 					// queues will take in only appropriate options
 					if (_queueUpload) {
@@ -1088,7 +1088,7 @@ define('plupload/Uploader', [
 
 	@param {String} option Name of the option to normalize
 	@param {Mixed} value
-	@param {Object} options The whole set of options, that might be modified during normalization (see max_file_size or unique_names)
+	@param {Object} options The whole set of options, that might be modified during normalization (see max_file_size or unique_names)!
 	*/
 	function normalizeOption(option, value, options) {
 		switch (option) {
