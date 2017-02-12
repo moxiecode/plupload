@@ -50,11 +50,8 @@ define('plupload/QueueUpload', [
                     if (option == 'max_upload_slots') {
                         option = 'max_slots';
                     }
-                    if (!this._options.hasOwnProperty(option)) {
-                        return;
-                    }
                 }
-                QueueUpload.prototype.setOption.apply(this, arguments);
+                QueueUpload.prototype.setOption.call(this, option, value, true);
             };
 
             this.setOptions(options);

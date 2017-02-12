@@ -174,10 +174,7 @@ define('plupload/FileUploader', [
 
 
 			setOption: function(option, value) {
-				if (typeof(option) !== 'object' && !this._options.hasOwnProperty(option)) {
-					return;
-				}
-				FileUploader.prototype.setOption.apply(this, arguments);
+				FileUploader.prototype.setOption.call(this, option, value, true);
 			},
 
 

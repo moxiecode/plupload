@@ -56,15 +56,20 @@ define('plupload/core/Optionable', [
              * @since 2.1
              * @param {String|Object} option Name of the option to change or the set of key/value pairs
              * @param {Mixed} [value] Value for the option (is ignored, if first argument is object)
+             * @param {Boolean} [mustBeDefined] if truthy, any option that is not in defaults will be ignored
              */
-            setOption: function(option, value) {
+            setOption: function(option, value, mustBeDefined) {
                 var self = this;
                 var oldValue;
 
                 if (typeof(option) === 'object') {
                     Basic.each(option, function(value, option) {
-                        self.setOption(option, value);
+                        self.setOption(option, value, mustBeDefined);
                     });
+                    return;
+                }
+
+                if (mustBeDefined && !self._options.hasOwnProperty(option)) {
                     return;
                 }
 

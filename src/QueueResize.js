@@ -42,11 +42,8 @@ define('plupload/QueueResize', [
                     if (option == 'max_resize_slots') {
                         option = 'max_slots';
                     }
-                    if (!this._options.hasOwnProperty(option)) {
-                        return;
-                    }
                 }
-                QueueResize.prototype.setOption.apply(this, arguments);
+                QueueResize.prototype.setOption.call(this, option, value, true);
             };
 
 
