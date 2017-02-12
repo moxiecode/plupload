@@ -75,37 +75,40 @@ define('plupload/ChunkUploader', [
                     }, 1);
                 };
 
-
-                url = _options.multipart ? _options.url : buildUrl(_options.url, _options.params);
-                _xhr.open(_options.http_method, url, true);
-
-
-                // headers must be set after request is already opened, otherwise INVALID_STATE_ERR exception will raise
-                if (!Basic.isEmptyObj(_options.headers)) {
-                    Basic.each(_options.headers, function(val, key) {
-                        _xhr.setRequestHeader(key, val);
-                    });
-                }
+                try {
+                    url = options.multipart ? options.url : buildUrl(options.url, options.params);
+                    _xhr.open(options.http_method, url, true);
 
 
-                if (_options.multipart) {
-                    formData = new FormData();
-
-                    if (!Basic.isEmptyObj(_options.params)) {
-                        Basic.each(_options.params, function(val, key) {
-                            formData.append(key, val);
+                    // headers must be set after request is already opened, otherwise INVALID_STATE_ERR exception will raise
+                    if (!Basic.isEmptyObj(options.headers)) {
+                        Basic.each(options.headers, function(val, key) {
+                            _xhr.setRequestHeader(key, val);
                         });
                     }
 
-                    formData.append(_options.file_data_name, blob);
 
-                    _xhr.send(formData);
-                } else { // if no multipart, send as binary stream
-                    if (Basic.isEmptyObj(_options.headers) || !_xhr.hasRequestHeader('content-type')) {
-                        _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
+                    if (options.multipart) {
+                        formData = new FormData();
+
+                        if (!Basic.isEmptyObj(options.params)) {
+                            Basic.each(options.params, function(val, key) {
+                                formData.append(key, val);
+                            });
+                        }
+
+                        formData.append(options.file_data_name, blob);
+
+                        _xhr.send(formData);
+                    } else { // if no multipart, send as binary stream
+                        if (Basic.isEmptyObj(options.headers) || !_xhr.hasRequestHeader('content-type')) {
+                            _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
+                        }
+
+                        _xhr.send(blob);
                     }
-
-                    _xhr.send(blob);
+                } catch(ex) {
+                    self.failed()
                 }
             },
 
