@@ -53,13 +53,9 @@ define('plupload/FileUploader', [
 			name: _file.name,
 
 
-			start: function(options) {
+			start: function() {
 				var self = this;
 				var up;
-
-				this.setOptions(options);
-
-				FileUploader.prototype.start.call(self);
 
 				// send additional 'name' parameter only if required or explicitly requested
 				if (self._options.send_file_name) {
@@ -68,9 +64,9 @@ define('plupload/FileUploader', [
 
 				if (self._options.chunk_size) {
 					_totalChunks = Math.ceil(_file.size / self._options.chunk_size);
-					self.uploadChunk(false, false, true);
+					self.uploadChunk(false, true);
 				} else {
-					up = new ChunkUploader(_file, self._options);
+					up = new ChunkUploader(file);
 
 					up.bind('progress', function(e) {
 						self.progress(e.loaded, e.total);
@@ -86,21 +82,17 @@ define('plupload/FileUploader', [
 
 					queue.addItem(up);
 				}
+
+				FileUploader.prototype.start.call(self);
 			},
 
 
-			uploadChunk: function(seq, options, dontStop) {
+			uploadChunk: function(seq, dontStop) {
 				var self = this;
 				var chunkSize = this.getOption('chunk_size');
 				var up;
 				var chunk = {};
 				var _options;
-
-				if (options) {
-					// chunk_size cannot be changed on the fly
-					delete options.chunk_size;
-					Basic.extendImmutable(this._options, options);
-				}
 
 				chunk.seq = parseInt(seq, 10) || getNextChunk();
 				chunk.start = chunk.seq * chunkSize;

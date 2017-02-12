@@ -451,7 +451,8 @@ define('plupload/core/Queue', [
                         }
                     } else {
                         self.stats.processing++;
-                        item.start(self.getOptions());
+                        item.setOptions(self.getOptions());
+                        item.start();
                     }
                 } else if (!self.stats.processing) { // we ran out of pending and active items too, so we are done
                     self.stop();

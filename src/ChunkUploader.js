@@ -24,22 +24,18 @@ define('plupload/ChunkUploader', [
     'moxie/xhr/FormData'
 ], function(Basic, Collection, Queueable, XMLHttpRequest, FormData) {
 
-    function ChunkUploader(blob, options) {
+    function ChunkUploader(blob) {
         var _xhr;
 
         Queueable.call(this);
 
-        this.setOptions(options);
-
         Basic.extend(this, {
 
-            start: function(options) {
+            start: function() {
                 var self = this;
                 var url;
                 var formData;
-
-                // have the options override local for the start() method only
-                var _options = options ? Basic.extendImmutable({}, this.getOptions(), options) : this.getOptions();
+                var options = self._options;
 
                 ChunkUploader.prototype.start.call(this);
 

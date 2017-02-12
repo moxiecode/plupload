@@ -165,7 +165,8 @@ define('plupload/File', [
                     self.failed(result);
                 });
 
-               up.start(self.getOptions());
+                up.setOptions(self.getOptions());
+                up.start();
             },
 
 
