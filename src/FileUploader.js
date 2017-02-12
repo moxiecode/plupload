@@ -23,8 +23,7 @@ define('plupload/FileUploader', [
 ], function(Basic, Collection, Queueable, ChunkUploader) {
 
 
-	function FileUploader(fileRef, queue) {
-		var _file = fileRef;
+	function FileUploader(file, queue) {
 		var _chunks = new Collection();
 		var _totalChunks = 1;
 
@@ -50,7 +49,7 @@ define('plupload/FileUploader', [
             @property name
 			@type {String}
             */
-			name: _file.name,
+			name: file.name,
 
 
 			start: function() {
@@ -63,7 +62,7 @@ define('plupload/FileUploader', [
 				}
 
 				if (self._options.chunk_size) {
-					_totalChunks = Math.ceil(_file.size / self._options.chunk_size);
+					_totalChunks = Math.ceil(file.size / self._options.chunk_size);
 					self.uploadChunk(false, true);
 				} else {
 					up = new ChunkUploader(file);
@@ -96,11 +95,11 @@ define('plupload/FileUploader', [
 
 				chunk.seq = parseInt(seq, 10) || getNextChunk();
 				chunk.start = chunk.seq * chunkSize;
-				chunk.end = Math.min(chunk.start + chunkSize, _file.size);
-				chunk.total = _file.size;
+				chunk.end = Math.min(chunk.start + chunkSize, file.size);
+				chunk.total = file.size;
 
 				// do not proceed for weird chunks
-				if (chunk.start < 0 || chunk.start >= _file.size) {
+				if (chunk.start < 0 || chunk.start >= file.size) {
 					return false;
 				}
 
@@ -111,10 +110,10 @@ define('plupload/FileUploader', [
 					}
 				});
 
-				up = new ChunkUploader(_file.slice(chunk.start, chunk.end, _file.type), _options);
+				up = new ChunkUploader(file.slice(chunk.start, chunk.end, file.type), _options);
 
 				up.bind('progress', function(e) {
-					self.progress(calcProcessed() + e.loaded, _file.size);
+					self.progress(calcProcessed() + e.loaded, file.size);
 				});
 
 				up.bind('failed', function(e, result) {
@@ -136,8 +135,8 @@ define('plupload/FileUploader', [
 
 					self.trigger('chunkuploaded', Basic.extendImmutable({}, chunk, result));
 
-					if (calcProcessed() >= _file.size) {
-						self.progress(_file.size, _file.size);
+					if (calcProcessed() >= file.size) {
+						self.progress(file.size, file.size);
 						self.done(result); // obviously we are done
 					} else if (dontStop) {
 						Basic.delay(function() {
@@ -172,7 +171,7 @@ define('plupload/FileUploader', [
 
 			destroy: function() {
 				FileUploader.prototype.destroy.call(this);
-				queue = _file = null;
+				_chunks.clear();
 			}
 		});
 
