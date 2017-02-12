@@ -390,7 +390,7 @@ define('plupload/Uploader', [
 				initControls.call(self, function(initialized) {
 					var runtime;
 					var initOpt = self.getOption('init');
-					var queueOpts = plupload.extend({}, self.getOption(), { auto_start: true });
+					var queueOpts = plupload.extendImmutable({}, self.getOption(), { auto_start: true });
 
 					if (typeof(initOpt) == "function") {
 						initOpt(self);
