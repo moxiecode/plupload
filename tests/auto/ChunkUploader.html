@@ -43,31 +43,9 @@ module('ChunkUploader', {
     }
 });
 
-test("If options are passed to start() method, they extend existing ones.", function() {
-    var self = this;
-    var up = new plupload.ChunkUploader(this.blob, this.options);
-
-    up.bind('done', function(e, result) {
-        var headers = Utils.parseHeaders(result.responseHeaders);
-
-        equal(headers['meta-method'], 'put',
-            "Option successfully overriden.");
-
-        equal(self.options.http_method.toLowerCase(), 'post',
-            "Original option left intact.");
-
-        QUnit.start();
-    });
-
-    QUnit.stop();
-    up.start({
-        http_method: 'put'
-    });
-});
-
 test("Test start() and events", function() {
     var self = this;
-    var up = new plupload.ChunkUploader(this.blob, this.options);
+    var up = new plupload.ChunkUploader(this.blob);
 
     var dispatched = {
         //'queued': 0,
@@ -96,6 +74,8 @@ test("Test start() and events", function() {
         });
     });
 
+    up.setOptions(this.options);
+
     QUnit.stop();
     up.start();
 });
@@ -104,7 +84,7 @@ test("Test failed event", function() {
     expect(5);
 
     var self = this;
-    var up = new plupload.ChunkUploader(this.blob, this.options);
+    var up = new plupload.ChunkUploader(this.blob);
 
     var dispatched = {
         //'queued': 0,
@@ -139,15 +119,16 @@ test("Test failed event", function() {
     });
 
     QUnit.stop();
-    up.start({
+    up.setOptions(plupload.extend({}, this.options, {
         url: 404
-    });
+    }));
+    up.start();
 });
 
 
 test("stop()/destroy()", function() {
     var self = this;
-    var up = new plupload.ChunkUploader(this.blob, this.options);
+    var up = new plupload.ChunkUploader(this.blob);
 
     up.bind('progress', function(e, result) {
         up.destroy();
@@ -164,15 +145,16 @@ test("stop()/destroy()", function() {
     });
 
     QUnit.stop();
-    up.start({
+    up.setOptions(plupload.extend({}, this.options, {
         http_method: 'put'
-    });
+    }));
+    up.start();
 });
 
 
 test("Options: multipart=false", function() {
     var self = this;
-    var up = new plupload.ChunkUploader(this.blob, this.options);
+    var up = new plupload.ChunkUploader(this.blob);
 
     up.bind('done', function(e, result) {
          var headers = Utils.parseHeaders(result.responseHeaders);
@@ -188,19 +170,20 @@ test("Options: multipart=false", function() {
     });
 
     QUnit.stop();
-    up.start({
+    up.setOptions(plupload.extend({}, this.options, {
         multipart: false,
         params: {
             one: 1,
             two: 2
         }
-    });
+    }));
+    up.start();
 });
 
 
 test("Options: headers, also test custom Content-Type", function() {
     var self = this;
-    var up = new plupload.ChunkUploader(this.blob, this.options);
+    var up = new plupload.ChunkUploader(this.blob);
 
     up.bind('done', function(e, result) {
          var headers = Utils.parseHeaders(result.responseHeaders);
@@ -213,12 +196,13 @@ test("Options: headers, also test custom Content-Type", function() {
     });
 
     QUnit.stop();
-    up.start({
+    up.setOptions(plupload.extend({}, this.options, {
         multipart: false,
         headers: {
             "Content-Type": "image/jpeg"
         }
-    });
+    }));
+    up.start();
 });
 
 

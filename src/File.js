@@ -88,14 +88,10 @@ define('plupload/File', [
             origSize: _file.size,
 
 
-            start: function(options) {
+            start: function() {
                 var self = this;
 
-                if (options) {
-                    this.setOptions(options);
-                }
-
-                if (!plupload.isEmptyObj(options.resize) && isImage(this.type) && runtimeCan(_file, 'send_binary_string')) {
+                if (!plupload.isEmptyObj(this._options.resize) && isImage(this.type) && runtimeCan(_file, 'send_binary_string')) {
                     this.resizeAndUpload();
                 } else {
                     this.upload();

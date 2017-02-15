@@ -79,6 +79,8 @@ define('plupload/FileUploader', [
 						self.failed(result);
 					});
 
+					up.setOptions(self._options);
+
 					queue.addItem(up);
 				}
 
@@ -110,7 +112,7 @@ define('plupload/FileUploader', [
 					}
 				});
 
-				up = new ChunkUploader(file.slice(chunk.start, chunk.end, file.type), _options);
+				up = new ChunkUploader(file.slice(chunk.start, chunk.end, file.type));
 
 				up.bind('progress', function(e) {
 					self.progress(calcProcessed() + e.loaded, file.size);
@@ -149,10 +151,12 @@ define('plupload/FileUploader', [
 					this.destroy();
 				});
 
+				up.setOptions(_options);
 
 				_chunks.add(chunk.seq, Basic.extend({
 					state: Queueable.PROCESSING
 				}, chunk));
+
 				queue.addItem(up);
 
 				// enqueue even more chunks if slots available

@@ -76,7 +76,7 @@ test("Options: chunk_size=0 (default), send_file_name=false", function() {
 
         deepEqual(item.getOptions(), {
                 chunk_size: 0,
-                file_data_name: 'filedata',
+                file_data_name: 'file',
                 headers: false,
                 http_method: 'POST',
                 multipart: true,
@@ -93,11 +93,12 @@ test("Options: chunk_size=0 (default), send_file_name=false", function() {
         QUnit.start();
     });
 
-
-    QUnit.stop();
-    up.start(plupload.extend({}, self.options, {
+    up.setOptions(plupload.extend({}, self.options, {
         file_data_name: 'file'
     }));
+
+    QUnit.stop();
+    up.start();
 });
 
 

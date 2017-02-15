@@ -73,8 +73,15 @@ define('plupload/core/Optionable', [
                     return;
                 }
 
-                oldValue = self._options[option];
-                self._options[option] = value;
+                oldValue = Basic.clone(self._options[option]);
+
+                //! basically if an option is of type object extend it rather than replace
+                if (Basic.typeOf(value) === 'object' && Basic.typeOf(self._options[option]) === 'object') {
+                     // having some options as objects was a bad idea, prefixes is the way
+                    Basic.extend(self._options[option], value);
+                } else {
+                    self._options[option] = value;
+                }
 
                 self.trigger('OptionChanged', option, value, oldValue);
             },
