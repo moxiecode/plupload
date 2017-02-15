@@ -235,6 +235,9 @@ define('plupload', [
 		 */
 		extend: Basic.extend,
 
+
+		extendImmutable: Basic.extendImmutable,
+
 		/**
 		Extends the specified object with another object(s), but only if the property exists in the target.
 
