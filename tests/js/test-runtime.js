@@ -48,7 +48,16 @@
 
 
 		Basic.extend(this.getShim(), {
-		
+
+			Blob: function() {
+				this.slice = function(blob, start, end, type) {
+					return new Blob(this.ruid, {
+						size: end - start,
+						type: type || ''
+					});
+				};
+			},
+
 			FileInput: function() {
 				var _files = [];
 
