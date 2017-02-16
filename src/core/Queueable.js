@@ -129,8 +129,17 @@ define('plupload/core/Queueable', [
 
 
             pause: function() {
-                this.processed = this.percent = 0; // by default reset all progress
-                this.loaded = this.processed; // for backward compatibility
+                if (this.state === Queueable.PROCESSING) {
+                    this.processed = this.percent = 0; // by default reset all progress
+                    this.loaded = this.processed; // for backward compatibility
+
+                    this.state = Queueable.PAUSED;
+                    this.trigger('paused');
+                    return true;
+                } else {
+                    return false;
+                }
+            },
 
                 this.state = Queueable.PAUSED;
                 this.trigger('paused');

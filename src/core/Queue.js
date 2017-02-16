@@ -188,6 +188,10 @@ define('plupload/core/Queue', [
                 var self = this;
                 var prevState = self.state;
 
+                if (self.state === Queue.PAUSED) {
+                    return false;
+                }
+
                 this.forEachItem(function(item) {
                     if (Basic.inArray(item.state, [Queueable.PROCESSING, Queueable.RESUMED]) !== -1) {
                         self.pauseItem(item);
@@ -209,11 +213,15 @@ define('plupload/core/Queue', [
                 var self = this;
                 var prevState = self.state;
 
+                if (self.state === Queue.STOPPED) {
+                    return false;
+                }
+
                 if (self.getOption('finish_active')) {
                     return;
                 } else if (self.stats.processing || self.stats.paused) {
                     self.forEachItem(function(item) {
-                        self.stopItem(item.uid);
+                        item.stop();
                     });
                 }
 
