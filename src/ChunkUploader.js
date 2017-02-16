@@ -29,6 +29,18 @@ define('plupload/ChunkUploader', [
 
         Queueable.call(this);
 
+        this._options = {
+			file_data_name: 'file',
+			headers: false,
+			http_method: 'POST',
+			multipart: true,
+			params: {},
+            pause_before_start: true,
+			send_file_name: true,
+			stop_on_fail: true,
+			url: false
+		};
+
         Basic.extend(this, {
 
             start: function() {
@@ -49,12 +61,12 @@ define('plupload/ChunkUploader', [
 
                 _xhr.onload = function() {
                     var result = {
-                        response: _xhr.responseText,
-                        status: _xhr.status,
-                        responseHeaders: _xhr.getAllResponseHeaders()
+                        response: this.responseText,
+                        status: this.status,
+                        responseHeaders: this.getAllResponseHeaders()
                     };
 
-                    if (_xhr.status >= 400) { // assume error
+                    if (this.status >= 400) { // assume error
                         return self.failed(result);
                     }
 
@@ -122,6 +134,13 @@ define('plupload/ChunkUploader', [
                 ChunkUploader.prototype.stop.call(this);
             },
 
+            setOption: function(option, value) {
+				ChunkUploader.prototype.setOption.call(this, option, value, true);
+			},
+
+			setOptions: function(options) {
+				ChunkUploader.prototype.setOption.call(this, options, true);
+			},
 
             destroy: function() {
                 this.stop();

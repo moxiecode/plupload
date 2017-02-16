@@ -31,14 +31,10 @@ define('plupload/FileUploader', [
 
 		this._options = {
 			chunk_size: 0,
-			file_data_name: 'file',
-			headers: false,
-			http_method: 'POST',
-			multipart: true,
 			params: {},
+			pause_before_start: true,
 			send_file_name: true,
-			stop_on_fail: true,
-			url: false
+			stop_on_fail: true
 		};
 
 		Basic.extend(this, {
@@ -166,12 +162,6 @@ define('plupload/FileUploader', [
 
 				return true;
 			},
-
-
-			setOption: function(option, value) {
-				FileUploader.prototype.setOption.call(this, option, value, true);
-			},
-
 
 			destroy: function() {
 				FileUploader.prototype.destroy.call(this);
