@@ -138,7 +138,7 @@ define('plupload/FileUploader', [
 						self.done(result); // obviously we are done
 					} else if (dontStop) {
 						Basic.delay(function() {
-							self.uploadChunk(getNextChunk(), false, dontStop);
+							self.uploadChunk(getNextChunk(), dontStop);
 						});
 					}
 				});
@@ -157,7 +157,7 @@ define('plupload/FileUploader', [
 
 				// enqueue even more chunks if slots available
 				if (dontStop && queue.countSpareSlots()) {
-					self.uploadChunk(getNextChunk(), false, dontStop);
+					self.uploadChunk(getNextChunk(), dontStop);
 				}
 
 				return true;
