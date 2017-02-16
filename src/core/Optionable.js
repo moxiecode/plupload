@@ -63,6 +63,7 @@ define('plupload/core/Optionable', [
                 var oldValue;
 
                 if (typeof(option) === 'object') {
+                    mustBeDefined = value;
                     Basic.each(option, function(value, option) {
                         self.setOption(option, value, mustBeDefined);
                     });
@@ -109,16 +110,17 @@ define('plupload/core/Optionable', [
 
 
             /**
-            Set many options as once.
-
-            @method setOptions
-            @param {Object} options
-            */
-            setOptions: function(options) {
+             * Set many options as once.
+             *
+             * @method setOptions
+             * @param {Object} options
+             * @param {Boolean} [mustBeDefined] if truthy, any option that is not in defaults will be ignored
+             */
+            setOptions: function(options, mustBeDefined) {
                 if (typeof(options) !== 'object') {
                     return;
                 }
-                this.setOption(options);
+                this.setOption(options, mustBeDefined);
             },
 
 
