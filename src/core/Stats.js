@@ -69,6 +69,13 @@ define('plupload/core/Stats', [], function() {
 		 */
 		self.queued = 0;
 
+		/**
+		 * Number of items currently paused.
+		 *
+		 * @property paused
+		 * @type Number
+		 */
+		self.paused = 0;
 
 		/**
 		 * Number of items being processed.
@@ -128,7 +135,7 @@ define('plupload/core/Stats', [], function() {
 			self.failed =
 			self.queued =
 			self.processing =
-			self.paused = 
+			self.paused =
 			self.percent =
 			self.bytesPerSec = // deprecated
 			self.processedPerSec = 0;

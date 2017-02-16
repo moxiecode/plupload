@@ -45,6 +45,9 @@ define('plupload/core/Queueable', [
         'paused',
 
 
+        'resumed',
+
+
         'stopped',
 
 
@@ -124,7 +127,19 @@ define('plupload/core/Queueable', [
 
             start: function() {
                 this.state = Queueable.PROCESSING;
-                this.trigger('started');
+
+                if (this.getOption('pause_before_start') && this.state === Queueable.IDLE) {
+                    this.pause();
+
+                    if (this.trigger('BeforeStart')) {
+                        this.resume();
+                    } else {
+                        return false;
+                    }
+                } else {
+                    this.trigger('started');
+                }
+                return true;
             },
 
 
@@ -141,8 +156,15 @@ define('plupload/core/Queueable', [
                 }
             },
 
-                this.state = Queueable.PAUSED;
-                this.trigger('paused');
+
+            resume: function() {
+                if (this.state === Queueable.PAUSED) {
+                    this.state = Queueable.RESUMED;
+                    this.trigger('resumed');
+                    return true;
+                } else {
+                    return false;
+                }
             },
 
 

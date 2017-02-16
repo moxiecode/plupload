@@ -113,6 +113,8 @@ define('plupload/core/Queue', [
              */
             this._startTime = 0;
 
+            this.uid = Basic.guid();
+
             /**
              * @property state
              * @type {Number}
@@ -251,6 +253,12 @@ define('plupload/core/Queue', [
             addItem: function(item) {
                 var self = this;
 
+                item.bind('Started Resumed Paused Processed Stopped', function() {
+                    calcStats.call(self);
+                    Basic.delay.call(self, processNext);
+                });
+
+
                 item.bind('Progress', function() {
                     calcStats.call(self);
                     self.trigger('Progress', self.stats.processed, self.stats.total, self.stats);
@@ -262,12 +270,6 @@ define('plupload/core/Queue', [
                         this.retries++;
                     }
                 });
-
-                item.bind('Processed', function() {
-                    self.stats.processing--;
-                    calcStats.call(self);
-                    processNext.call(self);
-                }, 0, this);
 
                 this._queue.add(item.uid, item);
                 calcStats.call(this);
@@ -288,14 +290,8 @@ define('plupload/core/Queue', [
              */
             extractItem: function(uid) {
                 var item = this._queue.get(uid);
-
                 if (item) {
                     this.stopItem(item.uid);
-
-                    if (this.state === Queue.STARTED) {
-                        processNext.call(this);
-                    }
-
                     this._queue.remove(uid);
                     calcStats.call(this);
                 }
@@ -322,46 +318,35 @@ define('plupload/core/Queue', [
             stopItem: function(uid) {
                 var item = this._queue.get(uid);
                 if (item) {
-                    if (item.state === Queueable.PROCESSING) {
-                        this.stats.processing--;
+                    var result = item.stop();
+                    // after item is stopped check if queue got empty and if it did - stop it too
+                    if (!hasActiveItems.call(this)) {
+                        this.stop();
                     }
-                    item.stop();
+                    return result;
                 } else {
                     return false;
                 }
-
-                if (!this.stats.processing && !this.stats.paused) {
-                    this.stop();
-                }
-                return true;
             },
 
 
             pauseItem: function(uid) {
                 var item = this._queue.get(uid);
                 if (item) {
-                    if (item.state === Queueable.PROCESSING) {
-                        this.stats.processing--;
-                    }
-                    this.stats.paused++;
-                    item.pause();
+                    return item.pause();
                 } else {
                     return false;
                 }
-
-                return true;
             },
 
 
             resumeItem: function(uid) {
                 var item = this._queue.get(uid);
-                if (item && item.state === Queueable.PAUSED) {
-                    item.state = Queueable.RESUMED; // mark the item to be picked up on next iteration
-                    this.stats.paused--;
-                    // we do not increment number of processing items here, since item is not resumed immediately
-                    // it is marked ready to be picked up as the queue progresses
-                    this.start();
-                    return true;
+                if (item) {
+                    Basic.delay.call(this, function() {
+                        this.start(); // start() will know if it needs to restart the queue
+                    });
+                    return item.resume();
                 } else {
                     return false;
                 }
@@ -431,7 +416,7 @@ define('plupload/core/Queue', [
         /**
          * Returns another Queueable.IDLE or Queueable.RESUMED item, or null.
          */
-        function getCandidate() {
+        function getNextIdleItem() {
             var nextItem;
             this.forEachItem(function(item) {
                 if (item.state === Queueable.IDLE || item.state === Queueable.RESUMED) {
@@ -443,31 +428,25 @@ define('plupload/core/Queue', [
         }
 
 
+        function hasActiveItems() {
+            return this.stats.processing || this.stats.paused;
+        }
+
+
         function processNext() {
             var self = this;
             var item;
 
-            if (self.stats.processing < self.getOption('max_slots')) {
-                item = getCandidate.call(self);
+            if (self.state !== Queue.STOPPED && self.stats.processing < self.getOption('max_slots')) {
+                item = getNextIdleItem.call(self);
                 if (item) {
-                    if (self.getOption('pause_before_start') && item.state === Queueable.IDLE) {
-                        self.pauseItem(item.uid);
-
-                        if (item.trigger('BeforeStart')) {
-                            // if nothing has seized the item, continue
-                            self.resumeItem(item.uid);
-                        }
-                    } else {
-                        self.stats.processing++;
-                        item.setOptions(self.getOptions());
-                        item.start();
-                    }
-                } else if (!self.stats.processing) { // we ran out of pending and active items too, so we are done
+                    item.setOptions(self.getOptions());
+                    item.start();
+                } else if (!hasActiveItems.call(self)) { // we ran out of pending and active items too, so we are done
                     self.stop();
-                    return self.trigger('Done');
+                    self.trigger('Done');
+                    return;
                 }
-
-                Basic.delay.call(self, processNext);
             }
         }
 
@@ -489,6 +468,14 @@ define('plupload/core/Queue', [
 
                     case Queueable.FAILED:
                         stats.failed++;
+                        break;
+
+                    case Queueable.PROCESSING:
+                        stats.processing++;
+                        break;
+
+                    case Queueable.PAUSED:
+                        stats.paused++;
                         break;
 
                     default:
