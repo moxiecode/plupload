@@ -126,19 +126,24 @@ define('plupload/core/Queueable', [
         Basic.extend(Queueable.prototype, {
 
             start: function() {
-                this.state = Queueable.PROCESSING;
+                if (this.state === Queueable.PROCESSING) {
+                    return false;
+                }
 
                 if (this.getOption('pause_before_start') && this.state === Queueable.IDLE) {
+                    this.state = Queueable.PROCESSING;
                     this.pause();
-
-                    if (this.trigger('BeforeStart')) {
-                        this.resume();
-                    } else {
-                        return false;
-                    }
+                    Basic.delay.call(this, function() {
+                        if (this.trigger('beforestart')) {
+                            this.resume();
+                        }
+                    });
+                    return false;
                 } else {
+                    this.state = Queueable.PROCESSING;
                     this.trigger('started');
                 }
+
                 return true;
             },
 

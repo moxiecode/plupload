@@ -52,6 +52,10 @@ define('plupload/FileUploader', [
 				var self = this;
 				var up;
 
+				if (!FileUploader.prototype.start.call(self)) {
+					return false;
+				}
+
 				// send additional 'name' parameter only if required or explicitly requested
 				if (self._options.send_file_name) {
 					self._options.params.name = self.target_name || self.name;
@@ -79,8 +83,6 @@ define('plupload/FileUploader', [
 
 					queue.addItem(up);
 				}
-
-				FileUploader.prototype.start.call(self);
 			},
 
 

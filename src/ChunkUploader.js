@@ -49,7 +49,9 @@ define('plupload/ChunkUploader', [
                 var formData;
                 var options = self._options;
 
-                ChunkUploader.prototype.start.call(this);
+                if (!ChunkUploader.prototype.start.call(this)) {
+                    return false;
+                }
 
                 _xhr = new XMLHttpRequest();
 
