@@ -195,9 +195,7 @@ define('plupload/core/Queue', [
                 }
 
                 this.forEachItem(function(item) {
-                    if (Basic.inArray(item.state, [Queueable.PROCESSING, Queueable.RESUMED]) !== -1) {
-                        self.pauseItem(item);
-                    }
+                    item.pause();
                 });
 
                 self.state = Queue.PAUSED;
@@ -253,11 +251,29 @@ define('plupload/core/Queue', [
             addItem: function(item) {
                 var self = this;
 
-                item.bind('Started Resumed Paused Processed Stopped', function() {
+                item.bind('Started Resumed', function() {
                     calcStats.call(self);
                     Basic.delay.call(self, processNext);
                 });
 
+                item.bind('Paused', function() {
+                    calcStats.call(self);
+                    Basic.delay.call(self, function() {
+                        if (!processNext.call(self) && !self.stats.processing) {
+                            self.pause();
+                        }
+                    });
+                });
+
+                item.bind('Processed Stopped', function() {
+                    calcStats.call(self);
+                    Basic.delay.call(self, function() {
+                        if (!processNext.call(self) && !(this.stats.processing || this.stats.paused)) {
+                            self.stop();
+                            self.trigger('Done');
+                        }
+                    });
+                });
 
                 item.bind('Progress', function() {
                     calcStats.call(self);
@@ -275,7 +291,7 @@ define('plupload/core/Queue', [
                 calcStats.call(this);
                 item.trigger('Queued');
 
-                if (self.getOption('auto_start')) {
+                if (self.getOption('auto_start') || self.state === Queue.PAUSED) {
                     this.start();
                 }
             },
@@ -318,12 +334,7 @@ define('plupload/core/Queue', [
             stopItem: function(uid) {
                 var item = this._queue.get(uid);
                 if (item) {
-                    var result = item.stop();
-                    // after item is stopped check if queue got empty and if it did - stop it too
-                    if (!hasActiveItems.call(this)) {
-                        this.stop();
-                    }
-                    return result;
+                    return item.stop();
                 } else {
                     return false;
                 }
@@ -428,26 +439,21 @@ define('plupload/core/Queue', [
         }
 
 
-        function hasActiveItems() {
-            return this.stats.processing || this.stats.paused;
-        }
-
-
         function processNext() {
-            var self = this;
             var item;
 
-            if (self.state === Queue.STARTED && self.stats.processing < self.getOption('max_slots')) {
-                item = getNextIdleItem.call(self);
+            if (this.state !== Queue.STARTED && this.state !== Queue.PAUSED) {
+                return false;
+            }
+
+            if (this.stats.processing < this.getOption('max_slots')) {
+                item = getNextIdleItem.call(this);
                 if (item) {
-                    item.setOptions(self.getOptions());
-                    item.start();
-                } else if (!hasActiveItems.call(self)) { // we ran out of pending and active items too, so we are done
-                    self.stop();
-                    self.trigger('Done');
-                    return;
+                    item.setOptions(this.getOptions());
+                    return item.start();
                 }
             }
+            return false;
         }
 
 
