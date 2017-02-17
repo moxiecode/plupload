@@ -437,7 +437,7 @@ define('plupload/core/Queue', [
             var self = this;
             var item;
 
-            if (self.state !== Queue.STOPPED && self.stats.processing < self.getOption('max_slots')) {
+            if (self.state === Queue.STARTED && self.stats.processing < self.getOption('max_slots')) {
                 item = getNextIdleItem.call(self);
                 if (item) {
                     item.setOptions(self.getOptions());
@@ -456,6 +456,10 @@ define('plupload/core/Queue', [
             var stats = self.stats;
             var processed = 0;
             var processedDuringThisSession = 0;
+
+            if (!stats) {
+                return; // maybe queue is destroyed
+            }
 
             stats.reset();
 
