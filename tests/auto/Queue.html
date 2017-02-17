@@ -45,29 +45,50 @@ function QueueItem() {
 
     this.start = function() {
         var self = this;
-        // setup process that will simulate progress
-        timer = setInterval(function() {
-            self.progress(self.processed + speed, self.total);
-        }, 10);
+        callProgress.call(self);
 
         QueueItem.prototype.start.call(this);
+    };
+
+    this.stop = function() {
+        clearProgressInterval();
+
+        QueueItem.prototype.stop.apply(this, arguments);
     };
 
     this.progress = function(loaded, total) {
         QueueItem.prototype.progress.apply(this, arguments);
 
         if (loaded >= total) {
-            this.done();
+            var self = this;
+            setTimeout(function() {
+                self.done();
+            }, 1);
         }
     };
 
     // make sure we cleanup
     this.bind('processed', function() {
+        clearProgressInterval();
+    });
+
+    function callProgress() {
+        var self = this;
+        // setup process that will simulate progress
+        timer = setTimeout(function() {
+            if (self && self.state === Queueable.PROCESSING) {
+                self.progress(self.processed + speed, self.total);
+                callProgress.call(self);
+            }
+        }, 50);
+    }
+
+    function clearProgressInterval() {
         if (timer) {
             clearTimeout(timer);
             timer = null;
         }
-    });
+    }
 }
 
 moxie.core.utils.Basic.inherit(QueueItem, Queueable);
@@ -165,6 +186,7 @@ test("start()/stop()", function() {
         'progress': 0,
         //'paused': 0,
         'stopped': 0,
+        'done': 0
     };
 
     var item, i, arr, numItems = 5;
@@ -197,7 +219,7 @@ test("start()/stop()", function() {
         }
     });
 
-    queue.bind('stopped', function() {
+    queue.bind('done', function() {
         QUnit.start();
 
         plupload.each(dispatched, function(num, type) {
@@ -212,7 +234,7 @@ test("start()/stop()", function() {
             numItems + " processed successfully.");
 
          equal(this.stats.failed, 1,
-            1 + " processed successfully.");
+            1 + " failed.");
 
         var total = 0;
         this.forEachItem(function(item) {
@@ -238,6 +260,7 @@ test("Options: pause_before_start=false", function() {
 
     var item, i, arr, numItems = 5;
     var queue = new Queue({
+        auto_start: false,
         pause_before_start: false
     });
 
@@ -248,12 +271,7 @@ test("Options: pause_before_start=false", function() {
         });
     });
 
-    for (i = 0; i < numItems; i++) {
-        queue.addItem(new QueueItem());
-    }
-
-
-    queue.bind('stopped', function() {
+    queue.bind('done', function() {
         QUnit.start();
 
         equal(dispatched.started, 1,
@@ -262,6 +280,10 @@ test("Options: pause_before_start=false", function() {
         equal(dispatched.paused, 0,
             "Queue has not been paused.");
     });
+
+    for (i = 0; i < numItems; i++) {
+        queue.addItem(new QueueItem());
+    }
 
     QUnit.stop();
     queue.start();
@@ -278,11 +300,10 @@ test("Options: auto_start=true", function() {
         ok(true, "Queue has started automatically.");
     });
 
-    queue.bind('stopped', function() {
-        QUnit.start();
-
+    queue.bind('done', function() {
         setTimeout(function() {
             queue.destroy();
+            QUnit.start();
         }, 1);
     });
 
