@@ -390,7 +390,7 @@ define('plupload/core/Queue', [
                 var self = this;
 
                 if (self.state === Queueable.DESTROYED) {
-                    return; // already destroyed
+                    return false; // already destroyed
                 }
 
                 if (self.state !== Queueable.IDLE) {
@@ -400,10 +400,8 @@ define('plupload/core/Queue', [
                     });
                     return self.stop();
                 } else {
-                    if (!Queue.super.destroy.call(this)) {
-                        return false;
-                    }
                     self.clear();
+                    Queue.super.destroy.call(this);
                     self._queue = self.stats = null;
                 }
                 return true;
