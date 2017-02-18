@@ -126,12 +126,12 @@ define('plupload/core/Queueable', [
             this.processedTimestamp = 0;
         }
 
-        Queueable.IDLE = 0;
-        Queueable.PROCESSING = 1;
-        Queueable.PAUSED = 2;
-        Queueable.RESUMED = 3;
-        Queueable.DONE = 4;
-        Queueable.FAILED = 5;
+        Queueable.IDLE = 1;
+        Queueable.PROCESSING = 2;
+        Queueable.PAUSED = 6;
+        Queueable.RESUMED = 7;
+        Queueable.DONE = 5;
+        Queueable.FAILED = 4;
         Queueable.DESTROYED = 8;
 
         Basic.inherit(Queueable, Parent);
