@@ -553,7 +553,7 @@ define('plupload/Uploader', [
 						return self.trigger('BeforeUpload', e.target);
 					});
 
-					fileUp.bind('started', function() {
+					fileUp.bind('startupload', function() {
 						self.trigger('UploadFile', this);
 					});
 

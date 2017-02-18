@@ -136,8 +136,7 @@ define('plupload/core/Queue', [
                 max_slots: 1,
                 max_retries: 0,
                 auto_start: false,
-                finish_active: false,
-                pause_before_start: true
+                finish_active: false
             }, options);
         }
 

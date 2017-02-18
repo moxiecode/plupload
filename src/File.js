@@ -157,6 +157,10 @@ define('plupload/File', [
                     this.start();
                 });
 
+                up.bind('started', function() {
+                    self.trigger('startupload');
+                });
+
                 up.bind('progress', function(e) {
                     self.progress(e.loaded, e.total);
                 });
