@@ -17,10 +17,9 @@
 define('plupload/core/Queue', [
     'moxie/core/utils/Basic',
     'plupload/core/ArrCollection',
-    'plupload/core/Optionable',
     'plupload/core/Queueable',
     'plupload/core/Stats'
-], function(Basic, ArrCollection, Optionable, Queueable, Stats) {
+], function(Basic, ArrCollection, Queueable, Stats) {
 
     var dispatches = [
         /**
@@ -31,15 +30,6 @@ define('plupload/core/Queue', [
          */
         'Started',
 
-        /**
-         * Dispatched every time the state of queue changes
-         *
-         * @event statechanged
-         * @param {Object} event
-         * @param {Number} state New state
-         * @param {Number} prevState Previous state
-         */
-        'StateChanged',
 
         /**
          * Dispatched as activity progresses
@@ -104,25 +94,6 @@ define('plupload/core/Queue', [
             */
             this._queue = new ArrCollection();
 
-            /**
-             * Initialized when queue is started
-             *
-             * @property _startTime
-             * @type {Date}
-             * @private
-             */
-            this._startTime = 0;
-
-            this.uid = Basic.guid();
-
-            /**
-             * @property state
-             * @type {Number}
-             * @default Queue.IDLE
-             * @readOnly
-             */
-            this.state = Queue.IDLE;
-
 
             /**
             @property stats
@@ -132,20 +103,14 @@ define('plupload/core/Queue', [
             this.stats = new Stats();
 
 
-            this._options = Basic.extend({
+            this._options = Basic.extend({}, this._options, {
                 max_slots: 1,
                 max_retries: 0,
                 auto_start: false,
-                finish_active: false
+                finish_active: false,
+                pause_before_start: false
             }, options);
         }
-
-        Queue.IDLE = 0;
-        Queue.STOPPED = 1;
-        Queue.STARTED = 2;
-        Queue.PAUSED = 3;
-        Queue.DESTROYED = 8;
-
 
         Basic.extend(Queue.prototype, {
 
@@ -165,41 +130,21 @@ define('plupload/core/Queue', [
              * @method start
              */
             start: function() {
-                var self = this;
-                var prevState = self.state;
-
-                if (self.state === Queue.STARTED) {
+                if (!Queue.super.start.call(this)) {
                     return false;
                 }
-
-                if (!self._startTime) {
-                    self._startTime = new Date();
-                }
-
-                self.state = Queue.STARTED;
-                self.trigger('StateChanged', self.state, prevState);
-                self.trigger('Started');
-
-                processNext.call(self);
-                return true;
+                return processNext.call(this);
             },
 
 
             pause: function() {
-                var self = this;
-                var prevState = self.state;
-
-                if (self.state === Queue.PAUSED) {
+                if (!Queue.super.pause.call(this)) {
                     return false;
                 }
 
                 this.forEachItem(function(item) {
                     item.pause();
                 });
-
-                self.state = Queue.PAUSED;
-                self.trigger('StateChanged', self.state, prevState);
-                self.trigger('Paused');
             },
 
             /**
@@ -209,32 +154,22 @@ define('plupload/core/Queue', [
              * @method stop
              */
             stop: function() {
-                var self = this;
-                var prevState = self.state;
-
-                if (self.state === Queue.STOPPED) {
+                if (!Queue.super.stop.call(this) || this.getOption('finish_active')) {
                     return false;
                 }
 
-                if (self.getOption('finish_active')) {
-                    return;
-                } else if (self.stats.processing || self.stats.paused) {
-                    self.forEachItem(function(item) {
+                if (this.stats.processing || this.stats.paused) {
+                    this.forEachItem(function(item) {
                         item.stop();
                     });
                 }
-
-                self._startTime = 0;
-
-                self.state = Queue.STOPPED;
-                self.trigger('StateChanged', self.state, prevState);
-                self.trigger('Stopped');
             },
 
 
             forEachItem: function(cb) {
                 this._queue.each(cb);
             },
+
 
             getItem: function(uid) {
                 return this._queue.get(uid);
@@ -251,12 +186,12 @@ define('plupload/core/Queue', [
                 var self = this;
 
                 item.bind('Started Resumed', function() {
-                    calcStats.call(self);
+                    self.calcStats();
                     Basic.delay.call(self, processNext);
                 });
 
                 item.bind('Paused', function() {
-                    calcStats.call(self);
+                    self.calcStats();
                     Basic.delay.call(self, function() {
                         if (!processNext.call(self) && !self.stats.processing) {
                             self.pause();
@@ -265,7 +200,7 @@ define('plupload/core/Queue', [
                 });
 
                 item.bind('Processed Stopped', function() {
-                    calcStats.call(self);
+                    self.calcStats();
                     Basic.delay.call(self, function() {
                         if (!processNext.call(self) && !(this.stats.processing || this.stats.paused)) {
                             self.stop();
@@ -275,7 +210,7 @@ define('plupload/core/Queue', [
                 });
 
                 item.bind('Progress', function() {
-                    calcStats.call(self);
+                    self.calcStats();
                     self.trigger('Progress', self.stats.processed, self.stats.total, self.stats);
                 });
 
@@ -287,10 +222,10 @@ define('plupload/core/Queue', [
                 });
 
                 this._queue.add(item.uid, item);
-                calcStats.call(this);
+                this.calcStats();
                 item.trigger('Queued');
 
-                if (self.getOption('auto_start') || self.state === Queue.PAUSED) {
+                if (self.getOption('auto_start') || self.state === Queueable.PAUSED) {
                     this.start();
                 }
             },
@@ -308,7 +243,7 @@ define('plupload/core/Queue', [
                 if (item) {
                     this.stopItem(item.uid);
                     this._queue.remove(uid);
-                    calcStats.call(this);
+                    this.calcStats();
                 }
                 return item;
             },
@@ -381,7 +316,7 @@ define('plupload/core/Queue', [
             clear: function() {
                 var self = this;
 
-                if (self.state !== Queue.STOPPED) {
+                if (self.state !== Queueable.IDLE) {
                     // stop the active queue first
                     self.bindOnce('Stopped', function() {
                         self.clear();
@@ -394,31 +329,84 @@ define('plupload/core/Queue', [
             },
 
 
+            calcStats: function() {
+                var self = this;
+                var stats = self.stats;
+                var processed = 0;
+                var processedDuringThisSession = 0;
+
+                if (!stats) {
+                    return; // maybe queue is destroyed
+                }
+
+                stats.reset();
+
+                self.forEachItem(function(item) {
+                    switch (item.state) {
+                        case Queueable.DONE:
+                            stats.done++;
+                            stats.uploaded = stats.done; // for backward compatibility
+                            break;
+
+                        case Queueable.FAILED:
+                            stats.failed++;
+                            break;
+
+                        case Queueable.PROCESSING:
+                            stats.processing++;
+                            break;
+
+                        case Queueable.PAUSED:
+                            stats.paused++;
+                            break;
+
+                        default:
+                            stats.queued++;
+                    }
+
+                    processed += item.processed;
+
+                    if (!item.processedTimestamp || item.processedTimestamp > self.startedTimestamp) {
+                        processedDuringThisSession += processed;
+                    }
+
+                    stats.processedPerSec = Math.ceil(processedDuringThisSession / ((+new Date() - self.startedTimestamp || 1) / 1000.0));
+
+                    stats.processed = processed;
+                    stats.total += item.total;
+                    if (stats.total) {
+                        stats.percent = Math.ceil(stats.processed / stats.total * 100);
+                    }
+                });
+
+                // for backward compatibility
+                stats.loaded = stats.processed;
+                stats.size = stats.total;
+                stats.bytesPerSec = stats.processedPerSec;
+            },
+
+
             destroy: function() {
                 var self = this;
-                var prevState = self.state;
 
-                if (self.state === Queue.DESTROYED) {
+                if (self.state === Queueable.DESTROYED) {
                     return; // already destroyed
                 }
 
-                if (self.state !== Queue.STOPPED) {
+                if (self.state !== Queueable.IDLE) {
                     // stop the active queue first
                     self.bindOnce('Stopped', function() {
                         self.destroy();
                     });
                     return self.stop();
                 } else {
-                    self.trigger('Destroy');
-
+                    if (!Queue.super.destroy.call(this)) {
+                        return false;
+                    }
                     self.clear();
-
-                    self.state = Queue.DESTROYED;
-                    self.trigger('StateChanged', self.state, prevState);
-
-                    self.unbindAll();
-                    self._queue = self.stats = self._startTime = null;
+                    self._queue = self.stats = null;
                 }
+                return true;
             }
         });
 
@@ -441,7 +429,7 @@ define('plupload/core/Queue', [
         function processNext() {
             var item;
 
-            if (this.state !== Queue.STARTED && this.state !== Queue.PAUSED) {
+            if (this.state !== Queueable.PROCESSING && this.state !== Queueable.PAUSED) {
                 return false;
             }
 
@@ -455,64 +443,7 @@ define('plupload/core/Queue', [
             return false;
         }
 
-
-        function calcStats() {
-            var self = this;
-            var stats = self.stats;
-            var processed = 0;
-            var processedDuringThisSession = 0;
-
-            if (!stats) {
-                return; // maybe queue is destroyed
-            }
-
-            stats.reset();
-
-            self.forEachItem(function(item) {
-                switch (item.state) {
-                    case Queueable.DONE:
-                        stats.done++;
-                        stats.uploaded = stats.done; // for backward compatibility
-                        break;
-
-                    case Queueable.FAILED:
-                        stats.failed++;
-                        break;
-
-                    case Queueable.PROCESSING:
-                        stats.processing++;
-                        break;
-
-                    case Queueable.PAUSED:
-                        stats.paused++;
-                        break;
-
-                    default:
-                        stats.queued++;
-                }
-
-                processed += item.processed;
-
-                if (!item.processedTimestamp || item.processedTimestamp > self._startTime) {
-                    processedDuringThisSession += processed;
-                }
-
-                stats.processedPerSec = Math.ceil(processedDuringThisSession / ((+new Date() - self._startTime || 1) / 1000.0));
-
-                stats.processed = processed;
-                stats.total += item.total;
-                if (stats.total) {
-                    stats.percent = Math.ceil(stats.processed / stats.total * 100);
-                }
-            });
-
-            // for backward compatibility
-            stats.loaded = stats.processed;
-            stats.size = stats.total;
-            stats.bytesPerSec = stats.processedPerSec;
-        }
-
         return Queue;
 
-    }(Optionable));
+    }(Queueable));
 });
