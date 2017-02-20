@@ -107,8 +107,7 @@ define('plupload/core/Queue', [
                 max_slots: 1,
                 max_retries: 0,
                 auto_start: false,
-                finish_active: false,
-                pause_before_start: false
+                finish_active: false
             }, options);
         }
 
@@ -130,9 +129,20 @@ define('plupload/core/Queue', [
              * @method start
              */
             start: function() {
-                if (!Queue.super.start.call(this)) {
+                var prevState = this.state;
+
+                if (this.state === Queueable.PROCESSING) {
                     return false;
                 }
+
+                if (!this.startedTimestamp) {
+                    this.startedTimestamp = +new Date();
+                }
+
+                this.state = Queueable.PROCESSING;
+                this.trigger('statechanged', this.state, prevState);
+                this.trigger('started');
+
                 return processNext.call(this);
             },
 

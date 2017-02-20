@@ -35,9 +35,7 @@ define('plupload/ChunkUploader', [
 			http_method: 'POST',
 			multipart: true,
 			params: {},
-            pause_before_start: true,
 			send_file_name: true,
-			stop_on_fail: true,
 			url: false
 		};
 

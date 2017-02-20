@@ -203,7 +203,7 @@ define('plupload/core/Queueable', [
                     this.startedTimestamp = +new Date();
                 }
 
-                if (this.getOption('pause_before_start') && this.state === Queueable.IDLE) {
+                if (this.state === Queueable.IDLE) {
                     this.state = Queueable.PROCESSING;
                     this.trigger('statechanged', this.state, prevState);
                     this.pause();

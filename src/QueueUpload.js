@@ -33,7 +33,6 @@ define('plupload/QueueUpload', [
                 max_retries: 0,
                 auto_start: false,
                 finish_active: false,
-                pause_before_start: true,
                 url: false,
                 chunk_size: 0,
                 multipart: true,

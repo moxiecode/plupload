@@ -33,7 +33,6 @@ define('plupload/QueueResize', [
                 max_retries: 0,
                 auto_start: false,
                 finish_active: false,
-                pause_before_start: true,
                 resize: {}
             });
 

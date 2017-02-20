@@ -77,15 +77,23 @@ define('plupload/File', [
              */
             origSize: file.size,
 
-
             start: function() {
+                var prevState = this.state;
+
+                if (this.state === Queueable.PROCESSING) {
+                    return false;
+                }
+
+                this.state = Queueable.PROCESSING;
+                this.trigger('statechanged', this.state, prevState);
+                this.trigger('started');
+
                 if (!plupload.isEmptyObj(this._options.resize) && isImage(this.type) && runtimeCan(file, 'send_binary_string')) {
                     this.resizeAndUpload();
                 } else {
                     this.upload();
                 }
-
-                File.prototype.start.call(this);
+                return true;
             },
 
             /**
@@ -139,6 +147,10 @@ define('plupload/File', [
 
                 up.bind('beforestart', function() {
                     return self.trigger('beforeupload');
+                });
+
+                up.bind('paused', function() {
+                    self.pause();
                 });
 
                 up.bind('resumed', function() {
