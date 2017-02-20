@@ -243,7 +243,7 @@ define('plupload/core/Queueable', [
             resume: function() {
                 var prevState = this.state;
 
-                if (this.state === Queueable.PAUSED) {
+                if (this.state !== Queueable.PAUSED) {
                     return false;
                 }
 
