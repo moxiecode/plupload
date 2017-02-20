@@ -19,9 +19,10 @@ Every queue item must have properties, implement methods and fire events defined
 @extends EventTarget
 */
 define('plupload/core/Queueable', [
+    'moxie/core/utils/Env',
     'moxie/core/utils/Basic',
     'plupload/core/Optionable'
-], function(Basic, Optionable) {
+], function(Env, Basic, Optionable) {
 
     var dispatches = [
         /**
@@ -124,6 +125,59 @@ define('plupload/core/Queueable', [
              * @type {Number}
              */
             this.processedTimestamp = 0;
+
+            if (MXI_DEBUG) {
+                this.bind('StateChanged', function(e, state, oldState) {
+                    var self = this;
+
+                    var stateToString = function(code) {
+                        switch (code) {
+                            case Queueable.IDLE:
+                                return 'IDLE';
+
+                            case Queueable.PROCESSING:
+                                return 'PROCESSING';
+
+                            case Queueable.PAUSED:
+                                return 'PAUSED';
+
+                            case Queueable.RESUMED:
+                                return 'RESUMED';
+
+                            case Queueable.DONE:
+                                return 'DONE';
+
+                            case Queueable.FAILED:
+                                return 'FAILED';
+
+                            case Queueable.DESTROYED:
+                                return 'DESTROYED';
+                        }
+                    };
+
+                    var indent = function() {
+                        switch (self.ctorName) {
+                            case 'File':
+                                return "\t".repeat(2);
+
+                            case 'QueueUpload':
+                            case 'QueueResize':
+                                return "\t";
+
+                            case 'FileUploader':
+                                return "\t".repeat(3);
+
+                            case 'ChunkUploader':
+                                return "\t".repeat(4);
+
+                            default:
+                                return "\t";
+                        }
+                    };
+
+                    Env.log("StateChanged:" + indent() + self.ctorName + '::' + self.uid + ' (' + stateToString(oldState) + ' to ' + stateToString(state) + ')');
+                }, 999);
+            }
         }
 
         Queueable.IDLE = 1;
