@@ -809,7 +809,7 @@ define('plupload/Uploader', [
 
 			this.bind('BeforeUpload', onBeforeUpload);
 
-			this.bind('Done', function(up) {
+			this.bind('Stopped', function(up) {
 				up.trigger('UploadComplete');
 			});
 
