@@ -226,7 +226,7 @@ define('plupload/core/Queueable', [
             pause: function() {
                 var prevState = this.state;
 
-                if (this.state === Queueable.PAUSED) {
+                if (this.state !== Queueable.PROCESSING) {
                     return false;
                 }
 
