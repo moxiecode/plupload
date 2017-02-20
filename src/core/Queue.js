@@ -196,32 +196,35 @@ define('plupload/core/Queue', [
                 var self = this;
 
                 item.bind('Started Resumed', function() {
-                    self.calcStats();
-                    Basic.delay.call(self, processNext);
+                    if (self.calcStats()) {
+                        Basic.delay.call(self, processNext);
+                    }
                 });
 
                 item.bind('Paused', function() {
-                    self.calcStats();
-                    Basic.delay.call(self, function() {
-                        if (!processNext.call(self) && !self.stats.processing) {
-                            self.pause();
-                        }
-                    });
+                    if (self.calcStats()) {
+                        Basic.delay.call(self, function() {
+                            if (!processNext.call(self) && !self.stats.processing) {
+                                self.pause();
+                            }
+                        });
+                    }
                 });
 
                 item.bind('Processed Stopped', function() {
-                    self.calcStats();
-                    Basic.delay.call(self, function() {
-                        if (!processNext.call(self) && !(this.stats.processing || this.stats.paused)) {
-                            self.stop();
-                            self.trigger('Done');
-                        }
-                    });
+                    if (self.calcStats()) {
+                        Basic.delay.call(self, function() {
+                            if (!processNext.call(self) && !(this.stats.processing || this.stats.paused)) {
+                                self.stop();
+                            }
+                        });
+                    }
                 });
 
                 item.bind('Progress', function() {
-                    self.calcStats();
-                    self.trigger('Progress', self.stats.processed, self.stats.total, self.stats);
+                    if (self.calcStats()) {
+                        self.trigger('Progress', self.stats.processed, self.stats.total, self.stats);
+                    }
                 });
 
                 item.bind('Failed', function() {
