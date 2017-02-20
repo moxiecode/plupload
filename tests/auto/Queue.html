@@ -112,8 +112,7 @@ test("Create instance", function() {
             max_slots: 1,
             max_retries: 0,
             auto_start: false,
-            finish_active: false,
-            pause_before_start: false
+            finish_active: false
         },
         "Default options are as expected");
 });
@@ -185,8 +184,7 @@ test("start()/stop()", function() {
         'statechanged': 0,
         'progress': 0,
         //'paused': 0,
-        'stopped': 0,
-        'done': 0
+        'stopped': 0
     };
 
     var item, i, arr, numItems = 5;
@@ -219,7 +217,7 @@ test("start()/stop()", function() {
         }
     });
 
-    queue.bind('done', function() {
+    queue.bind('stopped', function() {
         QUnit.start();
 
         plupload.each(dispatched, function(num, type) {
@@ -249,58 +247,22 @@ test("start()/stop()", function() {
     queue.start();
 });
 
-test("Options: pause_before_start=false", function() {
-    var dispatched = {
-        'started': 0,
-        'statechanged': 0,
-        'progress': 0,
-        'paused': 0,
-        'stopped': 0,
-    };
-
-    var item, i, arr, numItems = 5;
-    var queue = new Queue({
-        auto_start: false,
-        pause_before_start: false
-    });
-
-    // monitor events
-    plupload.each(dispatched, function(num, type) {
-        queue.bind(type, function() {
-            dispatched[type]++;
-        });
-    });
-
-    queue.bind('done', function() {
-        QUnit.start();
-
-        equal(dispatched.started, 1,
-            "Queue has been started only once.");
-
-        equal(dispatched.paused, 0,
-            "Queue has not been paused.");
-    });
-
-    for (i = 0; i < numItems; i++) {
-        queue.addItem(new QueueItem());
-    }
-
-    QUnit.stop();
-    queue.start();
-});
-
 
 test("Options: auto_start=true", function() {
+    expect(1);
+
     var item, i, arr, numItems = 5;
     var queue = new Queue({
         auto_start: true
     });
 
-    queue.bind('started', function() {
-        ok(true, "Queue has started automatically.");
+    queue.bind('statechanged', function(e, state, oldState) {
+        if (state == 1 && oldState == 2) {
+            ok(true, "Queue has started automatically.");
+        }
     });
 
-    queue.bind('done', function() {
+    queue.bind('stopped', function() {
         setTimeout(function() {
             queue.destroy();
             QUnit.start();
