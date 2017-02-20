@@ -491,9 +491,7 @@ define('plupload/Uploader', [
 			 * @method stop
 			 */
 			stop: function() {
-				Uploader.prototype.stop.call(this);
-
-				if (this.state != plupload.STOPPED) {
+				if (Uploader.prototype.stop.call(this) && this.state != plupload.STOPPED) {
 					this.trigger('CancelUpload');
 				}
 			},
