@@ -36,11 +36,11 @@ test("PUT method", function() {
 		http_method: 'GRAB', // arbitrary bullshit method
 
 		preinit: {
-			Init: function(up, info) {	
+			Init: function(up, info) {
 				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
-				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
-				runtimeFiles[0].connectRuntime(info.ruid);	
-				up.addFile(runtimeFiles[0]);				
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme
+				runtimeFiles[0].connectRuntime(info.ruid);
+				up.addFile(runtimeFiles[0]);
 			},
 
 			Error: function(up, err) {
@@ -51,12 +51,12 @@ test("PUT method", function() {
 
 		init: {
 			FilesAdded: function(up) {
-				equal(up.getOption('http_method'), 'POST', 
+				equal(up.getOption('http_method'), 'POST',
 					"http_method should be either PUT or POST.");
 
 				up.setOption('http_method', 'put');
 
-				equal(up.getOption('http_method'), 'PUT', 
+				equal(up.getOption('http_method'), 'PUT',
 					"http_method set to PUT and upper-cased.");
 
 				up.start();
@@ -89,11 +89,11 @@ test("multipart=false (default content-type)", function() {
 		multipart: false,
 
 		preinit: {
-			Init: function(up, info) {	
+			Init: function(up, info) {
 				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
-				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
-				runtimeFiles[0].connectRuntime(info.ruid);	
-				up.addFile(runtimeFiles[0]);				
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme
+				runtimeFiles[0].connectRuntime(info.ruid);
+				up.addFile(runtimeFiles[0]);
 			},
 
 			Error: function(up, err) {
@@ -138,11 +138,11 @@ test("multipart=false", function() {
 		},
 
 		preinit: {
-			Init: function(up, info) {	
+			Init: function(up, info) {
 				var runtimeFiles = FileHash.getRuntimeFiles(info.ruid);
-				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme	
-				runtimeFiles[0].connectRuntime(info.ruid);	
-				up.addFile(runtimeFiles[0]);				
+				runtimeFiles[0].ruid = info.ruid; // otherwise it fails to connect to test runitme
+				runtimeFiles[0].connectRuntime(info.ruid);
+				up.addFile(runtimeFiles[0]);
 			},
 
 			Error: function(up, err) {
@@ -157,8 +157,6 @@ test("multipart=false", function() {
 			},
 
 			FileUploaded: function(up, file, result) {
-				start();
-
 				var headers = Utils.parseHeaders(result.responseHeaders);
 				var requestHeaders = JSON.parse(headers['meta-headers']);
 
@@ -168,6 +166,10 @@ test("multipart=false", function() {
 				var urlParts = headers['meta-url'].split(/\?/);
 				ok(urlParts[1] && /(?:^|[\?&]?)name=/.test(urlParts[1]),
 					"name argument will be sent even if send_file_name=false.");
+			},
+
+			UploadComplete: function() {
+				start();
 			}
 		}
 	});

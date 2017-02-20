@@ -22,12 +22,9 @@ define('plupload/File', [
     'plupload/ImageResizer'
 ], function(plupload, Queueable, FileUploader, ImageResizer) {
 
-
-    function File(fileRef, queueUpload, queueResize) {
-        var _file = fileRef;
-        var _uid = plupload.guid();
-
+    function File(file, queueUpload, queueResize) {
         Queueable.call(this);
+
 
         plupload.extend(this, {
             /**
@@ -37,15 +34,8 @@ define('plupload/File', [
              * @type {String}
              * @deprecated
              */
-            id: _uid,
+            id: this.uid,
 
-            /**
-             Unique identifier
-
-             @property uid
-             @type {String}
-             */
-            uid: _uid,
 
             /**
              When send_file_name is set to true, will be sent with the request as `name` param.
@@ -54,7 +44,7 @@ define('plupload/File', [
              @property name
              @type {String}
              */
-            name: _file.name,
+            name: file.name,
 
             /**
              @property target_name
@@ -69,7 +59,7 @@ define('plupload/File', [
              * @property type
              * @type String
              */
-            type: _file.type,
+            type: file.type,
 
             /**
              * File size in bytes (may change after client-side manupilation).
@@ -77,7 +67,7 @@ define('plupload/File', [
              * @property size
              * @type Number
              */
-            size: _file.size,
+            size: file.size,
 
             /**
              * Original file size in bytes.
@@ -85,19 +75,25 @@ define('plupload/File', [
              * @property origSize
              * @type Number
              */
-            origSize: _file.size,
-
+            origSize: file.size,
 
             start: function() {
-                if (!File.prototype.start.call(this)) {
+                var prevState = this.state;
+
+                if (this.state === Queueable.PROCESSING) {
                     return false;
                 }
 
-                if (!plupload.isEmptyObj(this._options.resize) && isImage(this.type) && runtimeCan(_file, 'send_binary_string')) {
+                this.state = Queueable.PROCESSING;
+                this.trigger('statechanged', this.state, prevState);
+                this.trigger('started');
+
+                if (!plupload.isEmptyObj(this._options.resize) && isImage(this.type) && runtimeCan(file, 'send_binary_string')) {
                     this.resizeAndUpload();
                 } else {
                     this.upload();
                 }
+                return true;
             },
 
             /**
@@ -107,7 +103,7 @@ define('plupload/File', [
              * @returns {moxie.file.File}
              */
             getSource: function() {
-                return _file;
+                return file;
             },
 
             /**
@@ -126,14 +122,14 @@ define('plupload/File', [
 
             resizeAndUpload: function() {
                 var self = this;
-                var rszr = new ImageResizer(_file);
+                var rszr = new ImageResizer(file);
 
                 rszr.bind('progress', function(e) {
                     self.progress(e.loaded, e.total);
                 });
 
                 rszr.bind('done', function(e, file) {
-                    _file = file;
+                    file = file;
                     self.upload();
                 });
 
@@ -147,10 +143,14 @@ define('plupload/File', [
 
             upload: function() {
                 var self = this;
-                var up = new FileUploader(_file, queueUpload);
+                var up = new FileUploader(file, queueUpload);
 
                 up.bind('beforestart', function() {
                     return self.trigger('beforeupload');
+                });
+
+                up.bind('paused', function() {
+                    self.pause();
                 });
 
                 up.bind('resumed', function() {
@@ -174,6 +174,7 @@ define('plupload/File', [
                 });
 
                 up.setOptions(self.getOptions());
+
                 up.start();
             },
 
@@ -181,7 +182,7 @@ define('plupload/File', [
 
             destroy: function() {
                 File.prototype.destroy.call(this);
-                _file = null;
+                file = null;
             }
         });
     }
@@ -203,7 +204,7 @@ define('plupload/File', [
     }
 
 
-    File.prototype = new Queueable();
+    plupload.inherit(File, Queueable);
 
     return File;
 });

@@ -32,7 +32,6 @@ define('plupload/FileUploader', [
 		this._options = {
 			chunk_size: 0,
 			params: {},
-			pause_before_start: true,
 			send_file_name: true,
 			stop_on_fail: true
 		};
@@ -196,7 +195,7 @@ define('plupload/FileUploader', [
 	}
 
 
-	FileUploader.prototype = new Queueable();
+	Basic.inherit(FileUploader, Queueable);
 
 	return FileUploader;
 });
