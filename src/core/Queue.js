@@ -336,7 +336,9 @@ define('plupload/core/Queue', [
                 var processedDuringThisSession = 0;
 
                 if (!stats) {
-                    return; // maybe queue is destroyed
+                    return false; // maybe queue is destroyed
+                }
+
                 }
 
                 stats.reset();
@@ -379,10 +381,17 @@ define('plupload/core/Queue', [
                     }
                 });
 
+                // enable properties inherited from Queueable
+                self.processed = stats.processed;
+                self.total = stats.total;
+                self.percent = stats.percent;
+
                 // for backward compatibility
                 stats.loaded = stats.processed;
                 stats.size = stats.total;
                 stats.bytesPerSec = stats.processedPerSec;
+
+                return true;
             },
 
 
