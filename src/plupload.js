@@ -224,6 +224,10 @@ define('plupload', [
 		 */
 		typeOf: Basic.typeOf,
 
+
+		inherit: Basic.inherit,
+
+
 		/**
 		 * Extends the specified object with another object.
 		 *

@@ -176,7 +176,7 @@ define('plupload/ChunkUploader', [
 
     }
 
-    ChunkUploader.prototype = new Queueable();
+    Basic.inherit(ChunkUploader, Queueable);
 
     return ChunkUploader;
 });
