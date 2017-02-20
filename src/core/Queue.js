@@ -405,7 +405,7 @@ define('plupload/core/Queue', [
                 if (self.state !== Queueable.IDLE) {
                     // stop the active queue first
                     self.bindOnce('Stopped', function() {
-                        self.destroy();
+                        Basic.delay.call(self, self.destroy);
                     });
                     return self.stop();
                 } else {
