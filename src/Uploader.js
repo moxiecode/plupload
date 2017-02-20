@@ -233,7 +233,6 @@ define('plupload/Uploader', [
 
 
 	function Uploader(options) {
-		var _uid = plupload.guid();
 		var _fileInputs = [];
 		var _fileDrops = [];
 		var _queueUpload, _queueResize;
@@ -286,8 +285,7 @@ define('plupload/Uploader', [
 			 * @property id
 			 * @type String
 			 */
-			id: _uid,
-			uid: _uid, // mOxie uses this to differentiate between event targets
+			id: this.uid,
 
 			/**
 			 * Current state of the total uploading progress. This one can either be plupload.STARTED or plupload.STOPPED.
@@ -1297,7 +1295,7 @@ define('plupload/Uploader', [
 
 	Uploader.addFileFilter = addFileFilter;
 
-	Uploader.prototype = new Queue();
+	plupload.inherit(Uploader, Queue);
 
 	// for backward compatibility
 	plupload.addFileFilter = addFileFilter;

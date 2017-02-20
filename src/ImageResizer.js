@@ -76,7 +76,7 @@ define("plupload/ImageResizer", [
 		};
 	}
 
-	ImageResizer.prototype = new Queueable();
+	plupload.inherit(ImageResizer, Queueable);
 
 	// ImageResizer is only included for builds with Image manipulation support, so we add plupload.Image here manually
 	plupload.Image = mxiImage;

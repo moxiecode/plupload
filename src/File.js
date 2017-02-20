@@ -25,7 +25,6 @@ define('plupload/File', [
 
     function File(fileRef, queueUpload, queueResize) {
         var _file = fileRef;
-        var _uid = plupload.guid();
 
         Queueable.call(this);
 
@@ -37,15 +36,8 @@ define('plupload/File', [
              * @type {String}
              * @deprecated
              */
-            id: _uid,
+            id: this.uid,
 
-            /**
-             Unique identifier
-
-             @property uid
-             @type {String}
-             */
-            uid: _uid,
 
             /**
              When send_file_name is set to true, will be sent with the request as `name` param.
@@ -203,7 +195,7 @@ define('plupload/File', [
     }
 
 
-    File.prototype = new Queueable();
+    plupload.inherit(File, Queueable);
 
     return File;
 });

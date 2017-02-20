@@ -196,7 +196,7 @@ define('plupload/FileUploader', [
 	}
 
 
-	FileUploader.prototype = new Queueable();
+	Basic.inherit(FileUploader, Queueable);
 
 	return FileUploader;
 });
