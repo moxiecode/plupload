@@ -44,19 +44,20 @@ module('ChunkUploader', {
 });
 
 test("Test start() and events", function() {
+    expect(6);
+
     var self = this;
     var up = new plupload.ChunkUploader(this.blob);
 
     var dispatched = {
         //'queued': 0,
         'started': 0,
-        //'paused': 0,
-        //'stopped': 0,
+        'paused': 0,
+        'resumed': 0,
         'progress': 0,
         //'failed': 0,
         'done': 0,
-        'processed': 0,
-        //'destroy': 0
+        'processed': 0
     };
 
     // monitor events
@@ -64,6 +65,10 @@ test("Test start() and events", function() {
         up.bind(type, function() {
             dispatched[type]++;
         });
+    });
+
+    up.bind('resumed', function() {
+        this.start(); // restart
     });
 
     up.bind('processed', function() {
@@ -81,7 +86,7 @@ test("Test start() and events", function() {
 });
 
 test("Test failed event", function() {
-    expect(5);
+    expect(7);
 
     var self = this;
     var up = new plupload.ChunkUploader(this.blob);
@@ -89,8 +94,8 @@ test("Test failed event", function() {
     var dispatched = {
         //'queued': 0,
         'started': 0,
-        //'paused': 0,
-        //'stopped': 0,
+        'paused': 0,
+        'resumed': 0,
         'progress': 0,
         'failed': 0,
         //'done': 0,
@@ -103,6 +108,10 @@ test("Test failed event", function() {
         up.bind(type, function() {
             dispatched[type]++;
         });
+    });
+
+    up.bind('resumed', function() {
+        this.start(); // restart
     });
 
     up.bind('failed', function(e, result) {
@@ -130,6 +139,10 @@ test("stop()/destroy()", function() {
     var self = this;
     var up = new plupload.ChunkUploader(this.blob);
 
+    up.bind('resumed', function() {
+        this.start(); // restart
+    });
+
     up.bind('progress', function(e, result) {
         up.destroy();
         up = null;
@@ -155,6 +168,10 @@ test("stop()/destroy()", function() {
 test("Options: multipart=false", function() {
     var self = this;
     var up = new plupload.ChunkUploader(this.blob);
+
+    up.bind('resumed', function() {
+        this.start(); // restart
+    });
 
     up.bind('done', function(e, result) {
          var headers = Utils.parseHeaders(result.responseHeaders);
@@ -184,6 +201,10 @@ test("Options: multipart=false", function() {
 test("Options: headers, also test custom Content-Type", function() {
     var self = this;
     var up = new plupload.ChunkUploader(this.blob);
+
+    up.bind('resumed', function() {
+        this.start(); // restart
+    });
 
     up.bind('done', function(e, result) {
          var headers = Utils.parseHeaders(result.responseHeaders);
