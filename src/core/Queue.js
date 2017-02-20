@@ -195,10 +195,14 @@ define('plupload/core/Queue', [
             addItem: function(item) {
                 var self = this;
 
-                item.bind('Started Resumed', function() {
+                item.bind('Started', function() {
                     if (self.calcStats()) {
                         Basic.delay.call(self, processNext);
                     }
+                });
+
+                item.bind('Resumed',function() {
+                    self.start();
                 });
 
                 item.bind('Paused', function() {
