@@ -352,8 +352,6 @@ define('plupload/core/Queue', [
                     return false; // maybe queue is destroyed
                 }
 
-                }
-
                 stats.reset();
 
                 self.forEachItem(function(item) {
