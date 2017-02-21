@@ -397,8 +397,11 @@ define('plupload/core/Queue', [
                 });
 
                 // enable properties inherited from Queueable
+
+                /* TODO: this is good but it currently conflicts with deprecated total property in Uploader
                 self.processed = stats.processed;
                 self.total = stats.total;
+                */
                 self.percent = stats.percent;
 
                 // for backward compatibility
