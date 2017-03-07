@@ -168,7 +168,7 @@ define('plupload/core/Queue', [
                     return false;
                 }
 
-                if (this.stats.processing || this.stats.paused) {
+                if (this.isActive()) {
                     this.forEachItem(function(item) {
                         item.stop();
                     });
@@ -317,6 +317,11 @@ define('plupload/core/Queue', [
 
             splice: function(start, length) {
                 return this._queue.splice(start, length);
+            },
+
+
+            isActive: function() {
+                return this.stats && (this.stats.processing || this.stats.paused);
             },
 
 
