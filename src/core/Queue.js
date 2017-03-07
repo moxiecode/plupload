@@ -243,7 +243,7 @@ define('plupload/core/Queue', [
                 item.trigger('Queued');
 
                 if (self.getOption('auto_start') || self.state === Queueable.PAUSED) {
-                    this.start();
+                    Basic.delay.call(this, this.start);
                 }
             },
 
