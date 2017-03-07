@@ -549,11 +549,13 @@ test("It should be possible to abort file upload if false is returned from Befor
 				events.UploadFile++;
 			},
 
-			UploadComplete: function() {
-				start();
+			StateChanged: function(up, state, oldState) {
+				if (state === 6) {
+					start();
 
-				assert.ok(events.BeforeUpload > 0, "BeforeUpload has fired.");
-				assert.equal(events.UploadFile, 0, "Upload successfully stopped by returning false from BeforeUpload.");
+					assert.ok(events.BeforeUpload > 0, "BeforeUpload has fired.");
+					assert.equal(events.UploadFile, 0, "Upload successfully stopped by returning false from BeforeUpload.");
+				}
 			}
 		}
 	});

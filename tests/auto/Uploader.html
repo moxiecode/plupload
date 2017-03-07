@@ -67,7 +67,7 @@ module("plupload.Uploader", {
 });
 
 
-test('addFile()', function() {	
+test('addFile()', function() {
 	var up = this.up
 	, file
 	, files = FileHash.getRuntimeFiles()
@@ -85,7 +85,7 @@ test('addFile()', function() {
 				});
 				up.addFile(nFiles[0].blob, nFiles[0].name);
 			},
-			
+
 			// moxie.file.Blob
 			function(cb) {
 				file = new moxie.file.Blob(null, files[0].getSource());
@@ -100,7 +100,7 @@ test('addFile()', function() {
 		);
 	}
 
-	
+
 	queue.push(
 		// o.File
 		function(cb) {
@@ -231,14 +231,14 @@ test('splice()', function() {
 });
 
 
-test('Test if internal file counters are properly updated, when queue changes.', function() {	
+test('Test if internal file counters are properly updated, when queue changes.', function() {
 	var up = this.up
 	, file
 	, files = FileHash.getRuntimeFiles()
 	, nFiles = FileHash.getNativeFiles()
 	, queue = []
 	;
-	
+
 	queue.push(
 
 		// when files are added to the queue
@@ -269,7 +269,7 @@ test('Test if internal file counters are properly updated, when queue changes.',
 	);
 
 	stop();
-	moxie.core.utils.Basic.inSeries(queue, function() {
+	plupload.inSeries(queue, function() {
 		start();
 	});
 });
