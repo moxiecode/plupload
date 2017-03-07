@@ -1,14 +1,14 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v3.0-beta1
+ * v3.1.0
  *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
+ * Copyright 2017, Ephox
+ * Released under AGPLv3 License.
  *
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2016-08-24
+ * Date: 2017-03-07
  */
 ;var MXI_DEBUG = true;
 /**
@@ -124,7 +124,7 @@
 	exports.defined = defined;
 	exports.require = require;
 
-	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/utils/Events","moxie/core/utils/Url","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/core/utils/Mime","moxie/runtime/RuntimeClient","moxie/file/FileInput","moxie/core/utils/Encode","moxie/file/Blob","moxie/file/FileReader","plupload","moxie/file/File","moxie/file/FileDrop","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","plupload/FileUploader","moxie/runtime/Transporter","moxie/image/Image","plupload/ImageResizer","plupload/File","plupload/Uploader","moxie/runtime/html5/image/ResizerCanvas","moxie/runtime/html5/image/ResizerWebGL"]);
+	expose(["moxie/core/utils/Basic","moxie/core/I18n","moxie/core/utils/Env","moxie/core/utils/Dom","moxie/core/utils/Events","moxie/core/utils/Url","moxie/core/Exceptions","moxie/core/EventTarget","moxie/runtime/Runtime","moxie/core/utils/Mime","moxie/runtime/RuntimeClient","moxie/file/FileInput","moxie/core/utils/Encode","moxie/file/Blob","moxie/file/FileReader","plupload","plupload/core/Collection","moxie/file/File","moxie/file/FileDrop","plupload/core/ArrCollection","plupload/core/Optionable","plupload/core/Queueable","plupload/core/Stats","plupload/core/Queue","plupload/QueueUpload","plupload/QueueResize","moxie/runtime/RuntimeTarget","moxie/xhr/FormData","moxie/xhr/XMLHttpRequest","plupload/ChunkUploader","plupload/FileUploader","moxie/runtime/Transporter","moxie/image/Image","plupload/ImageResizer","plupload/File","plupload/Uploader","moxie/runtime/html5/image/ResizerCanvas"]);
 
 	load('../src/moxie/src/javascript/core/utils/Basic.js');
 	load('../src/moxie/src/javascript/core/I18n.js');
@@ -145,6 +145,7 @@
 	load('../src/core/Collection.js');
 	load('../src/moxie/src/javascript/file/File.js');
 	load('../src/moxie/src/javascript/file/FileDrop.js');
+	load('../src/core/ArrCollection.js');
 	load('../src/core/Optionable.js');
 	load('../src/core/Queueable.js');
 	load('../src/core/Stats.js');
@@ -175,7 +176,6 @@
 	load('../src/moxie/src/javascript/runtime/html5/image/PNG.js');
 	load('../src/moxie/src/javascript/runtime/html5/image/ImageInfo.js');
 	load('../src/moxie/src/javascript/runtime/html5/image/ResizerCanvas.js');
-	load('../src/moxie/src/javascript/runtime/html5/image/ResizerWebGL.js');
 	load('../src/moxie/src/javascript/runtime/html5/image/Image.js');
 	load('../src/moxie/src/javascript/runtime/flash/Runtime.js');
 	load('../src/moxie/src/javascript/runtime/flash/file/Blob.js');
@@ -203,4 +203,4 @@
 	writeScripts();
 })(this);
 
-// $hash: 8611d36a03b190377b8abdcfe5d0b432
+// $hash: 711c8d43de34dbad707151a4b4de710a

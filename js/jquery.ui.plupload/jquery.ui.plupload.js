@@ -1,8 +1,8 @@
 /**
  * jquery.ui.plupload.js
  *
- * Copyright 2013, Moxiecode Systems AB
- * Released under GPL License.
+ * Copyright 2017, Ephox
+ * Released under AGPLv3 License.
  *
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
@@ -1068,6 +1068,7 @@ $.widget("ui.plupload", {
 					width: self.options.thumb_width, 
 					height: self.options.thumb_height, 
 					crop: true,
+					fit: true,
 					preserveHeaders: false,
 					swf_url: plupload.resolveUrl(self.options.flash_swf_url),
 					xap_url: plupload.resolveUrl(self.options.silverlight_xap_url)
