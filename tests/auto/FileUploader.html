@@ -75,18 +75,20 @@ test("Options: chunk_size=0 (default), send_file_name=false", function() {
             "Item is an instance of plupload.ChunkUploader.");
 
         deepEqual(item.getOptions(), {
-                chunk_size: 0,
                 file_data_name: 'file',
                 headers: false,
                 http_method: 'POST',
                 multipart: true,
                 params: {},
                 send_file_name: false,
-                stop_on_fail: true,
                 url: 'upload.php'
             },
             "Options have expected values.");
 
+    });
+
+    up.bind('resumed', function() {
+        this.start();
     });
 
     up.bind('processed', function() {
@@ -96,6 +98,62 @@ test("Options: chunk_size=0 (default), send_file_name=false", function() {
     up.setOptions(plupload.extend({}, self.options, {
         file_data_name: 'file'
     }));
+
+    QUnit.stop();
+    up.start();
+});
+
+
+test("Options: chunk_size='200kb'", function() {
+    var self = this;
+
+    var dispatched = {
+        'started': 0,
+        'beforestart': 0,
+        //'chunkuploadfailed': 0,
+        'chunkuploaded': 0,
+        'progress': 0,
+        //'paused': 0
+    };
+
+    var up = new plupload.FileUploader(this.file, this.queue);
+
+    var chunkSize = plupload.parseSize('10kb');
+    var chunksNum = Math.ceil(this.file.size / chunkSize);
+
+     // monitor events
+    plupload.each(dispatched, function(num, type) {
+        up.bind(type, function() {
+            dispatched[type]++;
+        });
+    });
+
+    up.bind('resumed', function() {
+        this.start();
+    });
+
+    up.bind('started', function() {
+
+        ok(true, "started event has been dispatched.");
+
+        equal(self.queue.stats.queued, chunksNum,
+            chunksNum + " item(s) added to the queue.");
+
+        var item = getItemAt(0, self.queue);
+        ok(item instanceof plupload.ChunkUploader,
+            "Item is an instance of plupload.ChunkUploader.");
+
+
+    });
+
+    up.bind('processed', function() {
+        QUnit.start();
+        plupload.each(dispatched, function(num, type) {
+            ok(num > 0, type + ' has been dispatched ' + num + ' times.');
+        });
+    });
+
+    up.setOption('chunk_size', chunkSize);
 
     QUnit.stop();
     up.start();
