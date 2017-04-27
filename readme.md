@@ -33,7 +33,7 @@ is built with the future of HTML5 in mind.
 * [License](https://github.com/moxiecode/plupload/blob/master/readme.md#license)
 * [Contact Us](http://www.moxiecode.com/contact.php)
 
-<a name="backstory" />
+<a name="backstory"></a>
 ### Backstory
 
 Plupload started in a time when uploading a file in a responsive and customizable manner was a real pain. 
@@ -54,7 +54,7 @@ as all the low-level runtime logic has been extracted into separate [File API](h
 and [XHR L2](http://www.w3.org/TR/XMLHttpRequest/) pollyfills (currently known under combined name of [mOxie](https://github.com/moxiecode/moxie)), 
 giving Plupload a chance to evolve further.
 
-<a name="structure" />
+<a name="structure"></a>
 ### Structure
 
 Currently, Plupload may be considered as consisting of three parts: low-level pollyfills, 
@@ -69,7 +69,7 @@ build by yourself out of the API.
 * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
 * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
 
-<a name="build" />
+<a name="build"></a>
 ### Building instructions
 
 Plupload depends on File API and XHR2 L2 pollyfills that currently have their 
@@ -106,7 +106,7 @@ added to the system PATH. So, if `jake` commands below are not recognized you wi
 set PATH=%PATH%;%CD%\node_modules\.bin\
 ``` 
 
-<a name="support" />
+<a name="support"></a>
 ### Support
 
 We are actively standing behind the Plupload and now that we are done with major rewrites and refactoring,
@@ -122,7 +122,7 @@ here on [GitHub](https://github.com/moxiecode/plupload/issues).
 Sometimes it is easier to notice the problem when bug report is accompained by the actual code. Consider providing 
 [a Plupload fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle) for the troublesome code.
 
-<a name="contribute" />
+<a name="contribute"></a>
 ### Contributing
 
 We are open to suggestions and code revisions, however there are some rules and limitations that you might 
@@ -138,7 +138,7 @@ An easy place to start is to [translate Plupload to your language](https://githu
 
 You can read more about how to contribute at: [http://www.plupload.com/contributing](http://www.plupload.com/contributing)
 
-<a name="license" />
+<a name="license"></a>
 ### License
 
 Copyright 2013, [Moxiecode Systems AB](http://www.moxiecode.com/)  
