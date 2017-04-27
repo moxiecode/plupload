@@ -9,14 +9,14 @@ will work anywhere and in any case, in one way or another. While having very sol
 is built with the future of HTML5 in mind.
 
 ### Table of Contents
-* [Backstory](https://github.com/moxiecode/plupload/blob/master/readme.md#backstory)
-* [Structure](https://github.com/moxiecode/plupload/blob/master/readme.md#structure)
+* [Backstory](#backstory)
+* [Structure](#structure)
   * [File API and XHR L2 pollyfills](https://github.com/moxiecode/moxie/blob/master/README.md)
   * [Plupload API](https://github.com/moxiecode/plupload/wiki/API)
   * [UI Widget](https://github.com/moxiecode/plupload/wiki/UI.Plupload)
   * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
 * [Demos](https://github.com/jayarjo/plupload-demos/blob/master/README.md)
-* [Building Instructions](https://github.com/moxiecode/plupload/blob/master/readme.md#build)
+* [Building Instructions](#build)
 * [Getting Started](https://github.com/moxiecode/plupload/wiki/Getting-Started)
   * [Options](https://github.com/moxiecode/plupload/wiki/Options)
   * [Events](https://github.com/moxiecode/plupload/wiki/Uploader#wiki-events)
@@ -27,10 +27,10 @@ is built with the future of HTML5 in mind.
   * [Chunking](https://github.com/moxiecode/plupload/wiki/Chunking) 
   * [Upload to Amazon S3](https://github.com/moxiecode/plupload/wiki/Upload-to-Amazon-S3) 
 * [FAQ](https://github.com/moxiecode/plupload/wiki/Frequently-Asked-Questions)
-* [Support](https://github.com/moxiecode/plupload/blob/master/readme.md##support)
+* [Support](#support)
   * [Create a Fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle)
-* [Contributing](https://github.com/moxiecode/plupload/blob/master/readme.md#contribute)
-* [License](https://github.com/moxiecode/plupload/blob/master/readme.md#license)
+* [Contributing](#contribute)
+* [License](#license)
 * [Contact Us](http://www.moxiecode.com/contact.php)
 
 <a name="backstory"></a>
