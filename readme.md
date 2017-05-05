@@ -34,6 +34,7 @@ is built with the future of HTML5 in mind.
 * [Contact Us](http://www.moxiecode.com/contact.php)
 
 <a name="backstory" />
+
 ### Backstory
 
 Plupload started in a time when uploading a file in a responsive and customizable manner was a real pain. 
@@ -55,6 +56,7 @@ and [XHR L2](http://www.w3.org/TR/XMLHttpRequest/) pollyfills (currently known u
 giving Plupload a chance to evolve further.
 
 <a name="structure" />
+
 ### Structure
 
 Currently, Plupload may be considered as consisting of three parts: low-level pollyfills, 
@@ -70,6 +72,7 @@ build by yourself out of the API.
 * [Queue Widget](https://github.com/moxiecode/plupload/wiki/pluploadQueue)
 
 <a name="build" />
+
 ### Building instructions
 
 Plupload depends on File API and XHR2 L2 pollyfills that currently have their 
@@ -107,6 +110,7 @@ set PATH=%PATH%;%CD%\node_modules\.bin\
 ``` 
 
 <a name="support" />
+
 ### Support
 
 We are actively standing behind the Plupload and now that we are done with major rewrites and refactoring,
@@ -123,6 +127,7 @@ Sometimes it is easier to notice the problem when bug report is accompanied by t
 [a Plupload fiddle](https://github.com/moxiecode/plupload/wiki/Create-a-Fiddle) for the troublesome code.
 
 <a name="contribute" />
+
 ### Contributing
 
 We are open to suggestions and code revisions, however there are some rules and limitations that you might 
