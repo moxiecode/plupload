@@ -242,6 +242,15 @@ var plupload = {
 	IMAGE_DIMENSIONS_ERROR : -702,
 
 	/**
+	 * Expose whole moxie (#1469).
+	 *
+	 * @property moxie
+	 * @type Object
+	 * @final
+	 */
+	moxie: o,
+
+	/**
 	 * Mime type lookup table.
 	 *
 	 * @property mimeTypes
