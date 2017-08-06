@@ -1558,7 +1558,6 @@ plupload.Uploader = function(options) {
 
 			xhr.onloadend = function() {
 				this.destroy();
-				xhr = null;
 			};
 
 			// Build multipart request
