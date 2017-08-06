@@ -2105,11 +2105,12 @@ plupload.Uploader = function(options) {
 		},
 
 		/**
-		 * Removes part of the queue and returns the files removed. This will also trigger the FilesRemoved and QueueChanged events.
+		 * Removes part of the queue and returns the files removed. This will also trigger the
+		 * FilesRemoved and QueueChanged events.
 		 *
 		 * @method splice
-		 * @param {Number} start (Optional) Start index to remove from.
-		 * @param {Number} length (Optional) Lengh of items to remove.
+		 * @param {Number} [start=0] Start index to remove from.
+		 * @param {Number} [length] Number of files to remove (defaults to number of files in the queue).
 		 * @return {Array} Array of files that was removed.
 		 */
 		splice : function(start, length) {
