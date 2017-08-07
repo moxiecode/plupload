@@ -91,6 +91,13 @@ window.FileHash = new (function() {
 				}));
 			});
 			return files;
+		},
+
+		getEmptyFile: function(fileName) {
+			return new o.File(null, {
+				name: fileName || o.guid('file_') + '.zip',
+				size: 0
+			});
 		}
 	};
 });

@@ -187,7 +187,8 @@ var plupload = {
 	INIT_ERROR : -500,
 
 	/**
-	 * File size error. If the user selects a file that is too large it will be blocked and an error of this type will be triggered.
+	 * File size error. If the user selects a file that is too large or is empty it will be blocked and
+	 * an error of this type will be triggered.
 	 *
 	 * @property FILE_SIZE_ERROR
 	 * @static
@@ -731,6 +732,19 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	cb(true);
 });
 
+plupload.addFileFilter('prevent_empty', function(value, file, cb) {
+	if (value && !file.size && file.size !== undef) {
+		this.trigger('Error', {
+			code : plupload.FILE_SIZE_ERROR,
+			message : plupload.translate('File size error.'),
+			file : file
+		});
+		cb(false);
+	} else {
+		cb(true);
+	}
+});
+
 
 /**
 @class Uploader
@@ -746,6 +760,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 		@param {String|Number} [settings.filters.max_file_size=0] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
 		@param {Array} [settings.filters.mime_types=[]] List of file types to accept, each one defined by title and list of extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
 		@param {Boolean} [settings.filters.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
+		@param {Boolean} [settings.filters.prevent_empty=true] Do not let empty files into the queue (IE10 is known to hang for example when trying to upload such). Dispatches `plupload.FILE_SIZE_ERROR`.
 	@param {String} [settings.flash_swf_url] URL of the Flash swf.
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
 	@param {String} [settings.http_method="POST"] HTTP method to use during upload (only PUT or POST allowed).
@@ -1725,8 +1740,9 @@ plupload.Uploader = function(options) {
 		file_data_name: 'file',
 		filters: {
 			mime_types: [],
+			max_file_size: 0,
 			prevent_duplicates: false,
-			max_file_size: 0
+			prevent_empty: true
 		},
 		flash_swf_url: 'js/Moxie.swf',
 		http_method: 'POST',
@@ -2279,7 +2295,7 @@ plupload.File = (function() {
 			 * @property size
 			 * @type Number
 			 */
-			size: file.size || file.fileSize,
+			size: file.fileSize || file.size,
 
 			/**
 			 * Original file size in bytes.
@@ -2287,7 +2303,7 @@ plupload.File = (function() {
 			 * @property origSize
 			 * @type Number
 			 */
-			origSize: file.size || file.fileSize,
+			origSize: file.fileSize || file.size,
 
 			/**
 			 * Number of bytes uploaded of the files total size.
