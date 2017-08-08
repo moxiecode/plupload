@@ -12,6 +12,17 @@
 <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css">
 
 <script type="text/javascript">
+    var matches = document.location.search.match(/src=(min|dev)/);
+    var mode = matches ? matches[1] : 'min';
+
+    requirejs.config({
+        "baseUrl": "../../js/",
+        "paths": {
+            "moxie": "moxie",
+            "plupload": "plupload." + mode
+        }
+    });
+
     module("AMD", {
         setup: function() {
             $('#qunit-fixture').html('<div id="uploader" />');
@@ -35,24 +46,18 @@
 
     test("test AMD loader", function() {
         var self = this;
-        var matches = document.location.search.match(/src=(min|dev)/);
-	    var mode = matches ? matches[1] : 'min';
-
-        requirejs.config({
-            "baseUrl": "../../js/",
-            "paths": {
-                "plupload": "plupload." + mode
-            }
-        });
 
         QUnit.stop();
 
-        require(['plupload'], function(plupload) {
+        require(['moxie', 'plupload'], function(moxie, plupload) {
             self.up = new plupload.Uploader(self.options);
 
             self.up.bind('Init', function() {
                 QUnit.start();
                 ok(true, "Plupload loaded and initialised.");
+
+                ok(/^moxie_event_target_/.test(moxie.runtime.Runtime.getGlobalEventTarget()),
+                    "Global event target has been redifined.");
             });
 
             self.up.init();
