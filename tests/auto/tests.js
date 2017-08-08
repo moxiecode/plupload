@@ -3,6 +3,7 @@
 	"tests": [
 		{"title": "AMD loader", "url": "AMD.html"},
 		{"title": "plupload", "url": "plupload.html"},
+		{"title": "plupload.File", "url": "File.html"},
 		{"title": "plupload.Uploader.init()", "url": "Uploader.init.html"},
 		{"title": "plupload.Uploader", "url": "Uploader.html"},
 		{"title": "Filters", "url": "filters.html"},

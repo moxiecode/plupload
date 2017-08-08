@@ -2290,6 +2290,15 @@ plupload.File = (function() {
 			type: file.type || '',
 
 			/**
+			 * Relative path to the file inside a directory
+			 *
+			 * @property relativePath
+			 * @type String
+			 * @default ''
+			 */
+			relativePath: file.relativePath || '',
+
+			/**
 			 * File size in bytes (may change after client-side manupilation).
 			 *
 			 * @property size
