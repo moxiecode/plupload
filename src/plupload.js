@@ -1055,17 +1055,6 @@ plupload.Uploader = function(options) {
 	}
 
 
-	function runtimeCan(file, cap) {
-		if (file.ruid) {
-			var info = Runtime.getInfo(file.ruid);
-			if (info) {
-				return info.can(cap);
-			}
-		}
-		return false;
-	}
-
-
 	function bindEventListeners() {
 		this.bind('FilesAdded FilesRemoved', function(up) {
 			up.trigger('QueueChanged');
@@ -1222,7 +1211,7 @@ plupload.Uploader = function(options) {
 	}
 
 
-	function resizeImage(blob, params, cb) {
+	function resizeImage(blob, params, runtimeOptions, cb) {
 		var img = new o.image.Image();
 
 		try {
@@ -1246,11 +1235,11 @@ plupload.Uploader = function(options) {
 				this.destroy();
 			};
 
-			img.onerror = function() {
+			img.bind('error runtimeerror', function() {
 				cb(blob);
-			};
+			});
 
-			img.load(blob);
+			img.load(blob, runtimeOptions);
 		} catch(ex) {
 			cb(blob);
 		}
@@ -1427,13 +1416,20 @@ plupload.Uploader = function(options) {
 
 
 	function onUploadFile(up, file) {
-		var url = up.settings.url
-		, chunkSize = up.settings.chunk_size
-		, retries = up.settings.max_retries
-		, features = up.features
-		, offset = 0
-		, blob
-		;
+		var url = up.settings.url;
+		var chunkSize = up.settings.chunk_size;
+		var retries = up.settings.max_retries;
+		var features = up.features;
+		var offset = 0;
+		var blob;
+
+		var runtimeOptions = {
+			runtime_order: up.settings.runtimes,
+			required_caps: up.settings.required_features,
+			preferred_caps: preferred_caps,
+			swf_url: up.settings.flash_swf_url,
+			xap_url: up.settings.silverlight_xap_url
+		};
 
 		// make sure we start at a predictable offset
 		if (file.loaded) {
@@ -1593,13 +1589,7 @@ plupload.Uploader = function(options) {
 
 				// Add file and send it
 				formData.append(up.settings.file_data_name, chunkBlob);
-				xhr.send(formData, {
-					runtime_order: up.settings.runtimes,
-					required_caps: up.settings.required_features,
-					preferred_caps: preferred_caps,
-					swf_url: up.settings.flash_swf_url,
-					xap_url: up.settings.silverlight_xap_url
-				});
+				xhr.send(formData, runtimeOptions);
 			} else {
 				// if no multipart, send as binary stream
 				url = plupload.buildUrl(up.settings.url, plupload.extend(args, up.settings.multipart_params));
@@ -1616,13 +1606,7 @@ plupload.Uploader = function(options) {
 					xhr.setRequestHeader('Content-Type', 'application/octet-stream'); // Binary stream header
 				}
 
-				xhr.send(chunkBlob, {
-					runtime_order: up.settings.runtimes,
-					required_caps: up.settings.required_features,
-					preferred_caps: preferred_caps,
-					swf_url: up.settings.flash_swf_url,
-					xap_url: up.settings.silverlight_xap_url
-				});
+				xhr.send(chunkBlob, runtimeOptions);
 			}
 		}
 
@@ -1630,9 +1614,9 @@ plupload.Uploader = function(options) {
 		blob = file.getSource();
 
 		// Start uploading chunks
-		if (!plupload.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && plupload.inArray(blob.type, ['image/jpeg', 'image/png']) !== -1) {
+		if (!plupload.isEmptyObj(up.settings.resize) && plupload.inArray(blob.type, ['image/jpeg', 'image/png']) !== -1) {
 			// Resize if required
-			resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
+			resizeImage(blob, up.settings.resize, runtimeOptions, function(resizedBlob) {
 				blob = resizedBlob;
 				file.size = resizedBlob.size;
 				uploadNextChunk();
