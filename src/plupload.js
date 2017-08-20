@@ -1224,18 +1224,21 @@ plupload.Uploader = function(options) {
 					!params.crop
 				) {
 					this.destroy();
-					return cb(blob);
+					cb(blob);
+				} else {
+					// otherwise downsize
+					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
 				}
-				// otherwise downsize
-				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
 			};
 
 			img.onresize = function() {
-				cb(this.getAsBlob(blob.type, params.quality));
+				var resizedBlob = this.getAsBlob(blob.type, params.quality);
 				this.destroy();
+				cb(resizedBlob);
 			};
 
 			img.bind('error runtimeerror', function() {
+				this.destroy();
 				cb(blob);
 			});
 
