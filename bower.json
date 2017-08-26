@@ -1,5 +1,5 @@
 {
-	"name": "plupload",
+    "name": "plupload",
     "license": "AGPLv3",
     "authors": [
         "Davit Barbakadze <davit.barbakadze@ephox.com>"
@@ -9,19 +9,17 @@
         "type": "git",
         "url": "https://github.com/moxiecode/plupload.git"
     },
-	"main": [
-        "./js/plupload.full.min.js"
-	],
-	"ignore": [
-		"tests/",
-		"src/",
-		"build/",
+    "main": "./js/plupload.min.js",
+    "ignore": [
+        "tests/",
+        "src/",
+        "build/",
         "examples/",
-		"Jakefile.js",
-		"package.json",
-		"bower.json",
+        "Jakefile.js",
+        "package.json",
+        "bower.json",
         "composer.json",
-		"README.md",
-		".*"
-	]
+        "README.md",
+        ".*"
+    ]
 }
