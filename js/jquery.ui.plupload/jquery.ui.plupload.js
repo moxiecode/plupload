@@ -902,6 +902,9 @@ $.widget("ui.plupload", {
 			$('.ui-button-text', this.browse_button).html(plupload.sprintf(_('%d files queued'), up.total.queued));
 		}
 
+		// have a helper class on a container expressing whether it has files queued or not
+		this.container.toggleClass('plupload_files_queued', up.files.length);
+
 		up.refresh();
 	},
 
