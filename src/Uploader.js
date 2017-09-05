@@ -680,10 +680,10 @@ define('plupload/Uploader', [
 			 * Triggers FilesRemoved and consequently QueueChanged events.
 			 *
 			 * @method splice
-			 * @param {Number} start (Optional) Start index to remove from
-			 * @param {Number} length (Optional) Length of items to remove
+			 * @param {Number} [start=0] Start index to remove from
+			 * @param {Number} [length] Length of items to remove
 			 */
-			splice: function(start, length) {
+			splice: function() {
 				var i = 0;
 				var shouldRestart = plupload.STARTED == this.state;
 
