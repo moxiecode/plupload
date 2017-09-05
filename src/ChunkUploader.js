@@ -66,7 +66,7 @@ define('plupload/ChunkUploader', [
                         responseHeaders: this.getAllResponseHeaders()
                     };
 
-                    if (this.status >= 400) { // assume error
+                    if (this.status < 200 && this.status >= 400) { // assume error
                         return self.failed(result);
                     }
 
@@ -120,7 +120,7 @@ define('plupload/ChunkUploader', [
                         _xhr.send(blob);
                     }
 
-                    ChunkUploader.prototype.start.call(this)
+                    ChunkUploader.prototype.start.call(this);
                 } catch(ex) {
                     self.failed();
                 }
