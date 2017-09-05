@@ -891,6 +891,9 @@ $.widget("ui.plupload", {
 				up.disableBrowse(false);
 			}
 
+			// have a helper class on a container expressing whether it has files queued or not
+			this.container.toggleClass('plupload_files_queued', up.files.length);
+
 			this._updateTotalProgress();
 		}
 
