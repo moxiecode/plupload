@@ -72,7 +72,7 @@ define("plupload/ImageResizer", [
 				this.destroy();
 			});
 
-			img.load(fileRef);
+			img.load(fileRef, self.getOption('runtimeOptions'));
 		};
 	}
 

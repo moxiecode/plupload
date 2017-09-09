@@ -122,6 +122,7 @@ define('plupload/File', [
 
             resizeAndUpload: function() {
                 var self = this;
+                var opts = self.getOptions();
                 var rszr = new ImageResizer(file);
 
                 rszr.bind('progress', function(e) {
@@ -135,6 +136,14 @@ define('plupload/File', [
 
                 rszr.bind('failed', function() {
                     self.upload();
+                });
+
+                rszr.setOption('runtimeOptions', {
+                    runtime_order: opts.runtimes,
+                    required_caps: opts.required_features,
+                    preferred_caps: opts.preferred_caps,
+                    swf_url: opts.flash_swf_url,
+                    xap_url: opts.silverlight_xap_url
                 });
 
                 queueResize.addItem(rszr);
