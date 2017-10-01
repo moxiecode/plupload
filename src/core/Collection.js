@@ -17,7 +17,7 @@ Helper collection class - in a way a mix of object and array
 @private
 */
 define('plupload/core/Collection', [
-    'moxie/core/utils/Basic'
+    'plupload'
 ], function(Basic) {
 
     var Collection = function() {
@@ -26,7 +26,7 @@ define('plupload/core/Collection', [
         var _last;
 
 
-        Basic.extend(this, {
+        plupload.extend(this, {
 
             count: function() {
                 return _length;
@@ -63,7 +63,7 @@ define('plupload/core/Collection', [
                 var self = this;
 
                 if (typeof(key) === 'object' && !obj) {
-                    return Basic.each(key, function(obj, key) {
+                    return plupload.each(key, function(obj, key) {
                         self.add(key, obj);
                     });
                 }
@@ -117,7 +117,7 @@ define('plupload/core/Collection', [
 
 
             each: function(cb) {
-                Basic.each(_registry, cb);
+                plupload.each(_registry, cb);
             },
 
 
@@ -126,7 +126,7 @@ define('plupload/core/Collection', [
 
                 newCol.add(_registry);
 
-                Basic.each(arguments, function(col) {
+                plupload.each(arguments, function(col) {
                     if (col instanceof Collection) {
                         newCol.add(col.toObject());
                     }

@@ -17,12 +17,12 @@
  * @constructor
  */
 define('plupload/ChunkUploader', [
-    'moxie/core/utils/Basic',
+    'plupload',
     'plupload/core/Collection',
-    'plupload/core/Queueable',
-    'moxie/xhr/XMLHttpRequest',
-    'moxie/xhr/FormData'
-], function(Basic, Collection, Queueable, XMLHttpRequest, FormData) {
+    'plupload/core/Queueable'
+], function(plupload, Collection, Queueable) {
+    var XMLHttpRequest = moxie.xhr.XMLHttpRequest;
+    var FormData = moxie.xhr.FormData;
 
     function ChunkUploader(blob) {
         var _xhr;
@@ -39,7 +39,7 @@ define('plupload/ChunkUploader', [
 			url: false
 		};
 
-        Basic.extend(this, {
+        plupload.extend(this, {
 
             start: function() {
                 var self = this;
@@ -93,8 +93,8 @@ define('plupload/ChunkUploader', [
 
 
                     // headers must be set after request is already opened, otherwise INVALID_STATE_ERR exception will raise
-                    if (!Basic.isEmptyObj(options.headers)) {
-                        Basic.each(options.headers, function(val, key) {
+                    if (!plupload.isEmptyObj(options.headers)) {
+                        plupload.each(options.headers, function(val, key) {
                             _xhr.setRequestHeader(key, val);
                         });
                     }
@@ -103,8 +103,8 @@ define('plupload/ChunkUploader', [
                     if (options.multipart) {
                         formData = new FormData();
 
-                        if (!Basic.isEmptyObj(options.params)) {
-                            Basic.each(options.params, function(val, key) {
+                        if (!plupload.isEmptyObj(options.params)) {
+                            plupload.each(options.params, function(val, key) {
                                 formData.append(key, val);
                             });
                         }
@@ -113,7 +113,7 @@ define('plupload/ChunkUploader', [
 
                         _xhr.send(formData);
                     } else { // if no multipart, send as binary stream
-                        if (Basic.isEmptyObj(options.headers) || !_xhr.hasRequestHeader('content-type')) {
+                        if (plupload.isEmptyObj(options.headers) || !_xhr.hasRequestHeader('content-type')) {
                             _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
                         }
 
@@ -163,7 +163,7 @@ define('plupload/ChunkUploader', [
         function buildUrl(url, items) {
             var query = '';
 
-            Basic.each(items, function(value, name) {
+            plupload.each(items, function(value, name) {
                 query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
             });
 
@@ -176,7 +176,7 @@ define('plupload/ChunkUploader', [
 
     }
 
-    Basic.inherit(ChunkUploader, Queueable);
+    plupload.inherit(ChunkUploader, Queueable);
 
     return ChunkUploader;
 });

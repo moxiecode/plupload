@@ -15,11 +15,11 @@
 @private
 */
 define('plupload/core/Queue', [
-    'moxie/core/utils/Basic',
+    'plupload',
     'plupload/core/ArrCollection',
     'plupload/core/Queueable',
     'plupload/core/Stats'
-], function(Basic, ArrCollection, Queueable, Stats) {
+], function(plupload, ArrCollection, Queueable, Stats) {
 
     var dispatches = [
         /**
@@ -81,7 +81,7 @@ define('plupload/core/Queue', [
      * @extends EventTarget
      */
     return (function(Parent) {
-        Basic.inherit(Queue, Parent);
+        plupload.inherit(Queue, Parent);
 
 
         function Queue(options) {
@@ -103,7 +103,7 @@ define('plupload/core/Queue', [
             this.stats = new Stats();
 
 
-            this._options = Basic.extend({}, this._options, {
+            this._options = plupload.extend({}, this._options, {
                 max_slots: 1,
                 max_retries: 0,
                 auto_start: false,
@@ -111,7 +111,7 @@ define('plupload/core/Queue', [
             }, options);
         }
 
-        Basic.extend(Queue.prototype, {
+        plupload.extend(Queue.prototype, {
 
             /**
              * Returns number of items in the queue
@@ -197,7 +197,7 @@ define('plupload/core/Queue', [
 
                 item.bind('Started', function() {
                     if (self.calcStats()) {
-                        Basic.delay.call(self, processNext);
+                        plupload.delay.call(self, processNext);
                     }
                 });
 
@@ -207,7 +207,7 @@ define('plupload/core/Queue', [
 
                 item.bind('Paused', function() {
                     if (self.calcStats()) {
-                        Basic.delay.call(self, function() {
+                        plupload.delay.call(self, function() {
                             if (!processNext.call(self) && !self.stats.processing) {
                                 self.pause();
                             }
@@ -217,7 +217,7 @@ define('plupload/core/Queue', [
 
                 item.bind('Processed Stopped', function() {
                     if (self.calcStats()) {
-                        Basic.delay.call(self, function() {
+                        plupload.delay.call(self, function() {
                             if (!processNext.call(self) && !(this.stats.processing || this.stats.paused)) {
                                 self.stop();
                             }
@@ -243,7 +243,7 @@ define('plupload/core/Queue', [
                 item.trigger('Queued');
 
                 if (self.getOption('auto_start') || self.state === Queueable.PAUSED) {
-                    Basic.delay.call(this, this.start);
+                    plupload.delay.call(this, this.start);
                 }
             },
 
@@ -305,7 +305,7 @@ define('plupload/core/Queue', [
             resumeItem: function(uid) {
                 var item = this._queue.get(uid);
                 if (item) {
-                    Basic.delay.call(this, function() {
+                    plupload.delay.call(this, function() {
                         this.start(); // start() will know if it needs to restart the queue
                     });
                     return item.resume();
@@ -428,7 +428,7 @@ define('plupload/core/Queue', [
                 if (self.state !== Queueable.IDLE) {
                     // stop the active queue first
                     self.bindOnce('Stopped', function() {
-                        Basic.delay.call(self, self.destroy);
+                        plupload.delay.call(self, self.destroy);
                     });
                     return self.stop();
                 } else {

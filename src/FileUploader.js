@@ -16,11 +16,11 @@
  * @final
  */
 define('plupload/FileUploader', [
-	'moxie/core/utils/Basic',
+	'plupload',
 	'plupload/core/Collection',
 	'plupload/core/Queueable',
 	'plupload/ChunkUploader'
-], function(Basic, Collection, Queueable, ChunkUploader) {
+], function(plupload, Collection, Queueable, ChunkUploader) {
 
 
 	function FileUploader(file, queue) {
@@ -36,7 +36,7 @@ define('plupload/FileUploader', [
 			stop_on_fail: true
 		};
 
-		Basic.extend(this, {
+		plupload.extend(this, {
 			/**
 			When send_file_name is set to true, will be sent with the request as `name` param.
             Can be used on server-side to override original file name.
@@ -112,7 +112,7 @@ define('plupload/FileUploader', [
 					return false;
 				}
 
-				_options = Basic.extendImmutable({}, this.getOptions(), {
+				_options = plupload.extendImmutable({}, this.getOptions(), {
 					params: {
 						chunk: chunk.seq,
 						chunks: _totalChunks
@@ -130,11 +130,11 @@ define('plupload/FileUploader', [
 				});
 
 				up.bind('failed', function(e, result) {
-					_chunks.add(chunk.seq, Basic.extend({
+					_chunks.add(chunk.seq, plupload.extend({
 						state: Queueable.FAILED
 					}, chunk));
 
-					self.trigger('chunkuploadfailed', Basic.extendImmutable({}, chunk, result));
+					self.trigger('chunkuploadfailed', plupload.extendImmutable({}, chunk, result));
 
 					if (_options.stop_on_fail) {
 						self.failed(result);
@@ -142,17 +142,17 @@ define('plupload/FileUploader', [
 				});
 
 				up.bind('done', function(e, result) {
-					_chunks.add(chunk.seq, Basic.extend({
+					_chunks.add(chunk.seq, plupload.extend({
 						state: Queueable.DONE
 					}, chunk));
 
-					self.trigger('chunkuploaded', Basic.extendImmutable({}, chunk, result));
+					self.trigger('chunkuploaded', plupload.extendImmutable({}, chunk, result));
 
 					if (calcProcessed() >= file.size) {
 						self.progress(file.size, file.size);
 						self.done(result); // obviously we are done
 					} else if (dontStop) {
-						Basic.delay(function() {
+						plupload.delay(function() {
 							self.uploadChunk(getNextChunk(), dontStop);
 						});
 					}
@@ -164,7 +164,7 @@ define('plupload/FileUploader', [
 
 				up.setOptions(_options);
 
-				_chunks.add(chunk.seq, Basic.extend({
+				_chunks.add(chunk.seq, plupload.extend({
 					state: Queueable.PROCESSING
 				}, chunk));
 
@@ -209,7 +209,7 @@ define('plupload/FileUploader', [
 	}
 
 
-	Basic.inherit(FileUploader, Queueable);
+	plupload.inherit(FileUploader, Queueable);
 
 	return FileUploader;
 });

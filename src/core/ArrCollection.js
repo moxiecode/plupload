@@ -15,13 +15,13 @@
 @private
 */
 define('plupload/core/ArrCollection', [
-    'moxie/core/utils/Basic'
-], function(Basic) {
+    'plupload'
+], function(plupload) {
 
     var ArrCollection = function() {
         var _registry = [];
 
-        Basic.extend(this, {
+        plupload.extend(this, {
 
             count: function() {
                 return _registry.length;
@@ -76,8 +76,8 @@ define('plupload/core/ArrCollection', [
             },
 
             splice: function(start, length) {
-                start = Basic.typeOf(start) === 'undefinded' ? 0 : Math.max(start, 0);
-                length = Basic.typeOf(length) !== 'undefinded' && start + length < _registry.length ? length : _registry.length - start;
+                start = plupload.typeOf(start) === 'undefinded' ? 0 : Math.max(start, 0);
+                length = plupload.typeOf(length) !== 'undefinded' && start + length < _registry.length ? length : _registry.length - start;
 
                 return _registry.splice(start, length);
             },
@@ -104,7 +104,7 @@ define('plupload/core/ArrCollection', [
             },
 
             each: function(cb) {
-                Basic.each(_registry, cb);
+                plupload.each(_registry, cb);
             },
 
             combineWith: function() {

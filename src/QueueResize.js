@@ -19,12 +19,12 @@
  @param {Object} options
 */
 define('plupload/QueueResize', [
-    'moxie/core/utils/Basic',
+    'plupload',
     'plupload/core/Queue'
-], function(Basic, Queue) {
+], function(plupload, Queue) {
 
     return (function(Parent) {
-        Basic.inherit(QueueResize, Parent);
+        plupload.inherit(QueueResize, Parent);
 
         function QueueResize(options) {
 

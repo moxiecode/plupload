@@ -16,9 +16,9 @@
 @since 3.0
 */
 define('plupload/core/Optionable', [
-    'moxie/core/utils/Basic',
-    'moxie/core/EventTarget'
-], function(Basic, EventTarget) {
+    'plupload'
+], function(plupload) {
+    var EventTarget = moxie.core.EventTarget;
 
     var dispatches = [
         /**
@@ -46,9 +46,9 @@ define('plupload/core/Optionable', [
             this._options = {};
         }
 
-        Basic.inherit(Optionable, Parent);
+        plupload.inherit(Optionable, Parent);
 
-        Basic.extend(Optionable.prototype, {
+        plupload.extend(Optionable.prototype, {
             /**
              * Set the value for the specified option(s).
              *
@@ -64,7 +64,7 @@ define('plupload/core/Optionable', [
 
                 if (typeof(option) === 'object') {
                     mustBeDefined = value;
-                    Basic.each(option, function(value, option) {
+                    plupload.each(option, function(value, option) {
                         self.setOption(option, value, mustBeDefined);
                     });
                     return;
@@ -74,12 +74,12 @@ define('plupload/core/Optionable', [
                     return;
                 }
 
-                oldValue = Basic.clone(self._options[option]);
+                oldValue = plupload.clone(self._options[option]);
 
                 //! basically if an option is of type object extend it rather than replace
-                if (Basic.typeOf(value) === 'object' && Basic.typeOf(self._options[option]) === 'object') {
+                if (plupload.typeOf(value) === 'object' && plupload.typeOf(self._options[option]) === 'object') {
                      // having some options as objects was a bad idea, prefixes is the way
-                    Basic.extend(self._options[option], value);
+                    plupload.extend(self._options[option], value);
                 } else {
                     self._options[option] = value;
                 }
@@ -101,8 +101,8 @@ define('plupload/core/Optionable', [
                 }
 
                 var value = this._options[option];
-                if (Basic.inArray(Basic.typeOf(value), ['array', 'object']) > -1) {
-                    return Basic.extendImmutable({}, value);
+                if (plupload.inArray(plupload.typeOf(value), ['array', 'object']) > -1) {
+                    return plupload.extendImmutable({}, value);
                 } else {
                     return value;
                 }

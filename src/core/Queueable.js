@@ -19,10 +19,9 @@ Every queue item must have properties, implement methods and fire events defined
 @extends EventTarget
 */
 define('plupload/core/Queueable', [
-    'moxie/core/utils/Env',
-    'moxie/core/utils/Basic',
+    'plupload',
     'plupload/core/Optionable'
-], function(Env, Basic, Optionable) {
+], function(plupload, Optionable) {
 
     var dispatches = [
         /**
@@ -97,7 +96,7 @@ define('plupload/core/Queueable', [
             @property uid
             @type {String}
             */
-            this.uid = Basic.guid();
+            this.uid = plupload.guid();
 
             this.state = Queueable.IDLE;
 
@@ -175,7 +174,7 @@ define('plupload/core/Queueable', [
                         }
                     };
 
-                    Env.log("StateChanged:" + indent() + self.ctorName + '::' + self.uid + ' (' + stateToString(oldState) + ' to ' + stateToString(state) + ')');
+                    plupload.ua.log("StateChanged:" + indent() + self.ctorName + '::' + self.uid + ' (' + stateToString(oldState) + ' to ' + stateToString(state) + ')');
                 }, 999);
             }
         }
@@ -188,9 +187,9 @@ define('plupload/core/Queueable', [
         Queueable.FAILED = 4;
         Queueable.DESTROYED = 8;
 
-        Basic.inherit(Queueable, Parent);
+        plupload.inherit(Queueable, Parent);
 
-        Basic.extend(Queueable.prototype, {
+        plupload.extend(Queueable.prototype, {
 
             start: function() {
                 var prevState = this.state;
@@ -207,7 +206,7 @@ define('plupload/core/Queueable', [
                     this.state = Queueable.PROCESSING;
                     this.trigger('statechanged', this.state, prevState);
                     this.pause();
-                    Basic.delay.call(this, function() {
+                    plupload.delay.call(this, function() {
                         if (this.trigger('beforestart')) {
                             this.resume();
                         }

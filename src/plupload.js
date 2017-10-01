@@ -15,22 +15,13 @@ Namespace for all Plupload related classes, methods and properties.
 @public
 @static
 */
-define('plupload', [
-	'moxie/core/I18n',
-	'moxie/core/utils/Env',
-	'moxie/core/utils/Basic',
-	'moxie/core/utils/Dom',
-	'moxie/core/utils/Events',
-	'moxie/core/utils/Url',
-	'moxie/core/EventTarget',
-	'moxie/runtime/Runtime',
-	'moxie/file/FileInput',
-	'moxie/file/FileReader'
-], function(I18n, Env, Basic, Dom, Events, Url, EventTarget, Runtime, FileInput, FileReader) {
+define('plupload', [], function() {
 
+	var o = moxie;
+	var u = o.core.utils;
 
 	// redifine event dispatcher for Flash/Silverlight runtimes
-	Env.global_event_dispatcher = 'plupload.EventTarget.instance.dispatchEvent';
+	u.Env.global_event_dispatcher = 'plupload.EventTarget.instance.dispatchEvent';
 
 
 	return {
@@ -209,9 +200,18 @@ define('plupload', [
 		OPTION_ERROR: -800,
 
 		/**
+		 * Expose whole moxie (#1469).
+		 *
+		 * @property moxie
+		 * @type Object
+		 * @final
+		 */
+		moxie: o,
+
+		/**
 		 * In some cases sniffing is the only way around :(
 		 */
-		ua: Env,
+		ua: u.Env,
 
 		/**
 		 * Gets the true type of the built-in object (better version of typeof).
@@ -222,10 +222,11 @@ define('plupload', [
 		 * @param {Object} o Object to check.
 		 * @return {String} Object [[Class]]
 		 */
-		typeOf: Basic.typeOf,
+		typeOf: u.Basic.typeOf,
 
+		clone: u.Basic.clone,
 
-		inherit: Basic.inherit,
+		inherit: u.Basic.inherit,
 
 
 		/**
@@ -237,10 +238,10 @@ define('plupload', [
 		 * @param {Object..} obj Multiple objects to extend with.
 		 * @return {Object} Same as target, the extended object.
 		 */
-		extend: Basic.extend,
+		extend: u.Basic.extend,
 
 
-		extendImmutable: Basic.extendImmutable,
+		extendImmutable: u.Basic.extendImmutable,
 
 		/**
 		Extends the specified object with another object(s), but only if the property exists in the target.
@@ -251,7 +252,7 @@ define('plupload', [
 		@param {Object} [obj]* Multiple objects to extend with.
 		@return {Object} Same as target, the extended object.
 		*/
-		extendIf: Basic.extendIf,
+		extendIf: u.Basic.extendIf,
 
 		/**
 		Recieve an array of functions (usually async) to call in sequence, each  function
@@ -265,7 +266,7 @@ define('plupload', [
 		@param {Array} queue Array of functions to call in sequence
 		@param {Function} cb Main callback that is called in the end, or in case of error
 		*/
-		inSeries: Basic.inSeries,
+		inSeries: u.Basic.inSeries,
 
 		/**
 		Recieve an array of functions (usually async) to call in parallel, each  function
@@ -279,7 +280,7 @@ define('plupload', [
 		@param {Array} queue Array of functions to call in sequence
 		@param {Function} cb Main callback that is called in the end, or in case of erro
 		*/
-		inParallel: Basic.inParallel,
+		inParallel: u.Basic.inParallel,
 
 		/**
 		 * Generates an unique ID. This is 99.99% unique since it takes the current time and 5 random numbers.
@@ -292,7 +293,7 @@ define('plupload', [
 		 * @static
 		 * @return {String} Virtually unique id.
 		 */
-		guid: Basic.guid,
+		guid: u.Basic.guid,
 
 		/**
 		 * Get array of DOM Elements by their ids.
@@ -305,13 +306,13 @@ define('plupload', [
 			var els = [],
 				el;
 
-			if (Basic.typeOf(ids) !== 'array') {
+			if (u.Basic.typeOf(ids) !== 'array') {
 				ids = [ids];
 			}
 
 			var i = ids.length;
 			while (i--) {
-				el = Dom.get(ids[i]);
+				el = u.Dom.get(ids[i]);
 				if (el) {
 					els.push(el);
 				}
@@ -327,7 +328,7 @@ define('plupload', [
 		@param {String} id Identifier of the DOM Element
 		@return {Node}
 		*/
-		get: Dom.get,
+		get: u.Dom.get,
 
 		/**
 		 * Executes the callback function for each item in array/object. If you return false in the
@@ -338,7 +339,7 @@ define('plupload', [
 		 * @param {Object} obj Object to iterate.
 		 * @param {function} callback Callback function to execute for each item.
 		 */
-		each: Basic.each,
+		each: u.Basic.each,
 
 		/**
 		 * Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
@@ -349,7 +350,7 @@ define('plupload', [
 		 * @param {Element} root Optional root element to stop calculations at.
 		 * @return {object} Absolute position of the specified element object with x, y fields.
 		 */
-		getPos: Dom.getPos,
+		getPos: u.Dom.getPos,
 
 		/**
 		 * Returns the size of the specified node in pixels.
@@ -359,7 +360,7 @@ define('plupload', [
 		 * @param {Node} node Node to get the size of.
 		 * @return {Object} Object with a w and h property.
 		 */
-		getSize: Dom.getSize,
+		getSize: u.Dom.getSize,
 
 		/**
 		 * Encodes the specified string.
@@ -392,7 +393,7 @@ define('plupload', [
 		 * @param {Object} obj Object with length field.
 		 * @return {Array} Array object containing all items.
 		 */
-		toArray: Basic.toArray,
+		toArray: u.Basic.toArray,
 
 		/**
 		 * Find an element in array and return its index if present, otherwise return -1.
@@ -403,7 +404,7 @@ define('plupload', [
 		 * @param {Array} array
 		 * @return {Int} Index of the element, or -1 if not found
 		 */
-		inArray: Basic.inArray,
+		inArray: u.Basic.inArray,
 
 		/**
 		 * Extends the language pack object with new items.
@@ -413,7 +414,7 @@ define('plupload', [
 		 * @param {Object} pack Language pack items to add.
 		 * @return {Object} Extended language pack object.
 		 */
-		addI18n: I18n.addI18n,
+		addI18n: o.core.I18n.addI18n,
 
 		/**
 		 * Translates the specified string by checking for the english string in the language pack lookup.
@@ -423,7 +424,7 @@ define('plupload', [
 		 * @param {String} str String to look for.
 		 * @return {String} Translated string or the input string if it wasn't found.
 		 */
-		translate: I18n.translate,
+		translate: o.core.I18n.translate,
 
 		/**
 		 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
@@ -431,7 +432,7 @@ define('plupload', [
 		 * @param {String} str String with tokens
 		 * @return {String} String with replaced tokens
 		 */
-		sprintf: Basic.sprintf,
+		sprintf: u.Basic.sprintf,
 
 		/**
 		 * Checks if object is empty.
@@ -441,7 +442,7 @@ define('plupload', [
 		 * @param {Object} obj Object to check.
 		 * @return {Boolean}
 		 */
-		isEmptyObj: Basic.isEmptyObj,
+		isEmptyObj: u.Basic.isEmptyObj,
 
 		/**
 		 * Checks if specified DOM element has specified class.
@@ -451,7 +452,7 @@ define('plupload', [
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		hasClass: Dom.hasClass,
+		hasClass: u.Dom.hasClass,
 
 		/**
 		 * Adds specified className to specified DOM element.
@@ -461,7 +462,7 @@ define('plupload', [
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		addClass: Dom.addClass,
+		addClass: u.Dom.addClass,
 
 		/**
 		 * Removes specified className from specified DOM element.
@@ -471,7 +472,7 @@ define('plupload', [
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		removeClass: Dom.removeClass,
+		removeClass: u.Dom.removeClass,
 
 		/**
 		 * Returns a given computed style of a DOM element.
@@ -481,7 +482,7 @@ define('plupload', [
 		 * @param {Object} obj DOM element like object.
 		 * @param {String} name Style you want to get from the DOM element
 		 */
-		getStyle: Dom.getStyle,
+		getStyle: u.Dom.getStyle,
 
 		/**
 		 * Adds an event handler to the specified object and store reference to the handler
@@ -494,7 +495,7 @@ define('plupload', [
 		 * @param {Function} callback Function to call when event occurs.
 		 * @param {String} (optional) key that might be used to add specifity to the event record.
 		 */
-		addEvent: Events.addEvent,
+		addEvent: u.Events.addEvent,
 
 		/**
 		 * Remove event handler from the specified object. If third argument (callback)
@@ -506,7 +507,7 @@ define('plupload', [
 		 * @param {String} name Name of event listener to remove.
 		 * @param {Function|String} (optional) might be a callback or unique key to match.
 		 */
-		removeEvent: Events.removeEvent,
+		removeEvent: u.Events.removeEvent,
 
 		/**
 		 * Remove all kind of events from the specified object
@@ -516,7 +517,7 @@ define('plupload', [
 		 * @param {Object} obj DOM element to remove event listeners from.
 		 * @param {String} (optional) unique key to match, when removing events.
 		 */
-		removeAllEvents: Events.removeAllEvents,
+		removeAllEvents: u.Events.removeAllEvents,
 
 		/**
 		 * Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
@@ -565,7 +566,7 @@ define('plupload', [
 		buildUrl: function(url, items) {
 			var query = '';
 
-			Basic.each(items, function(value, name) {
+			u.Basic.each(items, function(value, name) {
 				query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
 			});
 
@@ -585,39 +586,46 @@ define('plupload', [
 		 * @return {String} Formatted size string.
 		 */
 		formatSize: function(size) {
+			var self = this;
+
 			function round(num, precision) {
 				return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision);
 			}
 
 			size = parseInt(size, 10);
 			if (isNaN(size)) {
-				return I18n.translate('N/A');
+				return self.translate('N/A');
 			}
 
 			var boundary = Math.pow(1024, 4);
 
 			// TB
 			if (size > boundary) {
-				return round(size / boundary, 1) + " " + I18n.translate('tb');
+				return round(size / boundary, 1) + " " + self.translate('tb');
 			}
 
 			// GB
 			if (size > (boundary /= 1024)) {
-				return round(size / boundary, 1) + " " + I18n.translate('gb');
+				return round(size / boundary, 1) + " " + self.translate('gb');
 			}
 
 			// MB
 			if (size > (boundary /= 1024)) {
-				return round(size / boundary, 1) + " " + I18n.translate('mb');
+				return round(size / boundary, 1) + " " + self.translate('mb');
 			}
 
 			// KB
 			if (size > 1024) {
-				return Math.round(size / 1024) + " " + I18n.translate('kb');
+				return Math.round(size / 1024) + " " + self.translate('kb');
 			}
 
-			return size + " " + I18n.translate('b');
+			return size + " " + self.translate('b');
 		},
+
+		/**
+		 * @private
+		 */
+		mimes2extList: moxie.core.utils.Mime.mimes2extList,
 
 		/**
 		Resolve url - among other things will turn relative url to absolute
@@ -627,7 +635,7 @@ define('plupload', [
 		@param {String|Object} url Either absolute or relative, or a result of parseUrl call
 		@return {String} Resolved, absolute url
 		*/
-		resolveUrl: Url.resolveUrl,
+		resolveUrl: u.Url.resolveUrl,
 
 		/**
 		 * Parses the specified size string into a byte value. For example 10kb becomes 10240.
@@ -637,9 +645,9 @@ define('plupload', [
 		 * @param {String|Number} size String to parse or number to just pass through.
 		 * @return {Number} Size in bytes.
 		 */
-		parseSize: Basic.parseSizeStr,
+		parseSize: u.Basic.parseSizeStr,
 
-		delay: Basic.delay,
+		delay: u.Basic.delay,
 
 
 		/**
@@ -649,7 +657,7 @@ define('plupload', [
 		@private
 		@constructor
 		*/
-		EventTarget: EventTarget,
+		EventTarget: moxie.core.EventTarget,
 
 		/**
 		Common set of methods and properties for every runtime instance
@@ -663,7 +671,7 @@ define('plupload', [
 		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
 		@param {String} [preferredMode='browser'] Preferred operational mode to choose if no required capabilities were requested
 		*/
-		Runtime: Runtime,
+		Runtime: moxie.runtime.Runtime,
 
 		/**
 		Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
@@ -685,7 +693,7 @@ define('plupload', [
 			for _browse\_button_.
 			@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
 		*/
-		FileInput: FileInput,
+		FileInput: moxie.file.FileInput,
 
 		/**
 		Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
@@ -697,7 +705,7 @@ define('plupload', [
 		@extends EventTarget
 		@uses RuntimeClient
 		*/
-		FileReader: FileReader
+		FileReader: moxie.file.FileReader
 	};
 
 });

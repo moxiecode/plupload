@@ -216,17 +216,11 @@ Fires when destroy method is called.
 define('plupload/Uploader', [
 	'plupload',
 	'plupload/core/Collection',
-	'moxie/core/utils/Mime',
-	'moxie/file/Blob',
-	'moxie/file/File',
-	'moxie/file/FileInput',
-	'moxie/file/FileDrop',
-	'moxie/runtime/Runtime',
 	'plupload/core/Queue',
 	'plupload/QueueUpload',
 	'plupload/QueueResize',
 	'plupload/File'
-], function(plupload, Collection, Mime, mxiBlob, mxiFile, FileInput, FileDrop, Runtime, Queue, QueueUpload, QueueResize, PluploadFile) {
+], function(plupload, Collection, Queue, QueueUpload, QueueResize, PluploadFile) {
 
 	var fileFilters = {};
 	var undef;
@@ -261,7 +255,7 @@ define('plupload/Uploader', [
 			// @since 3
 			params: {},
 			resize: false,
-			runtimes: Runtime.order,
+			runtimes: plupload.Runtime.order,
 			send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
 			send_file_name: true,
 			silverlight_xap_url: 'js/Moxie.xap',
@@ -400,7 +394,7 @@ define('plupload/Uploader', [
 
 					if (initialized) {
 						_initialized = true;
-						runtime = Runtime.getInfo(getRUID());
+						runtime = plupload.Runtime.getInfo(getRUID());
 
 						_queueUpload = new QueueUpload(queueOpts);
 						_queueResize = new QueueResize(queueOpts);
@@ -594,7 +588,7 @@ define('plupload/Uploader', [
 					var type = plupload.typeOf(file);
 
 					// mxiFile (final step for other conditional branches)
-					if (file instanceof mxiFile) {
+					if (file instanceof moxie.file.File) {
 						if (!file.ruid && !file.isDetached()) {
 							if (!ruid) { // weird case
 								return false;
@@ -627,13 +621,13 @@ define('plupload/Uploader', [
 						});
 					}
 					// mxiBlob
-					else if (file instanceof mxiBlob) {
+					else if (file instanceof moxie.file.Blob) {
 						resolveFile(file.getSource());
 						file.destroy();
 					}
 					// native File or blob
 					else if (plupload.inArray(type, ['file', 'blob']) !== -1) {
-						resolveFile(new mxiFile(null, file));
+						resolveFile(new moxie.file.File(null, file));
 					}
 					// input[type="file"]
 					else if (type === 'node' && plupload.typeOf(file.files) === 'filelist') {
@@ -844,7 +838,7 @@ define('plupload/Uploader', [
 			if (self.getOption('browse_button')) {
 				plupload.each(self.getOption('browse_button'), function(el) {
 					queue.push(function(cb) {
-						var fileInput = new FileInput(plupload.extend({}, options, {
+						var fileInput = new moxie.file.FileInput(plupload.extend({}, options, {
 							accept: self.getOption('filters').mime_types,
 							name: self.getOption('file_data_name'),
 							multiple: self.getOption('multi_selection'),
@@ -853,7 +847,7 @@ define('plupload/Uploader', [
 						}));
 
 						fileInput.onready = function() {
-							var info = Runtime.getInfo(this.ruid);
+							var info = plupload.Runtime.getInfo(this.ruid);
 
 							// for backward compatibility
 							plupload.extend(self.features, {
@@ -909,12 +903,12 @@ define('plupload/Uploader', [
 			if (self.getOption('drop_element')) {
 				plupload.each(self.getOption('drop_element'), function(el) {
 					queue.push(function(cb) {
-						var fileDrop = new FileDrop(plupload.extend({}, options, {
+						var fileDrop = new moxie.file.FileDrop(plupload.extend({}, options, {
 							drop_zone: el
 						}));
 
 						fileDrop.onready = function() {
-							var info = Runtime.getInfo(this.ruid);
+							var info = plupload.Runtime.getInfo(this.ruid);
 
 							// for backward compatibility
 							plupload.extend(self.features, {
@@ -1118,7 +1112,7 @@ define('plupload/Uploader', [
 				// if file format filters are being updated, regenerate the matching expressions
 				if (value.mime_types) {
 					if (plupload.typeOf(value.mime_types) === 'string') {
-						value.mime_types = Mime.mimes2extList(value.mime_types);
+						value.mime_types = plupload.mimes2extList(value.mime_types);
 					}
 
 					// generate and cache regular expression for filtering file extensions
@@ -1232,7 +1226,7 @@ define('plupload/Uploader', [
 		var up, runtime;
 
 		up = new Uploader(config);
-		runtime = Runtime.thatCan(up.getOption('required_features'), runtimes || config.runtimes);
+		runtime = plupload.Runtime.thatCan(up.getOption('required_features'), runtimes || config.runtimes);
 		up.destroy();
 		return runtime;
 	}

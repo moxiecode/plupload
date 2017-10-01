@@ -19,12 +19,12 @@
  @param {Object} options
  */
 define('plupload/QueueUpload', [
-    'moxie/core/utils/Basic',
+    'plupload',
     'plupload/core/Queue'
-], function(Basic, Queue) {
+], function(plupload, Queue) {
 
     return (function(Parent) {
-        Basic.inherit(QueueUpload, Parent);
+        plupload.inherit(QueueUpload, Parent);
 
         function QueueUpload(options) {
 

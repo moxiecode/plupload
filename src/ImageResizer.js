@@ -19,10 +19,9 @@
 */
 define("plupload/ImageResizer", [
 	'plupload',
-	'plupload/core/Queueable',
-	'moxie/image/Image'
-], function(plupload, Queueable, mxiImage) {
-
+	'plupload/core/Queueable'
+], function(plupload, Queueable) {
+	var mxiImage = moxie.image.Image;
 
 	function ImageResizer(fileRef) {
 
