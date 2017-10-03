@@ -67,7 +67,7 @@ define('plupload/ChunkUploader', [
                         responseHeaders: this.getAllResponseHeaders()
                     };
 
-                    if (this.status < 200 && this.status >= 400) { // assume error
+                    if (this.status < 200 || this.status >= 400) { // assume error
                         return self.failed(result);
                     }
 
