@@ -9,7 +9,7 @@
         "type": "git",
         "url": "https://github.com/moxiecode/plupload.git"
     },
-    "main": "./js/plupload.min.js",
+    "main": "./js/plupload.full.min.js",
     "ignore": [
         "tests/",
         "src/",

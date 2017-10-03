@@ -8,6 +8,7 @@
         "name": "Davit Barbakadze",
         "email": "davit.barbakadze@ephox.com"
     }],
+    "main": "./js/plupload.full.min",
     "homepage": "http://plupload.com",
     "repository": {
         "type": "git",
