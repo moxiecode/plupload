@@ -47,7 +47,7 @@ define('plupload/ChunkUploader', [
                 var formData;
                 var options = self._options;
 
-                if (this.state === Queueable.PROCESSING) {
+                if (!ChunkUploader.prototype.start.call(this)) {
                     return false;
                 }
 
@@ -119,8 +119,6 @@ define('plupload/ChunkUploader', [
 
                         _xhr.send(blob);
                     }
-
-                    ChunkUploader.prototype.start.call(this);
                 } catch(ex) {
                     self.failed();
                 }

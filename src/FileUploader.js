@@ -49,14 +49,9 @@ define('plupload/FileUploader', [
 
 			start: function() {
 				var self = this;
-				var prevState = this.state;
 				var up;
 
-				if (this.state === Queueable.PROCESSING) {
-					return false;
-				}
-
-				if (this.state === Queueable.IDLE && !FileUploader.prototype.start.call(self)) {
+				if (!FileUploader.prototype.start.call(self)) {
 					return false;
 				}
 
@@ -87,11 +82,6 @@ define('plupload/FileUploader', [
 
 					queue.addItem(up);
 				}
-
-				this.state = Queueable.PROCESSING;
-				this.trigger('statechanged', this.state, prevState);
-				this.trigger('started');
-				return true;
 			},
 
 
@@ -120,10 +110,6 @@ define('plupload/FileUploader', [
 				});
 
 				up = new ChunkUploader(file.slice(chunk.start, chunk.end, file.type));
-
-				/*up.bind('beforestart', function(e) {
-					self.trigger('beforechunkupload', file, this.getOption('params'), blob)
-				});*/
 
 				up.bind('progress', function(e) {
 					self.progress(calcProcessed() + e.loaded, file.size);
