@@ -61,7 +61,7 @@ $signature = base64_encode(hash_hmac('sha1', $policy, $secret, true));
 
 
 <!-- production -->
-<script type="text/javascript" src="../../js/plupload.min.js"></script>
+<script type="text/javascript" src="../../js/plupload.full.min.js"></script>
 <script type="text/javascript" src="../../js/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 
 <!-- debug
