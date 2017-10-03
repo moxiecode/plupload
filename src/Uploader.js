@@ -1285,6 +1285,20 @@ define('plupload/Uploader', [
 	});
 
 
+	addFileFilter('prevent_empty', function(value, file, cb) {
+		if (value && !file.size && file.size !== undef) {
+			this.trigger('Error', {
+				code : plupload.FILE_SIZE_ERROR,
+				message : plupload.translate('File size error.'),
+				file : file
+			});
+			cb(false);
+		} else {
+			cb(true);
+		}
+	});
+
+
 	Uploader.addFileFilter = addFileFilter;
 
 	plupload.inherit(Uploader, Queue);
