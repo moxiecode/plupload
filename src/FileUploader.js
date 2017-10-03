@@ -49,9 +49,10 @@ define('plupload/FileUploader', [
 
 			start: function() {
 				var self = this;
+				var prevState = this.state;
 				var up;
 
-				if (!FileUploader.prototype.start.call(self)) {
+				if (this.state === Queueable.IDLE && !FileUploader.prototype.start.call(self)) {
 					return false;
 				}
 
@@ -82,6 +83,10 @@ define('plupload/FileUploader', [
 
 					queue.addItem(up);
 				}
+
+				this.state = Queueable.PROCESSING;
+				this.trigger('statechanged', this.state, prevState);
+				this.trigger('started');
 			},
 
 

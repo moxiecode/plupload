@@ -45,9 +45,10 @@ define('plupload/ChunkUploader', [
                 var self = this;
                 var url;
                 var formData;
+                var prevState = this.state;
                 var options = self._options;
 
-                if (!ChunkUploader.prototype.start.call(this)) {
+                if (this.state === Queueable.IDLE && !ChunkUploader.prototype.start.call(this)) {
                     return false;
                 }
 
@@ -119,6 +120,10 @@ define('plupload/ChunkUploader', [
 
                         _xhr.send(blob);
                     }
+
+                    this.state = Queueable.PROCESSING;
+                    this.trigger('statechanged', this.state, prevState);
+                    this.trigger('started');
                 } catch(ex) {
                     self.failed();
                 }
