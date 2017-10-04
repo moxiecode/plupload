@@ -202,21 +202,9 @@ define('plupload/core/Queueable', [
                     this.startedTimestamp = +new Date();
                 }
 
-                if (this.state === Queueable.IDLE) {
-                    this.state = Queueable.PROCESSING;
-                    this.trigger('statechanged', this.state, prevState);
-                    this.pause();
-                    plupload.delay.call(this, function() {
-                        if (this.trigger('beforestart')) {
-                            this.resume();
-                        }
-                    });
-                    return false;
-                } else {
-                    this.state = Queueable.PROCESSING;
-                    this.trigger('statechanged', this.state, prevState);
-                    this.trigger('started');
-                }
+                this.state = Queueable.PROCESSING;
+                this.trigger('statechanged', this.state, prevState);
+                this.trigger('started');
 
                 return true;
             },

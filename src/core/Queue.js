@@ -129,20 +129,9 @@ define('plupload/core/Queue', [
              * @method start
              */
             start: function() {
-                var prevState = this.state;
-
-                if (this.state === Queueable.PROCESSING) {
+                if (!Queue.super.start.call(this)) {
                     return false;
                 }
-
-                if (!this.startedTimestamp) {
-                    this.startedTimestamp = +new Date();
-                }
-
-                this.state = Queueable.PROCESSING;
-                this.trigger('statechanged', this.state, prevState);
-                this.trigger('started');
-
                 return processNext.call(this);
             },
 
@@ -466,8 +455,14 @@ define('plupload/core/Queue', [
             if (this.stats.processing < this.getOption('max_slots')) {
                 item = getNextIdleItem.call(this);
                 if (item) {
-                    item.setOptions(this.getOptions());
-                    return item.start();
+                    if (item.trigger('beforestart')) {
+                        item.setOptions(this.getOptions());
+                        return item.start();
+                    } else {
+                        item.pause();
+                        // we need to call it sync, otherwise another thread may pick up the same file, while it is processed in beforestart handler
+                        processNext.call(this);
+                    }
                 }
             }
             return false;

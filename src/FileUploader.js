@@ -52,9 +52,16 @@ define('plupload/FileUploader', [
 				var prevState = this.state;
 				var up;
 
-				if (this.state === Queueable.IDLE && !FileUploader.prototype.start.call(self)) {
-					return false;
+				if (this.state === Queueable.PROCESSING) {
+                    return false;
 				}
+
+				if (!this.startedTimestamp) {
+                    this.startedTimestamp = +new Date();
+                }
+
+				this.state = Queueable.PROCESSING;
+				this.trigger('statechanged', this.state, prevState);
 
 				// send additional 'name' parameter only if required or explicitly requested
 				if (self._options.send_file_name) {
@@ -84,8 +91,6 @@ define('plupload/FileUploader', [
 					queue.addItem(up);
 				}
 
-				this.state = Queueable.PROCESSING;
-				this.trigger('statechanged', this.state, prevState);
 				this.trigger('started');
 			},
 

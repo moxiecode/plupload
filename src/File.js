@@ -154,10 +154,6 @@ define('plupload/File', [
                 var self = this;
                 var up = new FileUploader(file, queueUpload);
 
-                up.bind('beforestart', function() {
-                    return self.trigger('beforeupload');
-                });
-
                 up.bind('paused', function() {
                     self.pause();
                 });
