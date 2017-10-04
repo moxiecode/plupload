@@ -207,7 +207,7 @@ define('plupload/core/Queue', [
                 item.bind('Processed Stopped', function() {
                     if (self.calcStats()) {
                         plupload.delay.call(self, function() {
-                            if (!processNext.call(self) && !(this.stats.processing || this.stats.paused)) {
+                            if (!processNext.call(self) && !this.isStopped() && !this.isActive()) {
                                 self.stop();
                             }
                         });
@@ -311,6 +311,10 @@ define('plupload/core/Queue', [
 
             isActive: function() {
                 return this.stats && (this.stats.processing || this.stats.paused);
+            },
+
+            isStopped: function() {
+                return this.state !== Queueable.IDLE && this.state !== Queueable.DESTROYED;
             },
 
 
