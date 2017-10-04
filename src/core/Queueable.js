@@ -213,7 +213,7 @@ define('plupload/core/Queueable', [
             pause: function() {
                 var prevState = this.state;
 
-                if (this.state !== Queueable.PROCESSING) {
+                if (plupload.inArray(this.state, [Queueable.IDLE, Queueable.RESUMED, Queueable.PROCESSING]) === -1) {
                     return false;
                 }
 
