@@ -18,7 +18,7 @@
 define('plupload/core/Optionable', [
     'plupload'
 ], function(plupload) {
-    var EventTarget = moxie.core.EventTarget;
+    var EventTarget = plupload.EventTarget;
 
     var dispatches = [
         /**

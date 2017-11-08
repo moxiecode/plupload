@@ -27,7 +27,6 @@
 		@param {Array} [settings.filters.mime_types=[]] List of file types to accept, each one defined by title and list of extensions. `e.g. {title : "Image files", extensions : "jpg,jpeg,gif,png"}`. Dispatches `plupload.FILE_EXTENSION_ERROR`
 		@param {String|Number} [settings.filters.max_file_size=0] Maximum file size that the user can pick, in bytes. Optionally supports b, kb, mb, gb, tb suffixes. `e.g. "10mb" or "1gb"`. By default - not set. Dispatches `plupload.FILE_SIZE_ERROR`.
 		@param {Boolean} [settings.filters.prevent_duplicates=false] Do not let duplicates into the queue. Dispatches `plupload.FILE_DUPLICATE_ERROR`.
-	@param {String} [settings.flash_swf_url] URL of the Flash swf.
 	@param {Object} [settings.headers] Custom headers to send with the upload. Hash of name/value pairs.
 	@param {String} [settings.http_method="POST"] HTTP method to use during upload (only PUT or POST allowed).
 	@param {Number} [settings.max_retries=0] How many times to retry the chunk or file, before triggering Error event.
@@ -47,7 +46,6 @@
 		 @param {Boolean} [settings.resize.multipass=true] Whether to scale the image in steps (results in better quality)
  	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
 	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
-	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
 	@param {String} settings.url URL of the server-side upload handler.
 */
@@ -219,8 +217,10 @@ define('plupload/Uploader', [
 	'plupload/core/Queue',
 	'plupload/QueueUpload',
 	'plupload/QueueResize',
-	'plupload/File'
-], function(plupload, Collection, Queue, QueueUpload, QueueResize, PluploadFile) {
+	'plupload/File',
+	'moxie/file/FileInput',
+	'moxie/file/FileDrop'
+], function(plupload, Collection, Queue, QueueUpload, QueueResize, PluploadFile, FileInput, FileDrop) {
 
 	var fileFilters = {};
 	var undef;
@@ -242,7 +242,6 @@ define('plupload/Uploader', [
 				prevent_duplicates: false,
 				max_file_size: 0
 			},
-			flash_swf_url: 'js/Moxie.swf',
 			// @since 2.3
 			http_method: 'POST',
 			// headers: false, // Plupload had a required feature with the same name, comment it to avoid confusion
@@ -255,10 +254,8 @@ define('plupload/Uploader', [
 			// @since 3
 			params: {},
 			resize: false,
-			runtimes: plupload.Runtime.order,
 			send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
 			send_file_name: true,
-			silverlight_xap_url: 'js/Moxie.xap',
 
 			// during normalization, these should be processed last
 			required_features: false,
@@ -394,16 +391,11 @@ define('plupload/Uploader', [
 
 					if (initialized) {
 						_initialized = true;
-						runtime = plupload.Runtime.getInfo(getRUID());
 
 						_queueUpload = new QueueUpload(queueOpts);
 						_queueResize = new QueueResize(queueOpts);
 
-						self.trigger('Init', {
-							ruid: runtime.uid,
-							runtime: self.runtime = runtime.type
-						});
-
+						self.trigger('Init');
 						self.trigger('PostInit');
 					} else {
 						self.trigger('Error', {
@@ -786,15 +778,6 @@ define('plupload/Uploader', [
 		}
 
 
-		function getRUID() {
-			var ctrl = _fileInputs[0] || _fileDrops[0];
-			if (ctrl) {
-				return ctrl.getRuntime().uid;
-			}
-			return false;
-		}
-
-
 		function bindEventListeners() {
 			this.bind('FilesAdded FilesRemoved', function(up) {
 				up.trigger('QueueChanged');
@@ -822,9 +805,7 @@ define('plupload/Uploader', [
 			var options = {
 				runtime_order: self.getOption('runtimes'),
 				required_caps: self.getOption('required_features'),
-				preferred_caps: self.getOption('preferred_caps'),
-				swf_url: self.getOption('flash_swf_url'),
-				xap_url: self.getOption('silverlight_xap_url')
+				preferred_caps: self.getOption('preferred_caps')
 			};
 
 			// add runtime specific options if any
@@ -838,7 +819,7 @@ define('plupload/Uploader', [
 			if (self.getOption('browse_button')) {
 				plupload.each(self.getOption('browse_button'), function(el) {
 					queue.push(function(cb) {
-						var fileInput = new moxie.file.FileInput(plupload.extend({}, options, {
+						var fileInput = new FileInput(plupload.extend({}, options, {
 							accept: self.getOption('filters').mime_types,
 							name: self.getOption('file_data_name'),
 							multiple: self.getOption('multi_selection'),
@@ -847,15 +828,6 @@ define('plupload/Uploader', [
 						}));
 
 						fileInput.onready = function() {
-							var info = plupload.Runtime.getInfo(this.ruid);
-
-							// for backward compatibility
-							plupload.extend(self.features, {
-								chunks: info.can('slice_blob'),
-								multipart: info.can('send_multipart'),
-								multi_selection: info.can('select_multiple')
-							});
-
 							initialized++;
 							_fileInputs.push(this);
 							cb();
@@ -903,20 +875,11 @@ define('plupload/Uploader', [
 			if (self.getOption('drop_element')) {
 				plupload.each(self.getOption('drop_element'), function(el) {
 					queue.push(function(cb) {
-						var fileDrop = new moxie.file.FileDrop(plupload.extend({}, options, {
+						var fileDrop = new FileDrop(plupload.extend({}, options, {
 							drop_zone: el
 						}));
 
 						fileDrop.onready = function() {
-							var info = plupload.Runtime.getInfo(this.ruid);
-
-							// for backward compatibility
-							plupload.extend(self.features, {
-								chunks: info.can('slice_blob'),
-								multipart: info.can('send_multipart'),
-								dragdrop: info.can('drag_and_drop')
-							});
-
 							initialized++;
 							_fileDrops.push(this);
 							cb();
@@ -1212,26 +1175,6 @@ define('plupload/Uploader', [
 	}
 
 
-	/**
-	 * A way to predict what runtime will be choosen in the current environment with the
-	 * specified settings.
-	 *
-	 * @method predictRuntime
-	 * @static
-	 * @param {Object|String} config Plupload settings to check
-	 * @param {String} [runtimes] Comma-separated list of runtimes to check against
-	 * @return {String} Type of compatible runtime
-	 */
-	function predictRuntime(config, runtimes) {
-		var up, runtime;
-
-		up = new Uploader(config);
-		runtime = plupload.Runtime.thatCan(up.getOption('required_features'), runtimes || config.runtimes);
-		up.destroy();
-		return runtime;
-	}
-
-
 	addFileFilter('mime_types', function(filters, file, cb) {
 		if (filters.length && !this.getOption('re_ext_filter').test(file.name)) {
 			this.trigger('Error', {
@@ -1305,7 +1248,6 @@ define('plupload/Uploader', [
 
 	// for backward compatibility
 	plupload.addFileFilter = addFileFilter;
-	plupload.predictRuntime = predictRuntime;
 
 	return Uploader;
 });

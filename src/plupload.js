@@ -15,14 +15,16 @@ Namespace for all Plupload related classes, methods and properties.
 @public
 @static
 */
-define('plupload', [], function() {
-
-	var o = moxie;
-	var u = o.core.utils;
-
-	// redifine event dispatcher for Flash/Silverlight runtimes
-	u.Env.global_event_dispatcher = 'plupload.EventTarget.instance.dispatchEvent';
-
+define('plupload', [
+	'moxie/core/utils/Env',
+	'moxie/core/utils/Dom',
+	'moxie/core/utils/Basic',
+	'moxie/core/utils/Events',
+	'moxie/core/utils/Url',
+	'moxie/core/utils/Mime',
+	'moxie/core/I18n',
+	'moxie/core/EventTarget',
+], function(Env, Dom, Basic, Events, Url, Mime, I18n, EventTarget) {
 
 	return {
 		/**
@@ -200,18 +202,9 @@ define('plupload', [], function() {
 		OPTION_ERROR: -800,
 
 		/**
-		 * Expose whole moxie (#1469).
-		 *
-		 * @property moxie
-		 * @type Object
-		 * @final
-		 */
-		moxie: o,
-
-		/**
 		 * In some cases sniffing is the only way around :(
 		 */
-		ua: u.Env,
+		ua: Env,
 
 		/**
 		 * Gets the true type of the built-in object (better version of typeof).
@@ -222,11 +215,11 @@ define('plupload', [], function() {
 		 * @param {Object} o Object to check.
 		 * @return {String} Object [[Class]]
 		 */
-		typeOf: u.Basic.typeOf,
+		typeOf: Basic.typeOf,
 
-		clone: u.Basic.clone,
+		clone: Basic.clone,
 
-		inherit: u.Basic.inherit,
+		inherit: Basic.inherit,
 
 
 		/**
@@ -238,10 +231,10 @@ define('plupload', [], function() {
 		 * @param {Object..} obj Multiple objects to extend with.
 		 * @return {Object} Same as target, the extended object.
 		 */
-		extend: u.Basic.extend,
+		extend: Basic.extend,
 
 
-		extendImmutable: u.Basic.extendImmutable,
+		extendImmutable: Basic.extendImmutable,
 
 		/**
 		Extends the specified object with another object(s), but only if the property exists in the target.
@@ -252,7 +245,7 @@ define('plupload', [], function() {
 		@param {Object} [obj]* Multiple objects to extend with.
 		@return {Object} Same as target, the extended object.
 		*/
-		extendIf: u.Basic.extendIf,
+		extendIf: Basic.extendIf,
 
 		/**
 		Recieve an array of functions (usually async) to call in sequence, each  function
@@ -266,7 +259,7 @@ define('plupload', [], function() {
 		@param {Array} queue Array of functions to call in sequence
 		@param {Function} cb Main callback that is called in the end, or in case of error
 		*/
-		inSeries: u.Basic.inSeries,
+		inSeries: Basic.inSeries,
 
 		/**
 		Recieve an array of functions (usually async) to call in parallel, each  function
@@ -280,7 +273,7 @@ define('plupload', [], function() {
 		@param {Array} queue Array of functions to call in sequence
 		@param {Function} cb Main callback that is called in the end, or in case of erro
 		*/
-		inParallel: u.Basic.inParallel,
+		inParallel: Basic.inParallel,
 
 		/**
 		 * Generates an unique ID. This is 99.99% unique since it takes the current time and 5 random numbers.
@@ -293,7 +286,7 @@ define('plupload', [], function() {
 		 * @static
 		 * @return {String} Virtually unique id.
 		 */
-		guid: u.Basic.guid,
+		guid: Basic.guid,
 
 		/**
 		 * Get array of DOM Elements by their ids.
@@ -306,13 +299,13 @@ define('plupload', [], function() {
 			var els = [],
 				el;
 
-			if (u.Basic.typeOf(ids) !== 'array') {
+			if (Basic.typeOf(ids) !== 'array') {
 				ids = [ids];
 			}
 
 			var i = ids.length;
 			while (i--) {
-				el = u.Dom.get(ids[i]);
+				el = Dom.get(ids[i]);
 				if (el) {
 					els.push(el);
 				}
@@ -328,7 +321,7 @@ define('plupload', [], function() {
 		@param {String} id Identifier of the DOM Element
 		@return {Node}
 		*/
-		get: u.Dom.get,
+		get: Dom.get,
 
 		/**
 		 * Executes the callback function for each item in array/object. If you return false in the
@@ -339,7 +332,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj Object to iterate.
 		 * @param {function} callback Callback function to execute for each item.
 		 */
-		each: u.Basic.each,
+		each: Basic.each,
 
 		/**
 		 * Returns the absolute x, y position of an Element. The position will be returned in a object with x, y fields.
@@ -350,7 +343,7 @@ define('plupload', [], function() {
 		 * @param {Element} root Optional root element to stop calculations at.
 		 * @return {object} Absolute position of the specified element object with x, y fields.
 		 */
-		getPos: u.Dom.getPos,
+		getPos: Dom.getPos,
 
 		/**
 		 * Returns the size of the specified node in pixels.
@@ -360,7 +353,7 @@ define('plupload', [], function() {
 		 * @param {Node} node Node to get the size of.
 		 * @return {Object} Object with a w and h property.
 		 */
-		getSize: u.Dom.getSize,
+		getSize: Dom.getSize,
 
 		/**
 		 * Encodes the specified string.
@@ -393,7 +386,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj Object with length field.
 		 * @return {Array} Array object containing all items.
 		 */
-		toArray: u.Basic.toArray,
+		toArray: Basic.toArray,
 
 		/**
 		 * Find an element in array and return its index if present, otherwise return -1.
@@ -404,7 +397,7 @@ define('plupload', [], function() {
 		 * @param {Array} array
 		 * @return {Int} Index of the element, or -1 if not found
 		 */
-		inArray: u.Basic.inArray,
+		inArray: Basic.inArray,
 
 		/**
 		 * Extends the language pack object with new items.
@@ -414,7 +407,7 @@ define('plupload', [], function() {
 		 * @param {Object} pack Language pack items to add.
 		 * @return {Object} Extended language pack object.
 		 */
-		addI18n: o.core.I18n.addI18n,
+		addI18n: I18n.addI18n,
 
 		/**
 		 * Translates the specified string by checking for the english string in the language pack lookup.
@@ -424,7 +417,7 @@ define('plupload', [], function() {
 		 * @param {String} str String to look for.
 		 * @return {String} Translated string or the input string if it wasn't found.
 		 */
-		translate: o.core.I18n.translate,
+		translate: I18n.translate,
 
 		/**
 		 * Pseudo sprintf implementation - simple way to replace tokens with specified values.
@@ -432,7 +425,7 @@ define('plupload', [], function() {
 		 * @param {String} str String with tokens
 		 * @return {String} String with replaced tokens
 		 */
-		sprintf: u.Basic.sprintf,
+		sprintf: Basic.sprintf,
 
 		/**
 		 * Checks if object is empty.
@@ -442,7 +435,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj Object to check.
 		 * @return {Boolean}
 		 */
-		isEmptyObj: u.Basic.isEmptyObj,
+		isEmptyObj: Basic.isEmptyObj,
 
 		/**
 		 * Checks if specified DOM element has specified class.
@@ -452,7 +445,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		hasClass: u.Dom.hasClass,
+		hasClass: Dom.hasClass,
 
 		/**
 		 * Adds specified className to specified DOM element.
@@ -462,7 +455,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		addClass: u.Dom.addClass,
+		addClass: Dom.addClass,
 
 		/**
 		 * Removes specified className from specified DOM element.
@@ -472,7 +465,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj DOM element like object to add handler to.
 		 * @param {String} name Class name
 		 */
-		removeClass: u.Dom.removeClass,
+		removeClass: Dom.removeClass,
 
 		/**
 		 * Returns a given computed style of a DOM element.
@@ -482,7 +475,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj DOM element like object.
 		 * @param {String} name Style you want to get from the DOM element
 		 */
-		getStyle: u.Dom.getStyle,
+		getStyle: Dom.getStyle,
 
 		/**
 		 * Adds an event handler to the specified object and store reference to the handler
@@ -495,7 +488,7 @@ define('plupload', [], function() {
 		 * @param {Function} callback Function to call when event occurs.
 		 * @param {String} (optional) key that might be used to add specifity to the event record.
 		 */
-		addEvent: u.Events.addEvent,
+		addEvent: Events.addEvent,
 
 		/**
 		 * Remove event handler from the specified object. If third argument (callback)
@@ -507,7 +500,7 @@ define('plupload', [], function() {
 		 * @param {String} name Name of event listener to remove.
 		 * @param {Function|String} (optional) might be a callback or unique key to match.
 		 */
-		removeEvent: u.Events.removeEvent,
+		removeEvent: Events.removeEvent,
 
 		/**
 		 * Remove all kind of events from the specified object
@@ -517,7 +510,7 @@ define('plupload', [], function() {
 		 * @param {Object} obj DOM element to remove event listeners from.
 		 * @param {String} (optional) unique key to match, when removing events.
 		 */
-		removeAllEvents: u.Events.removeAllEvents,
+		removeAllEvents: Events.removeAllEvents,
 
 		/**
 		 * Cleans the specified name from national characters (diacritics). The result will be a name with only a-z, 0-9 and _.
@@ -566,7 +559,7 @@ define('plupload', [], function() {
 		buildUrl: function(url, items) {
 			var query = '';
 
-			u.Basic.each(items, function(value, name) {
+			Basic.each(items, function(value, name) {
 				query += (query ? '&' : '') + encodeURIComponent(name) + '=' + encodeURIComponent(value);
 			});
 
@@ -625,7 +618,7 @@ define('plupload', [], function() {
 		/**
 		 * @private
 		 */
-		mimes2extList: moxie.core.utils.Mime.mimes2extList,
+		mimes2extList: Mime.mimes2extList,
 
 		/**
 		Resolve url - among other things will turn relative url to absolute
@@ -635,7 +628,7 @@ define('plupload', [], function() {
 		@param {String|Object} url Either absolute or relative, or a result of parseUrl call
 		@return {String} Resolved, absolute url
 		*/
-		resolveUrl: u.Url.resolveUrl,
+		resolveUrl: Url.resolveUrl,
 
 		/**
 		 * Parses the specified size string into a byte value. For example 10kb becomes 10240.
@@ -645,9 +638,9 @@ define('plupload', [], function() {
 		 * @param {String|Number} size String to parse or number to just pass through.
 		 * @return {Number} Size in bytes.
 		 */
-		parseSize: u.Basic.parseSizeStr,
+		parseSize: Basic.parseSizeStr,
 
-		delay: u.Basic.delay,
+		delay: Basic.delay,
 
 
 		/**
@@ -657,55 +650,7 @@ define('plupload', [], function() {
 		@private
 		@constructor
 		*/
-		EventTarget: moxie.core.EventTarget,
-
-		/**
-		Common set of methods and properties for every runtime instance
-
-		@class plupload.Runtime
-		@private
-
-		@param {Object} options
-		@param {String} type Sanitized name of the runtime
-		@param {Object} [caps] Set of capabilities that differentiate specified runtime
-		@param {Object} [modeCaps] Set of capabilities that do require specific operational mode
-		@param {String} [preferredMode='browser'] Preferred operational mode to choose if no required capabilities were requested
-		*/
-		Runtime: moxie.runtime.Runtime,
-
-		/**
-		Provides a convenient way to create cross-browser file-picker. Generates file selection dialog on click,
-		converts selected files to _File_ objects, to be used in conjunction with _Image_, preloaded in memory
-		with _FileReader_ or uploaded to a server through _XMLHttpRequest_.
-
-		@class plupload.FileInput
-		@private
-		@constructor
-		@extends EventTarget
-		@uses RuntimeClient
-		@param {Object|String|DOMElement} options If options is string or node, argument is considered as _browse\_button_.
-			@param {String|DOMElement} options.browse_button DOM Element to turn into file picker.
-			@param {Array} [options.accept] Array of mime types to accept. By default accepts all.
-			@param {String} [options.file='file'] Name of the file field (not the filename).
-			@param {Boolean} [options.multiple=false] Enable selection of multiple files.
-			@param {Boolean} [options.directory=false] Turn file input into the folder input (cannot be both at the same time).
-			@param {String|DOMElement} [options.container] DOM Element to use as a container for file-picker. Defaults to parentNode
-			for _browse\_button_.
-			@param {Object|String} [options.required_caps] Set of required capabilities, that chosen runtime must support.
-		*/
-		FileInput: moxie.file.FileInput,
-
-		/**
-		Utility for preloading o.Blob/o.File objects in memory. By design closely follows [W3C FileReader](http://www.w3.org/TR/FileAPI/#dfn-filereader)
-		interface. Where possible uses native FileReader, where - not falls back to shims.
-
-		@class plupload.FileReader
-		@private
-		@constructor
-		@extends EventTarget
-		@uses RuntimeClient
-		*/
-		FileReader: moxie.file.FileReader
+		EventTarget: EventTarget
 	};
 
 });

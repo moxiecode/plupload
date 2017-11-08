@@ -52,13 +52,10 @@ task("moxie", [], function (params) {
 
 
 desc("Build release files");
-task("mkjs", [], function (i18n) {
+task("mkjs", [], function () {
 	var amdlc = require('amdlc');
 	var uglify = tools.uglify;
-	var Instrument = require('coverjs').Instrument;
-
 	var targetDir = "js";
-	var moxieDir = 'src/moxie';
 	var flags = utils.asFlags(arguments);
 
 	var uglifyOptions = {
@@ -75,10 +72,18 @@ task("mkjs", [], function (i18n) {
 		baseDir: 'src',
 		rootNS: "plupload",
 		expose: "all",
+		libs: {
+			'moxie': {
+				rootNS: 'moxie',
+				baseDir: 'src/moxie/src/javascript',
+				expose: flags['hide-moxie'] ? false : 'public',
+				force: true
+			}
+		},
 		verbose: true,
-		outputSource: targetDir + "/plupload.dev.js",
+		outputSource: false,
 		outputMinified: false,
-		outputDev: false,
+		outputDev: targetDir + "/plupload.dev.js",
 		outputCoverage: targetDir + "/plupload.cov.js"
 	};
 
@@ -86,8 +91,7 @@ task("mkjs", [], function (i18n) {
 		options.from.push('ImageResizer.js');
 	}
 
-
-	// Clear previous versions
+	// start fresh
 	if (fs.existsSync(targetDir)) {
 		jake.rmRf(targetDir);
 	}
@@ -95,50 +99,48 @@ task("mkjs", [], function (i18n) {
 
 	amdlc.compile(options);
 
-	// Copy compiled moxie files
-	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
-	tools.copySync(moxieDir + "/bin/silverlight/Moxie.xap", "js/Moxie.xap");
-	tools.copySync(moxieDir + "/bin/js/moxie.min.js", "js/moxie.min.js");
-	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
-
+	// Compile source
+	amdlc.compile(utils.extend({}, options, {
+		expose: 'public',
+		outputSource: targetDir + "/plupload.js",
+		outputMinified: false,
+		outputDev: false,
+		outputCoverage: false
+	}));
 
 	// Include Plupload source
-	var sourceCode = fs.readFileSync('./js/plupload.dev.js').toString();
+	var sourceCode = fs.readFileSync(targetDir +  '/plupload.js').toString();
 	if (process.env.umd != 'no') {
-		fs.writeFileSync(targetDir + '/plupload.dev.js', mkjs.addUMD("plupload", sourceCode, ['moxie']));
-	} else {
-		fs.writeFileSync(targetDir + '/plupload.dev.js', sourceCode);
+		fs.writeFileSync(targetDir + '/plupload.js', mkjs.addUMD("plupload", sourceCode));
 	}
 
-	// Instrument Plupload code
-	fs.writeFileSync(targetDir + '/plupload.cov.js', new Instrument(sourceCode, {
-		name: 'Plupload'
-	}).instrument());
-
 	// Minify Plupload and combine with mOxie
-	uglify(targetDir + '/plupload.dev.js', targetDir + "/plupload.min.js", uglifyOptions);
+	console.info("Writing minified version output to: " + targetDir + "/plupload.min.js");
+	uglify(targetDir + '/plupload.js', targetDir + "/plupload.min.js", uglifyOptions);
+
+	// add debug constant to dev source
+	mkjs.addDebug(targetDir + "/plupload.dev.js");
+	mkjs.addDebug(targetDir + "/plupload.cov.js");
+	mkjs.addDebug(targetDir + "/plupload.js");
+
 
 	var info = require("./package.json");
 	info.copyright = copyright;
 	tools.addReleaseDetailsTo(targetDir + "/plupload.dev.js", info);
 	tools.addReleaseDetailsTo(targetDir + "/plupload.min.js", info);
-
-	var code = "";
-	code += fs.readFileSync(targetDir + "/moxie.min.js") + "\n";
-	code += fs.readFileSync(targetDir + "/plupload.min.js");
-
-	fs.writeFileSync(targetDir + "/plupload.full.min.js", code);
+	tools.addReleaseDetailsTo(targetDir + "/plupload.js", info);
 
 	// Copy UI Plupload
 	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
-	uglify(targetDir + '/jquery.ui.plupload/jquery.ui.plupload.js', targetDir + "/jquery.ui.plupload/jquery.ui.plupload.min.js");
+	uglify(targetDir + "/jquery.ui.plupload/jquery.ui.plupload.js", targetDir + "/jquery.ui.plupload/jquery.ui.plupload.min.js");
 
 	// Copy Queue Plupload
 	jake.cpR("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
-	uglify(targetDir + '/jquery.plupload.queue/jquery.plupload.queue.js', targetDir + "/jquery.plupload.queue/jquery.plupload.queue.min.js");
+	uglify(targetDir + "/jquery.plupload.queue/jquery.plupload.queue.js", targetDir + "/jquery.plupload.queue/jquery.plupload.queue.min.js");
+
 
 	// Add I18n files
-	if (i18n) {
+	if (flags['i18n']) {
 		process.env.auth = "moxieuser:12345";
 		process.env.to = "./js/i18n";
 		jake.Task['i18n'].invoke();

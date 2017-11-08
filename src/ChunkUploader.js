@@ -21,8 +21,6 @@ define('plupload/ChunkUploader', [
     'plupload/core/Collection',
     'plupload/core/Queueable'
 ], function(plupload, Collection, Queueable) {
-    var XMLHttpRequest = moxie.xhr.XMLHttpRequest;
-    var FormData = moxie.xhr.FormData;
 
     function ChunkUploader(blob) {
         var _xhr;
