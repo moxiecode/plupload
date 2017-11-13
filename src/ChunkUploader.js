@@ -87,7 +87,9 @@ define('plupload/ChunkUploader', [
                     // we do not need _xhr anymore, so destroy it
                     setTimeout(function() { // we detach to sustain reference until all handlers are done
                         if (_xhr) {
-                            _xhr.destroy();
+                            if (typeof _xhr.destroy === 'function') {
+                                _xhr.destroy();
+                            }
                             _xhr = null;
                         }
                     }, 1);
@@ -115,7 +117,7 @@ define('plupload/ChunkUploader', [
                             });
                         }
 
-                        formData.append(options.file_data_name, blob);
+                        formData.append(options.file_data_name, blob.getSource());
 
                         _xhr.send(formData);
                     } else { // if no multipart, send as binary stream
@@ -123,7 +125,7 @@ define('plupload/ChunkUploader', [
                             _xhr.setRequestHeader('content-type', 'application/octet-stream'); // binary stream header
                         }
 
-                        _xhr.send(blob);
+                        _xhr.send(blob.getSource());
                     }
 
                     this.trigger('started');
@@ -136,7 +138,9 @@ define('plupload/ChunkUploader', [
             stop: function() {
                 if (_xhr) {
                     _xhr.abort();
-                    _xhr.destroy();
+                    if (typeof _xhr.destroy === 'function') {
+                        _xhr.destroy();
+                    }
                     _xhr = null;
                 }
                 ChunkUploader.prototype.stop.call(this);
