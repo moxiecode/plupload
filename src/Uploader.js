@@ -33,7 +33,6 @@
 	@param {Boolean} [settings.multipart=true] Whether to send file and additional parameters as Multipart formated message.
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
 	@param {Object} [settings.params] Hash of key/value pairs to send with every file upload.
-	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
 	@param {Object} [settings.resize] Enable resizing of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
 		 @param {Number} settings.resize.width Resulting width
 		 @param {Number} [settings.resize.height=width] Resulting height (optional, if not supplied will default to width)
@@ -44,7 +43,6 @@
 		 @param {Boolean} [settings.resize.preserveHeaders=true] Whether to preserve meta headers (on JPEGs after resize)
 		 @param {String} [settings.resize.resample='default'] Resampling algorithm to use during resize
 		 @param {Boolean} [settings.resize.multipass=true] Whether to scale the image in steps (results in better quality)
- 	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
 	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
 	@param {String} settings.url URL of the server-side upload handler.
@@ -217,10 +215,12 @@ define('plupload/Uploader', [
 	'plupload/core/Queue',
 	'plupload/QueueUpload',
 	'plupload/QueueResize',
-	'plupload/File',
-	'moxie/file/FileInput',
-	'moxie/file/FileDrop'
-], function(plupload, Collection, Queue, QueueUpload, QueueResize, PluploadFile, FileInput, FileDrop) {
+	'plupload/File'
+], function(plupload, Collection, Queue, QueueUpload, QueueResize, PluploadFile) {
+	var FileInput = plupload.FileInput;
+	var FileDrop = plupload.FileDrop;
+	var BlobRef = plupload.BlobRef;
+	var FileRef = plupload.FileRef;
 
 	var fileFilters = {};
 	var undef;
@@ -255,11 +255,7 @@ define('plupload/Uploader', [
 			params: {},
 			resize: false,
 			send_chunk_number: true, // whether to send chunks and chunk numbers, instead of total and offset bytes
-			send_file_name: true,
-
-			// during normalization, these should be processed last
-			required_features: false,
-			preferred_caps: false
+			send_file_name: true
 		}, options));
 
 		Queue.call(this);
@@ -288,17 +284,6 @@ define('plupload/Uploader', [
 			state: plupload.STOPPED,
 
 			/**
-			 * Map of features that are available for the uploader runtime. Features will be filled
-			 * before the init event is called, these features can then be used to alter the UI for the end user.
-			 * Some of the current features that might be in this map is: dragdrop, chunks, jpgresize, pngresize.
-			 *
-			 * @property features
-			 * @type Object
-			 * @deprecated
-			 */
-			features: {},
-
-			/**
 			 * Object with name/value settings.
 			 *
 			 * @property settings
@@ -307,14 +292,6 @@ define('plupload/Uploader', [
 			 */
 			settings : _options,
 
-			/**
-			 * Current runtime name
-			 *
-			 * @property runtime
-			 * @type String
-			 * @deprecated There might be multiple runtimes per uploader
-			 */
-			runtime: null,
 
 			/**
 			 * Current upload queue, an array of File instances
@@ -377,7 +354,6 @@ define('plupload/Uploader', [
 
 
 				initControls.call(self, function(initialized) {
-					var runtime;
 					var initOpt = self.getOption('init');
 					var queueOpts = plupload.extendImmutable({}, self.getOption(), { auto_start: true });
 
@@ -421,10 +397,7 @@ define('plupload/Uploader', [
 						'container',
 						'browse_button',
 						'drop_element',
-						'runtimes',
-						'multi_selection',
-						'flash_swf_url',
-						'silverlight_xap_url'
+						'multi_selection'
 					]) > -1) {
 						return this.trigger('Error', {
 							code: plupload.OPTION_ERROR,
@@ -456,17 +429,9 @@ define('plupload/Uploader', [
 			 * @method refresh
 			 */
 			refresh: function() {
-				if (_fileInputs.length) {
-					plupload.each(_fileInputs, function(fileInput) {
-						fileInput.trigger('Refresh');
-					});
-				}
-
-				if (_fileDrops.length) {
-					plupload.each(_fileDrops, function(fileDrops) {
-						fileDrops.trigger('Refresh');
-					});
-				}
+				plupload.each(_fileInputs, function(fileInput) {
+					fileInput.trigger('Refresh');
+				});
 
 				this.trigger('Refresh');
 			},
@@ -492,11 +457,9 @@ define('plupload/Uploader', [
 			disableBrowse: function() {
 				_disabled = arguments[0] !== undef ? arguments[0] : true;
 
-				if (_fileInputs.length) {
-					plupload.each(_fileInputs, function(fileInput) {
-						fileInput.disable(_disabled);
-					});
-				}
+				plupload.each(_fileInputs, function(fileInput) {
+					fileInput.disable(_disabled);
+				});
 
 				this.trigger('DisableBrowse', _disabled);
 			},
@@ -526,7 +489,6 @@ define('plupload/Uploader', [
 			addFile: function(file, fileName) {
 				var self = this;
 				var queue = [];
-				var ruid; // spare runtime uid, for those files that do not have their own
 				var filesAdded = []; // here we track the files that got filtered and are added to the queue
 
 
@@ -580,15 +542,7 @@ define('plupload/Uploader', [
 					var type = plupload.typeOf(file);
 
 					// mxiFile (final step for other conditional branches)
-					if (file instanceof moxie.file.File) {
-						if (!file.ruid && !file.isDetached()) {
-							if (!ruid) { // weird case
-								return false;
-							}
-							file.ruid = ruid;
-							file.connectRuntime(ruid);
-						}
-
+					if (file instanceof FileRef) {
 						queue.push(function(cb) {
 							// run through the internal and user-defined filters, if any
 							filterFile(file, function(err) {
@@ -613,13 +567,13 @@ define('plupload/Uploader', [
 						});
 					}
 					// mxiBlob
-					else if (file instanceof moxie.file.Blob) {
+					else if (file instanceof BlobRef) {
 						resolveFile(file.getSource());
 						file.destroy();
 					}
 					// native File or blob
 					else if (plupload.inArray(type, ['file', 'blob']) !== -1) {
-						resolveFile(new moxie.file.File(null, file));
+						resolveFile(new FileRef(null, file));
 					}
 					// input[type="file"]
 					else if (type === 'node' && plupload.typeOf(file.files) === 'filelist') {
@@ -632,8 +586,6 @@ define('plupload/Uploader', [
 						plupload.each(file, resolveFile);
 					}
 				}
-
-				ruid = getRUID();
 
 				resolveFile(file);
 
@@ -801,31 +753,17 @@ define('plupload/Uploader', [
 			var initialized = 0;
 			var queue = [];
 
-			// common settings
-			var options = {
-				runtime_order: self.getOption('runtimes'),
-				required_caps: self.getOption('required_features'),
-				preferred_caps: self.getOption('preferred_caps')
-			};
-
-			// add runtime specific options if any
-			plupload.each(self.getOption('runtimes').split(/\s*,\s*/), function(runtime) {
-				if (self.getOption(runtime)) {
-					options[runtime] = self.getOption(runtime);
-				}
-			});
-
 			// initialize file pickers - there can be many
 			if (self.getOption('browse_button')) {
 				plupload.each(self.getOption('browse_button'), function(el) {
 					queue.push(function(cb) {
-						var fileInput = new FileInput(plupload.extend({}, options, {
+						var fileInput = new FileInput({
 							accept: self.getOption('filters').mime_types,
 							name: self.getOption('file_data_name'),
 							multiple: self.getOption('multi_selection'),
 							container: self.getOption('container'),
 							browse_button: el
-						}));
+						});
 
 						fileInput.onready = function() {
 							initialized++;
@@ -861,7 +799,7 @@ define('plupload/Uploader', [
 							self.trigger('Browse');
 						});
 
-						fileInput.bind('error runtimeerror', function() {
+						fileInput.bind('error', function() {
 							fileInput = null;
 							cb();
 						});
@@ -875,9 +813,9 @@ define('plupload/Uploader', [
 			if (self.getOption('drop_element')) {
 				plupload.each(self.getOption('drop_element'), function(el) {
 					queue.push(function(cb) {
-						var fileDrop = new FileDrop(plupload.extend({}, options, {
+						var fileDrop = new FileDrop({
 							drop_zone: el
-						}));
+						});
 
 						fileDrop.onready = function() {
 							initialized++;
@@ -889,7 +827,7 @@ define('plupload/Uploader', [
 							self.addFile(this.files);
 						};
 
-						fileDrop.bind('error runtimeerror', function() {
+						fileDrop.bind('error', function() {
 							fileDrop = null;
 							cb();
 						});
@@ -937,20 +875,16 @@ define('plupload/Uploader', [
 				file.destroy();
 			});
 
-			if (_fileInputs.length) {
-				plupload.each(_fileInputs, function(fileInput) {
-					fileInput.destroy();
-				});
-				_fileInputs = [];
-			}
+			plupload.each(_fileInputs, function(fileInput) {
+				fileInput.destroy();
+			});
 
-			if (_fileDrops.length) {
-				plupload.each(_fileDrops, function(fileDrop) {
-					fileDrop.destroy();
-				});
-				_fileDrops = [];
-			}
+			plupload.each(_fileDrops, function(fileDrop) {
+				fileDrop.destroy();
+			});
 
+			_fileInputs = [];
+			_fileDrops = [];
 			_initialized = false;
 
 			if (_queueUpload) {
@@ -965,65 +899,6 @@ define('plupload/Uploader', [
 
 		}
 
-	}
-
-
-	// convert plupload features to caps acceptable by mOxie
-	function normalizeCaps(settings) {
-		var features = settings.required_features,
-			caps = {};
-
-		function resolve(feature, value, strict) {
-			// Feature notation is deprecated, use caps (this thing here is required for backward compatibility)
-			var map = {
-				chunks: 'slice_blob',
-				jpgresize: 'send_binary_string',
-				pngresize: 'send_binary_string',
-				progress: 'report_upload_progress',
-				multi_selection: 'select_multiple',
-				dragdrop: 'drag_and_drop',
-				drop_element: 'drag_and_drop',
-				headers: 'send_custom_headers',
-				urlstream_upload: 'send_binary_string',
-				canSendBinary: 'send_binary',
-				triggerDialog: 'summon_file_dialog'
-			};
-
-			if (map[feature]) {
-				caps[map[feature]] = value;
-			} else if (!strict) {
-				caps[feature] = value;
-			}
-		}
-
-		if (typeof(features) === 'string') {
-			plupload.each(features.split(/\s*,\s*/), function(feature) {
-				resolve(feature, true);
-			});
-		} else if (typeof(features) === 'object') {
-			plupload.each(features, function(value, feature) {
-				resolve(feature, value);
-			});
-		} else if (features === true) {
-			// check settings for required features
-			if (settings.chunk_size && settings.chunk_size > 0) {
-				caps.slice_blob = true;
-			}
-
-			if (!plupload.isEmptyObj(settings.resize) || settings.multipart === false) {
-				caps.send_binary_string = true;
-			}
-
-			if (settings.http_method) {
-				caps.use_http_method = settings.http_method;
-			}
-
-			plupload.each(settings, function(value, feature) {
-				resolve(feature, !!value, true); // strict check
-			});
-		}
-
-		return caps;
 	}
 
 	function normalizeOptions(options) {
@@ -1136,16 +1011,6 @@ define('plupload/Uploader', [
 					options.send_file_name = true;
 				}
 				break;
-
-			case 'required_features':
-				// Normalize the list of required capabilities
-				return normalizeCaps(plupload.extend({}, options));
-
-			case 'preferred_caps':
-				// Come up with the list of capabilities that can affect default mode in a multi-mode runtimes
-				return normalizeCaps(plupload.extend({}, options, {
-					required_features: true
-				}));
 
 				// options that require reinitialisation
 			case 'container':

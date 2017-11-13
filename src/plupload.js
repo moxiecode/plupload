@@ -24,7 +24,11 @@ define('plupload', [
 	'moxie/core/utils/Mime',
 	'moxie/core/I18n',
 	'moxie/core/EventTarget',
-], function(Env, Dom, Basic, Events, Url, Mime, I18n, EventTarget) {
+	'moxie/file/FileInput',
+	'moxie/file/FileDrop',
+	'moxie/file/BlobRef',
+	'moxie/file/FileRef'
+], function(Env, Dom, Basic, Events, Url, Mime, I18n, EventTarget, FileInput, FileDrop, BlobRef, FileRef) {
 
 	return {
 		/**
@@ -642,7 +646,6 @@ define('plupload', [
 
 		delay: Basic.delay,
 
-
 		/**
 		Parent object for all event dispatching components and objects
 
@@ -650,7 +653,15 @@ define('plupload', [
 		@private
 		@constructor
 		*/
-		EventTarget: EventTarget
+		EventTarget: EventTarget,
+
+		FileInput: FileInput,
+
+		FileDrop: FileDrop,
+
+		BlobRef: BlobRef,
+
+		FileRef: FileRef
 	};
 
 });
