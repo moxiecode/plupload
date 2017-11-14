@@ -6,11 +6,9 @@
 <title>Plupload - Custom example</title>
 
 <!-- production -->
-<script type="text/javascript" src="../js/plupload.full.min.js"></script>
-
+<script type="text/javascript" src="../js/plupload.min.js"></script>
 
 <!-- debug
-<script type="text/javascript" src="../js/moxie.js"></script>
 <script type="text/javascript" src="../js/plupload.dev.js"></script>
 -->
 
@@ -24,8 +22,8 @@
 <div id="filelist">Your browser doesn't have Flash, Silverlight or HTML5 support.</div>
 <br />
 
-<div id="container">
-    <a id="pickfiles" href="javascript:;">[Select files]</a> 
+<div id="container" style="padding: 20px; border: 2px dashed gray; display: inline-block;">
+    <a id="pickfiles" href="javascript:;">[Select files]</a>
     <a id="uploadfiles" href="javascript:;">[Upload files]</a>
 </div>
 
@@ -37,13 +35,12 @@
 // Custom example logic
 
 var uploader = new plupload.Uploader({
-	runtimes : 'html5,flash,silverlight,html4',
 	browse_button : 'pickfiles', // you can pass an id...
+	drop_element: 'container',
 	container: document.getElementById('container'), // ... or DOM Element itself
 	url : 'upload.php',
-	flash_swf_url : '../js/Moxie.swf',
 	silverlight_xap_url : '../js/Moxie.xap',
-	
+
 	filters : {
 		max_file_size : '10mb',
 		mime_types: [

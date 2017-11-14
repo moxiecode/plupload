@@ -6,10 +6,9 @@
 <title>Plupload - Events example</title>
 
 <!-- production -->
-<script type="text/javascript" src="../js/plupload.full.min.js"></script>
+<script type="text/javascript" src="../js/plupload.min.js"></script>
 
 <!-- debug
-<script type="text/javascript" src="../js/moxie.js"></script>
 <script type="text/javascript" src="../js/plupload.dev.js"></script>
 -->
 
@@ -29,7 +28,6 @@
 <script type="text/javascript">
 	var uploader = new plupload.Uploader({
         // General settings
-        runtimes : 'silverlight,html4',
 		browse_button : 'pickfiles', // you can pass in id...
         url : 'upload.php',
         chunk_size : '1mb',
@@ -48,9 +46,6 @@
             ]
         },
  
-		flash_swf_url : '../js/Moxie.swf',
-		silverlight_xap_url : '../js/Moxie.xap',
-         
         // PreInit events, bound before the internal events
         preinit : {
             Init: function(up, info) {
