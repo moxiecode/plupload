@@ -135,6 +135,8 @@ test('selected (uses - event:ready)', function(assert) {
 
 
 test('started, stopped, progress, uploaded, complete (uses - event:ready, prop:autostart)', function(assert) {
+	var files = FileHash.getRuntimeFiles();
+
 	var events = {
 		started: 0,
 		stopped: 0,
@@ -143,24 +145,13 @@ test('started, stopped, progress, uploaded, complete (uses - event:ready, prop:a
 		complete: 0
 	};
 
-	var ruid;
-
 	stop();
 	$('#qunit-fixture').plupload({
 		runtimes: 'test',
 		url: '../upload.php',
 		autostart: true,
 
-		preinit: {
-			Init: function(up, info) {
-				ruid = info.ruid;
-			}
-		},
-
 		ready: function(e, o) {
-			var files = FileHash.getRuntimeFiles();
-			files[0].ruid = ruid;
-			files[0].connectRuntime(ruid);
 			o.up.addFile(files[0]);
 		},
 

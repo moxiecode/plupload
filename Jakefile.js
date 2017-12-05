@@ -7,6 +7,7 @@ var exec = require('child_process').exec;
 var tools = require('./src/moxie/build/tools');
 var utils = require('./src/moxie/build/utils');
 var wiki = require('./src/moxie/build/wiki');
+var mkjs = require('./src/moxie/build/mkjs');
 
 var copyright = [
 	"/**",
@@ -38,7 +39,7 @@ desc("Build mOxie");
 task("moxie", [], function (params) {
 	var moxieDir = "./src/moxie";
 	var currentDir = process.cwd();
-	
+
 	process.chdir(moxieDir);
 	exec("jake", function(error, stdout, stderr) {
 		if (error) {
@@ -57,21 +58,13 @@ task("mkjs", [], function (i18n) {
 	var uglify = tools.uglify;
 
 	var targetDir = "./js", moxieDir = "src/moxie";
-	
+
 	// Clear previous versions
 	if (fs.existsSync(targetDir)) {
 		jake.rmRf(targetDir);
 	}
 	fs.mkdirSync(targetDir, 0755);
 
-	// Include Plupload source
-	tools.copySync('./src/plupload.js', "js/plupload.dev.js");
-
-	// Instrument Plupload code
-	fs.writeFileSync(targetDir + '/plupload.cov.js', new Instrument(fs.readFileSync('./src/plupload.js').toString(), {
-		name: 'Plupload'
-	}).instrument());
-	
 
 	// Copy compiled moxie files
 	tools.copySync(moxieDir + "/bin/flash/Moxie.swf", "js/Moxie.swf");
@@ -79,30 +72,18 @@ task("mkjs", [], function (i18n) {
 	tools.copySync(moxieDir + "/bin/js/moxie.min.js", "js/moxie.min.js");
 	tools.copySync(moxieDir + "/bin/js/moxie.js", "js/moxie.js");
 
-	// Copy UI Plupload
-	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
 
-	uglify([
-		'jquery.ui.plupload.js'
-	], targetDir + "/jquery.ui.plupload/jquery.ui.plupload.min.js", {
-		sourceBase: targetDir + "/jquery.ui.plupload/"
-	});
+	// Include Plupload source
+	var sourceCode = fs.readFileSync('./src/plupload.js').toString();
 
-	// Copy Queue Plupload
-	jake.cpR("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
-
-	uglify([
-		'jquery.plupload.queue.js'
-	], targetDir + "/jquery.plupload.queue/jquery.plupload.queue.min.js", {
-		sourceBase: targetDir + "/jquery.plupload.queue/"
-	});
+	if (process.env.umd != 'no') {
+		fs.writeFileSync(targetDir + '/plupload.dev.js', mkjs.addUMD("plupload", sourceCode, ['moxie']));
+	} else {
+		fs.writeFileSync(targetDir + '/plupload.dev.js', sourceCode);
+	}
 
 	// Minify Plupload and combine with mOxie
-	uglify([
-		'plupload.js'
-	], targetDir + "/plupload.min.js", {
-		sourceBase: 'src/'
-	});
+	uglify(targetDir + '/plupload.dev.js', targetDir + "/plupload.min.js");
 
 	var info = require("./package.json");
 	info.copyright = copyright;
@@ -114,6 +95,20 @@ task("mkjs", [], function (i18n) {
 	code += fs.readFileSync(targetDir + "/plupload.min.js");
 
 	fs.writeFileSync(targetDir + "/plupload.full.min.js", code);
+
+	// Instrument Plupload code
+	fs.writeFileSync(targetDir + '/plupload.cov.js', new Instrument(sourceCode, {
+		name: 'Plupload'
+	}).instrument());
+
+
+	// Copy UI Plupload
+	jake.cpR("./src/jquery.ui.plupload", targetDir + "/jquery.ui.plupload", {});
+	uglify(targetDir + '/jquery.ui.plupload/jquery.ui.plupload.js', targetDir + "/jquery.ui.plupload/jquery.ui.plupload.min.js");
+
+	// Copy Queue Plupload
+	jake.cpR("./src/jquery.plupload.queue", targetDir + "/jquery.plupload.queue", {});
+	uglify(targetDir + '/jquery.plupload.queue/jquery.plupload.queue.js', targetDir + "/jquery.plupload.queue/jquery.plupload.queue.min.js");
 
 	// Add I18n files
 	if (i18n) {
@@ -168,7 +163,7 @@ task("docs", [], function (params) {
 
 desc("Generate wiki pages");
 task("wiki", ["docs"], function() {
-	wiki("git@github.com:moxiecode/plupload.wiki.git", "wiki", "docs");
+	wiki("https://github.com/moxiecode/plupload.wiki.git", "wiki", "docs");
 });
 
 
@@ -207,6 +202,18 @@ task("package", [], function (params) {
 		"README.md",
 		"LICENSE.txt"
 	], path.join(tmpDir, utils.format("plupload_%s.zip", suffix)), complete);
+}, true);
+
+
+desc("Create NuGet package");
+task('mknuget', [], function() {
+	var mknuget = require('./src/moxie/build/mknuget');
+
+	mknuget.pack(require('./package.json'), function(err, nugetPath) {
+		console.info(nugetPath);
+		complete();
+	});
+
 }, true);
 
 

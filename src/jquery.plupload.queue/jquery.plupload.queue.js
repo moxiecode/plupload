@@ -39,7 +39,7 @@ used as it is.
 	var uploader = $('#uploader').pluploadQueue();
 
 	uploader.bind('FilesAdded', function() {
-		
+
 		// Autostart
 		setTimeout(uploader.start, 1); // "detach" from the main thread
 	});
@@ -73,7 +73,7 @@ used as it is.
 	@param {Boolean} [settings.rename=false] Enable ability to rename files in the queue.
 	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
 */
-;(function($, o) {
+;(function($, plupload) {
 	var uploaders = {};
 
 	function _(str) {
@@ -190,7 +190,7 @@ used as it is.
 
 					var icon = $('#' + file.id).attr('class', actionClass).find('a').css('display', 'block');
 					if (file.hint) {
-						icon.attr('title', file.hint);	
+						icon.attr('title', file.hint);
 					}
 				}
 
@@ -198,7 +198,7 @@ used as it is.
 					$('span.plupload_total_status', target).html(uploader.total.percent + '%');
 					$('div.plupload_progress_bar', target).css('width', uploader.total.percent + '%');
 					$('span.plupload_upload_status', target).html(
-						o.sprintf(_('Uploaded %d/%d files'), uploader.total.uploaded, uploader.files.length)
+						plupload.sprintf(_('Uploaded %d/%d files'), uploader.total.uploaded, uploader.files.length)
 					);
 				}
 
@@ -215,7 +215,7 @@ used as it is.
 
 							inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_name" value="' + plupload.xmlEncode(file.name) + '" />';
 							inputHTML += '<input type="hidden" name="' + id + '_' + inputCount + '_status" value="' + (file.status == plupload.DONE ? 'done' : 'failed') + '" />';
-	
+
 							inputCount++;
 
 							$('#' + id + '_count').val(inputCount);
@@ -247,7 +247,7 @@ used as it is.
 					if (uploader.total.queued === 0) {
 						$('span.plupload_add_text', target).html(_('Add Files'));
 					} else {
-						$('span.plupload_add_text', target).html(o.sprintf(_('%d files queued'), uploader.total.queued));
+						$('span.plupload_add_text', target).html(plupload.sprintf(_('%d files queued'), uploader.total.queued));
 					}
 
 					$('a.plupload_start', target).toggleClass('plupload_disabled', uploader.files.length == (uploader.total.uploaded + uploader.total.failed));
@@ -279,6 +279,11 @@ used as it is.
 					if (!settings.unique_names && settings.rename) {
 						target.on('click', '#' + id + '_filelist div.plupload_file_name span', function(e) {
 							var targetSpan = $(e.target), file, parts, name, ext = "";
+							var fileContainer = targetSpan.closest('li');
+
+							if (!fileContainer.hasClass('plupload_delete')) {
+								return;
+							}
 
 							// Get file name and split out name and extension
 							file = up.getFile(targetSpan.parents('li')[0].id);
@@ -343,7 +348,7 @@ used as it is.
 						if (err.code == plupload.FILE_EXTENSION_ERROR) {
 							alert(_("Error: Invalid file extension:") + " " + file.name);
 						}
-						
+
 						file.hint = message;
 						$('#' + file.id).attr('class', 'plupload_failed').find('a').css('display', 'block').attr('title', message);
 					}
@@ -425,4 +430,4 @@ used as it is.
 			return uploaders[$(this[0]).attr('id')];
 		}
 	};
-})(jQuery, mOxie);
+})(jQuery, plupload);

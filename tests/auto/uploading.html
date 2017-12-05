@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plupload: Uploading</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.autostart = false;
+QUnit.config.testTimeout = 10000;
+
+FileHash.init({
+	files: ['files/01.min.js', 'files/02.min.js'],
+	onready: function() {
+		QUnit.start();
+	}
+});
+
+o.Env.swf_url = "../../js/flash/Moxie.swf";
+o.Env.xap_url = "../../js/silverlight/Moxie.xap";
+
+module("Test uploading");
+
+
+test("multipart=false", function() {
+	var up = new plupload.Uploader({
+		runtimes: 'test',
+		browse_button: 'qunit-fixture',
+		url: "Plupload/upload.php",
+		required_features: true,
+		multipart: false,
+        headers: {
+            "Content-Type": "image/jpeg"
+        }
+	});
+
+    up.bind('PostInit', function() {
+		var files = FileHash.getRuntimeFiles();
+		up.addFile(files[0]);
+	});
+
+	up.bind('Error', function() {
+		start();
+		ok(false, "Plupload cannot be initialized.");
+
+        up.destroy();
+	});
+
+	stop();
+	up.init();
+
+    up.bind('FilesAdded', function() {
+		up.start();
+	});
+
+    up.bind('FileUploaded', function(up, file, result) {
+        var response = JSON.parse(result.response);
+        start();
+        equal(response.headers["content-type"], "image/jpeg",
+            "not forcing content-type=application/octet-stream when multipart=false.");
+
+        up.destroy();
+    });
+});
+
+test("http_method='PUT'", function() {
+    expect(3);
+
+    var uploader = new plupload.Uploader({
+        browse_button: 'qunit-fixture',
+        runtimes: 'test',
+        url: '../upload.php',
+
+        http_method: 'GRAB', // arbitrary bullshit method
+
+        preinit: {
+            Init: function(up, info) {
+                var files = FileHash.getRuntimeFiles();
+				up.addFile(files[0]);
+            },
+
+            Error: function(up, err) {
+                start();
+                ok(false, "Plupload failed to initialize.");
+            }
+        },
+
+        init: {
+            FilesAdded: function(up) {
+                equal(up.getOption('http_method'), 'POST',
+                    "http_method should be either PUT or POST.");
+
+                up.setOption('http_method', 'put');
+
+                equal(up.getOption('http_method'), 'PUT',
+                    "http_method set to PUT and upper-cased.");
+
+                up.start();
+            },
+
+            FileUploaded: function(up, file, result) {
+                start();
+
+                var meta = (function(headers) {
+                    var meta = {};
+                    o.each(headers, function(header) {
+                        if (/^meta\-/.test(header)) {
+                            var parts = header.split(/:/);
+                            meta[parts[0].replace(/^meta\-/, '')] = parts[1];
+                        }
+                    });
+                    return meta;
+                }(result.responseHeaders.split(/\r\n/)));
+
+                equal(up.getOption('http_method'), 'PUT',
+                    "PUT was used as HTTP method.");
+            }
+        }
+    });
+
+    stop();
+    uploader.init();
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

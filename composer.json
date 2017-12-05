@@ -9,7 +9,7 @@
         "legacy browser support"
     ],
     "homepage": "http://plupload.com",
-    "license": "(GPL-2.0 or OEM)",
+    "license": "(AGPLv3 or OEM)",
 	"authors": [{
 		"name": "Davit Barbakadze",
 		"email": "david@moxiecode.com",

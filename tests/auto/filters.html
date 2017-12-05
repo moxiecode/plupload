@@ -492,6 +492,60 @@ test('options.filters.prevent_duplicates', function() {
 });
 
 
+test('options.filters.prevent_empty', function() {
+	expect(2);
+
+	var file = FileHash.getEmptyFile();
+
+	// test file type check by extension
+	var up = new plupload.Uploader(o.extend({
+		filters: {
+			prevent_empty: true
+		}
+	}, this.options));
+
+	var queue = [];
+
+	queue.push(
+		function(cb) {
+			up.bind('TestError', function(up, err) {
+				equal(err.code, plupload.FILE_SIZE_ERROR, "Error triggered, code: FILE_SIZE_ERROR.");
+				equal(up.files.length, 0, "Empty file (0kb) has been ignored.");
+				up.unbind('TestError');
+				cb();
+			});
+
+			up.bind('TestFilesAdded', function(up) {
+				up.unbind('TestFilesAdded');
+				equal(up.files.length, 0, "Empty file (0kb) has been ignored.");
+				cb();
+			});
+
+			up.addFile(file);
+		}
+	);
+
+
+	up.bind('PostInit', function() {
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+
+	stop();
+	up.init();
+
+	// introduce special event that can be binded or unbinded without problems
+	up.bind('FilesAdded', function(up, files) {
+		up.trigger('TestFilesAdded', files);
+	});
+
+	up.bind('Error', function(up, err) {
+		up.trigger('TestError', err);
+	});
+});
+
+
 </script>
 </head>
 <body>

@@ -2,7 +2,7 @@
 
 	var type = "test", extensions = {};
 
-	
+
 	function TestRuntime(options) {
 		var I = this
 		, True = Runtime.capTrue
@@ -48,7 +48,12 @@
 
 
 		Basic.extend(this.getShim(), {
-		
+
+			Blob: function() {
+
+			},
+
+
 			FileInput: function() {
 				var _files = [];
 
@@ -64,7 +69,7 @@
 					setFiles: function(files) {
 						var comp = this, I = this.getRuntime();
 
-						Basic.each(this.files, function(file) {							
+						Basic.each(this.files, function(file) {
 							file = new File(I.uid, file);
 							file.relativePath = '/fakepath';
 
@@ -162,8 +167,8 @@
 								} else {
 									_status = 200;
 								}
-								
-								target.trigger('Load', meta);
+
+								target.trigger('Load');
 							}
 						}
 
@@ -177,12 +182,12 @@
 					},
 
 					getResponse: function(responseType) {
-						var response = '{"jsonrpc" : "2.0", "result" : null, "id" : "id"}';
+						var response = JSON && JSON.stringify(_meta) || '{"jsonrpc" : "2.0", "result" : null, "id" : "id"}';
 
 						if (_state !== XMLHttpRequest.DONE) {
 							return Basic.inArray(responseType, ["", "text"]) !== -1 ? '' : null;
 						}
-						return responseType === 'json' && !!window.JSON ? JSON.parse(response) : response;
+						return responseType === 'json' && JSON ? JSON.parse(response) : response;
 					},
 
 					getAllResponseHeaders: function() {
@@ -203,13 +208,6 @@
 						];
 
 
-						Basic.each(_meta, function(value, key) {
-							if (Basic.typeOf(value) !== 'undefined') {
-								headers.push('meta-' + key + '::' + JSON.stringify(value));
-							}
-						});
-
-
 						if (_state > XMLHttpRequest.OPENED) {
 							return headers.join('\r\n');
 						}
@@ -224,7 +222,6 @@
 
 					destroy: function() {
 						_status = 0;
-						_meta = {};
 					}
 				});
 

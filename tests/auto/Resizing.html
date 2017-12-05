@@ -37,17 +37,15 @@ test("Enable or disable client-side resizing in BeforeUpload", function() {
 		}
 	});
 
-	up.bind('Init', function(up, info) {
-		var files = FileHash.getRuntimeFiles();
-		files[0].ruid = info.ruid;
-		files[0].connectRuntime(info.ruid);	
-		up.addFile(files[0]);		
+	up.bind('PostInit', function() {
+		var files = files = FileHash.getRuntimeFiles();
+		up.addFile(files[0]);
 	});
 
 
 	up.bind('Error', function() {
 		start();
-		ok(false, "Plupload cannot be initialized.");	
+		ok(false, "Plupload cannot be initialized.");
 	});
 
 	stop();
@@ -84,7 +82,7 @@ test("Enable or disable client-side resizing in BeforeUpload", function() {
 
 		up.setOption('resize', false);
 
-		equal(up.getOption('resize'), false, 
+		equal(up.getOption('resize'), false,
 			"Check resize options after they were disabled.");
 
 		deepEqual(up.getOption('required_features'), {

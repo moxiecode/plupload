@@ -3,6 +3,7 @@
 		"//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js",
 		"//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js",
 		"//code.jquery.com/qunit/qunit-1.14.0.js",
+		"//cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js",
 		"js/testrunner/reporter.js",
 		"js/FileHash.js",
 		"js/test-runtime.js"
@@ -27,14 +28,18 @@
 		}
 		return baseUrl + '/';
 	}
-	
+
 	var baseUrl = getBaseUrl();
 
 	var matches = document.location.search.match(/src=(min|dev|cov)/);
 	var source = matches ? matches[1] : 'min';
 
 	document.write('<script src="' + baseUrl + '/../../js/moxie.js"></script>');
-	document.write('<script src="' + baseUrl + '/../../js/plupload.' + source + '.js"></script>');
+	// load that compatibility shim that we use all over the tests, if it wasn't already loaded
+	if (!window.o) {
+		document.write('<script src="' + baseUrl + 'js/o.js"></script>');
+	}
+	document.write('<script src="' + baseUrl + '/../../js/plupload.dev.js"></script>');
 
 
 	var i;

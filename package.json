@@ -1,13 +1,28 @@
 {
-    "name": "Plupload",
+    "name": "plupload",
     "description": "Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering, request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and Flash.",
-    "version": "2.1.2",
-    "releaseDate": "2014-05-14",
-    "author": "Moxiecode Systems AB <support@moxiecode.com>",
+    "keywords": [
+        "fileuploader",
+        "upload",
+        "chunk",
+        "image",
+        "resize",
+        "crop",
+        "orientation",
+        "JavaScript",
+        "HTML5",
+        "Flash",
+        "Silverlight",
+        "moxie"
+    ],
+    "version": "2.3.6",
+    "releaseDate": "2017-11-03",
+    "author": "Ephox",
     "contributors": [{
         "name": "Davit Barbakadze",
-        "email": "david@moxiecode.com"
+        "email": "davit.barbakadze@ephox.com"
     }],
+    "main": "./js/plupload.full.min",
     "homepage": "http://plupload.com",
     "repository": {
         "type": "git",
@@ -17,7 +32,7 @@
         "url": "https://github.com/moxiecode/plupload/issues"
     },
     "licenses": [{
-        "type": "GPLv2",
+        "type": "AGPLv3",
         "url": "https://github.com/moxiecode/plupload/blob/master/license.txt"
     }, {
         "type": "Single Website",
@@ -32,18 +47,14 @@
     "engines": {
         "node": ">=0.8.0"
     },
-    "dependencies": {
+    "devDependencies": {
         "jake": "0.5.x",
         "glob": "3.2.x",
         "jshint": "2.1.x",
         "yuidocjs": "0.3.x",
-        "handlebars": "1.0.x"
-    },
-    "devDependencies": {
+        "handlebars": "1.0.x",
         "moxie-zip": "0.0.x",
         "fileset": "0.1.x",
-        "uglify-js": "1.x",
-        "amdlc": "0.1.x",
         "coverjs": "0.0.x",
         "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
         "dateformat": "1.x",
