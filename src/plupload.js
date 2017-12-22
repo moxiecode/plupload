@@ -1108,6 +1108,7 @@ plupload.Uploader = function(options) {
 						accept: settings.filters.mime_types,
 						name: settings.file_data_name,
 						multiple: settings.multi_selection,
+						directory: settings.directory,
 						container: settings.container,
 						browse_button: el
 					}));
