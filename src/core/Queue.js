@@ -129,7 +129,7 @@ define('plupload/core/Queue', [
              * @method start
              */
             start: function() {
-                if (!Queue.super.start.call(this)) {
+                if (!Queue.parent.start.call(this)) {
                     return false;
                 }
                 return processNext.call(this);
@@ -137,7 +137,7 @@ define('plupload/core/Queue', [
 
 
             pause: function() {
-                if (!Queue.super.pause.call(this)) {
+                if (!Queue.parent.pause.call(this)) {
                     return false;
                 }
 
@@ -153,7 +153,7 @@ define('plupload/core/Queue', [
              * @method stop
              */
             stop: function() {
-                if (!Queue.super.stop.call(this) || this.getOption('finish_active')) {
+                if (!Queue.parent.stop.call(this) || this.getOption('finish_active')) {
                     return false;
                 }
 
@@ -426,7 +426,7 @@ define('plupload/core/Queue', [
                     return self.stop();
                 } else {
                     self.clear();
-                    Queue.super.destroy.call(this);
+                    Queue.parent.destroy.call(this);
                     self._queue = self.stats = null;
                 }
                 return true;
