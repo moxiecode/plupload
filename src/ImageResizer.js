@@ -28,8 +28,6 @@ define("plupload/ImageResizer", [
 		Queueable.call(this);
 
 		this._options = {
-			width: 0,
-			height: 0,
 			type: 'image/jpeg',
 			quality: 90,
 			crop: false,
