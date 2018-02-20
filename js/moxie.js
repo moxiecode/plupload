@@ -1,7 +1,7 @@
 ;var MXI_DEBUG = true;
 /**
  * mOxie - multi-runtime File API & XMLHttpRequest L2 Polyfill
- * v1.5.6
+ * v1.5.8
  *
  * Copyright 2013, Moxiecode Systems AB
  * Released under GPL License.
@@ -9,7 +9,7 @@
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2017-10-02
+ * Date: 2018-02-19
  */
 ;(function (global, factory) {
 	var extract = function() {
@@ -280,7 +280,7 @@ define('moxie/core/utils/Basic', [], function() {
 		child.prototype = new ctor();
 
 		// keep a way to reference parent methods
-		child.super = parent.prototype;
+		child.parent = parent.prototype;
 		return child;
 	}
 
@@ -1553,7 +1553,8 @@ define("moxie/core/utils/Env", [
 				console.appendChild(document.createTextNode(data + "\n"));
 			}
 
-			if (window && window.console && window.console.log) {
+			// if debugger present, IE8 might have window.console.log method, but not be able to apply on it (why...)
+			if (window && window.console && window.console.log && window.console.log.apply) {
 				window.console.log.apply(window.console, arguments);
 			} else if (document) {
 				var console = document.getElementById('moxie-console');
@@ -3365,7 +3366,7 @@ define("moxie/core/utils/Mime", [
 	"moxie/core/utils/Basic",
 	"moxie/core/I18n"
 ], function(Basic, I18n) {
-	
+
 	var mimeData = "" +
 		"application/msword,doc dot," +
 		"application/pdf,pdf," +
@@ -3416,169 +3417,178 @@ define("moxie/core/utils/Mime", [
 		"video/3gpp,3gpp 3gp," +
 		"video/3gpp2,3g2," +
 		"video/vnd.rn-realvideo,rv," +
-		"video/ogg,ogv," + 
+		"video/ogg,ogv," +
 		"video/x-matroska,mkv," +
 		"application/vnd.oasis.opendocument.formula-template,otf," +
 		"application/octet-stream,exe";
-	
-	
-	var Mime = {
 
-		/**
-		 * Map of mimes to extensions
-		 *
-		 * @property mimes
-		 * @type {Object}
-		 */
-		mimes: {},
 
-		/**
-		 * Map of extensions to mimes
-		 *
-		 * @property extensions
-		 * @type {Object}
-		 */
-		extensions: {},
+	/**
+	 * Map of mimes to extensions
+	 *
+	 * @property mimes
+	 * @type {Object}
+	 */
+	var mimes = {};
 
-		/**
-		 * Parses mimeData string into a mimes and extensions lookup maps. String should have the
-		 * following format:
-		 *
-		 * application/msword,doc dot,application/pdf,pdf, ...
-		 *
-		 * so mime-type followed by comma and followed by space-separated list of associated extensions,
-		 * then comma again and then another mime-type, etc.
-		 *
-		 * If invoked externally will replace override internal lookup maps with user-provided data.
-		 *
-		 * @method addMimeType
-		 * @param {String} mimeData
-		 */
-		addMimeType: function (mimeData) {
-			var items = mimeData.split(/,/), i, ii, ext;
-			
-			for (i = 0; i < items.length; i += 2) {
-				ext = items[i + 1].split(/ /);
+	/**
+	 * Map of extensions to mimes
+	 *
+	 * @property extensions
+	 * @type {Object}
+	 */
+	var extensions = {};
 
-				// extension to mime lookup
-				for (ii = 0; ii < ext.length; ii++) {
-					this.mimes[ext[ii]] = items[i];
-				}
-				// mime to extension lookup
-				this.extensions[items[i]] = ext;
+
+	/**
+	* Parses mimeData string into a mimes and extensions lookup maps. String should have the
+	* following format:
+	*
+	* application/msword,doc dot,application/pdf,pdf, ...
+	*
+	* so mime-type followed by comma and followed by space-separated list of associated extensions,
+	* then comma again and then another mime-type, etc.
+	*
+	* If invoked externally will replace override internal lookup maps with user-provided data.
+	*
+	* @method addMimeType
+	* @param {String} mimeData
+	*/
+	var addMimeType = function (mimeData) {
+		var items = mimeData.split(/,/), i, ii, ext;
+
+		for (i = 0; i < items.length; i += 2) {
+			ext = items[i + 1].split(/ /);
+
+			// extension to mime lookup
+			for (ii = 0; ii < ext.length; ii++) {
+				mimes[ext[ii]] = items[i];
 			}
-		},
-
-
-		extList2mimes: function (filters, addMissingExtensions) {
-			var self = this, ext, i, ii, type, mimes = [];
-			
-			// convert extensions to mime types list
-			for (i = 0; i < filters.length; i++) {
-				ext = filters[i].extensions.toLowerCase().split(/\s*,\s*/);
-
-				for (ii = 0; ii < ext.length; ii++) {
-					
-					// if there's an asterisk in the list, then accept attribute is not required
-					if (ext[ii] === '*') {
-						return [];
-					}
-
-					type = self.mimes[ext[ii]];
-
-					// future browsers should filter by extension, finally
-					if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
-						mimes.push('.' + ext[ii]);
-					} else if (type && Basic.inArray(type, mimes) === -1) {
-						mimes.push(type);
-					} else if (!type) {
-						// if we have no type in our map, then accept all
-						return [];
-					}
-				}
-			}
-			return mimes;
-		},
-
-
-		mimes2exts: function(mimes) {
-			var self = this, exts = [];
-			
-			Basic.each(mimes, function(mime) {
-				mime = mime.toLowerCase();
-
-				if (mime === '*') {
-					exts = [];
-					return false;
-				}
-
-				// check if this thing looks like mime type
-				var m = mime.match(/^(\w+)\/(\*|\w+)$/);
-				if (m) {
-					if (m[2] === '*') { 
-						// wildcard mime type detected
-						Basic.each(self.extensions, function(arr, mime) {
-							if ((new RegExp('^' + m[1] + '/')).test(mime)) {
-								[].push.apply(exts, self.extensions[mime]);
-							}
-						});
-					} else if (self.extensions[mime]) {
-						[].push.apply(exts, self.extensions[mime]);
-					}
-				}
-			});
-			return exts;
-		},
-
-
-		mimes2extList: function(mimes) {
-			var accept = [], exts = [];
-
-			if (Basic.typeOf(mimes) === 'string') {
-				mimes = Basic.trim(mimes).split(/\s*,\s*/);
-			}
-
-			exts = this.mimes2exts(mimes);
-			
-			accept.push({
-				title: I18n.translate('Files'),
-				extensions: exts.length ? exts.join(',') : '*'
-			});
-
-			return accept;
-		},
-
-		/**
-		 * Extract extension from the given filename
-		 *
-		 * @method getFileExtension
-		 * @param {String} fileName
-		 * @return {String} File extension
-		 */
-		getFileExtension: function(fileName) {
-			var matches = fileName && fileName.match(/\.([^.]+)$/);
-			if (matches) {
-				return matches[1].toLowerCase();
-			}
-			return '';
-		},
-
-		/**
-		 * Get file mime-type from it's filename - will try to match the extension
-		 * against internal mime-type lookup map
-		 *
-		 * @method getFileMime
-		 * @param {String} fileName
-		 * @return File mime-type if found or an empty string if not
-		 */
-		getFileMime: function(fileName) {
-			return this.mimes[this.getFileExtension(fileName)] || '';
+			// mime to extension lookup
+			extensions[items[i]] = ext;
 		}
 	};
 
-	Mime.addMimeType(mimeData);
 
-	return Mime;
+	var extList2mimes = function (filters, addMissingExtensions) {
+		var ext, i, ii, type, mimes = [];
+
+		// convert extensions to mime types list
+		for (i = 0; i < filters.length; i++) {
+			ext = filters[i].extensions.toLowerCase().split(/\s*,\s*/);
+
+			for (ii = 0; ii < ext.length; ii++) {
+
+				// if there's an asterisk in the list, then accept attribute is not required
+				if (ext[ii] === '*') {
+					return [];
+				}
+
+				type = mimes[ext[ii]];
+
+				// future browsers should filter by extension, finally
+				if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
+					mimes.push('.' + ext[ii]);
+				} else if (type && Basic.inArray(type, mimes) === -1) {
+					mimes.push(type);
+				} else if (!type) {
+					// if we have no type in our map, then accept all
+					return [];
+				}
+			}
+		}
+		return mimes;
+	};
+
+
+	var mimes2exts = function(mimes) {
+		var exts = [];
+
+		Basic.each(mimes, function(mime) {
+			mime = mime.toLowerCase();
+
+			if (mime === '*') {
+				exts = [];
+				return false;
+			}
+
+			// check if this thing looks like mime type
+			var m = mime.match(/^(\w+)\/(\*|\w+)$/);
+			if (m) {
+				if (m[2] === '*') {
+					// wildcard mime type detected
+					Basic.each(extensions, function(arr, mime) {
+						if ((new RegExp('^' + m[1] + '/')).test(mime)) {
+							[].push.apply(exts, extensions[mime]);
+						}
+					});
+				} else if (extensions[mime]) {
+					[].push.apply(exts, extensions[mime]);
+				}
+			}
+		});
+		return exts;
+	};
+
+
+	var mimes2extList = function(mimes) {
+		var accept = [], exts = [];
+
+		if (Basic.typeOf(mimes) === 'string') {
+			mimes = Basic.trim(mimes).split(/\s*,\s*/);
+		}
+
+		exts = mimes2exts(mimes);
+
+		accept.push({
+			title: I18n.translate('Files'),
+			extensions: exts.length ? exts.join(',') : '*'
+		});
+
+		return accept;
+	};
+
+	/**
+	 * Extract extension from the given filename
+	 *
+	 * @method getFileExtension
+	 * @param {String} fileName
+	 * @return {String} File extension
+	 */
+	var getFileExtension = function(fileName) {
+		var matches = fileName && fileName.match(/\.([^.]+)$/);
+		if (matches) {
+			return matches[1].toLowerCase();
+		}
+		return '';
+	};
+
+
+	/**
+	 * Get file mime-type from it's filename - will try to match the extension
+	 * against internal mime-type lookup map
+	 *
+	 * @method getFileMime
+	 * @param {String} fileName
+	 * @return File mime-type if found or an empty string if not
+	 */
+	var getFileMime = function(fileName) {
+		return mimes[getFileExtension(fileName)] || '';
+	};
+
+
+	addMimeType(mimeData);
+
+	return {
+		mimes: mimes,
+		extensions: extensions,
+		addMimeType: addMimeType,
+		extList2mimes: extList2mimes,
+		mimes2exts: mimes2exts,
+		mimes2extList: mimes2extList,
+		getFileExtension: getFileExtension,
+		getFileMime: getFileMime
+	}
 });
 
 // Included from: src/javascript/file/FileInput.js
@@ -3999,13 +4009,13 @@ define('moxie/file/File', [
 		} else if (this.type) {
 			var prefix = this.type.split('/')[0];
 			name = Basic.guid((prefix !== '' ? prefix : 'file') + '_');
-			
+
 			if (Mime.extensions[this.type]) {
 				name += '.' + Mime.extensions[this.type][0]; // append proper extension if possible
 			}
 		}
-		
-		
+
+
 		Basic.extend(this, {
 			/**
 			File name
@@ -4024,7 +4034,7 @@ define('moxie/file/File', [
 			@default ''
 			*/
 			relativePath: '',
-			
+
 			/**
 			Date of last modification
 
@@ -4032,7 +4042,7 @@ define('moxie/file/File', [
 			@type {String}
 			@default now
 			*/
-			lastModifiedDate: file.lastModifiedDate || (new Date()).toLocaleString() // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
+			lastModifiedDate: file.lastModified ? new Date(file.lastModified) : file.lastModifiedDate || (new Date()).toLocaleString() // Thu Aug 23 2012 19:40:00 GMT+0400 (GET)
 		});
 	}
 
@@ -6812,8 +6822,10 @@ define("moxie/runtime/html5/Runtime", [
 					return !(
 						(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) || 
 						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) || 
-						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
-						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+						(Env.browser === 'Safari' && Env.verComp(Env.version, 11, '<=')) ||
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<')) ||
+						Env.os === 'iOS' || // as of iOS11, no extensions are supported in accept attribute
+						Env.os === 'Android'
 					);
 				}()),
 				return_response_headers: True,
@@ -11070,8 +11082,10 @@ define("moxie/runtime/html4/Runtime", [
 				return !(
 					(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) || 
 					(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) || 
-					(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
-					(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+					(Env.browser === 'Safari' && Env.verComp(Env.version, 11, '<=')) ||
+					(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<')) ||
+					Env.os === 'iOS' || // as of iOS11, no extensions are supported in accept attribute
+					Env.os === 'Android'
 				);
 			}()),
 			resize_image: function() {
