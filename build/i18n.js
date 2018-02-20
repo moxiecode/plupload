@@ -99,7 +99,7 @@ var extract = function(from, to) {
 
 			if (/%[a-z]/.test(entry.text)) {
 				lines.push('#, c-format');
-			}		
+			}
 
 			lines.push(
 				'msgid "' + entry.text + '"',
@@ -153,7 +153,7 @@ var toPot = function(from, to) {
 	to = to || process.env.to || './tmp/i18n';
 	if (fs.existsSync(to)) {
 		jake.rmRf(to);
-	} 
+	}
 	jake.mkdirP(to);
 
 	function generatePOT(input) {
@@ -169,18 +169,18 @@ var toPot = function(from, to) {
 
 		srcItems.forEach(function(srcItem, idx) {
 			var m = srcItem.match(/msgid \"([\s\S]*?[^\\]|)\"/);
-			if (m) { 
+			if (m) {
 				srcItems[idx] += 'msgstr "';
 				if (json[m[1]]) {
 					srcItems[idx] += json[m[1]].replace(/([^\\])\"/g, '$1\\"');
 				}
-			} 
+			}
 		});
 
 		fs.writeFileSync(path.join(to, fileName+'.po'), srcItems.join(''));
 		console.info(fileName + ".po generated.");
 	}
-	
+
 
 	if (!process.env.srcLang) {
 		console.info("Source language not specified!");
@@ -200,12 +200,24 @@ var pull = function(srcUrl, to, cb) {
 	to = to || process.env.to || './tmp/i18n';
 	if (fs.existsSync(to)) {
 		jake.rmRf(to);
-	} 
+	}
 	jake.mkdirP(to);
 
 	function generateLangFile(lang, strs) {
 		var langStr = lang.name + " (" + lang.code + ")";
 		var data = {};
+
+		strs.sort(function (a, b) {
+			var str1 = a.source_string.toUpperCase();
+			var str2 = b.source_string.toUpperCase();
+			if (str1 < str2) {
+				return -1;
+			}
+			if (str1 > str2) {
+				return 1;
+			}
+			return 0;
+		});
 
 		strs.forEach(function(str) {
 			data[str.source_string] = str.translation;
@@ -282,8 +294,8 @@ var pull = function(srcUrl, to, cb) {
 		}
 
 		/*
-		{ 
-			sl: { 
+		{
+			sl: {
 			   	reviewed_percentage: '0%',
 				completed: '0%',
 				untranslated_words: 139,
@@ -292,8 +304,8 @@ var pull = function(srcUrl, to, cb) {
 				translated_entities: 0,
 				translated_words: 0,
 				last_update: '2015-07-23 16:45:09',
-				untranslated_entities: 38 
-	     	} 
+				untranslated_entities: 38
+	     	}
 	     	...
      	}
 		*/
