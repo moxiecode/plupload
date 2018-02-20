@@ -314,7 +314,7 @@ define('plupload/core/Queue', [
             },
 
             isStopped: function() {
-                return this.state !== Queueable.IDLE && this.state !== Queueable.DESTROYED;
+                return this.state === Queueable.IDLE || this.state === Queueable.DESTROYED;
             },
 
 
