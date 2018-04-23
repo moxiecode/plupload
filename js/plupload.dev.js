@@ -1046,7 +1046,7 @@ plupload.Uploader = function(options) {
 				loaded = file.loaded * file.origSize / file.size;
 
 				if (!file.completeTimestamp || file.completeTimestamp > startTime) {
-					loadedDuringCurrentSession += loaded;
+					loadedDuringCurrentSession += (loaded - file.progressOffset);
 				}
 
 				total.loaded += loaded;
@@ -1463,7 +1463,7 @@ plupload.Uploader = function(options) {
 
 		// make sure we start at a predictable offset
 		if (file.loaded) {
-			offset = file.loaded = chunkSize ? chunkSize * Math.floor(file.loaded / chunkSize) : 0;
+			offset = file.progressOffset = file.loaded = chunkSize ? chunkSize * Math.floor(file.loaded / chunkSize) : 0;
 		}
 
 		function handleError() {
@@ -2369,6 +2369,14 @@ plupload.File = (function() {
 			 * @type {Number}
 			 */
 			completeTimestamp: 0,
+
+			/**
+			 * Set in onUploadFile. Is used to calculate proper plupload.QueueProgress.bytesPerSec.
+			 * @private
+			 * @property progressOffset
+			 * @type {Number}
+			 */
+			progressOffset: 0,
 
 			/**
 			 * Returns native window.File object, when it's available.
