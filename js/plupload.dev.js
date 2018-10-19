@@ -843,7 +843,7 @@ Helper collection class - in a way a mix of object and array
 */
 define('plupload/core/Collection', [
     'plupload'
-], function(Basic) {
+], function(plupload) {
 
     var Collection = function() {
         var _registry = {};
