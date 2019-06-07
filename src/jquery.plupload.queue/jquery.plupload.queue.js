@@ -160,8 +160,8 @@ used as it is.
 					container : id
 				}, settings);
 
-				// Enable drag/drop (see PostInit handler as well)
-				if (settings.dragdrop) {
+				// Enable drag/drop (see PostInit handler as well) and set the drop_element variable unless it's not defined.
+				if (settings.dragdrop && typeof settings.drop_element === 'undefined') {
 					settings.drop_element = id + '_filelist';
 				}
 
