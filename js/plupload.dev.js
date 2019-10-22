@@ -1515,8 +1515,13 @@ plupload.Uploader = function(options) {
 					args.total = blob.size;
 				}
 			}
-
-			if (up.trigger('BeforeChunkUpload', file, args, chunkBlob, offset)) {
+			
+			//If Developers Want Call uploadChunk by they themselves EventFunction on BeforeChunkUpload,Just Put the Function Args.
+			var uploadChunkCallback = function(){
+				uploadChunk(args, chunkBlob, curChunkSize);
+			};
+			
+			if (up.trigger('BeforeChunkUpload', file, args, chunkBlob, offset, uploadChunkCallback)) {
 				uploadChunk(args, chunkBlob, curChunkSize);
 			}
 		}
