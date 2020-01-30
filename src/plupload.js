@@ -2155,6 +2155,9 @@ plupload.Uploader = function(options) {
 		@param {String} name Event name to fire.
 		@param {Object..} Multiple arguments to pass along to the listener functions.
 		*/
+		trigger: function(name, Multiple) {
+			this.Uploader.prototype.__proto__.trigger(name, Multiple);
+		},
 
 		// override the parent method to match Plupload-like event logic
 		dispatchEvent: function(type) {
