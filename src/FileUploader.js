@@ -106,6 +106,8 @@ define('plupload/FileUploader', [
 				chunk.start = chunk.seq * chunkSize;
 				chunk.end = Math.min(chunk.start + chunkSize, file.size);
 				chunk.total = file.size;
+				chunk.size = chunk.end - chunk.start;
+				chunk.loaded = 0;
 
 				// do not proceed for weird chunks
 				if (chunk.start < 0 || chunk.start >= file.size) {
@@ -122,7 +124,8 @@ define('plupload/FileUploader', [
 				up = new ChunkUploader(file.slice(chunk.start, chunk.end, file.type));
 
 				up.bind('progress', function(e) {
-					self.progress(calcProcessed() + e.loaded, file.size);
+					_chunks.get(chunk.seq).loaded = e.loaded;
+					self.progress(calcProcessed(), file.size);
 				});
 
 				up.bind('failed', function(e, result) {
@@ -186,7 +189,9 @@ define('plupload/FileUploader', [
 
 			_chunks.each(function(item) {
 				if (item.state === Queueable.DONE) {
-					processed += (item.end - item.start);
+					processed += item.size;
+				} else {
+					processed += item.loaded;
 				}
 			});
 
