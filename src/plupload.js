@@ -769,7 +769,7 @@ plupload.addFileFilter('prevent_empty', function(value, file, cb) {
 	@param {Object} [settings.multipart_params] Hash of key/value pairs to send with every file upload.
 	@param {Boolean} [settings.multi_selection=true] Enable ability to select multiple files at once in file dialog.
 	@param {String|Object} [settings.required_features] Either comma-separated list or hash of required features that chosen runtime should absolutely possess.
-	@param {Object} [settings.resize] Enable resizng of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
+	@param {Object} [settings.resize] Enable resizing of images on client-side. Applies to `image/jpeg` and `image/png` only. `e.g. {width : 200, height : 200, quality : 90, crop: true}`
 		@param {Number} [settings.resize.width] If image is bigger, it will be resized.
 		@param {Number} [settings.resize.height] If image is bigger, it will be resized.
 		@param {Number} [settings.resize.quality=90] Compression quality for jpegs (1-100).
