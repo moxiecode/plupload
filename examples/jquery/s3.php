@@ -1,4 +1,10 @@
-<?php 
+<?php
+#!! IMPORTANT: 
+#!! this file is just an example, it doesn't incorporate any security checks and 
+#!! is not recommended to be used in production environment as it is. Be sure to 
+#!! revise it and customize to your needs.
+die("Make sure that you enable some form of authentication before removing this line.");
+
 /* 
 In order to upload files to S3 using Flash runtime, one should start by placing crossdomain.xml into the bucket.
 crossdomain.xml can be as simple as this:
