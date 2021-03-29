@@ -1,8 +1,8 @@
 {
     "name": "plupload",
     "description": "Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering, request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and Flash.",
-    "version": "3.1.2",
-    "releaseDate": "2018-02-20",
+    "version": "3.1.3",
+    "releaseDate": "2021-03-29",
     "author": "Ephox",
     "contributors": [{
         "name": "Davit Barbakadze",

@@ -1,4 +1,9 @@
 <?php
+#!! IMPORTANT: 
+#!! this file is just an example, it doesn't incorporate any security checks and 
+#!! is not recommended to be used in production environment as it is. Be sure to 
+#!! revise it and customize to your needs.
+die("Make sure that you enable some form of authentication before removing this line.");
 
 require_once("handler-php/PluploadHandler.php");
 
