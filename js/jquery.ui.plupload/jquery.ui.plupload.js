@@ -489,7 +489,7 @@ $.widget("ui.plupload", {
 					break;
 			}
 
-			message += " <br /><i>" + details + "</i>";
+			message += " <br /><i>" + plupload.xmlEncode(details) + "</i>";
 
 			self._trigger('error', null, { up: up, error: err } );
 
@@ -1305,7 +1305,7 @@ $.widget("ui.plupload", {
 					// Rename file and glue extension back on
 					if (e.keyCode === 13) {
 						file.name = nameInput.val() + ext;
-						nameSpan.html(file.name);
+						nameSpan.text(file.name);
 					}
 					nameInput.blur();
 				}
