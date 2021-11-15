@@ -1165,7 +1165,7 @@ $.widget("ui.plupload", {
 						return ext;
 
 					default:
-						return file[$1] || '';
+						return plupload.xmlEncode(file[$1] || '');
 				}
 			});
 		});

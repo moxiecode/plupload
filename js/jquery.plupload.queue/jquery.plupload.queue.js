@@ -223,7 +223,7 @@ used as it is.
 
 						fileList.append(
 							'<li id="' + file.id + '">' +
-								'<div class="plupload_file_name"><span>' + file.name + '</span></div>' +
+								'<div class="plupload_file_name"><span>' + plupload.xmlEncode(file.name) + '</span></div>' +
 								'<div class="plupload_file_action"><a href="#"></a></div>' +
 								'<div class="plupload_file_status">' + file.percent + '%</div>' +
 								'<div class="plupload_file_size">' + plupload.formatSize(file.size) + '</div>' +
