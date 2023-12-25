@@ -1673,7 +1673,7 @@ plupload.Uploader = function(options) {
 		if (err.code === plupload.INIT_ERROR) {
 			up.destroy();
 		}
-		// Set failed status if an error occured on a file
+		// Set failed status if an error occurred on a file
 		else if (err.code === plupload.HTTP_ERROR) {
 			err.file.status = plupload.FAILED;
 			err.file.completeTimestamp = +new Date();
