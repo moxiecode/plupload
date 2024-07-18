@@ -6823,7 +6823,8 @@ define("moxie/runtime/html5/Runtime", [
 						(Env.browser === 'Chrome' && Env.verComp(Env.version, 28, '<')) || 
 						(Env.browser === 'IE' && Env.verComp(Env.version, 10, '<')) || 
 						(Env.browser === 'Safari' && Env.verComp(Env.version, 7, '<')) ||
-						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<'))
+						(Env.browser === 'Firefox' && Env.verComp(Env.version, 37, '<')) ||
+						(Env.browser === 'Mobile Safari' && Env.os === 'iOS')
 					);
 				}()),
 				return_response_headers: True,
