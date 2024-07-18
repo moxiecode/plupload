@@ -3471,7 +3471,7 @@ define("moxie/core/utils/Mime", [
 
 
 	var extList2mimes = function (filters, addMissingExtensions) {
-		var ext, i, ii, type, mimes = [];
+		var ext, i, ii, type, mimes_ = [];
 
 		// convert extensions to mime types list
 		for (i = 0; i < filters.length; i++) {
@@ -3488,16 +3488,17 @@ define("moxie/core/utils/Mime", [
 
 				// future browsers should filter by extension, finally
 				if (addMissingExtensions && /^\w+$/.test(ext[ii])) {
-					mimes.push('.' + ext[ii]);
-				} else if (type && Basic.inArray(type, mimes) === -1) {
-					mimes.push(type);
+					mimes_.push('.' + ext[ii]);
+				} else if (type && Basic.inArray(type, mimes_) === -1) {
+					mimes_.push(type);
 				} else if (!type) {
 					// if we have no type in our map, then accept all
 					return [];
 				}
 			}
 		}
-		return mimes;
+
+		return mimes_;
 	};
 
 
