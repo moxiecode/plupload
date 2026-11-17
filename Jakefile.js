@@ -60,10 +60,16 @@ task("mkjs", [], function (i18n) {
 	var targetDir = "./js", moxieDir = "src/moxie";
 
 	// Clear previous versions
+	// (keep i18n, it can't be regenerated since transifex pull is gone)
 	if (fs.existsSync(targetDir)) {
-		jake.rmRf(targetDir);
+		fs.readdirSync(targetDir).forEach(function(name) {
+			if (name !== 'i18n') {
+				jake.rmRf(path.join(targetDir, name));
+			}
+		});
+	} else {
+		fs.mkdirSync(targetDir, 0755);
 	}
-	fs.mkdirSync(targetDir, 0755);
 
 
 	// Copy compiled moxie files

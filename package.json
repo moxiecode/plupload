@@ -47,6 +47,9 @@
     "engines": {
         "node": ">=0.8.0"
     },
+    "scripts": {
+        "build": "jake mkjs"
+    },
     "devDependencies": {
         "jake": "0.5.x",
         "glob": "3.2.x",
@@ -59,6 +62,7 @@
         "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
         "dateformat": "1.x",
         "request": "2.25.x",
-        "async": "0.2.x"
+        "async": "0.2.x",
+        "uglify-js": "2.3.6"
     }
 }
