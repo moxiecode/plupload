@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Runtime</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+o.Env.swf_url = "../../bin/flash/Moxie.swf";
+o.Env.xap_url = "../../bin/silverlight/Moxie.xap";
+
+module("Runtime", {
+	setup: function() {
+
+		o.extend(this, {
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			runtimeOrder: "html5,flash,silverlight,html4"
+		});
+	},
+
+	teardown: function() {
+	}
+});
+
+
+test('Prerequisites', function(assert) {
+	var rt = new o.RuntimeTarget();
+
+	assert.equal(typeof rt.bind, 'function', "RuntimeTarget is EventTarget.");
+	assert.equal(typeof rt.connectRuntime, 'function', "RuntimeTarget is RuntimeClient.");
+
+	// case of the runtime idetifier should not matter
+	rt.bind('RuntimeInit', function(e, runtimeObj) {
+		start();
+		assert.equal(runtimeObj.type, 'html4', "Case of the runtime identifier shouldn't matter.");
+	});
+
+	rt.bind('RuntimeError', function() {
+		start();
+		assert.ok(false, "Letter-case of the runtime identifier shouldn't matter.");
+	});
+
+	stop();
+	rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+		runtime_order: 'HTML4' 
+	}));
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('Initialization and destruction: ' + runtime, function(assert) {
+		var rt = new o.RuntimeTarget();
+
+		rt.bind('RuntimeInit', function(e, runtimeObj) {
+			start();
+			assert.ok(true, "RuntimeInit fired.");
+			assert.equal(runtimeObj.type, runtime, runtime + " initialized.");
+
+			runtimeObj.getShimContainer(); // force html structure
+
+			assert.ok($('#qunit-fixture').find('.moxie-shim').length, "HTML structure inserted.");
+			assert.equal(runtimeObj.clients, 1, "Runtime has one client.");
+
+			rt.disconnectRuntime();
+			assert.ok(true, "Initiate deconstruction.");
+			assert.equal(runtimeObj.clients, 0, "Runtime has no clients.");
+			assert.ok(!runtimeObj.hasEventListener('RuntimeInit'), "Event listeners unbined.");
+			assert.ok(!$('#qunit-fixture').find('.moxie-shim').length, "Runtime automatically deconstructed, HTML structure removed.");
+		});
+
+		rt.bind('RuntimeError', function() {
+			start();
+			assert.ok(false, "Runtime cannot be initialized.");
+		});
+
+		stop();
+		rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+			runtime_order: runtime
+		}));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('Destruction without initialization: ' + runtime, function(assert) {		
+		var constructor = o.Runtime.getConstructor(runtime);
+		var r = new constructor();
+
+		assert.ok(o.Runtime.getRuntime(r.uid), "Runtime instantiated.");
+		r.destroy();
+		assert.ok(!o.Runtime.getRuntime(r.uid), "Runtime destroyed.");
+	});
+});
+
+
+
+test('Fallback to the next runtime in the list due to required capability', function(assert) {
+	var rt = new o.RuntimeTarget();
+
+	rt.bind('RuntimeInit', function(e, runtimeObj) {
+		start();
+		assert.equal(runtimeObj.type, 'flash', "RuntimeTarget successfully fell back to flash.");
+		rt.disconnectRuntime();
+	});
+
+	rt.bind('RuntimeError', function() {
+		start();
+		assert.ok(false, "Runtime cannot be initialized.");
+	});
+
+	stop();
+	rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+		required_caps: {
+			access_image_binary: true
+		},
+		runtime_order: "html4,flash"
+	}));
+});
+
+test('Check what happens if capability cannot be fulfilled', function(assert) {
+	var rt = new o.RuntimeTarget();
+
+	rt.bind('RuntimeInit', function(e, runtimeObj) {
+		start();
+		assert.ok(false, "Unexpected result.");
+	});
+
+	rt.bind('RuntimeError', function() {
+		start();
+		assert.ok(true, "RuntimeError fired.");
+		assert.ok(true, "Runtime cannot be initialized.");
+	});
+
+	stop();
+	rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+		required_caps: {
+			required_capability: true
+		},
+		runtime_order: "html5,flash,silverlight,html4"
+	}));
+});
+
+
+
+// test operational modes
+(function() {
+	var rt;
+
+	function initRuntimeTarget(runtime, requiredCaps, cb) {
+		rt = new o.RuntimeTarget();
+
+		rt.bind('RuntimeInit', function(e, runtimeObj) {
+			start();
+			cb(runtimeObj.mode);
+		});
+
+		rt.bind('RuntimeError', function() {
+			start();
+			cb(false);
+		});
+
+		stop();
+		rt.connectRuntime(o.extend({}, this.runtimeOptions,  {
+			required_caps: requiredCaps,
+			runtime_order: runtime
+		}));
+	}
+
+	test("Operational mode: html5", function(assert) {
+		initRuntimeTarget.call(this, "html5", {
+		}, function(mode) {
+			assert.equal(mode, "browser", "For html5 runtime operational mode is always: browser");
+		});
+	});
+
+	test("Operational mode: html4", function(assert) {
+		initRuntimeTarget.call(this, "html4", {
+		}, function(mode) {
+			assert.equal(mode, "browser", "For html4 runtime operational mode is always: browser");
+		});
+	});
+
+	test("Operational mode: flash", function(assert) {
+		initRuntimeTarget.call(this, "flash", {
+			send_binary_string: true
+		}, function(mode) {
+			if (!mode) {
+				assert.ok(false, "Operational mode cannot be set.");
+			} else {
+				assert.equal(mode, "browser", "{ send_binary_string: true } requires mode: browser");
+			}
+		});
+
+		initRuntimeTarget.call(this, "flash", {
+			upload_filesize: '2gb'
+		}, function(mode) {
+			if (!mode) {
+				assert.ok(false, "Operational mode cannot be set.");
+			} else {
+				assert.equal(mode, "client", "{ upload_filesize: '2gb' } requires mode: client");
+			}
+		});
+		
+		initRuntimeTarget.call(this, "flash", {
+			send_binary_string: true,
+			upload_filesize: '2gb'
+		}, function(mode) {
+			assert.equal(mode, false, "Operational mode cannot be set: conflicting capabilities requested.");
+		});
+
+
+		initRuntimeTarget.call(this, "flash", {
+			drag_and_drop: true,
+		}, function(mode) {
+			assert.equal(mode, false, "Operational mode cannot be set: capability either unsupported or unsupported state requested.");
+		});
+
+		initRuntimeTarget.call(this, "flash", {
+			report_upload_progress: false,
+		}, function(mode) {
+			assert.equal(mode, "client", "Operational mode set to default: client.");
+		});
+	});
+
+}());
+
+test('Runtime.can()', function(assert) {
+	assert.ok(o.Runtime.can('html5', 'upload_filesize'), "html5 can upload_filesize");
+});
+
+test('Runtime.thatCan()', function(assert) {
+	var type = o.Runtime.thatCan({
+		upload_filesize: '3gb',
+		select_multiple: true,
+		send_browser_cookies: true
+	}, 'flash,html4,html5,silverlight');
+
+	assert.equal(type, 'html5', "Usable Runtime figured out by capability (" + type + ").");
+});
+
+test('Runtime.capTrue(), Runtime.capFalse(), Runtime.capTest()', function(assert) {
+
+	assert.deepEqual(o.Runtime.capTrue(false), true, "Whatever the argument Runtime.capTrue() always results in true.");
+	assert.deepEqual(o.Runtime.capFalse(true), false, "Whatever the argument Runtime.capFalse() always results in false.");
+
+	var resultFn = o.Runtime.capTest(4 - 4);
+	assert.equal(typeof resultFn, 'function', "Return value of Runtime.capTest() is a function.");
+	assert.deepEqual(resultFn(), false, "Return value of Runtime.capTest() evaluates to a result of the expression that was passed into Runtime.capTest() and then casted to boolean.");
+
+	var caps = {
+		only_true: true,
+		only_false: false,
+		always_true: o.Runtime.capTrue,
+		always_false: o.Runtime.capFalse,
+		eval_always_true: o.Runtime.capTest('false'),
+		eval_always_false: o.Runtime.capTest(4 - 4)	
+	}
+	, runtime = new o.Runtime({}, 'test', caps)
+	;
+
+	assert.deepEqual([
+		runtime.can('only_true', true), 
+		runtime.can('only_true', false),
+		runtime.can('only_true', 'true')
+	], [
+		true,
+		false,
+		false
+	], "cap: true - becomes true only when value to check is - true.");
+
+	assert.deepEqual([
+		runtime.can('only_false', true), 
+		runtime.can('only_false', false),
+		runtime.can('only_false', 'true')
+	], [
+		false,
+		true,
+		false
+	], "cap: false - becomes true only when value to check is - false.");
+
+	assert.deepEqual([
+		runtime.can('always_true', true), 
+		runtime.can('always_true', false),
+		runtime.can('always_true', 'true')
+	], [
+		true,
+		true,
+		true
+	], "cap: o.Runtime.capTrue(...) - is always true, whatever the value to check.");
+
+	assert.deepEqual([
+		runtime.can('always_false', true), 
+		runtime.can('always_false', false),
+		runtime.can('always_false', 'true')
+	], [
+		false,
+		false,
+		false
+	], "cap: o.Runtime.capFalse(...) - is always false, whatever the value to check.");
+
+	assert.deepEqual([
+		runtime.can('eval_always_true', true), 
+		runtime.can('eval_always_true', false),
+		runtime.can('eval_always_true', 'true')
+	], [
+		true,
+		true,
+		true
+	], "cap: o.Runtime.capTest(truthy) - is always true, whatever the value to check.");
+
+	assert.deepEqual([
+		runtime.can('eval_always_false', true), 
+		runtime.can('eval_always_false', false),
+		runtime.can('eval_always_false', 'true')
+	], [
+		false,
+		false,
+		false
+	], "cap: o.Runtime.capTest(falsy) - is always false, whatever the value to check.");
+});
+
+
+// Related #104
+test("getShimContainer()", function(assert) {
+		var rt = new o.RuntimeTarget();
+
+		rt.bind('RuntimeInit', function(e, runtime) {
+			start();
+
+			var shimContainer = runtime.getShimContainer();
+			
+			equal(o.typeOf(shimContainer), 'node', 
+				"Shim container exists and is a node.");
+			deepEqual(shimContainer.parentNode, document.body,
+				"When container is not specified or is specified but doesn't exist, document.body should be used instead.");
+		});
+
+		rt.bind('RuntimeError', function() {
+			start();
+			assert.ok(false, "Runtime cannot be initialized.");
+		});
+
+		stop();
+		rt.connectRuntime({
+			container: "doesnt-exist-el",
+			runtime_order: 'html4'
+		});
+	});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

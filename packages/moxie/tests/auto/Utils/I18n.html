@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: I18n Utils</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("I18n", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+test("sprintf()", function() {
+
+	equal(
+		o.sprintf("File: %s, size: %d, max file size: %d", "filename.ext", 1024, 1048576),
+		"File: filename.ext, size: 1024, max file size: 1048576",
+		"Different tokens scattered around the string in the moddle and in the end."
+	);
+
+	equal(
+		o.sprintf('%d files queued', 0),
+		"0 files queued",
+		"Token in the beginning of the string."
+	);
+
+	equal(
+		o.sprintf('Twelve: %d%d', 1, 2),
+		"Twelve: 12",
+		"Sequence of two tokens immediately following each other."
+	);
+
+	equal(
+		o.sprintf('Much more tokens: %d %d %d %d', 1, 2, 3),
+		"Much more tokens: 1 2 3 ",
+		"Extra tokens replaced with empty string."
+	);
+
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

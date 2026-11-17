@@ -1,0 +1,4 @@
+# i18n sources are shipped as js/i18n
+/src/i18n/
+*.cov.js
+node_modules/

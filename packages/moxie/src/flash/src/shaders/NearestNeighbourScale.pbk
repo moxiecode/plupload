@@ -1,0 +1,25 @@
+<languageVersion : 1.0;>
+
+kernel NearestNeighbourScale
+<   namespace : "com.moxiecode";
+    vendor : "Moxiecode";
+    version : 1;
+    description : "NearestNeighbourScale";
+>
+{
+    parameter float scale
+    <
+        minValue: 0.0;
+        maxValue: 1000.0;
+        defaultValue: 1.0;
+    >;
+    
+    input image4 src;
+    output pixel4 dst;
+
+    void 
+    evaluatePixel()
+    {
+        dst = sampleNearest(src, outCoord() / scale);
+    }
+}

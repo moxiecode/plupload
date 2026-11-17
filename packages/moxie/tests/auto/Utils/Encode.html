@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Encode Utils</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("Basic", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+
+// #111
+test("unicode in btoa()", function(assert) {
+	assert.equal(o.btoa('你好，世界', true), "5L2g5aW977yM5LiW55WM", 
+		"Multi-byte string properly encoded with second argument set to true.");
+});
+
+
+test("unicode in atob()", function(assert) {
+
+	assert.equal(o.atob('5L2g5aW977yM5LiW55WM', true), '你好，世界', 
+		"Multi-byte string properly decoded, with second argument set to true.");
+});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Test XMLHttpRequest</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+module("XMLHttpRequest", {
+	setup: function() {
+
+		o.extend(this, {
+			x: o.Exceptions,
+
+			XHR: o.XMLHttpRequest,
+
+			baseUrl: "http://cors.mxi/",
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				runtime_order: "html5,flash,silverlight,html4",
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			sameOrigin: function(url) {
+				function origin(url) {
+					return [url.scheme, url.host, url.port].join('/');
+				}
+					
+				if (typeof url === 'string') {
+					url = _parseUrl(url);
+				}
+					
+				return origin(_parseUrl()) === origin(url);
+			}	
+
+		});
+		
+	},
+
+	teardown: function() {
+	}
+});
+
+
+// send() - get Blob (Binary)
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+
+	test('send() - get Blob (Binary): ' + runtime, function() {
+		var x = this.x
+		, xhr = new this.XHR
+		, startTime = (new Date).getTime()
+		, endTime
+		, progressRate = 0
+		, events = {
+			loadstart: 0,
+			//loadend: 0,
+			//load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		}
+		;
+
+		xhr.open('GET', this.baseUrl + 'XMLHttpRequest/' + (runtime === 'html5' ? 'image.php' : 'image.jpg'));
+		xhr.responseType = 'blob';
+
+		o.each(events, function(times, e) {
+			if (e === 'progress') {
+				var prevTime = startTime;
+				xhr.onprogress = function(e) {
+					var time = (new Date).getTime();
+					progressRate += time - prevTime;
+					prevTime = time;
+					events.progress++;
+				};
+			} else {
+				xhr['on' + e] = function() {
+					events[e]++;
+				};
+			}
+		});
+
+		xhr.onloadend = function() {
+			start();
+			// test events
+			equal(xhr.status, 200, "HTTP 200 OK");
+
+			if (xhr.status == 200) {
+				var blob = xhr.response, img = new o.Image;
+
+				equal(events.loadstart, 1, "LoadStart fired");
+				ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+				ok(true, "LoadEnd fired");
+
+				ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name)");
+				equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
+				equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
+
+
+				var disposition = xhr.getResponseHeader('Content-Disposition');
+
+				stop();
+				img.onload = function() {
+					start();
+					deepEqual({ width: img.width, height: img.height }, { width: 460, height: 670 }, "Image retained it's properties");
+				};
+				img.onerror = function() {
+					start();
+					ok(false, "Image failed to load.");
+				};
+				img.load(blob);
+			}
+		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+/*
+// send() - send Blob / get Text
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send() - send Blob / get Text: ' + runtime, function() {
+		var 
+		  x = this.x
+		, xhr = new this.XHR
+		, fd = new o.FormData
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, fileFieldName = 'image'
+		, startTime = (new Date).getTime()
+		, endTime
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr	
+		});
+
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'text';
+
+		fd.append('one', "1");
+		fd.append(fileFieldName, file);
+
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			ok(xhr.response && xhr.response !== '', "Response received");
+			equal(xhr.response, xhr.responseText, "xhr.response and xhr.responseText have the same content");
+		};
+
+		startTime = (new Date).getTime();
+		try {
+			xhr.send(fd, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw x; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
+});
+
+// send() - get JSON
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('send() - get JSON: ' + runtime, function() {
+		// expect(2);
+
+		var 
+		  x = this.x
+		, xhr = new this.XHR
+		, startTime
+		, endTime
+		;
+
+		// 1
+		xhr.open('get', 'http://cors.mxi/json.php');
+		xhr.responseType = 'json';
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			equal(xhr.status, 200, "HTTP Status: 200 OK");
+			ok(xhr.response, "Response received");
+			if (xhr.response) {
+				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+			}
+		};
+
+		xhr.bind('error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+			
+		startTime = (new Date).getTime();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { 
+			runtime_order: runtime,
+			required_caps: {
+				do_cors: true
+			} 
+		}));
+	});
+});
+
+
+// test send ArrayBuffer
+
+// test receive Document
+
+// wrong url
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("wrong url: " + runtime, function() {
+		var self = this, xhr = new self.XHR, x = self.x;
+		var events = {
+			loadstart: 0,
+			//loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		};
+
+		o.each(events, function(times, e) {
+			xhr['on' + e] = function() {
+				events[e]++;
+			};
+		});
+
+		xhr.open('POST', '/unknown');
+		xhr.responseType = 'json'; // force bypassing default XMLHttpRequest
+
+		stop();
+		xhr.onloadend = function() {
+			start();
+
+			equal(events.error, 0, "error event not fired.");
+			ok(events.load > 0, "load event fired.");
+			equal(xhr.readyState, self.XHR.DONE, "readyState switched to DONE.");
+			equal(xhr.status, 404, "status code 404.");
+			equal(xhr.statusText, "Not Found", "statusText - Not Found.");
+			equal(xhr.response, null, "response is null.");
+		};
+
+		try {
+			xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+		} catch (ex) {
+			start();
+			if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+				throw ex; // pass further
+			}
+			ok(true, "Runtime not supported.");
+		}
+	});
+});
+
+
+// send browser cookies (retain session)
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send browser cookies (retain session): ' + runtime, function() {
+		var self = this
+		, x = this.x
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, fileFieldName = 'image'
+		, offset = 0
+		, chunkSize = 20 * 1024
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr	
+		});
+
+
+		function uploadNextChunk() {
+			var blob = file.slice(offset, offset + chunkSize);
+			var xhr = new o.XMLHttpRequest();
+			var fd = new o.FormData();
+			fd.append("name", fileName);
+			fd.append("offset", offset);
+			fd.append("total", binStr.length);
+
+			xhr.open('post', 'XMLHttpRequest/session.php');
+			xhr.responseType = 'json';
+
+			xhr.onload = function() {
+				start();
+
+				if (xhr.response.OK == 1) {
+					offset += chunkSize;
+					if (offset < binStr.length) {
+						stop();
+						setTimeout(uploadNextChunk, 1);
+					} else {
+						ok(true, "Runtime supports sessions.");
+					}
+				} else {
+					ok(false, "Runtime supports sessions.");
+				}
+			};
+
+			try {
+				xhr.send(fd, o.extend({}, self.runtimeOptions, { runtime_order: runtime }));
+			} catch (ex) {
+				start();
+				if (ex.code != x.RuntimeError.NOT_INIT_ERR) {
+					throw x; // pass further
+				}
+				ok(true, "Runtime not supported.");
+				return;
+			}
+		}
+
+		stop();
+		uploadNextChunk();
+
+	});
+});
+
+// test receive ArrayBuffer
+
+
+// test different server response codes
+// send browser cookies (retain session)
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	
+	test('test response http status codes: ' + runtime, function() {
+		var self = this;
+		var statuses = {
+			200: 200,
+			404: 404, 
+			302: 200, 
+			301: 200,
+			503: 503
+		};	
+		var queue = [];
+
+		o.each(statuses, function(response, status) {
+
+			queue.push(function(cb) {
+				var xhr = new o.XMLHttpRequest();
+				xhr.open('get', 'XMLHttpRequest/http-status.php?status=' + status);
+				xhr.responseType = 'json';
+
+				xhr.onloadend = function() {
+					equal(xhr.status, response, status + " requested; " + response + " received.");
+
+					xhr.destroy();
+					xhr = null;
+					cb();
+				};
+
+				xhr.bind("RuntimeError", function() {
+					ok(true, "Runtime not supported.");
+					cb();
+				});
+
+				xhr.send(null, o.extend({}, self.runtimeOptions, { 
+					required_caps: {
+						return_status_code: 403
+					},
+					runtime_order: runtime 
+				}));
+			});
+		});
+
+		stop();
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+});
+
+*/
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

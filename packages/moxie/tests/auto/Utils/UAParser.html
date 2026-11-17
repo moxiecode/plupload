@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: UAParser</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+module("UAParser");
+
+
+test("UA strings", function() {
+	var uas = [
+	    {
+	    	// desc: '' // optional
+	    	ua: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0",
+	    	expect: {
+	    		browser: "Firefox",
+	    		version: "41.0",
+	    		os: "Ubuntu"
+	    	}
+	    }
+	];
+
+	function genTitle(obj) {
+		return obj.browser + ' ' + obj.version + '/' + obj.os;
+	}
+
+
+	$.each(uas, function(i, item) {
+		var uaParser = new o.Env.uaParser(item.ua);
+		var result = uaParser.getResult();
+
+		deepEqual({
+				browser: result.browser.name,
+				version: result.browser.version,
+				os: result.os.name
+			}, {
+				browser: item.expect.browser,
+				version: item.expect.version,
+				os: item.expect.os
+			}, 
+			item.expect.desc || genTitle(item.expect)
+		);
+	});
+});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

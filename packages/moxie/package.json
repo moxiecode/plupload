@@ -1,0 +1,76 @@
+{
+  "name": "mOxie",
+  "private": true,
+  "description": "Custom implementations of the XHR2 and File API.",
+  "keywords": [
+    "XHR2",
+    "XMLHttpRequest2",
+    "HTML5",
+    "Flash",
+    "Silverlight",
+    "FileInput",
+    "FileReader",
+    "Image",
+    "ImageResizer"
+  ],
+  "version": "1.5.7",
+  "releaseDate": "2017-11-03",
+  "author": "Ephox",
+  "contributors": [
+    {
+      "name": "Davit Barbakadze",
+      "email": "davit.barbakadze@ephox.com"
+    }
+  ],
+  "main": "./bin/js/moxie.min",
+  "homepage": "https://github.com/moxiecode/moxie/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moxiecode/moxie.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moxiecode/moxie/issues"
+  },
+  "licenses": [
+    {
+      "type": "AGPLv3",
+      "url": "https://github.com/moxiecode/plupload/blob/master/license.txt"
+    },
+    {
+      "type": "Single Website",
+      "url": "http://plupload.com/license/plupload_commercial_single.txt"
+    },
+    {
+      "type": "OEM",
+      "url": "http://plupload.com/license/plupload_commercial_oem.txt"
+    },
+    {
+      "type": "Custom Licensing",
+      "url": "http://www.moxiecode.com/contact.php"
+    }
+  ],
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "devDependencies": {
+    "amdlc": "https://github.com/jayarjo/amdlc/tarball/master",
+    "async": "0.2.x",
+    "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
+    "coverjs": "0.0.x",
+    "dateformat": "1.x",
+    "extract-zip": "^1.5.0",
+    "fileset": "0.1.x",
+    "grunt-nuget-pack": "0.0.6",
+    "grunt-nuget-push": "0.0.1",
+    "handlebars": "1.0.x",
+    "jake": "0.5.x",
+    "jshint": "2.1.x",
+    "moxie-zip": "0.0.x",
+    "request": "^2.25.0",
+    "uglify-js": ">= 2.0.0",
+    "yuidocjs": "0.3.x"
+  },
+  "scripts": {
+    "test": "jake test"
+  }
+}

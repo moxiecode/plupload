@@ -1,6 +1,0 @@
-[submodule "src/moxie"]
-	path = src/moxie
-	url = https://github.com/moxiecode/moxie.git
-[submodule "tests/js/testrunner"]
-	path = tests/js/testrunner
-	url = https://github.com/moxiecode/testrunner.git

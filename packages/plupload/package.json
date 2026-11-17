@@ -1,0 +1,69 @@
+{
+    "name": "plupload",
+    "description": "Plupload is a JavaScript API for dealing with file uploads it supports features like multiple file selection, file type filtering, request chunking, client side image scaling and it uses different runtimes to achieve this such as HTML 5, Silverlight and Flash.",
+    "keywords": [
+        "fileuploader",
+        "upload",
+        "chunk",
+        "image",
+        "resize",
+        "crop",
+        "orientation",
+        "JavaScript",
+        "HTML5",
+        "Flash",
+        "Silverlight",
+        "moxie"
+    ],
+    "version": "2.3.9",
+    "releaseDate": "2021-11-15",
+    "author": "Ephox",
+    "contributors": [{
+        "name": "Davit Barbakadze",
+        "email": "davit.barbakadze@ephox.com"
+    }],
+    "main": "./js/plupload.full.min",
+    "homepage": "http://plupload.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/moxiecode/plupload.git"
+    },
+    "bugs": {
+        "url": "https://github.com/moxiecode/plupload/issues"
+    },
+    "licenses": [{
+        "type": "AGPLv3",
+        "url": "https://github.com/moxiecode/plupload/blob/master/license.txt"
+    }, {
+        "type": "Single Website",
+        "url": "http://plupload.com/license/plupload_commercial_single.txt"
+    }, {
+        "type": "OEM",
+        "url": "http://plupload.com/license/plupload_commercial_oem.txt"
+    }, {
+        "type": "Custom Licensing",
+        "url": "http://www.moxiecode.com/contact.php"
+    }],
+    "engines": {
+        "node": ">=0.8.0"
+    },
+    "scripts": {
+        "build": "jake mkjs",
+        "prepack": "node ../../scripts/prepack.js",
+        "postpack": "node ../../scripts/postpack.js"
+    },
+    "devDependencies": {
+        "jake": "0.5.x",
+        "glob": "3.2.x",
+        "jshint": "2.1.x",
+        "yuidocjs": "0.3.x",
+        "handlebars": "1.0.x",
+        "moxie-zip": "0.0.x",
+        "fileset": "0.1.x",
+        "coverjs": "0.0.x",
+        "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
+        "dateformat": "1.x",
+        "request": "2.25.x",
+        "async": "0.2.x"
+    }
+}

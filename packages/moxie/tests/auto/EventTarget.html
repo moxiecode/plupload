@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Test EventTarget</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+QUnit.module("EventTarget", {
+	setup: function() {
+
+		function Constructor() {
+			this.uid = o.guid();
+		}
+
+		Constructor.prototype = o.EventTarget.instance;
+
+		this.o1 = new Constructor();
+		this.o2 = new Constructor();
+	}
+});
+
+
+QUnit.test("Trigger asynchronous event", function(assert) {
+	var order = [];
+
+	this.o1.bind('AsyncEvent', function() {
+		order.push(2);
+		start();
+		assert.deepEqual(order, [1,2], 'Event fired asynchronously.');
+	});
+
+	stop();
+	this.o1.trigger({
+		type: 'AsyncEvent',
+		async: true
+	});
+	order.push(1);
+});
+
+
+QUnit.test("Trigger synchronous event", function(assert) {
+	var order = []; 
+	
+	this.o1.bind('SyncEvent', function() {
+		order.push(2);
+	});
+
+	this.o1.trigger('SyncEvent');
+	order.push(1);
+	
+	assert.deepEqual(order, [2,1], 'Event fired synchronously.');
+});
+
+
+//QUnit.test("removeEventListener()/unbind() & removeAllEventListeners()/unbindAll()", function(assert) {
+	
+	/*
+	test remove by type
+	test remove by type and callback
+	remove all listeners from the object
+	
+	*/
+	
+//});
+
+//QUnit.test("handleEventProps()", function(assert) {
+	
+	/* 
+	test conversion
+	all properties should exist and be equal to null if not
+	*/
+	
+//});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

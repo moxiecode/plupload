@@ -1,0 +1,12 @@
+# build output, synced to the committed root js/ by `npm run build`
+/js/
+
+# copied in by scripts/prepack.js and removed by scripts/postpack.js
+/src/moxie/
+/.gitattributes
+/.jshintrc
+/bower.json
+/composer.json
+/license.txt
+/readme.md
+/SECURITY.md

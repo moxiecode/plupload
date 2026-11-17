@@ -1,0 +1,17 @@
+{
+	"browser": true,
+	"undef": true,
+	"unused": true,
+	"curly": true,
+	"laxcomma": true,
+	"boss": true,
+	"evil": false,
+	"scripturl": true,
+	"latedef": "nofunc",
+	"noarg": true,
+	"globals": {
+		"define": true,
+		"escape": true,
+		"unescape": true
+	}
+}

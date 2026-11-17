@@ -1,0 +1,16 @@
+{
+	"name": "moxie",
+	"main": [
+		"./bin/js/moxie.min.js"
+	],
+	"ignore": [
+		"tests/",
+		"src/",
+		"build/",
+		"Jakefile.js",
+		"package.json",
+		"bower.json",
+		"README.md",
+		".*"
+	]
+}

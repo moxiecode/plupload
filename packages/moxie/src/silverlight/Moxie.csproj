@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Rebuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0843579E-B369-49FA-A25F-258A89BBE6EB}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Moxiecode</RootNamespace>
+    <AssemblyName>Moxie</AssemblyName>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>true</SilverlightApplication>
+    <SupportedCultures>
+    </SupportedCultures>
+    <XapOutputs>true</XapOutputs>
+    <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
+    <IncludeImageLibs Condition=" '$(IncludeImageLibs)' == '' ">TRUE</IncludeImageLibs>
+    <EnableCSS Condition=" '$(EnableCSS)' == '' ">
+    </EnableCSS>
+    <XapFilename Condition=" '$(XapFilename)' == '' ">Moxie.xap</XapFilename>
+    <OutputDir>..\..\bin\silverlight\</OutputDir>
+    <SilverlightAppEntry>Moxiecode.App</SilverlightAppEntry>
+    <TestPageFileName>MoxieTestPage.html</TestPageFileName>
+    <CreateTestPage>true</CreateTestPage>
+    <ValidateXaml>true</ValidateXaml>
+    <EnableOutOfBrowser>false</EnableOutOfBrowser>
+    <OutOfBrowserSettingsFile>Properties\OutOfBrowserSettings.xml</OutOfBrowserSettingsFile>
+    <UsePlatformExtensions>true</UsePlatformExtensions>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+    <LinkedServerProject>
+    </LinkedServerProject>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(EnableCSS)' == 'TRUE' ">
+      <PropertyGroup>
+        <SilverlightManifestTemplate>Properties\AppManifestCSS.xml</SilverlightManifestTemplate>
+      </PropertyGroup>
+      <ItemGroup>
+        <None Include="Properties\AppManifestCSS.xml" />
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(EnableCSS)' == '' ">
+      <PropertyGroup>
+        <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
+      </PropertyGroup>
+      <ItemGroup>
+        <None Include="Properties\AppManifest.xml" />
+      </ItemGroup>
+    </When>
+  </Choose>
+  <!-- This property group is only here to support building this project using the 
+       MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
+       to set the TargetFrameworkVersion to v3.5 -->
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Windows.Browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ComponentFactory.cs" />
+    <Compile Include="Com\Blob.cs" />
+    <Compile Include="Com\Errors\ImageError.cs" />
+    <Compile Include="Com\Errors\RuntimeError.cs" />
+    <Compile Include="Com\Errors\DOMError.cs" />
+    <Compile Include="Com\Events\DataEventArgs.cs" />
+    <Compile Include="Com\Events\ErrorEventArgs.cs" />
+    <Compile Include="Com\Events\ProgressEventArgs.cs" />
+    <Compile Include="Com\File.cs" />
+    <Compile Include="Com\FileDrop.cs" />
+    <Compile Include="Com\FileInput.cs" />
+    <Compile Include="Com\FileReader.cs" />
+    <Compile Include="Com\FileReaderSync.cs" />
+    <Compile Include="Com\Transporter.cs" />
+    <Compile Include="Com\XMLHttpRequest.cs" />
+    <Compile Include="Moxie.xaml.cs">
+      <DependentUpon>Moxie.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MXI\Utils.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(IncludeImageLibs)' == 'TRUE' ">
+    <Compile Include="Com\Image.cs" />
+    <Compile Include="Com\ImageView.cs" />
+    <Compile Include="MXI\BinaryReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MXI\Image\BitmapContext.cs" />
+    <Compile Include="MXI\Image\BitmapFactory.cs" />
+    <Compile Include="MXI\Image\WriteableBitmapExtension.cs" />
+    <Compile Include="MXI\Image\ExifParser.cs" />
+    <Compile Include="MXI\Image\Format.cs" />
+    <Compile Include="MXI\Image\JPEG.cs" />
+    <Compile Include="MXI\Image\PNG.cs" />
+    <Compile Include="FJCore\DCT.cs" />
+    <Compile Include="FJCore\DecodedJpeg.cs" />
+    <Compile Include="FJCore\Decoder\HuffmanTable.cs" />
+    <Compile Include="FJCore\Decoder\JpegComponent.cs" />
+    <Compile Include="FJCore\Decoder\JpegDecoder.cs" />
+    <Compile Include="FJCore\Decoder\JpegFrame.cs" />
+    <Compile Include="FJCore\Decoder\JpegHuffmanTable.cs" />
+    <Compile Include="FJCore\Decoder\JpegQuantizationTable.cs" />
+    <Compile Include="FJCore\Decoder\JpegScan.cs" />
+    <Compile Include="FJCore\Encoder\JpegEncoder.cs" />
+    <Compile Include="FJCore\FDCT.cs" />
+    <Compile Include="FJCore\Filter\Convolution.cs" />
+    <Compile Include="FJCore\Filter\FilterBase.cs" />
+    <Compile Include="FJCore\Filter\FilterLowpassResize.cs" />
+    <Compile Include="FJCore\Filter\FilterNNResize.cs" />
+    <Compile Include="FJCore\Filter\GrayImage.cs" />
+    <Compile Include="FJCore\Image.cs" />
+    <Compile Include="FJCore\IO\BinaryReader.cs" />
+    <Compile Include="FJCore\IO\BinaryWriter.cs" />
+    <Compile Include="FJCore\IO\JpegBinaryReader.cs" />
+    <Compile Include="FJCore\JpegMarker.cs" />
+    <Compile Include="FJCore\Resize\ImageResizer.cs" />
+    <Compile Include="FJCore\YCbCr.cs" />
+    <Compile Include="FJCore\ZigZag.cs" />
+    <Compile Include="PngEncoder\Adler32.cs" />
+    <Compile Include="PngEncoder\CRC32.cs" />
+    <Compile Include="PngEncoder\Deflater.cs" />
+    <Compile Include="PngEncoder\DeflaterConstants.cs" />
+    <Compile Include="PngEncoder\DeflaterEngine.cs" />
+    <Compile Include="PngEncoder\DeflaterHuffman.cs" />
+    <Compile Include="PngEncoder\DeflaterOutputStream.cs" />
+    <Compile Include="PngEncoder\DeflaterPending.cs" />
+    <Compile Include="PngEncoder\IChecksum.cs" />
+    <Compile Include="PngEncoder\PendingBuffer.cs" />
+    <Compile Include="PngEncoder\PngEncoder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </ApplicationDefinition>
+    <Page Include="Moxie.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(IncludeImageLibs)' == 'TRUE' ">
+    <Content Include="FJCore\IJG.txt" />
+    <Content Include="FJCore\JAI.txt" />
+    <Content Include="FJCore\License.txt" />
+    <Content Include="FJCore\README.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <Target Name="Cleanup">
+    <RemoveDir Directories=".\obj\" />
+  </Target>
+  <Target Name="Rebuild" DependsOnTargets="Cleanup;Build" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
