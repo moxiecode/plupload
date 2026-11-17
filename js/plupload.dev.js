@@ -1,14 +1,14 @@
 /**
  * Plupload - multi-runtime File Uploader
- * v3.1.2
+ * v3.1.5
  *
- * Copyright 2018, Ephox
+ * Copyright 2021, Ephox
  * Released under AGPLv3 License.
  *
  * License: http://www.plupload.com/license
  * Contributing: http://www.plupload.com/contributing
  *
- * Date: 2018-02-20
+ * Date: 2021-11-15
  */
 ;(function (global, factory) {
 	var extract = function() {
@@ -143,7 +143,7 @@ define('plupload', [], function() {
 		 * @static
 		 * @final
 		 */
-		VERSION: '3.1.2',
+		VERSION: '3.1.5',
 
 		/**
 		 * The state of the queue before it has started and after it has finished

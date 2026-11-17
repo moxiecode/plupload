@@ -88,10 +88,16 @@ task("mkjs", [], function (i18n) {
 
 
 	// Clear previous versions
+	// (keep i18n, it can't be regenerated since transifex pull is gone)
 	if (fs.existsSync(targetDir)) {
-		jake.rmRf(targetDir);
+		fs.readdirSync(targetDir).forEach(function(name) {
+			if (name !== 'i18n') {
+				jake.rmRf(path.join(targetDir, name));
+			}
+		});
+	} else {
+		jake.mkdirP(targetDir);
 	}
-	jake.mkdirP(targetDir);
 
 	amdlc.compile(options);
 
@@ -119,7 +125,7 @@ task("mkjs", [], function (i18n) {
 	uglify(targetDir + '/plupload.dev.js', targetDir + "/plupload.min.js", uglifyOptions);
 
 	var info = require("./package.json");
-	info.copyright = copyright;
+	info.copyright = copyright.replace("@@year@@", info.releaseDate.split("-")[0]);
 	tools.addReleaseDetailsTo(targetDir + "/plupload.dev.js", info);
 	tools.addReleaseDetailsTo(targetDir + "/plupload.min.js", info);
 
