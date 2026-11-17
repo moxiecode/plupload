@@ -1,0 +1,25 @@
+<!doctype html>
+<title>Yeti Attach Server Test</title>
+
+<script src="{route}/public/inject.js"></script>
+
+<script type="text/javascript" src="/yui"></script>
+
+<script>
+YUI().use("test", function (Y) {
+    var AttachServerTestCase = new Y.Test.Case({
+        name: "Yeti Attach Server Test Case",
+        testOk: function () {
+            Y.Assert.areEqual(1, 1);
+        }
+    });
+
+    var AttachServerSuite = new Y.Test.Suite("Yeti Attach Server Test Suite");
+
+    AttachServerSuite.add(AttachServerTestCase);
+
+    Y.Test.Runner.add(AttachServerSuite);
+
+    Y.Test.Runner.run();
+});
+</script>

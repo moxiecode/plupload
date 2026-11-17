@@ -1,0 +1,22 @@
+<!doctype html>
+<title>Yeti Basic Test with 404ing script</title>
+<script type="text/javascript" src="../../../dep/dev/yui-test.js"></script>
+<script src="bogus.js"></script>
+<script>
+YUI().use("test", function (Y) {
+    var SimpleTestCase = new Y.Test.Case({
+        name: "Yeti Simple Test Case, with 404ing script",
+        testOk: function () {
+            Y.Assert.areEqual(1, 1);
+        }
+    });
+
+    var SimpleSuite = new Y.Test.Suite("Yeti Simple Test Suite, with 404ing script");
+
+    SimpleSuite.add(SimpleTestCase);
+
+    Y.Test.Runner.add(SimpleSuite);
+
+    Y.Test.Runner.run();
+});
+</script>

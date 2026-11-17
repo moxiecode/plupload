@@ -1,0 +1,22 @@
+<!doctype html>
+<title>Yeti Query String Test</title>
+<script src="../../../dep/dev/yui-test.js"></script>
+<script>
+YUI().use("test", function (Y) {
+    var QueryStringTestCase = new Y.Test.Case({
+        name: "Yeti Query String Test Case",
+        testMoof: function () {
+            var dogcow = (window.location.search.match(/[?&]dogcow=([^&]+)/) || [])[1] || "?";
+            Y.Assert.areEqual("moof", dogcow);
+        }
+    });
+
+    var QueryStringSuite = new Y.Test.Suite("Yeti Query String Test Suite");
+
+    QueryStringSuite.add(QueryStringTestCase);
+
+    Y.Test.Runner.add(QueryStringSuite);
+
+    Y.Test.Runner.run();
+});
+</script>

@@ -53,9 +53,9 @@
     "node": ">=0.8.0"
   },
   "devDependencies": {
-    "amdlc": "https://github.com/jayarjo/amdlc/tarball/master",
+    "amdlc": "0.1.5",
     "async": "0.2.x",
-    "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
+    "bunyip": "0.2.1",
     "coverjs": "0.0.x",
     "dateformat": "1.x",
     "extract-zip": "^1.5.0",

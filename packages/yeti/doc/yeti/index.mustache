@@ -1,0 +1,151 @@
+<h1>Yeti</h1>
+<h2>Tired of testing? Yeti can help.</h2>
+
+<p>
+<iframe src="http://ghbtns.com/github-btn.html?user=yui&repo=yeti&type=watch&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="110px" height="20px"></iframe>
+<iframe src="http://ghbtns.com/github-btn.html?user=yui&repo=yeti&type=fork&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="95px" height="20px"></iframe>
+</p>
+
+<div class="yui3-g">
+
+<div class="yui3-u-1-3">
+<div class="column-left left">
+
+<div class="divider">
+    <hr>
+    <h2>Made for Developers</h2>
+</div>
+
+<p>Yeti automates tests written with
+<a href="http://qunitjs.com/">QUnit</a>,
+<a href="http://pivotal.github.com/jasmine/">Jasmine</a>,
+<a href="http://visionmedia.github.com/mocha/">Mocha</a> with
+<a href="https://github.com/LearnBoost/expect.js">Expect.js</a> assertions,
+<a href="http://dojotoolkit.org/reference-guide/util/doh.html">Dojo Objective Harness</a>, or
+<a href="http://yuilibrary.com/yuitest/">YUI Test</a>.</p>
+
+<p>
+Built at Yahoo! by <a href="http://twitter.com/reid">@reid</a>
+and enhanced by the contributions of the YUI community,
+Yeti leverages <a href="http://nodejs.org">Node.js</a> and
+<a href="http://yuilibrary.com/">YUI</a> to make testing easier than ever before.
+</p>
+
+<p>Adding the latest new device to your testing
+setup is as easy as visiting a web page.</p>
+
+</div>
+</div>
+
+<div class="yui3-u-1-3">
+<div class="column-left">
+
+<div class="divider">
+    <hr>
+    <h2>Get Yeti</h2>
+</div>
+
+<p class="cmd"><code>npm i -g yeti</code></p>
+<p><small>
+<a href="quick-start/index.html#Install-latest-Yeti-snapshot">Or, install the latest Yeti snapshot.</a>
+&bull; Requires <a href="http://nodejs.org">Node.js</a>.
+</small></p>
+
+<p><strong>
+<a class="yui3-button" href="quick-start/index.html">Read the Documentation</a>
+</strong></p>
+
+</div>
+</div>
+
+<div class="yui3-u-1-3">
+<div class="column-right left">
+
+<div class="divider">
+    <hr>
+    <h2>Ready for CI</h2>
+</div>
+
+<p>Yeti can <a href="quick-start/index.html#Browser-launching">launch browsers with Selenium</a>
+and provide <a href="quick-start/index.html#JUnit-XML-output">JUnit XML</a> results for easy
+integration with CI systems like
+<a href="http://jenkins-ci.org/">Jenkins</a> and
+<a href="https://saucelabs.com/">Sauce Labs</a>.</p>
+
+<p>Yeti is used at Yahoo! to run hundreds of thousands of tests in CI every day.</p>
+
+<p>Yeti was made to test the YUI project on its
+<a href="http://yuilibrary.com/yui/environments/">wide collection of target browsers</a>.
+It currently works with IE 8+, Android 4+, iOS 4+, Chrome, Firefox, Safari,
+and support for Android 2.3 and IE 6-7 is being worked on.</p>
+
+</div>
+</div>
+
+</div>
+
+<div class="yui3-g">
+
+<div class="yui3-u-1-3">
+<div class="column-left">
+
+<div class="divider">
+    <hr>
+    <h2>Yeti {{yetiVersion}} Documentation</h2>
+</div>
+
+<ul>
+  {{#components}}
+    {{#meta}}
+        <li><a href="{{name}}/index.html">{{displayName}}</a></li>
+    {{/meta}}
+  {{/components}}
+</ul>
+
+</div>
+</div>
+
+<div class="yui3-u-1-3">
+<div class="column-left">
+
+<div class="divider">
+    <hr>
+    <h2>Easy to Use</h2>
+</div>
+
+<p>One command gives you automated testing.<br>
+Selenium not required.</p>
+<pre class="left demo"><code>$ npm i -g yeti
+$ yeti test/*.html
+Connected to http://localhost:9000
+  Agent connected: Chrome (22.0.1221.0) / Mac OS
+  Agent connected: Safari (6.0) / Mac OS
+✔ Testing started on Chrome (22.0.1221.0) / Mac OS, Safari (6.0) / Mac OS
+✔ Agent completed: Chrome (22.0.1221.0) / Mac OS
+✔ Agent completed: Safari (6.0) / Mac OS
+504 tests passed! (11.5 seconds)
+$</code></pre>
+
+</div>
+</div>
+
+
+<div class="yui3-u-1-3">
+<div class="column-right">
+
+<div class="divider">
+    <hr>
+    <h2>Elsewhere</h2>
+</div>
+
+<ul>
+    <li><a href="http://www.yuiblog.com/blog/category/development/yeti-development/">Yeti on YUI Blog</a></li>
+    <li><a href="http://github.com/yui/yeti">Yeti on GitHub</a></li>
+    <li><a href="http://yuilibrary.com/projects/yeti/newticket">Submit an issue</a></li>
+</ul>
+
+</div>
+</div>
+</div>

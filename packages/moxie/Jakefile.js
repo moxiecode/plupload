@@ -288,7 +288,7 @@ task("test", [], function() {
 		, wait: true
 	};
 
-	require('./node_modules/bunyip/lib/bunyip').main(config);
+	require('bunyip/lib/bunyip').main(config);
 
 }, true);
 

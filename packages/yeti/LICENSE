@@ -1,0 +1,230 @@
+The following license text applies to all parts of Yeti that are not
+externally maintained libraries.
+
+# License for Yeti (BSD License)
+
+Copyright 2013 Yahoo! Inc.
+All rights reserved.
+
+Redistribution and use of this software in source and binary forms,
+with or without modification, are permitted provided that the following
+conditions are met:
+
+* Redistributions of source code must retain the above
+  copyright notice, this list of conditions and the
+  following disclaimer.
+
+* Redistributions in binary form must reproduce the above
+  copyright notice, this list of conditions and the
+  following disclaimer in the documentation and/or other
+  materials provided with the distribution.
+
+* Neither the name of Yahoo! Inc. nor the names of its
+  contributors may be used to endorse or promote products
+  derived from this software without specific prior
+  written permission of Yahoo! Inc.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Included externally maintained libraries
+
+The externally maintained libraries included with Yeti are:
+
+- YUI, located at deps/yui-runtime.js.
+  Copyright 2013 Yahoo! Inc.
+  Used under the same BSD license as Yeti.
+  http://yuilibrary.com/license/
+
+- sock.js, located at deps/sock.js.
+  Copyright 2011-2012 VMware, Inc.
+  Used under the MIT license.
+  https://github.com/sockjs/sockjs-client/blob/3f7e5f4ef5673dc15d3d3db890bc82a725f0c91d/LICENSE-MIT-SockJS
+
+# Required externally maintained libraries
+
+These libraries are not included with Yeti, but are downloaded
+by npm as dependencies of Yeti:
+
+- async
+  https://npmjs.org/package/async
+  Copyright 2010 Caolan McMahon.
+  Used under the MIT license.
+  https://github.com/caolan/async/blob/96a7da519adc9e8cb3c187a2da4945f5edea71d3/LICENSE
+
+- wd
+  https://npmjs.org/package/wd
+  Copyright 2012 Sauce Labs.
+  Used under the Apache 2.0 license.
+  https://github.com/admc/wd/blob/7371d45734f52d592afb98922153d2077bd803ab/LICENSE.APACHE2
+
+- echoecho
+  https://npmjs.org/package/echoecho
+  Copyright 2013 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/davglass/echoecho/blob/a71637997fae473608d7494c984c675ec4cdadf0/LICENSE
+
+- eventemitter2
+  https://npmjs.org/package/eventemitter2
+  Copyright 2011 hij1nx http://www.twitter.com/hij1nx
+  Used under the MIT license.
+  https://github.com/hij1nx/EventEmitter2/blob/30258b5f1ce7f24d88c6fbe20ff0f0714c8226cb/README.md#licence
+
+- eventyoshi
+  https://npmjs.org/package/eventyoshi
+  Copyright 2012 Roly Fentanes.
+  Used under the MIT license.
+  https://github.com/fent/node-eventyoshi/blob/8bfbed86d1dff9b7b2f3b8679cf2e9a4e911c412/LICENSE
+
+- nopt
+  https://npmjs.org/package/nopt
+  Copyright 2009, 2010, 2011 Isaac Z. Schlueter.
+  Used under the MIT license.
+  https://github.com/isaacs/nopt/blob/5a5914439c5048921699da8c31d24e5bdf0bacba/LICENSE
+
+- onyx
+  https://npmjs.org/package/onyx
+  Cpyright 2011 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/reid/onyx/blob/edc3666054895ef59f40503d0473675f6a8201b2/LICENSE
+
+- sockjs
+  https://npmjs.org/package/sockjs
+  Copyright 2011 VMware, Inc.
+  Used under the MIT license.
+  https://github.com/sockjs/sockjs-node/blob/750a17c88df6659dd97cb2eed886b93d21b941e1/LICENSE-MIT-SockJS
+
+- proto-list
+  https://npmjs.org/package/proto-list
+  Copyright 2009, 2010, 2011 Isaac Z. Schlueter.
+  Used under the MIT license.
+  https://github.com/isaacs/proto-list/blob/71161783a3254bc977b0acfb7e42f4a536133ecf/LICENSE
+
+- glob
+  https://npmjs.org/package/glob
+  Copyright Isaac Z. Schlueter.
+  Used under the BSD license.
+  https://github.com/isaacs/node-glob/blob/b00bd496988568e9b0eb781a5250f15ea229bd6c/LICENSE
+
+- graceful-fs
+  https://npmjs.org/package/graceful-fs
+  Copyright 2009, 2010, 2011 Isaac Z. Schlueter.
+  Used under the MIT license.
+  https://github.com/isaacs/node-graceful-fs/blob/f13074088076faa4f3be9501bca99b4caa847fed/LICENSE
+
+# Other externally maintained libraries
+
+These libraries are not included with Yeti, but are downloaded
+by a build step or by npm in order to test Yeti:
+
+- YUI Test, located at deps/dev/yui-test.*
+  Copyright 2013 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/yui/yuitest/blob/9f86ac45dc811abab8591c643b13c068f3534dfe/LICENSE
+
+- QUnit, located at deps/dev/qunit.*.
+  Copyright 2013 jQuery Foundation and other contributors.
+  Used under the MIT license.
+  https://github.com/jquery/jquery/blob/b326225d9087ee8c5648ace3cf88feab0330353d/MIT-LICENSE.txt
+
+- Jasmine, located at deps/dev/jasmine*.
+  Copyright 2008-2011 Pivotal Labs.
+  Used under the MIT license.
+  https://github.com/pivotal/jasmine/blob/8b02bf731b193e135ccb486e99b3ecd7165bf95c/MIT.LICENSE
+
+- Mocha, located at deps/dev/mocha.*.
+  Copyright 2011-2013 TJ Holowaychuk <tj@vision-media.ca>.
+  Used under the MIT license.
+  https://github.com/visionmedia/mocha/blob/8f66a59657dc37e523749f519753cdade9486b5f/LICENSE
+
+- Dojo, located at deps/dev/dojo*.
+  Copyright 2005-2006 The Dojo Foundation.
+  Used under the BSD license.
+  http://bugs.dojotoolkit.org/browser/dojo/trunk/LICENSE?rev=6646
+
+- portfinder
+  https://npmjs.org/package/portfinder
+  Copyright 2012 Charlie Robbins.
+  Used under the MIT license.
+  https://github.com/indexzero/node-portfinder/blob/fe67dc1a726f97c551a89171fde243ac6f5d67cf/LICENSE
+
+- istanbul
+  https://npmjs.org/package/istanbul
+  Copyright 2012 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/gotwarlost/istanbul/blob/e2b707c33a978a8db8c9acbff72d2fc0071db64f/LICENSE
+
+- semver
+  https://npmjs.org/package/semver
+  Copyright 2009, 2010, 2011 Isaac Z. Schlueter.
+  Used under the MIT license.
+  https://github.com/isaacs/node-semver/blob/db040936e7f5dbcea2c8989bf6f8a4515f40c505/LICENSE
+
+- ronn
+  https://npmjs.org/package/ronn
+  Copyright 2010 Jérémy Lal <kapouer@melix.org>, 2009 Ryan Tomayko <tomayko.com/about>
+  Copyright 2009-2010 Dominic Baggott, 2009-2010 Ash Berlin.
+  Copyright 2010 Joey Mazzarelli <mazzarelli@gmail.com>
+  Used under MIT and Simplified BSD licenses.
+  https://github.com/kapouer/ronnjs/blob/db2ea507970971d64b6b6b82b24deb215312b348/LICENSE
+
+- jshint
+  https://npmjs.org/package/jshint
+  Copyright 2012 Anton Kovalyov (http://jshint.com)
+  https://github.com/jshint/jshint/blob/0930de4bb6867ddad97d6d6f0749dbb18f81cefa/LICENSE
+
+- pact
+  https://npmjs.org/package/pact
+  Copyright 2011 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/reid/pact/blob/e07814cf86495e3e8dc9a9f31918527c8d33413c/LICENSE
+
+- node-phantom
+  https://npmjs.org/package/node-phantom
+  Written by Alex Scheel Meyer.
+  Public domain.
+  https://github.com/alexscheelmeyer/node-phantom/blob/193a3a0dda2080d0219c9757330b9677c7b3eda1/README.md#other
+
+- vows
+  https://npmjs.org/package/vows
+  Copyright 2009 cloudhead.
+  Used under the MIT license.
+  https://github.com/cloudhead/vows/blob/a7843f45e6b763b1eacefa7098d66dd45fca2e7a/LICENSE
+
+- selleck
+  https://npmjs.org/package/selleck
+  Copyright 2012 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/yui/selleck/blob/8c55ccbb43f1b6de399be722c20272727da17d63/LICENSE
+
+- yuidocjs
+  https://npmjs.org/package/yuidocjs
+  Copyright 2011 Yahoo! Inc.
+  Used under the BSD license.
+  https://github.com/yui/yuidoc/blob/76a9918d6e11d6fdbd8c40700ab527c84eae18e1/LICENSE
+
+- jake
+  https://npmjs.org/package/jake
+  Written by Matthew Eernisse.
+  Used under the Apache 2.0 license.
+  https://github.com/mde/jake/blob/f8e62752ccf8e384b8e0fc0a8997ab257bd113ec/README.md#license
+
+- rimraf
+  https://npmjs.org/package/rimraf
+  Copyright 2009, 2010, 2011 Isaac Z. Schlueter.
+  Used under the MIT license.
+  https://github.com/isaacs/rimraf/blob/d951675a75a04157b6ae1cef2a3d45064be48af4/LICENSE
+
+- walk
+  https://npmjs.org/package/walk
+  Copyright 2011 AJ ONeal.
+  Used under the MIT license.
+  https://github.com/coolaj86/node-walk/blob/a26de5a66ce8cc05ac83dcadace7a01f873282ad/LICENSE.MIT

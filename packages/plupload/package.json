@@ -47,9 +47,9 @@
         "moxie-zip": "0.0.x",
         "fileset": "0.1.x",
         "uglify-js": "2.x",
-        "amdlc": "https://github.com/jayarjo/amdlc/tarball/master",
+        "amdlc": "0.1.5",
         "coverjs": "0.0.x",
-        "bunyip": "https://github.com/jayarjo/bunyip/tarball/master",
+        "bunyip": "0.2.1",
         "dateformat": "1.x",
         "request": "2.25.x",
         "async": "0.2.x"

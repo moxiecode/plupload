@@ -1,0 +1,22 @@
+<!doctype html>
+<title>Yeti Basic Test</title>
+<iframe src="frame.html"></iframe>
+<script type="text/javascript" src="../../../dep/dev/yui-test.js"></script>
+<script>
+YUI().use("test", function (Y) {
+    var SimpleTestCase = new Y.Test.Case({
+        name: "Yeti Simple Test Case",
+        testOk: function () {
+            Y.Assert.areEqual(1, 1);
+        }
+    });
+
+    var SimpleSuite = new Y.Test.Suite("Yeti Simple Test Suite");
+
+    SimpleSuite.add(SimpleTestCase);
+
+    Y.Test.Runner.add(SimpleSuite);
+
+    Y.Test.Runner.run();
+});
+</script>

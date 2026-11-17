@@ -1,0 +1,17 @@
+api
+dep/dev
+doc
+coverage.*
+.git*
+.npm*
+.travis.yml
+.hosts.json
+fabfile.*
+*.swp
+go
+build_docs
+Makefile
+test/vendor
+scripts/darwin
+scripts/ci
+scripts/*.sh

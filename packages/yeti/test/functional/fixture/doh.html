@@ -1,0 +1,25 @@
+<!doctype html>
+<head>
+    <title>Yeti DOH Test</title>
+</head>
+<script src="../../../dep/dev/dojo.js"></script>
+<script>define('doh/_browserRunner', function(){ /* browserRunner stub */});</script>
+<script src="../../../dep/dev/dojo-doh-runner.js"></script>
+<script>
+    require(["doh/runner"], function(doh){
+        doh._testFinished = function(group, fixture, success){
+            var elapsed = fixture.endTime - fixture.startTime;
+            console.debug((success ? "PASSED" : "FAILED"), "test:", fixture.name, elapsed, 'ms');
+        };
+
+        doh.register("yeti", [
+            function assertTrueTest(){
+                doh.assertTrue(true);
+            }
+        ]);
+
+        if(!("$yetify" in window)) {
+            doh.run();
+        }
+    });
+</script>
