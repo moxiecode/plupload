@@ -1,0 +1,63 @@
+{
+  "name": "yeti",
+  "description": "Test your JavaScript with any browser.",
+  "author": "Reid Burke <me@reidburke.com> (http://reidburke.com)",
+  "contributors": [
+    "Dav Glass <davglass@gmail.com>",
+    "Ryuichi Okumura <okuryu@okuryu.com>",
+    "Clarence Leung <clarle@yahoo-inc.com>",
+    "Ryan Seddon <seddon.ryan@gmail.com>",
+    "Jean-Charles Sisk <jasisk@gmail.com>"
+  ],
+  "keywords": [
+    "YUI",
+    "web app",
+    "YUITest",
+    "TDD",
+    "BDD",
+    "yui3",
+    "test"
+  ],
+  "version": "0.2.23-pre",
+  "homepage": "htp://yuilibrary.com/projects/yeti",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/yui/yeti.git"
+  },
+  "licenses": [
+    {
+      "type": "BSD",
+      "url": "http://yuilibrary.com/license"
+    }
+  ],
+  "bugs": {
+    "url": "http://yuilibrary.com/projects/yeti/report"
+  },
+  "main": "lib/yeti",
+  "bin": {
+    "yeti": "./cli.js"
+  },
+  "scripts": {
+    "pretest": "jshint lib test && jake dep",
+    "test": "jake test",
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "engines": {
+    "node": "~0.8.0 || ~0.10.0"
+  },
+  "dependencies": {
+    "async": "~0.2.5",
+    "wd": "~0.0.27",
+    "echoecho": "~0.1.6",
+    "eventemitter2": "~0.4.8",
+    "eventyoshi": "~0.1.2",
+    "nopt": "~2.1.1",
+    "onyx": "~0.1.2",
+    "sockjs": "~0.3.1",
+    "proto-list": "~1.2.2",
+    "glob": "~3.2.1",
+    "graceful-fs": "~1.2.0"
+  },
+  "optionalDependencies": {},
+  "private": true
+}

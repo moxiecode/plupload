@@ -1,0 +1,23 @@
+<!doctype html>
+<title>Yeti Long Async Test</title>
+<script type="text/javascript" src="../../../dep/dev/yui-test.js"></script>
+<script>
+YUI().use("test", function (Y) {
+    var LongAsyncCase = new Y.Test.Case({
+        name: "Yeti Long Async Test Case",
+        testOk: function () {
+            this.wait(function () {
+                Y.Assert.areEqual(1, 1);
+            }, 10000);
+        }
+    });
+
+    var LongAsyncSuite = new Y.Test.Suite("Yeti Long Async Test Suite");
+
+    LongAsyncSuite.add(LongAsyncCase);
+
+    Y.Test.Runner.add(LongAsyncSuite);
+
+    Y.Test.Runner.run();
+});
+</script>

@@ -1,0 +1,13 @@
+{
+    "name": "Yeti",
+    "description": "The YUI Easy Testing Interface",
+    "version": "snapshot",
+    "url": "http://yeti.cx",
+    "options": {
+        "linkNatives": true,
+        "paths": ["./lib"],
+        "outdir": "build_docs/api/everything",
+        "port": 3001,
+        "nocode": false
+    }
+}

@@ -1,0 +1,339 @@
+<style>
+.volatile {
+    padding: 10px;
+    background: #CD3735;
+    color: #fff;
+}
+</style>
+
+<div class="intro">
+<p>
+Yeti's API allows you to embed Yeti into your own Node.js testing application
+to easily run tests and collect test results from web browsers.
+</p>
+</div>
+
+<h2>API Stability</h2>
+
+<p class="volatile">
+<strong>This entire API is experimental.</strong>
+This means the APIs are new and may change or be removed.
+Please try it out and let YUI know if it addresses use-cases that
+are important for you.
+</p>
+
+<p>
+Yeti follows <a href="http://semver.org/">Semantic Versioning</a> which states:
+<blockquote>
+Major version zero (0.y.z) is for initial development. Anything may change at any time. The public API should not be considered stable.
+</blockquote>
+</p>
+
+<p>As Yeti approaches 1.0, a
+<a href="http://nodejs.org/docs/latest/api/documentation.html#documentation_stability_index">Stability Index</a>
+will be added for each API section.</p>
+
+<h2>Yeti</h2>
+
+<p>
+When using Yeti in another application, include it as a dependency in your package.json.
+</p>
+
+<p>
+To use the Yeti API one must `require("yeti")`, which gives you the Yeti module.
+</p>
+
+<p>
+The Yeti module creates `Hub` and `Client` objects for you, which are further defined below.
+</p>
+
+<h4>yeti.createHub([options])</h4>
+
+<p>
+Returns a new Hub instance.
+</p>
+
+<p>
+Options:
+<ul>
+    <li><code>loglevel</code> Log level to begin logging to <a href="http://nodejs.org/docs/latest/api/globals.html#globals_console">console.log</a>.
+        Defaults to `silent`. Options include `debug` and `info`.</li>
+</ul>
+</p>
+
+<p>
+You will need to call <a href="#hublistenport-hostname-callback">hub.listen()</a>
+to start the server or <a href="#hubattachserverhttpserver">hub.attachServer()</a>
+to attach the Hub to another <a href="http://nodejs.org/docs/latest/api/http.html#http_class_http_server">http.Server</a>.
+</p>
+
+<h4>yeti.createClient(url)</h4>
+
+<p>
+Create a new Client for the Hub at the given URL.
+</p>
+
+<p>
+Returns an instance of `client.Client`.
+</p>
+
+<p>
+You will need to call <a href="#clientconnectcallback">client.connect()</a> to begin the connection.
+</p>
+
+<h2>Client</h2>
+
+<h3>Class: client.Client</h3>
+
+<p>
+This object is created internally by `yeti.createClient()`.
+</p>
+
+<h4>Event: 'agentConnect'</h4>
+
+```
+function (agentName) {}
+```
+<p>
+Emitted when an Agent connects to the connected Hub.
+</p>
+
+<h4>Event: 'agentSeen'</h4>
+
+```
+function (agentName) {}
+```
+<p>
+Emitted when an Agent requests a page (test or capture) from the connected Hub.
+</p>
+
+<h4>client.connect([callback])</h4>
+
+<p>
+Begin the connection to the Hub.
+</p>
+
+<h4>client.end()</h4>
+
+<p>
+End the connection to the Hub.
+</p>
+
+<h4>client.createBatch([configuration])</h4>
+
+<p>
+The `configuration` is an object with the properties:
+
+<ul>
+    <li>`tests`: An array of test filenames relative to `basedir` or URL pathnames.</li>
+    <li>`basedir`: The base directory to serve files from. Ignored if `useProxy` is false.</li>
+    <li>`useProxy`: True if `tests` are files to serve from this computer. False if they are URL pathnames, used only when Yeti is being embedded into another server.</li>
+</ul>
+</p>
+
+<p>
+If this method is called before `client.connect()` has finished, an error will be thrown.
+</p>
+
+<p>
+Returns an instance of `client.ClientBatch`.
+</p>
+
+<h5>Including Yeti script on your pages</h5>
+<p>
+When `useProxy` is false, you'll need to make sure the `tests` URLs you serve include Yeti injection script and a YUI Test that runs automatically.
+You may include Yeti script like this:
+</p>
+
+```
+<!-- If you provided a route to hub.attachServer, replace "/yeti" with that route: -->
+<script src="/yeti/public/inject.js"></script>
+```
+
+<p>
+This script should be included before all other scripts on the page, including YUI Test.
+</p>
+
+<h3>Class: client.ClientBatch</h3>
+
+<p>
+This object is created internally by `client.createBatch()`.
+</p>
+
+<h4>Event: 'end'</h4>
+
+```
+function () {}
+```
+
+<p>
+Emitted after the complete event. If browsers were started, they were shut down.
+No more events will be fired.
+</p>
+
+<h4>Event: 'complete'</h4>
+
+```
+function () {}
+```
+
+<p>
+Emitted when the batch is complete. No more results are expected.
+Browsers may be shutting down at this point. The end event will fire when all cleanup is complete.
+</p>
+
+<h4>Event: 'agentComplete'</h4>
+
+```
+function (agentName) {}
+```
+
+<p>
+Emitted when an agent has completed testing for this batch.
+`agentName` is a string representing the name of the Agent.
+</p>
+
+<h4>Event: 'agentResult'</h4>
+
+```
+function (agentName, details) {}
+```
+
+<p>
+Emitted when an agent has completed testing a web page.
+`agentName` is a string representing the name of the Agent.
+`details` is an YUI Test formatted object detailing test results.
+</p>
+
+<p>
+If the code tested was instrumented with <a href="http://yuilibrary.com/yuitest/">YUI Test Coverage</a>,
+the `details.coverage` object will contain coverage data for this result.
+</p>
+
+<h4>Event: 'agentError'</h4>
+
+```
+function (agentName, details) {}
+```
+
+<p>
+Emitted when a test could not be served to the Agent.
+</p>
+
+<h4>Event: 'agentPedanticError'</h4>
+
+```
+function (agentName, details) {}
+```
+
+<p>
+Emitted when a file could not be served to the Agent that is not a test.
+</p>
+
+<h4>Event: 'agentScriptError'</h4>
+
+```
+function (agentName, details) {}
+```
+
+<p>
+Emitted when a JavaScript error occurs on the Agent.
+</p>
+
+<p>
+`agentName` is a string representing the name of the Agent.
+`details` is an object with error details:
+<ul>
+    <li>`url`</li>
+    <li>`line`</li>
+    <li>`message`</li>
+</ul>
+</p>
+
+<h2>Hub</h2>
+
+<h3>Class: Hub</h3>
+
+<p>
+This object is created internally by `yeti.createHub()`.
+</p>
+
+<h4>hub.server</h4>
+
+<p>
+The `http.Server` used by the Hub. May not be listening,
+see `attachServer()` below.
+</p>
+
+<h4>Event: 'log.**.**'</h4>
+
+```
+function (message, [...]) {}
+```
+
+<p>
+Emitted when the Hub has noteworthy messages to report.
+</p>
+
+Example:
+```
+hub.on("log.debug", function (message) {
+    console.log("Yeti Hub message:", message);
+});
+
+// Only WebSocket-related messages:
+
+hub.on("log.**.websocket", function (message) {
+    console.log("Yeti Hub WebSocket message:", message);
+});
+```
+
+<p>
+The first namespace represents the loglevel. The second is optional and is used for WebSocket-related messages.
+</p>
+
+<h4>Event: 'batch'</h4>
+
+<p class="volatile">
+<strong>
+Warning: Arguments of this event may change in a future release.
+</strong>
+</p>
+
+```
+function (session, data, reply) {}
+```
+
+<p>
+Emitted when a batch request is received from a Client.
+</p>
+
+<h4>hub.listen(port, [hostname], [callback])</h4>
+
+
+<p>
+Pass through to <a href="http://nodejs.org/docs/latest/api/http.html#http_server_listen_port_hostname_callback">http.Server.listen()</a> for the `hub.server`.
+</p>
+
+<h4>hub.close()</h4>
+
+<p>
+Pass through to <a href="http://nodejs.org/docs/latest/api/http.html#http_server_close">http.Server.close()</a> for the `hub.server`.
+</p>
+
+<h4>hub.attachServer(httpServer, [route])</h4>
+
+<p>
+Attach to another <a href="http://nodejs.org/docs/latest/api/http.html#http_class_http_server">http.Server</a>.
+Useful for testing paths on that server
+when the client sets `useProxy` to false.
+</p>
+
+<p>The route is optional, it defaults to `/yeti`.</p>
+
+<p>
+Yeti will use the `'upgrade'` event on this `http.Server`
+for handling the protocols Yeti uses to communicate with agents and clients.
+All other HTTP upgrades will be passed along to your server.
+</p>
+

@@ -3,7 +3,10 @@
     "private": true,
     "workspaces": [
         "packages/plupload",
-        "packages/moxie"
+        "packages/moxie",
+        "packages/amdlc",
+        "packages/bunyip",
+        "packages/yeti"
     ],
     "scripts": {
         "build": "npm run build -w packages/plupload && node scripts/sync-js.js",

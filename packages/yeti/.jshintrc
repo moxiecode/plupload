@@ -1,0 +1,15 @@
+{
+    "globalstrict": true,
+    "node": true,
+    "onevar": true,
+    "white": true,
+    "curly": true,
+    "eqeqeq": true,
+    "latedef": true,
+    "newcap": true,
+    "noempty": true,
+    "nonew": true,
+    "plusplus": true,
+    "undef": true,
+    "trailing": true
+}

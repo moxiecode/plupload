@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <title>Yeti Jasmine Test</title>
+  <link rel="stylesheet" type="text/css" href="../../../dep/dev/jasmine.css">
+  <script type="text/javascript" src="../../../dep/dev/jasmine.js"></script>
+  <script type="text/javascript" src="../../../dep/dev/jasmine-html.js"></script>
+</head>
+
+<body>
+
+<script type="text/javascript">
+	var jasmineEnv = jasmine.getEnv();
+	jasmineEnv.addReporter(new jasmine.HtmlReporter());
+
+	describe('ExampleSuite', function () {
+	  it('should have a passing test', function() {
+	      expect(true).toEqual(true);
+	  });
+	});
+
+	if(!("$yetify" in window)) {
+		jasmineEnv.execute();
+	}
+</script>
+
+</body>
+</html>

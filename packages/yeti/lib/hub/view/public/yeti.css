@@ -1,0 +1,107 @@
+@keyframes intro {
+    0% {
+        opacity: 0;
+        margin-left: 50px;
+    }
+    50% {
+        opacity: 0.25;
+    }
+    100% {
+        opacity: 1;
+        margin-left: 0;
+    }
+}
+@-moz-keyframes intro {
+    0% {
+        opacity: 0;
+        margin-left: 100px;
+    }
+    50% {
+        opacity: 0.25;
+    }
+    100% {
+        opacity: 1;
+        margin-left: 0;
+    }
+}
+
+@-webkit-keyframes intro {
+    0% {
+        opacity: 0;
+        margin-left: 100px;
+    }
+    50% {
+        opacity: 0.25;
+    }
+    100% {
+        opacity: 1;
+        margin-left: 0;
+    }
+}
+
+html, body, h1, p {
+    padding: 0;
+    margin: 0;
+    background: #efefef;
+}
+
+body {
+    font: 32px "Helvetica Neue", Helvetica, Verdana, sans-serif;
+    line-height: 34px;
+    font-weight: 100;
+    color: #232323;
+}
+
+.yeti-widget {
+    padding: 0.5em;
+}
+
+.yeti-widget h1 {
+    animation: intro 0.5s ease-in-out;
+    -moz-animation: intro 0.5s ease-in-out;
+    -webkit-animation: intro 0.5s ease-in-out;
+}
+
+.yeti-widget p {
+    animation: intro 0.6s ease-in-out;
+    -moz-animation: intro 0.6s ease-in-out;
+    -webkit-animation: intro 0.6s ease-in-out;
+}
+
+.ft {
+    animation: intro 0.7s ease-in-out;
+    -moz-animation: intro 0.7s ease-in-out;
+    -webkit-animation: intro 0.7s ease-in-out;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -2px;
+}
+
+h1, .status{
+    text-rendering: optimizeLegibility;
+}
+
+.ft, .ft a {
+    color: #ccc;
+}
+
+.ft {
+    margin-top: 2em;
+    font-weight: 300;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+@media only screen and (min-width:768px) {
+    .yeti-widget {
+        padding: 2em;
+    }
+
+    body, h1 {
+        font-size: 78px;
+        line-height: 78px;
+    }
+}

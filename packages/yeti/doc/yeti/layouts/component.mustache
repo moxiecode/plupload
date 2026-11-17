@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Yeti {{yetiVersion}} - {{htmlTitle}}</title>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic">
+    <link rel="stylesheet" href="{{yuiGridsUrl}}">
+    <link rel="stylesheet" href="{{projectAssets}}/css/main.css">
+    <link rel="stylesheet" href="{{projectAssets}}/vendor/prettify/prettify-min.css">
+    <style>
+    body, h1, h2, h3, h4, h5, h6 {
+        font-family: 'Source Sans Pro', 'DejaVu Sans', 'Bitstream Vera Sans', Verdana, sans-serif;
+    }
+    body {
+        font-size: 14px;
+    }
+    .sidebox .bd {
+        font-size: 12px;
+    }
+    .toc li {
+        font-weight: normal;
+    }
+    .yeti-hd {
+        border-bottom: 1px solid #ddd;
+    }
+    .yeti-hd h1 {
+        font-size: 300%;
+        letter-spacing: -1px;
+        margin: 5px 0 0;
+        padding: 0 20px;
+    }
+    .yeti-hd h2 {
+        font-size: 470%;
+        font-weight: 100;
+        margin: 2%;
+    }
+    .yeti-hd img {
+        height: 52px;
+        width: 117px;
+    }
+    .yeti-hd .version {
+        font-size: 40%;
+        font-weight: normal;
+        padding: 5px;
+        background: #30418C;
+        color: #fff;
+        vertical-align: 60%;
+        border-radius: 10px;
+    }
+    .yeti-hd .links {
+        text-align: right;
+        padding: 4%;
+    }
+    .yeti-hd a {
+        color: #242D79;
+    }
+    </style>
+</head>
+<body>
+
+<div id="doc">
+    <div class="yeti-hd yui3-g">
+        <div class="yui3-u-3-4">
+        <h1>
+            <span class="product"><a href="../index.html">Yeti</a></span> <span class="version">{{yetiVersion}}</span>
+        </h1>
+        </div>
+        <div class="yui3-u-1-4">
+            <div class="links">
+                <a href="../index.html">Back to Homepage</a>
+            </div>
+        </div>
+    </div>
+    <h1>{{title}}</h1>
+
+    {{^hideTableOfContents}}
+        <a href="#toc" class="jump">Jump to Table of Contents</a>
+    {{/hideTableOfContents}}
+
+    <div class="yui3-g">
+        <div class="yui3-u-3-4">
+            <div id="main">
+                <div class="content">{{>layout_content}}</div>
+            </div>
+        </div>
+
+        <div class="yui3-u-1-4">
+            <div class="sidebar">
+                {{^hideTableOfContents}}
+                    <div id="toc" class="sidebox">
+                        <div class="hd">
+                            <h2 class="no-toc">Table of Contents</h2>
+                        </div>
+
+                        <div class="bd">
+                            {{toc}}
+                        </div>
+                    </div>
+                {{/hideTableOfContents}}
+
+                {{#if hasOwnExamples}}
+                    <div class="sidebox">
+                        <div class="hd">
+                            <h2 class="no-toc">Examples</h2>
+                        </div>
+
+                        <div class="bd">
+                            <ul class="examples">
+                                {{#examples}}
+                                    {{#unless inherited}}
+                                        <li data-description="{{description}}">
+                                            <a href="{{name}}.html">{{displayName}}</a>
+                                        </li>
+                                    {{/unless}}
+                                {{/examples}}
+                            </ul>
+                        </div>
+                    </div>
+                {{/if}}
+
+                {{#if hasInheritedExamples}}
+                    <div class="sidebox">
+                        <div class="hd">
+                            <h2 class="no-toc">Examples That Use This Component</h2>
+                        </div>
+
+                        <div class="bd">
+                            <ul class="examples">
+                                {{#examples}}
+                                    {{#if inherited}}
+                                        <li data-description="{{description}}">
+                                            <a href="../{{componentName}}/{{name}}.html">{{displayName}}</a>
+                                        </li>
+                                    {{/if}}
+                                {{/examples}}
+                            </ul>
+                        </div>
+                    </div>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+    {{>footer}}
+</div>
+
+<script src="{{projectAssets}}/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+
+</html>
