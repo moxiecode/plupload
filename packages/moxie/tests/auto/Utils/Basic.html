@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Basic Utils</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("Basic", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+
+test("extend()", function() {
+	deepEqual(o.extend({a:1}, {a:2, b: 2}), {a:2, b:2}, "Basic extension");
+
+	deepEqual(o.extend(
+		{
+			a: 1,
+			b: {
+				a: 1,
+				b: 2
+			}
+		},
+		{
+			a: 1,
+			b: {
+				b: 3,
+				c: 4
+			}
+		}),
+		{
+			a: 1,
+			b: {
+				a: 1,
+				b: 3,
+				c: 4
+			}
+		},
+		"Deep object extension"
+	);
+
+	deepEqual(o.extend(
+		{
+			a: 1,
+			b: [3, 2, 4, 5]
+		},
+		{
+			a: 1,
+			b: [1, 2, 3]
+		}),
+		{
+			a: 1,
+			b: [1, 2, 3, 5]
+		},
+		"Deep array extension"
+	);
+});
+
+test("each()", function() {
+	expect(12);
+
+	o.each( [0,1,2], function(n, i){
+		equal( i, n, "Check array iteration" );
+	});
+
+	o.each( [5,6,7], function(n, i){
+		equal( i, n - 5, "Check array iteration" );
+	});
+
+	o.each( { name: "name", lang: "lang" }, function(n, i){
+		equal( i, n, "Check object iteration" );
+	});
+
+	var total = 0;
+	o.each([1,2,3], function(v, i){ total += v; });
+	equal( total, 6, "Looping over an array" );
+	total = 0;
+	o.each([1,2,3], function(v, i){ total += v; if ( i == 1 ) return false; });
+	equal( total, 3, "Looping over an array, with break" );
+	total = 0;
+	o.each({"a":1,"b":2,"c":3}, function(v, i){ total += v; });
+	equal( total, 6, "Looping over an object" );
+	total = 0;
+	o.each({"a":3,"b":3,"c":3}, function(v, i){ total += v; return false; });
+	equal( total, 3, "Looping over an object, with break" );
+});
+
+test("typeOf()", function() {
+	expect(17);
+
+	equal(o.typeOf({a: 4}), 'object', "Object type detected");
+	equal(o.typeOf([1, 2, 3]), 'array', "Array type detected");
+
+	equal(o.typeOf(function() {}), 'function', "Function type detected");
+
+	/* this fails on IE lte 8, resulting in 'object', rather then expected 'arguments'; we do not require this though
+	(function() {
+		equal(o.typeOf(arguments), 'arguments', "arguments type detected");
+	})(); */
+
+	equal(o.typeOf(new ReferenceError), 'error', "Error type detected");
+	equal(o.typeOf(new Date), 'date', "Date type detected");
+	equal(o.typeOf(/a-z/), 'regexp', "RegExp type detected");
+	equal(o.typeOf(Math), 'math', "Math type detected");
+
+	equal(o.typeOf(2), 'number', "Number type detected (literal)");
+	equal(o.typeOf(new Number(4)), 'number', "Number type detected (object)");
+
+	equal(o.typeOf("moxie"), 'string', "String type detected (literal)");
+	equal(o.typeOf(new String("abc")), 'string', "String type detected (object)");
+
+	equal(o.typeOf(true), 'boolean', "Boolean type detected (literal)");
+	equal(o.typeOf(new Boolean(true)), 'boolean', "Boolean type detected (object)");
+
+	equal(o.typeOf(null), 'null', "Null detected");
+
+	equal(o.typeOf(NaN), 'number', "NaN is number");
+
+	equal(o.typeOf(undefined), 'undefined', "Undefined detected");
+
+	equal(o.typeOf(document.createElement('img')), 'node', "DOM node detected");
+});
+
+test("isEmptyObj()", function() {
+	expect(6);
+
+	equal(o.isEmptyObj(null), true, "null is empty object");
+	equal(o.isEmptyObj(false), true, "false is empty object");
+	equal(o.isEmptyObj(undefined), true, "undefined is empty object");
+	equal(o.isEmptyObj(NaN), true, "NaN is empty object");
+	equal(o.isEmptyObj({}), true, "{} is empty object");
+
+	equal(o.isEmptyObj({ key: 'value' }), false, "{ key: 'value' } is not empty object");
+});
+
+test("inArray()", function() {
+
+	equal(o.inArray(4, [1, 2, 3]), -1, "-1 returned when element not found in array");
+	equal(o.inArray(3, [1, 2, 3]), 2, "Index of the element is returned when found");
+	ok(!~o.inArray("3", [1, 2, 3]), "'3' !== 3");
+});
+
+test("toArray()", function() {
+	expect(1);
+	deepEqual(o.toArray({ 0: "one", 2: "three", 1: "two", length: 3}), ["one", "two", "three"], "Object with length field converted to array");
+});
+
+
+test("guid()", function() {
+	expect(2);
+
+	var num = 9999, // number of uids to generate
+		prefix = 'uid_',
+		uids = {}, i, uid, counter = 0,
+		suffixAdded = true,
+		start, end;
+
+	start = new Date();
+
+	for (i = 0; i < num; i++) {
+		uid = o.guid(prefix);
+
+		if (!uids[uid]) {
+			uids[uid] = true;
+			counter++;
+		}
+	}
+	end = new Date();
+	ok(counter === i, i + " unique ids generated in " + (end.getTime() - start.getTime()) + "ms");
+
+	ok((new RegExp("^" + prefix)).test(uid), "Prefix added");
+});
+
+test("trim()", function() {
+	expect(1);
+
+	var str = "no spaces around";
+	equal(o.trim("  " + str + "     "), str, "Spaces stripped from beginning and end of the string");
+});
+
+
+test("parseSizeStr()", function() {
+	equal(o.parseSizeStr('256k'), 256 * 1024, "256k = " + (256 * 1024) + " bytes");
+	equal(o.parseSizeStr('1mb'), 1024 * 1024, "1mb = " + (1024 * 1024) + " bytes");
+	equal(o.parseSizeStr('1mb'), o.parseSizeStr('1024kb'), "1mb = 1024kb");
+	equal(o.parseSizeStr('1.2mb'), 1258291, "1.2mb = 1258291 bytes"); // #106
+	equal(o.parseSizeStr('1tb'), 1099511627776 , "1tb = 1099511627776 bytes");
+	equal(o.parseSizeStr('1tb'), o.parseSizeStr('1 tb') , "Space after number is ignored: 1tb = 1 tb");
+	equal(o.parseSizeStr('1tb'), o.parseSizeStr('1t') , "Only first letter matters: 1tb = 1t");
+});
+
+
+test("inherit()", function() {
+	var Child1, Child2, Child3, Child4, Parent, GrandParent, child1, child2, child3, child4;
+
+	GrandParent = (function() {
+		function GrandParent() {
+			this.name = 'GrandParent';
+			this._options = {};
+		}
+
+		GrandParent.prototype.setOption = function(name, value) {
+			this._options[name] = value;
+		};
+
+		GrandParent.prototype.getOption = function(name) {
+			return this._options[name];
+		};
+
+		return GrandParent;
+	}());
+
+
+
+	Parent = (function(GrandParent) {
+		o.inherit(Parent, GrandParent);
+
+		function Parent() {
+			Parent.parent.constructor.apply(this, arguments);
+
+			this.parent = 'GrandParent';
+			this.name = 'Parent';
+		}
+
+		Parent.prototype.setOption = function(name, value) {
+			if (name === 'one') {
+				this._options[name] = 1;
+			} else {
+				Parent.parent.setOption.apply(this, arguments);
+			}
+		};
+
+		return Parent;
+
+	}(GrandParent));
+
+
+	Child1 = (function(Parent) {
+		o.inherit(Child1, Parent);
+
+		function Child1() {
+			Child1.parent.constructor.apply(this, arguments);
+
+			this.parent = 'Parent';
+			this.name = 'Child1';
+		}
+
+		Child1.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = 2;
+			} else {
+				Child1.parent.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child1;
+
+	}(Parent));
+
+
+	Child2 = (function(Parent) {
+		o.inherit(Child2, Parent);
+
+		function Child2() {
+			Child2.parent.constructor.apply(this, arguments);
+
+			this.parent = 'Parent';
+			this.name = 'Child2';
+		}
+
+		Child2.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = -2;
+			} else {
+				Child2.parent.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child2;
+
+	}(Parent));
+
+
+	Child3 = (function(Parent) {
+		o.inherit(Child3, Parent);
+
+		function Child3() {
+			this.parent = 'Parent';
+			this.name = 'Child3';
+		}
+
+		Child3.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = -2;
+			} else {
+				Child3.parent.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child3;
+
+	}(Parent));
+
+
+	Child4 = (function(Parent) {
+		o.inherit(Child4, Parent);
+
+		function Child4() {
+			Parent.apply(this, arguments);
+
+			this.parent = 'Parent';
+			this.name = 'Child4';
+		}
+
+		Child4.prototype.setOption = function(name, value) {
+			if (name == 'two') {
+				this._options[name] = -2;
+			} else {
+				Child4.parent.setOption.apply(this, arguments);
+			}
+		};
+
+		return Child4;
+
+	}(Parent));
+
+
+	child1 = new Child1();
+
+	child1.setOption('one', 5);
+	child1.setOption('two', 6);
+	child1.setOption('three', 3);
+
+	equal(child1.getOption('one'), 1, "Parent method properly inherited.");
+	equal(child1.getOption('two'), 2, "Own method properly invoked.");
+	equal(child1.getOption('three'), 3, "Grandparent method properly inherited.");
+
+
+	child2 = new Child2();
+	child2.setOption('two', 2);
+	equal(child2.getOption('one'), undefined, "Properties are independent.");
+	equal(child2.getOption('two'), -2,
+		"Overrides of the same method in different children of the same parent are different.");
+
+	child3 = new Child3();
+	try {
+		child3.getOption('two');
+		ok(false,
+			"Properties not available when parent constructor not called.");
+	} catch(ex) {
+		ok(true,
+			"Properties not available when parent constructor not called.");
+	}
+
+
+	child4 = new Child4();
+	try {
+		child4.getOption('two');
+		ok(true,
+			"super.constructor property is the same as Parent.");
+	} catch(ex) {
+		ok(false,
+			"super.constructor property is the same as Parent.");
+	}
+
+});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

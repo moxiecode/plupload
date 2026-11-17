@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: MIME</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("MIME", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+
+test("Extension to MIME mapping", function() {
+	equal(o.Mime.mimes['jpg'], 'image/jpeg', ".jpg is image/jpeg");
+	equal(o.Mime.mimes['jpeg'], 'image/jpeg', ".jpeg is image/jpeg");
+	ok(o.inArray('jpeg', o.Mime.extensions['image/jpeg']), "image/jpeg is .jpeg");
+});
+
+
+test("extList2mimes()", function() {
+	var mimes;
+	var fileFilters = [
+		{ title: "Image files", extensions: "gif" },
+		{ title: "Archives", extensions: "zip,rar,7z"}
+	];
+
+	mimes = o.Mime.extList2mimes(fileFilters);
+	deepEqual(mimes, [], 
+		"If extensions not present in the internal mime type map, return empty array (accept all mime types).");
+
+	mimes = o.Mime.extList2mimes(fileFilters, true);
+	mimes.sort(); // sort to the predictable order
+	deepEqual(mimes, [".7z", ".gif", ".rar", ".zip"],
+		"If second optional argument is truthy (env potentially supports extensions in accept attribute), add extensions to the list.");
+
+	fileFilters.push({ title: "Invalid extensions", extensions: "#ash" });
+	mimes = o.Mime.extList2mimes(fileFilters, true);
+	deepEqual(mimes, [], 
+		"If extension contains non alpha-numeric characters, return empty array, even if second argument is truthy.");
+});
+
+
+test("mimes2extList()", function() {
+	var norm;
+
+	norm = o.Mime.mimes2extList("image/jpeg");
+	equal(norm[0].extensions, "jpg,jpeg,jpe", "Get normalized object from single mime type.");
+
+	norm = o.Mime.mimes2extList("image/*");
+	ok(!o.arrayDiff(['jpg','png', 'gif'], norm[0].extensions.split(/,/)), "Get normalized object from wildcard mime type.");
+});
+
+test("addMimeType()", function() {
+	o.Mime.addMimeType("audio/x-aiff,aif aiff");
+	equal(o.Mime.mimes['aif'], 'audio/x-aiff', ".aif successfully added to the map");
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

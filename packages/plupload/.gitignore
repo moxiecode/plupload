@@ -1,0 +1,2 @@
+# build output, synced to the committed root js/ by `npm run build`
+/js/

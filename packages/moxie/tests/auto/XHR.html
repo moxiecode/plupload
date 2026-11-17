@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Test XMLHttpRequest</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+module("XMLHttpRequest", {
+	setup: function() {
+		var prohibited = ['CONNECT', 'TRACE', 'TRACK'],
+			allowed = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'];
+
+		function getRandom(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		o.extend(this, {
+			x: o.Exceptions,
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			prohibited: prohibited,
+
+			allowed: allowed,
+
+			methods: prohibited.concat(allowed),
+
+			runtimeOptions: {
+				runtime_order: "html5,flash,silverlight,html4",
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			getRandItem: function(arr) {
+				 return arr[getRandom(0, arr.length - 1)];
+			},
+
+			sameOrigin: function(url) {
+				function origin(url) {
+					return [url.scheme, url.host, url.port].join('/');
+				}
+
+				if (typeof url === 'string') {
+					url = _parseUrl(url);
+				}
+
+				return origin(_parseUrl()) === origin(url);
+			},
+
+			getsetSupported: function() {
+				return Object.defineProperty || Object.prototype.__defineGetter__;
+			}
+
+		});
+
+	},
+
+	teardown: function() {
+	}
+});
+
+// test object creation and initial state
+test('open()', function() {
+	var url = "XMLHttpRequest/sample.html",
+		xhr = new o.XMLHttpRequest,
+		x = o.Exceptions, i,
+		method, err,
+		fired = false,
+		fireStarter = function(e) {
+			fired = true;
+		};
+
+	try {
+		xhr.open();
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if method not specified");
+	err = null;
+
+	try {
+		xhr.open('get');
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if url not specified");
+	err = null;
+
+
+	try {
+		xhr.open('INVĀLID', url); // Ā - \u0100
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in method is higher than U+00FF");
+	err = null;
+
+	try {
+		xhr.open('INVÀLID', url); // À - \u00C0
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating method does not match itself");
+	err = null;
+
+
+	for (i = 0; i < this.prohibited.length; i++) {
+		try {
+			xhr.open(this.prohibited[i], url);
+		} catch (ex) {
+			if (!QUnit.equiv(new x.DOMException(ex.code), new x.DOMException(x.DOMException.SECURITY_ERR))) {
+				break;
+			}
+		}
+	}
+	equal(i, this.prohibited.length, "Throws DOMException.SECURITY_ERR if method is one of the following ['CONNECT', 'TRACE', 'TRACK'])");
+
+
+	for (i = 0; i < this.allowed.length; i++) {
+		try {
+			xhr.open(this.allowed[i], url);
+		} catch (ex) {
+			break;
+		}
+	}
+	equal(i, this.allowed.length, "open() successfully called for allowed methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'] (can be called multiple times, but only last one matters)");
+
+
+	xhr.addEventListener('readystatechange', fireStarter);
+
+	try {
+		xhr.open('GET', url);
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	equal(xhr.readyState, o.XMLHttpRequest.OPENED, "XHR state switched to OPENED");
+	deepEqual(fired, true, "readystatechange has fired");
+	fired = false;
+
+	try {
+		xhr.open('GET', url, true, "user", "pass");
+	} catch (ex) { }
+});
+
+
+test('setRequestHeader()', function() {
+
+	//expect(6);
+
+	var xhr = new o.XMLHttpRequest,
+		x = o.Exceptions, i, err,
+		url = "XMLHttpRequest/sample.html",
+		uaHeaders = [ // these headers are controlled by the user agent
+			"accept-charset",
+			"accept-encoding",
+			"access-control-request-headers",
+			"access-control-request-method",
+			"connection",
+			"content-length",
+			"cookie",
+			"cookie2",
+			"content-transfer-encoding",
+			"date",
+			"expect",
+			"host",
+			"keep-alive",
+			"origin",
+			"referer",
+			"te",
+			"trailer",
+			"transfer-encoding",
+			"upgrade",
+			"user-agent",
+			"via"
+		];
+
+	// 1
+	try {
+		xhr.setRequestHeader('X-Test', 'test');
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.INVALID_STATE_ERR), "Throws DOMException.INVALID_STATE_ERR if readyState of xhr is not XMLHttpRequest.OPENED");
+	err = null;
+
+
+	xhr.open('get', url);
+
+	// 2
+	try {
+		xhr.setRequestHeader('X-Invālid', 'invalid'); // ā - \u0101
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if any code point in header field name is higher than U+00FF");
+	err = null;
+
+	// 3
+	try {
+		xhr.setRequestHeader('X-Invàlid', 'invalid'); // à - \u00E0
+	} catch (ex) {
+		err = new x.DOMException(ex.code);
+	}
+	deepEqual(err, new x.DOMException(x.DOMException.SYNTAX_ERR), "Throws DOMException.SYNTAX_ERR if after deflating header field name does not match itself");
+	err = null;
+
+	// two above tests in theory should be run for heder field value too, but browsers seem to bypass it
+
+	// 4
+	for (i = 0; i < uaHeaders.length; i++) {
+		if (xhr.setRequestHeader(uaHeaders[i], 'valid value')) {
+			break;
+		}
+	}
+	equal(i, uaHeaders.length, "None of the headers specified on step #5 of W3C XMLHttpRequest (http://dvcs.w3.org/hg/xhr/raw-file/tip/Overview.html#the-setrequestheader()-method) accepted");
+
+	// 5
+	xhr.open('get', 'XMLHttpRequest/headers.php');
+	var result = (xhr.setRequestHeader('X-Test', 'one') && xhr.setRequestHeader('X-Test', 'two'));
+	ok(result, "Request headers added successfully");
+
+	// 6
+	stop();
+	xhr.onload = function() {
+		start();
+		var headers = eval('(' + xhr.responseText + ')');
+		equal(headers['x-test'], "one, two", "Request headers sent successfully");
+	};
+
+	xhr.send(null, o.extend({}, this.runtimeOptions, {
+		required_caps: {
+			send_custom_headers: true
+		}
+	}));
+});
+
+test('hasRequestHeader()', function() {
+	var xhr = new o.XMLHttpRequest;
+
+	xhr.open('get', 'XMLHttpRequest/headers.php');
+
+	xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+	equal(xhr.hasRequestHeader('content-type'), 'application/octet-stream',
+		"Request header found by case-insensitive lookup.");
+
+	deepEqual(xhr.hasRequestHeader('Content-Disposition'), false,
+		"Looking up non-existent header results in boolean false.");
+
+	xhr.destroy();
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("test events: " + runtime, function() {
+		var self = this, xhr;
+		var events = {
+			loadstart: 0,
+			loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			error: 0,
+			abort: 0,
+			readystatechange: 0
+		};
+
+		var states = {
+			"0": 0,
+			"1": 0, // OPENED
+			"2": 0, // HEADERS_RECEIVED
+			"3": 0, // LOADING
+			"4": 0  // DONE
+		};
+
+		xhr = new o.XMLHttpRequest();
+
+		o.each(events, function(times, e) {
+			xhr.bind(e, function() {
+				events[e]++;
+			}, 9);
+		});
+
+		xhr.bind('readystatechange', function() {
+			states[this.readyState + ""]++;
+		});
+
+		xhr.bind('loadend', function() {
+			start();
+
+			equal(states[o.XMLHttpRequest.OPENED + ""], 1, "readyState changed to OPENED.");
+			//equal(states[o.XMLHttpRequest.HEADERS_RECEIVED + ""], 1, "readyState changed to HEADERS_RECEIVED.");
+			equal(states[o.XMLHttpRequest.LOADING + ""], 1, "readyState changed to LOADING.");
+			equal(states[o.XMLHttpRequest.DONE + ""], 1, "readyState changed to DONE.");
+
+			equal(events.loadstart, 1, "LoadStart fired.");
+			ok(events.progress, "Progress fired " + events.progress + " time(s).");
+			equal(events.load, 1, "Load fired.");
+			equal(events.loadend, 1, "LoadEnd fired.");
+			ok(events.readystatechange, "ReadyStateChange fired " + events.readystatechange + " time(s).");
+		});
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		xhr.open('POST', 'XMLHttpRequest/json.php');
+		xhr.responseType = 'json';
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+test("test events: native", function() {
+	var self = this, xhr;
+	var events = {
+		loadstart: 0,
+		loadend: 0,
+		load: 0,
+		progress: 0,
+		timeout: 0,
+		error: 0,
+		abort: 0,
+		readystatechange: 0
+	};
+
+	var states = {
+		"0": 0,
+		"1": 0, // OPENED
+		"2": 0, // HEADERS_RECEIVED
+		"3": 0, // LOADING
+		"4": 0  // DONE
+	};
+
+	xhr = new o.XMLHttpRequest();
+
+	o.each(events, function(times, e) {
+		xhr.bind(e, function() {
+			events[e]++;
+		}, 9);
+	});
+
+	xhr.bind('readystatechange', function() {
+		states[this.readyState + ""]++;
+	});
+
+	xhr.bind('loadend', function() {
+		start();
+
+		equal(states[o.XMLHttpRequest.OPENED + ""], 1, "readyState changed to OPENED.");
+		//equal(states[o.XMLHttpRequest.HEADERS_RECEIVED + ""], 1, "readyState changed to HEADERS_RECEIVED.");
+		equal(states[o.XMLHttpRequest.LOADING + ""], 1, "readyState changed to LOADING.");
+		equal(states[o.XMLHttpRequest.DONE + ""], 1, "readyState changed to DONE.");
+
+		equal(events.loadstart, 1, "LoadStart fired.");
+		ok(events.progress, "Progress fired " + events.progress + " time(s).");
+		equal(events.load, 1, "Load fired.");
+		equal(events.loadend, 1, "LoadEnd fired.");
+		ok(events.readystatechange, "ReadyStateChange fired " + events.readystatechange + " time(s).");
+	});
+
+	xhr.bind('RuntimeError', function() {
+		start();
+		ok(true, "Runtime not supported.");
+	});
+
+	xhr.open('GET', 'XMLHttpRequest/json.php');
+
+	stop();
+	xhr.send(null);
+});
+
+// send() - get Blob (Binary)
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+
+	test('send() - get Blob (Binary): ' + runtime, function() {
+		// expect(0);
+
+		var x = this.x
+		, xhr = new this.XHR
+		, startTime = (new Date).getTime()
+		, endTime
+		, progressRate = 0
+		, events = {
+			loadstart: 0,
+			//loadend: 0,
+			//load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		}
+		;
+
+		xhr.open('GET', 'XMLHttpRequest/image.jpg');
+		xhr.responseType = 'blob';
+
+		o.each(events, function(times, e) {
+			if (e === 'progress') {
+				var prevTime = startTime;
+				xhr.onprogress = function(e) {
+					var time = (new Date).getTime();
+					progressRate += time - prevTime;
+					prevTime = time;
+					events.progress++;
+				};
+			} else {
+				xhr['on' + e] = function() {
+					events[e]++;
+				};
+			}
+		});
+
+		xhr.onload = function() {
+			start();
+
+			var
+			  blob = xhr.response
+			, type = 'html5'
+			, img = new o.Image
+			;
+
+			if (blob.ruid) {
+				var runtimeInfo = o.Runtime.getInfo(blob.ruid);
+				type = runtimeInfo.type;
+			}
+
+			ok(blob instanceof o.File, "XMLHttpRequest/image.jpg successfully received as File (Blob with a name); [using "+type+"]");
+			equal(blob.name, "image.jpg", "File name (image.jpg) extracted properly");
+			equal(blob.type, "image/jpeg", "Mime type (image/jpeg) figured out");
+
+			stop();
+			img.onload = function() {
+				start();
+				deepEqual({ width: img.width, height: img.height }, { width: 460, height: 670 }, "Image retained it's properties");
+			};
+			img.load(blob);
+		};
+
+		xhr.onloadend = function() {
+			// test events
+			equal(events.loadstart, 1, "LoadStart fired");
+			ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+			ok(true, "LoadEnd fired");
+		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
+		}));
+	});
+});
+
+// send() - send Blob / get Text
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send() - send Blob / get Text: ' + runtime, function() {
+		var
+		  x = this.x
+		, xhr = new this.XHR
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, startTime = (new Date).getTime()
+		, endTime
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			data: binStr
+		});
+
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'text';
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			ok(xhr.response && xhr.response !== '', "Response received");
+			equal(xhr.response, xhr.responseText, "xhr.response and xhr.responseText have the same content");
+		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		startTime = (new Date).getTime();
+		xhr.send(file, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime,
+			required_caps: {
+				send_binary_string: true
+			}
+		}));
+	});
+});
+
+// send() - get JSON
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('send() - get JSON: ' + runtime, function() {
+		// expect(2);
+
+		var
+		  x = this.x
+		, xhr = new this.XHR
+		, startTime
+		, endTime
+		;
+
+		// 1
+		xhr.open('get', 'XMLHttpRequest/json.php');
+		xhr.responseType = 'json';
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			equal(xhr.status, 200, "HTTP Status: 200 OK");
+			ok(xhr.response, "Response received");
+			if (xhr.response) {
+				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+			}
+		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		startTime = (new Date).getTime();
+		xhr.send(null, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
+		}));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test('send() - send FormData: ' + runtime, function() {
+		var
+		  x = this.x
+		, xhr = new this.XHR
+		, fd = new o.FormData
+		, startTime
+		, endTime
+		;
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'json';
+
+		fd.append('one', "1");
+		fd.append('two', "2");
+		fd.append('three', "3");
+
+
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			if (xhr.response) {
+				deepEqual(xhr.response, {
+					OK: 1,
+					one: "1",
+					two: "2",
+					three: "3"
+				}, "FormData constructed out of primitive values, successfully sent (in: " + (endTime - startTime) + " ms)");
+			}
+		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		startTime = (new Date).getTime();
+		xhr.send(fd, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
+		}));
+	});
+});
+
+
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send() - send FormData (with Blob): ' + runtime, function() {
+		//expect(4);
+
+		var
+		  x = this.x
+		, xhr = new this.XHR
+		, fd = new o.FormData
+		, blob
+		, binStr
+		, file
+		, fileName = 'image.jpg'
+		, fileFieldName = 'image'
+		, startTime = (new Date).getTime()
+		, endTime
+		, progressRate = 0
+		, events = {
+			loadstart: 0,
+			//loadend: 0,
+			//load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		}
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr
+		});
+
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'json';
+
+		if (xhr.upload) {
+			ok(xhr.upload, "Event target for upload events (xhr.upload) is present");
+
+			o.each(events, function(times, e) {
+				if (e === 'progress') {
+					var prevTime = startTime;
+					xhr.upload.onprogress = function(e) {
+						var time = (new Date).getTime();
+						progressRate += time - prevTime;
+						prevTime = time;
+						events.progress++;
+					};
+				} else {
+					xhr.upload['on' + e] = function() {
+						events[e]++;
+					};
+				}
+			});
+		}
+
+		fd.append('one', "1");
+		fd.append('two', "2");
+		fd.append('three', "3");
+		fd.append(fileFieldName, file);
+
+		stop();
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+
+			ok(xhr.response, "Response received");
+
+			if (xhr.response) {
+				deepEqual(xhr.response.OK, 1, "responseType JSON (in: " + (endTime - startTime) + " ms)");
+
+				ok(xhr.response[fileFieldName], "File has been passed to a server with a field name of: " + fileFieldName);
+
+				if (xhr.response[fileFieldName]) {
+					equal(xhr.response[fileFieldName].error, 0, fileName + " uploaded, no errors detected during the upload");
+				}
+			}
+		};
+
+		xhr.onloadend = function() {
+			// test events
+			equal(events.loadstart, 1, "LoadStart fired");
+			if (events.progress != 0) {
+				ok(events.progress, "Progress fired " + events.progress + " times; average rate: " + Math.round(progressRate / events.progress) + "ms");
+			} else {
+				ok(!events.progress, "Progress event didn't fire");
+			}
+
+			ok(true, "LoadEnd fired");
+		};
+
+		xhr.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		startTime = (new Date).getTime();
+		xhr.send(fd, o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime
+		}));
+	});
+});
+
+
+
+// test send ArrayBuffer
+
+// test receive Document
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("wrong url: " + runtime, function() {
+		var self = this, xhr = new self.XHR, x = self.x;
+		var events = {
+			loadstart: 0,
+			//loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			abort: 0,
+			error: 0
+		};
+
+		o.each(events, function(times, e) {
+			xhr['on' + e] = function() {
+				events[e]++;
+			};
+		});
+
+		xhr.open('POST', '/unknown');
+
+		xhr.onloadend = function() {
+			start();
+
+			equal(events.error, 0, "error event not fired.");
+			ok(events.load > 0, "load event fired.");
+			equal(xhr.readyState, self.XHR.DONE, "readyState switched to DONE.");
+			equal(xhr.status, 404, "status code 404.");
+			equal(xhr.statusText, "Not Found", "statusText - Not Found.");
+		};
+
+		xhr.bind('error runtimeerror', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("test cross-domain errors: " + runtime, function() {
+		var self = this, xhr = new self.XHR, x = self.x;
+		var events = {
+			loadstart: 0,
+			loadend: 0,
+			load: 0,
+			progress: 0,
+			timeout: 0,
+			//error: 0,
+			abort: 0
+
+		};
+
+		o.each(events, function(times, e) {
+			xhr['on' + e] = function() {
+				events[e]++;
+			};
+		});
+
+		xhr.open('POST', 'http://moxiecode.com/about.php');
+		xhr.responseType = 'json';
+
+		xhr.onerror = function() {
+			start();
+			ok(true, "Error detected.");
+			equal(xhr.readyState, self.XHR.DONE, "readyState switched to DONE.");
+
+		};
+
+		xhr.bind('runtimeerror', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		xhr.send(null, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+// send browser cookies (retain session)
+o.each("html5,flash,silverlight".split(','), function(runtime) {
+	test('send browser cookies (retain session): ' + runtime, function() {
+		var self = this
+		, x = this.x
+		, blob
+		, binStr
+		, file
+		, fileName = o.guid('file_')
+		, fileFieldName = 'image'
+		, offset = 0
+		, chunkSize = 20 * 1024
+		;
+
+		binStr = o.atob(imgB64);
+
+		file = new o.File(null, {
+			name: fileName,
+			type: 'image/jpeg',
+			size: binStr.length,
+			data: binStr
+		});
+
+
+		function _getNativeXHR() {
+			if (window.XMLHttpRequest && !(o.Env.browser === 'IE' && o.Env.version < 8)) { // IE7 has native XHR but it's buggy
+				return new window.XMLHttpRequest();
+			} else {
+				return (function() {
+					var progIDs = ['Msxml2.XMLHTTP.6.0', 'Microsoft.XMLHTTP']; // if 6.0 available, use it, otherwise failback to default 3.0
+					for (var i = 0; i < progIDs.length; i++) {
+						try {
+							return new ActiveXObject(progIDs[i]);
+						} catch (ex) {}
+					}
+				})();
+			}
+		}
+
+
+		function uploadNextChunk() {
+			var blob = file.slice(offset, offset + chunkSize);
+			var xhr = new o.XMLHttpRequest();
+
+			var fd = new o.FormData();
+			fd.append("name", fileName);
+			fd.append("offset", offset);
+			fd.append("total", binStr.length);
+			fd.append("size", blob.size)
+
+			xhr.open('post', 'XMLHttpRequest/session.php');
+			xhr.responseType = 'json';
+
+			xhr.onload = function() {
+				start();
+
+				if (xhr.response.OK == 1) {
+					offset += chunkSize;
+					if (offset < binStr.length) {
+						stop();
+						setTimeout(uploadNextChunk, 1);
+					} else {
+						// each runtime should receive two replies
+						ok(true, "Runtime supports sessions.");
+					}
+				} else {
+					ok(false, "Runtime supports sessions."); // runtime doesn't support sessions
+				}
+			};
+
+			xhr.bind('RuntimeError', function() {
+				start();
+				ok(true, "Runtime not supported.");
+			});
+
+			xhr.send(fd, o.extend({}, self.runtimeOptions, {
+				runtime_order: runtime,
+				required_caps: {
+					send_browser_cookies: true
+				}
+			}));
+		}
+
+		stop();
+		// start session
+		var xhrNative = _getNativeXHR();
+
+		xhrNative.open('get', 'XMLHttpRequest/session.php?start=1&name=' + fileName);
+
+		xhrNative.onreadystatechange = function() {
+			if (this.readyState == 4) {
+				uploadNextChunk();
+			}
+		};
+
+		xhrNative.send();
+
+	});
+});
+
+// test receive ArrayBuffer
+
+
+// test different server response codes
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test('test response http status codes: ' + runtime, function() {
+		var self = this;
+		var statuses = {
+			200: 200,
+			404: 404,
+			302: 200,
+			301: 200,
+			503: 503
+		};
+		var queue = [];
+
+		o.each(statuses, function(response, status) {
+
+			queue.push(function(cb) {
+				var xhr = new o.XMLHttpRequest();
+				xhr.open('get', 'XMLHttpRequest/http-status.php?status=' + status);
+
+				xhr.onloadend = function() {
+					equal(xhr.status, response, status + " requested; " + response + " received.");
+
+					xhr.destroy();
+					xhr = null;
+					cb();
+				};
+
+				xhr.bind("RuntimeError", function() {
+					ok(true, "Runtime not supported.");
+					cb(true); // throw error and stop the series for the current runtiem
+				});
+
+				xhr.send(null, o.extend({}, self.runtimeOptions, {
+					required_caps: {
+						return_status_code: 403
+					},
+					runtime_order: runtime
+				}));
+			});
+		});
+
+		stop();
+		o.inSeries(queue, function() {
+			start();
+		});
+	});
+});
+
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

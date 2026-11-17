@@ -1,0 +1,12 @@
+Array
+(
+    [file] => Array
+        (
+            [name] => blob
+            [type] => 
+            [tmp_name] => /Applications/MAMP/tmp/php/phpwa4J8i
+            [error] => 0
+            [size] => 980187
+        )
+
+)

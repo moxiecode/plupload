@@ -1,0 +1,8 @@
+*~
+*.diff
+*.patch
+*.bak
+*.log
+*.sublime-*
+.DS_Store
+node_modules

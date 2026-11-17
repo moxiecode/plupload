@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+
+<script src="../../../loader.js"></script>
+
+<script type="text/javascript" src="../../Image/jpegs.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+QUnit.config.autostart = false;
+
+module("HTML5: Problematic JPEGs");
+
+function onJPEGsLoaded(jpegs) {
+	o.each(jpegs, function(jpeg) {
+		var desc = jpeg.desc ? jpeg.path + ': ' + jpeg.desc : jpeg.path;
+		test(desc, function(assert) {
+			var jh = new o.JPEGHeaders(jpeg.source);
+			var ep = new o.ExifParser(jh.get("app1")[0]);
+
+			o.each(jpeg.expect, function(info, method) {
+				var data = ep[method]();
+
+				if (!data) {
+					assert.ok(false, "Exif data cannot be extracted");
+				}
+
+				o.each(info, function(value, key) {
+					assert.equal(data[key], value, method + ' - ' + key + ': ' + value);
+				});
+			});
+
+			if (jpeg.hasThumb) {
+				assert.ok(ep.thumb() !== null, "Thumb found and can be extracted.");
+			}
+		});
+	});
+
+
+	test("setExif()", function(assert) {
+		var jh = new o.JPEGHeaders(jpegs['00da154a-0107-11e4-8336-3377b25ece3d.jpg'].source);
+		var ep = new o.ExifParser(jh.get("app1")[0]);
+		var exif = ep.EXIF();
+
+		var result = ep.setExif('PixelXDimension', 150) && ep.setExif('PixelYDimension', 150);
+
+		var exifAfterChange = ep.EXIF();
+
+		assert.ok(result, "Exif data successfully changed.");
+		assert.notEqual(exif, exifAfterChange, "Exif before and after the change differs.");
+	});
+
+	QUnit.start();
+}
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

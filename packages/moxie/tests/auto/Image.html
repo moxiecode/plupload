@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Image: Test Image</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 15000;
+
+
+module("Image", {
+	setup: function() {
+
+		o.extend(this, {
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			runtimeOrder: "html5,flash,silverlight,html4"
+		});
+	},
+
+	teardown: function() {
+	}
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Load from URL: " + runtime, function() {
+		var self = this
+		, img = new o.Image()
+		, url = o.resolveUrl("XMLHttpRequest/poster.jpg")
+		;
+
+		img.onload = function() {
+			var info = o.Runtime.getInfo(img.ruid);
+
+			start();
+			ok(true, "load event fired: " + (info ? "runtime is: " + info.type : "no runtime, image is detached"));
+			deepEqual(img, this, "inside the onload handler context points to the image");
+			deepEqual([img.width, img.height], [1600, 1200], "dimensions match: " + img.width + "x" + img.height);
+			equal(img.size, 980187, "size matches: " + img.size);
+			equal(img.name, "poster.jpg", "name matches: " + img.name);
+			equal(img.type, "image/jpeg", "type is: " + img.type);
+		};
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load(url, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Load from dataURL: " + runtime, function() {
+		var self = this
+		, img = new o.Image()
+		;
+
+		img.onload = function() {
+			var info = o.Runtime.getInfo(img.ruid);
+
+			start();
+			ok(true, "load event fired: " + (info ? "runtime is: " + info.type : "no runtime, image is detached"));
+			deepEqual(img, this, "inside the onload handler context points to the image");
+			deepEqual([img.width, img.height], [460, 670], "dimensions match: " + img.width + "x" + img.height);
+			equal(img.size, 60964, "size matches: " + img.size);
+			equal(img.type, "image/jpeg", "type is: " + img.type);
+		};
+
+		img.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load("data:image/jpeg;base64," + imgB64, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Load from DOM IMG element: " + runtime, function() {
+		var self = this
+		, node = $('<img src="XMLHttpRequest/poster.jpg" />').appendTo(this.DOM)[0]
+		, img = new o.Image()
+		;
+
+
+		img.onload = function() {
+			var info = o.Runtime.getInfo(img.ruid);
+
+			start();
+			ok(true, "load event fired: " + (info ? "runtime is: " + info.type : "no runtime, image is detached"));
+			deepEqual(img, this, "inside the onload handler context points to the image");
+			deepEqual([img.width, img.height], [1600, 1200], "dimensions match: " + img.width + "x" + img.height);
+			equal(img.size, 980187, "size matches: " + img.size);
+			equal(img.name, "poster.jpg", "name matches: " + img.name);
+			equal(img.type, "image/jpeg", "type is: " + img.type);
+		};
+
+		img.bind('RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load(node, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Convert from image/jpeg to image/png: " + runtime, function() {
+		var self = this, url = o.resolveUrl("XMLHttpRequest/poster.jpg");
+
+		var img = new o.Image;
+		img.onload = function() {
+			// retrive as png o.Blob, ready to be uploaded with o.XMLHttpRequest
+			var blob = img.getAsBlob('image/png');
+			var converted = new o.Image;
+			converted.onload = function() {
+				start();
+				equal(converted.type, 'image/png', "image successfully converted from image/jpeg to image/png");
+			};
+			converted.load(blob);
+		};
+
+		img.onerror = function() {
+			start();
+			ok(false, "Error encountered while loading the image.");
+		};
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load(url, o.extend({}, self.runtimeOptions, { 
+			required_caps: {
+				return_response_type: 'blob',
+				access_image_binary: true,
+				resize_image: true
+			},
+			runtime_order: runtime 
+		}));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Test image resizing (with crop): " + runtime, function() {
+		var self = this
+		, url = o.resolveUrl("XMLHttpRequest/image.jpg")
+		, width = 150
+		, height = 150
+		, info = {}
+		;
+
+		var img = new o.Image;
+		img.onload = function() {
+			info = {
+				width: img.width,
+				height: img.height,
+				type: img.type,
+				size: img.size,
+				meta: img.meta
+			};
+
+			ok(true, "Image loaded.");
+			// there was a time when image info was returned as second argument
+			ok(!arguments[1], "second argument undefined."); 
+
+			img.downsize(width, height, true);
+		};
+
+		img.onresize = function(e) {
+			start();
+
+			ok(true, "onresize triggered.");
+			ok(!arguments[1], "second argument undefined.");
+			
+			deepEqual({
+				width: this.width,
+				height: this.height,
+				type: info.type
+			}, {
+				width: width,
+				height: height,
+				type: img.type
+			}, "Image information updated accordingly.");
+
+			var blob = img.getAsBlob();
+			ok(blob.size < info.size, "Image decreased in size by: " + ((info.size - blob.size) / info.size * 100).toFixed(2) + "% (was " + info.size + ", became " + blob.size + ")");
+		};
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load(url, o.extend({}, self.runtimeOptions, { 
+			required_caps: {
+				resize_image: true
+			},
+			runtime_order: runtime 
+		}));
+	});
+});
+
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Test embedded thumb extraction from JPEG: " + runtime, function(assert) {
+		var self = this
+		var img = new o.Image();
+
+		img.onload = function() {
+			start();
+
+			// force _updateInfo to be called internally (repeating invokation used to screw the thumbnail)
+			img.trigger('resize');
+
+			var thumb = this.meta.thumb;
+			
+			ok(thumb.data instanceof o.Blob, "Extracted thumb is o.Blob.");
+			deepEqual([
+				thumb.hasOwnProperty('width'),
+				thumb.hasOwnProperty('height')
+			], [
+				true, 
+				true
+			], "Thumb data contains width and height.");
+
+			var thumbImg = new o.Image();
+
+			thumbImg.onload = function() {
+				start();
+				ok(true, "Thumb data is a valid image.");
+			};
+
+			thumbImg.onerror = function() {
+				start();
+				ok(false, "Thumb data is a valid image.");
+			};	
+
+			stop();
+			thumbImg.load(thumb.data);
+		};
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+
+		stop();
+		img.load('Image/exif/IMG_2232.JPG', o.extend({}, self.runtimeOptions, { 
+			required_caps: {
+				resize_image: true
+			},
+			runtime_order: runtime 
+		}));
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Test orientation fix when headers get stripped: " + runtime, function(assert) {
+		var self = this
+		var img = new o.Image();
+
+		img.onload = function() {
+			start();
+
+			equal(this.meta.tiff.Orientation, 6, 
+				"Orientation: 6: Should be rotated by 90 degrees clock-wise.")
+
+			deepEqual([this.width, this.height], [200, 133], 
+				"Currently it is a landscape photo - width is larger then height.");
+
+			stop();
+			this.downsize({
+				width: 133,
+				height: 200,
+				preserveHeaders: false
+			});
+		};
+
+		img.onresize = function() {
+			start();
+			ok(true, "resize fired.");
+
+			ok(o.isEmptyObj(this.meta), "Meta headers stripped as requested.");
+
+			deepEqual([this.width, this.height], [133, 200], 
+				"Now it has become portrait photo - height is larger then width.");
+
+		};
+
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+
+		stop();
+		img.load('Image/exif/IMG_2232.JPG', o.extend({}, self.runtimeOptions, { 
+			required_caps: {
+				resize_image: true
+			},
+			runtime_order: runtime 
+		}));
+	});
+});
+
+/* 
+Test Exif extraction
+
+Test header stripping
+
+Test orientation fix when headers get stripped
+*/
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important;"></div>
+</body>
+</html>
+
+
+

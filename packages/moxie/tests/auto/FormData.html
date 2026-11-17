@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Test FormData</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+module("FormData", {
+	setup: function() {
+
+		o.extend(this, {
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			runtimeOrder: "html5,flash,silverlight,html4"
+		});
+	},
+
+	teardown: function() {
+	}
+});
+
+
+test("Append falsy field values", function() {
+	var undef;
+	var falsyValues = {
+		'null': {
+			value: null,
+			expected: "false"
+		},
+		'undefined': {
+			value: undef,
+			expected: "false"
+		},
+		'emptyStr': {
+			value: '',
+			expected: ""
+		},
+		'NaN': {
+			value: NaN,
+			expected: "false"
+		},
+		'0': {
+			value: 0,
+			expected: "0"
+		}
+	};
+	var fd = new o.FormData();
+
+	o.each(falsyValues, function(falsy, name) {
+		fd.append(name, falsy.value);
+	});
+
+	// test results
+	fd.each(function(value, name) {
+		if (falsyValues[name]) {
+			deepEqual(value, falsyValues[name].expected, name + " appended as '" + value + "'.");
+		}
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	
+	test('Send hybrid FormData: ' + runtime, function() {
+		var self = this
+		, xhr = new self.XHR
+		, fd = new o.FormData
+		, startTime
+		, endTime
+		;
+
+		xhr.open('post', 'XMLHttpRequest/formdata.php');
+		xhr.responseType = 'json';
+
+		// browser version sends both
+		fd.append('arr1[]', '1');
+		fd.append('arr1[]', '2');
+		fd.append('arr1[]', '3');
+
+		fd.append('arr2[one]', '1');
+		fd.append('arr2[two]', '2');
+		fd.append('arr2[three][]', '3.1');
+		fd.append('arr2[three][]', '3.2');
+
+		fd.append('arr3[][one][]', '1.1.1');
+		fd.append('arr3[][two][]', '2.2.1');
+
+		fd.append('arr4', {
+			one: '1',
+			two: '2',
+			three: '3',
+			object: {
+				four: '4',
+				five: '5'
+			},
+			array: ['6', '7', '8']
+		});
+
+
+		xhr.onload = function(e) {
+			start();
+			endTime = (new Date).getTime();
+			
+			if (xhr.response) {
+				deepEqual(xhr.response, {
+					OK: 1,
+					arr1: ["1", "2", "3"],
+					arr2: {
+						one: "1",
+						two: "2",
+						three: ["3.1", "3.2"]
+					},
+					arr3: [{
+						one: ["1.1.1"]
+					},
+					{
+						two: ["2.2.1"]
+					}],
+					arr4: {
+						one: "1",
+						two: "2",
+						three: "3",
+						object: {
+							four: '4',
+							five: '5'
+						},
+						array: ['6', '7', '8']
+					}
+					
+				}, runtime + ": in " + (endTime - startTime) + " ms");
+			}
+		};
+
+		xhr.bind('error runtimeerror', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+			
+		stop();	
+		startTime = (new Date).getTime();
+		xhr.send(fd, $.extend({}, self.runtimeOptions, { 
+			runtime_order: runtime,
+			required_caps: {
+				send_multipart: true
+			}
+		}));
+	});
+});
+
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

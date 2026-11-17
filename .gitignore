@@ -2,8 +2,8 @@ examples/uploads/*
 tmp
 libs
 jslint.xml
-.settings
-.project
+/.settings
+/.project
 docs
 wiki
 jscoverage

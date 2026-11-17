@@ -28,3 +28,7 @@ Jakefile.js export-ignore
 package.json export-ignore
 composer.json export-ignore
 .* export-ignore
+packages/ export-ignore
+scripts/ export-ignore
+package-lock.json export-ignore
+CONTRIBUTING.md export-ignore

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Test Blob</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+module("Blob", {
+	setup: function() {
+
+		o.extend(this, {
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			runtimeOrder: "html5,flash,silverlight,html4"
+		});
+	},
+
+	teardown: function() {
+	}
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+
+	test("Load from URL: " + runtime, function() {
+		var self = this;
+		
+		// load as blob first
+		var url = o.resolveUrl("XMLHttpRequest/poster.jpg");
+		var img = new o.Image();
+
+		img.onload = function() {
+
+			start();
+			var blob = img.getAsBlob();
+			
+			// slice to chunks
+			var bytesRead = 0, bytesTotal = blob.size;
+			var chunk, chunks = [], chunkSize = Math.floor(bytesTotal / 4);
+
+			while (bytesRead < bytesTotal) {
+				chunk = blob.slice(bytesRead, chunkSize);
+				if (!chunk) {
+					ok(false, "Slicing failed! bytesTotal: " + bytesTotal + ", bytesRead: " + bytesRead + ", runtime: " + runtime);
+					return;
+				}
+				
+				chunks.push(chunk);
+				bytesRead += chunkSize;
+			}
+
+			ok(chunks.length, "File split into " + chunks.length + " parts.");
+
+			// build new image out of chunks
+			
+			
+		};
+
+		img.bind('Error RuntimeError', function() {
+			start();
+			ok(true, "Runtime not supported.");
+		});
+
+		stop();
+		img.load(url, o.extend({}, this.runtimeOptions, { runtime_order: runtime }));
+	});
+});
+
+
+
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>

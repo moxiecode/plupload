@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>FileInput</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript" src="XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+
+module("FileInput", {
+	setup: function() {
+		o.extend(this, {
+			x: o.Exceptions,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				runtime_order: "html5,flash,silverlight,html4",
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			}	
+		});
+	},
+
+	teardown: function() {
+	}
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("Init and Destroy: " + runtime, function(assert) {
+
+		$('<a id="browse_button" href="javascript:;">Browse...</a>')
+			.appendTo(this.DOM);
+
+		var browseBtnZIndex = $('#browse_button').css('z-index');
+
+		var fi = new o.FileInput(o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime,
+			browse_button: 'browse_button'
+		}));
+
+		// save component uid
+		var uid = fi.uid;
+		var eventsNotCleared = false;
+
+		fi.onready = function() {		
+			start();
+				
+			assert.ok($('#qunit-fixture').find('.moxie-shim').length, "HTML structure inserted.");
+
+			this.destroy();
+			assert.ok(!$('#qunit-fixture').find('.moxie-shim').length, "HTML structure removed.");
+
+			assert.equal(browseBtnZIndex, $('#browse_button').css('z-index'),
+				"zIndex for the browse_button element has been restored to its original value.");
+
+			// test if event handlers are removed
+			moxie.core.EventTarget.instance.dispatchEvent(uid + '::Change');
+			assert.equal(eventsNotCleared, false, "All events unbinded.");
+		};
+
+		fi.onchange = function() {
+			eventsNotCleared = true;
+		};
+
+
+		fi.bind("Error RuntimeError", function() {
+			assert.ok(true, "Runtime not supported.");
+			start();
+		});
+
+		stop();
+		fi.init();
+	});
+});
+
+
+o.each("html5,flash,silverlight,html4".split(','), function(runtime) {
+	test("Test position and dimensions of the shim after initialization: " + runtime, function(assert) 
+	{
+		$('#qunit-fixture').append([
+			'<div id="container">',
+				'<a id="browse_button" href="javascript:;">Browse...</a>',
+			'</div>'
+		].join(''));
+
+		var options = o.extend({}, this.runtimeOptions, {
+			runtime_order: runtime,
+			browse_button: 'browse_button'
+		});
+
+		// we are testing default behavior
+		delete options.container;
+
+		var fi = new o.FileInput(options);
+
+		fi.onready = function() {
+			start();
+
+			var $container = $('#container')
+			, $browseBtn = $('#browse_button')
+			, $moxieShim = $('.moxie-shim')
+			;
+
+			assert.equal($moxieShim.attr('id'), fi.shimid,
+				"shimid property contains id of the moxie container.");
+
+			assert.equal($container.children().filter('.moxie-shim').length, 1, 
+				"By default Plupload is appended to the immediate parent of browse_button");
+
+			// dimensions and position should coincide
+			assert.deepEqual(o.getPos($browseBtn[0]), o.getPos($moxieShim[0]), 
+				"Plupload position corresponds to that of browse_button.");
+
+			assert.deepEqual({
+				width: $browseBtn.width(),
+				height: $browseBtn.height()
+			}, {
+				width: $moxieShim.width(),
+				height: $moxieShim.height()
+			}, "Plupload dimensions correspond to that of browse_button.");
+
+			// prepend some DOM elements to the fixture and make sure that Plupload moves with the browse button
+			$('#qunit-fixture')
+				.append('<div style="height:50px" />');
+
+			assert.deepEqual(o.getPos($browseBtn[0]), o.getPos($moxieShim[0]), 
+				"Plupload position corresponds to that of browse_button (has moved with the container).");
+			assert.deepEqual({
+				width: $browseBtn.width(),
+				height: $browseBtn.height()
+			}, {
+				width: $moxieShim.width(),
+				height: $moxieShim.height()
+			}, "Plupload dimensions correspond to that of browse_button.");
+
+
+			// if runtime can summon_dialog, test zIndex
+			if (fi.getRuntime().can('summon_file_dialog')) {
+				assert.ok($moxieShim.css('z-index') < $browseBtn.css('z-index'), "Plupload structures are behind browse_button.");
+			}
+
+		};
+
+		fi.bind("Error RuntimeError", function() {
+			assert.ok(true, "Runtime not supported.");
+			start();
+		});
+
+		stop();
+		fi.init();
+	});
+});
+
+
+o.each("html5".split(','), function(runtime) {
+	test("Change type of accepted files via: setOption('accept', '...'): " + runtime, function (assert) {
+
+		$('<a id="browse_button" href="javascript:;">Browse...</a>')
+				.appendTo(this.DOM);
+
+		var fi = new o.FileInput(o.extend({}, this.runtimeOptions, {
+			accept: 'image/jpeg', // JPEGs only
+			runtime_order: runtime,
+			browse_button: 'browse_button'
+		}));
+
+		fi.onready = function() {
+			start();
+			var $input = $('.moxie-shim input[type="file"]');
+
+			// see if we can retrieve current setting
+			assert.deepEqual(fi.getOption('accept'), [{
+					"extensions": "jpg,jpeg,jpe",
+					"title": "Files"
+				}],
+				"accept can properly retrieved with getOption('accept')"
+			);
+
+
+			assert.equal($input.attr('accept'), 'image/jpeg',
+				"accept attribute of input[type='file'] should now be image/jpeg"
+			);
+
+
+			fi.setOption('accept', 'image/png'); // now accept only PNGs
+
+			assert.deepEqual(fi.getOption('accept'), [{
+					"extensions": "png",
+					"title": "Files"
+				}],
+				"Modify file input to accept only PNGs instead of JPEGs"
+			);
+
+			assert.equal($input.attr('accept'), 'image/png',
+				"accept attribute of input[type='file'] should now be image/png"
+			);
+		};
+
+
+		fi.bind("Error RuntimeError", function() {
+			assert.ok(true, "Runtime not supported.");
+			start();
+		});
+
+		stop();
+		fi.init();
+	});
+});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+

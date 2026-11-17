@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: DOM Utils</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("DOM", {
+	setup: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	},
+
+	teardown: function() {
+	}
+});
+
+
+test("hasClass()", function() {
+	expect(2);
+	
+	var el = document.createElement('div');
+	
+	el.className = "class1 class2 class3";
+	
+	ok(o.hasClass(el, 'class2'), "Element has the class");
+	ok(!o.hasClass(el, 'class4'), "Element doesn't have the class")
+});
+
+test("addClass()", function() {
+	expect(4);
+	
+	var el = document.createElement('div');
+	
+	o.addClass(el, "class1");
+	ok(o.hasClass(el, "class1"), "class has been added to element");
+	
+	o.addClass(el, "class2");
+	ok(o.hasClass(el, "class2"), "Another class has been added to element");
+	ok(o.hasClass(el, "class1"), "First class still there");
+	equal(el.className, "class1 class2", "Just rechecking");
+});
+
+test("removeClass()", function() {
+	expect(2);
+	
+	var el = document.createElement('div');
+	
+	o.addClass(el, "class1");
+	o.addClass(el, "class2");
+	o.addClass(el, "class3");
+	
+	o.removeClass(el, "class2");
+	
+	ok(!o.hasClass(el, "class2"), "Class has been removed from element");
+	equal(el.className, "class1 class3", "Just rechecking");
+});
+
+test("getStyle()", function() {
+	expect(2);
+	
+	this.DOM.append(jQuery('<style>#block { position: relative; }</style>'));
+		
+	var block = jQuery('<div id="block"> </div>').appendTo(this.DOM)[0];
+	
+	equal(o.getStyle(block, 'position'), 'relative', "Got computed rule defined in <style> tag");
+	
+	block.style.position = "absolute";
+	equal(o.getStyle(block, 'position'), 'absolute', "Got computed rule from inline style");
+});
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Url Utils</title>
+
+<script src="../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+QUnit.module("Url", {
+	beforeEach: function() {
+		this.DOM = jQuery('#qunit-fixture');
+	}
+});
+
+
+QUnit.test("parseUrl()", function(assert) {
+	var ports = { http: 80, https: 443 };
+
+	/* [
+		url to parse,
+		what we expect it to become
+	] */
+	var cases = [
+		[
+			"http://example.com",
+			{scheme: "http", host: "example.com", port: 80, path: "/"}
+		], [
+			"http://example.com/",
+			{scheme: "http", host: "example.com", port: 80, path: "/"}
+		], [
+			"http://example.com/test",
+			{scheme: "http", host: "example.com", port: 80, path: "/test"}
+		], [
+			"http://example.com/?test=1&something=anything",
+			{scheme: "http", host: "example.com", port: 80, path: "/", query: "?test=1&something=anything"}
+		], [
+			"http://example.com:80",
+			{scheme: "http", host: "example.com", port: 80, path: "/"}
+		], [
+			"http://example.com:80/",
+			{scheme: "http", host: "example.com", port: 80, path: "/"}
+		], [
+			"http://example.com:80/test",
+			{scheme: "http", host: "example.com", port: 80, path: "/test"}
+		], [
+			"http://example.com:80/?test=1&something=anything",
+			{scheme: "http", host: "example.com", port: 80, path: "/", query: "?test=1&something=anything"}
+		], [
+			"http://example.com:8080",
+			{scheme: "http", host: "example.com", port: 8080, path: "/"}
+		], [
+			"http://example.com:8080/",
+			{scheme: "http", host: "example.com", port: 8080, path: "/"}
+		], [
+			"http://example.com:8080/test",
+			{scheme: "http", host: "example.com", port: 8080, path: "/test"}
+		], [
+			"http://example.com:8080/?test=1&something=anything",
+			{scheme: "http", host: "example.com", port: 8080, path: "/", query: "?test=1&something=anything"}
+		], [
+			"https://example.com",
+			{scheme: "https", host: "example.com", port: 443, path: "/"}
+		], [
+			"https://example.com:443/",
+			{scheme: "https", host: "example.com", port: 443, path: "/"}
+		], [
+			"https://example.com:443/test",
+			{scheme: "https", host: "example.com", port: 443, path: "/test"}
+		], [
+			"https://example.com:443/?test=1&something=anything",
+			{scheme: "https", host: "example.com", port: 443, path: "/", query: "?test=1&something=anything"}
+		], [
+			"http://192.168.0.120/test",
+			{scheme: "http", host: "192.168.0.120", port: 80, path: "/test"}
+		], [
+			"/",
+			{scheme: "http", host: "example.com", port: 8080, path: "/"},
+			"http://example.com:8080/test"
+		 ], [
+		 	"/test",
+			{scheme: "http", host: "example.com", port: 8080, path: "/test"},
+			"http://example.com:8080/test"
+		], [
+			"/?test=5",
+			{scheme: "http", host: "example.com", port: 80, path: "/", query: "?test=5"},
+			"http://example.com/test"
+		], [
+			"http://example.com/test/upload.php",
+			{scheme: "http", host: "example.com", port: 80, path: "/test/upload.php"},
+		], [
+			"test/upload.php",
+			{scheme: "http", host: "example.com", port: 80, path: "/test/test/upload.php"},
+			"http://example.com/test"
+		], [
+			"https://another-example.com/test2",
+			{scheme: "https", host: "another-example.com", port: 443, path: "/test2"},
+			"http://example.com:8080/test"
+		], [ // plupload #919
+			"photoupload.py",
+			{scheme: "http", host: "edinburghmc.org.uk", port: 80, path: "/emc/upload/photoupload.py"},
+			"http://edinburghmc.org.uk/emc/upload?meetid=197"
+		], [ // #109
+			"http://en.wikipedia.org/wiki/%22@%22_%28album%29",
+			{scheme: "http", host: "en.wikipedia.org", port: 80, path: "/wiki/%22@%22_%28album%29"},
+			"http://en.wikipedia.org"
+		], [
+			"https://host.domain.tld/a@b.c/folder",
+			{scheme: "https", host: "host.domain.tld", port: 443, path: "/a@b.c/folder"},
+			"https://host.domain.tld/"
+		], [ // #47
+			"https://gooduser:secretpassword@www.example.com/a@b.c/folder?foo=bar",
+			{
+				scheme: "https",
+				host: "www.example.com",
+				port: 443,
+				path: "/a@b.c/folder",
+				query: "?foo=bar",
+				user: "gooduser",
+				pass: "secretpassword"
+			},
+			"https://www.example.com"
+		], [ // #127
+			"http://www.example.com/test/#/item",
+			{
+				scheme: "http",
+				host: "www.example.com",
+				port: 80,
+				path: "/test/",
+				fragment: '/item'
+			}
+		], [ // plupload #1436
+			"http://[2a07:2a42:adc0:1d::81]:8080/vm-mgmt-ui/js",
+			{
+				scheme: 'http',
+				host: "[2a07:2a42:adc0:1d::81]",
+				port: 8080,
+				path: "/vm-mgmt-ui/js"
+			}
+		], [ // plupload #1097
+			"//other-domain.com/test/#/item",
+			{
+				scheme: "https",
+				host: "other-domain.com",
+				port: 443,
+				path: "/test/",
+				fragment: '/item'
+			},
+			"https://example.com"
+		]
+	];
+
+	o.each(cases, function(c) {
+		assert.deepEqual(o.parseUrl(c[0], c[2]), c[1], c[0]);
+	});
+});
+
+
+QUnit.test("resolveUrl()", function(assert) {
+	var path = document.location.pathname;
+	// if path ends with a filename, strip it
+	if (!/(\/|\/[^\.]+)$/.test(path)) {
+		path = path.replace(/[^\/]+$/, '');
+	}
+
+	var origin = {
+		scheme: document.location.protocol.replace(/:$/, ''),
+		host: document.location.hostname,
+		path: path
+	};
+
+	/* [
+		url to resolve,
+		what we expect it to become after resolution,
+		current url (optional - if not supplied actual current url will be used)
+	] */
+
+	var cases = [
+		[
+			"http://example.com",
+			"http://example.com/"
+		], [
+			"http://example.com/",
+			"http://example.com/"
+		], [
+			"http://example.com/test",
+			"http://example.com/test"
+		], [
+			"http://example.com/?test=1&something=anything",
+			"http://example.com/?test=1&something=anything"
+		], [
+			"http://example.com:80",
+			"http://example.com/"
+		], [
+			"http://example.com:80/",
+			"http://example.com/"
+		], [
+			"http://example.com:80/test",
+			"http://example.com/test"
+		], [
+			"http://example.com:80/?test=1&something=anything",
+			"http://example.com/?test=1&something=anything"
+		], [
+			"http://example.com:8080",
+			"http://example.com:8080/"
+		], [
+			"http://example.com:8080/",
+			"http://example.com:8080/"
+		], [
+			"http://example.com:8080/test",
+			"http://example.com:8080/test"
+		], [
+			"http://example.com:8080/?test=1&something=anything",
+			"http://example.com:8080/?test=1&something=anything"
+		], [
+			"https://example.com",
+			"https://example.com/"
+		], [
+			"https://example.com:443/",
+			"https://example.com/"
+		], [
+			"https://example.com:443/test",
+			"https://example.com/test"
+		], [
+			"https://example.com:443/?test=1&something=anything",
+			"https://example.com/?test=1&something=anything"
+		], [
+			"http://192.168.0.120/test",
+			"http://192.168.0.120/test"
+		], [
+			"/",
+			origin.scheme + "://" + origin.host + "/"
+		 ], [
+		 	"/test",
+			origin.scheme + "://" + origin.host + "/test"
+		], [
+			"/?test=5",
+			origin.scheme + "://" + origin.host + "/?test=5"
+		], /*[
+			":8080",
+			{scheme: scheme, host: host, port: 8080, path: "/"}
+		], [
+			":8080/",
+			{scheme: scheme, host: host, port: 8080, path: "/"}
+		], [
+			":8080/test",
+			{scheme: scheme, host: host, port: 8080, path: "/test"}
+		], [
+			":8080/?test=5",
+			{scheme: scheme, host: host, port: 8080, path: "/", query: "?test=5"}
+		],*/ [
+			"http://example.com/test/upload.php",
+			"http://example.com/test/upload.php"
+		], [
+			"test/upload.php",
+			origin.scheme + "://" + origin.host + origin.path + "test/upload.php"
+		], [ // #127
+			"api/upload",
+			"http://www.example.com/test/api/upload",
+			"http://www.example.com/test/#/item"
+		]
+	];
+
+
+
+	o.each(cases, function(c) {
+		var url = o.parseUrl(c[0], c[2] || origin);
+		assert.deepEqual(o.resolveUrl(url), c[1], c[0]);
+	});
+
+});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+</body>
+</html>

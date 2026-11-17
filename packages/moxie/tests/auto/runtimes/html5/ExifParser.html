@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+
+<script src="../../../loader.js"></script>
+
+<script type="text/javascript" src="../../XMLHttpRequest/image-b64.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+QUnit.config.testTimeout = 10000;
+
+
+module("HTML5: JPEGHeaders", {
+	data: (function() {
+		var data = o.atob(imgB64);
+		return [data, str2ab(data)];
+	}())
+});
+
+test("Instantiation", function(assert) {
+	var jh, result;
+
+	try {
+		jh = new o.JPEGHeaders("not a jpeg");
+		result = false;
+	} catch(ex) {
+		result = ex.code === o.Exceptions.ImageError.WRONG_FORMAT;
+	}
+
+	assert.ok(result, "Throw ImageError.WRONG_FORMAT when instantiated with invalid data.");
+
+	o.each(this.data, function(data) {
+		jh = new o.JPEGHeaders(data);
+
+		assert.equal(jh.headers.length, 3, "APPn-s found and extracted: " + o.typeOf(data));
+
+		var props = ['hex', 'name', 'start', 'length', 'segment'];
+		var countProps = 0;
+		o.each(props, function(prop) {
+			if (prop in jh.headers[0]) {
+				countProps++;
+			}
+		});
+		assert.equal(countProps, props.length, "APPn attributes extracted: " + o.typeOf(data));
+
+		jh.purge();
+		assert.deepEqual(jh.headers, [], "Instance destroyed: " + o.typeOf(data));
+	});
+});
+
+
+test("get()", function(assert) {
+	var jh, data = o.atob(imgB64), headers, APP1, APP1_copy;
+
+	jh = new o.JPEGHeaders(data);
+	headers = jh.headers;
+
+	assert.equal(headers[0].name, "APP1", "First header is APP1.");
+	
+	assert.deepEqual({
+		hex: headers[0].hex,
+		length: headers[0].length,
+		name: headers[0].name
+	}, {
+		hex: 65505,
+		length: 26,
+		name: "APP1"
+	}, "APP1 attributes populated properly");
+
+	APP1 = jh.get("APP1");
+	assert.ok(APP1.length, "APP1 extracted.");
+
+	APP1_copy = jh.get("app1");
+	assert.deepEqual(APP1, APP1_copy, "APPn identifier case shouldn't matter.");
+});
+
+
+
+module("HTML5: ExifParser");
+
+test("Basic things", function(assert) {
+	var ep, jh, data = o.atob(imgB64);
+
+	var result;
+	try {
+		ep = new o.ExifParser("not a jpeg");
+		result = false;
+	} catch (ex) {
+		result = true;
+	}
+	assert.ok(result, "JPEG that doesn't contain Exif should trigger exception.");
+
+
+	jh = new o.JPEGHeaders(data);
+	ep = new o.ExifParser(jh.get("APP1")[0]);
+
+	assert.equal(ep.ASCII(4), 'E', "ASCII()");
+	assert.equal(ep.STRING(4, 4), 'Exif', "STRING()");
+	
+
+	ep.clear();
+	assert.deepEqual(ep.SEGMENT(), null, "Instance destroyed properly.");
+	assert.deepEqual(ep.length(), 0, "Length is 0 after destruction.");
+
+	jh.purge();
+});
+
+function str2ab(str) {
+	var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+	var bufView = new Uint8Array(buf);
+	for (var i = 0, strLen = str.length; i < strLen; i++) {
+		bufView[i] = str.charCodeAt(i);
+	}
+	return buf;
+}
+
+function ab2str(buf) {
+	return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>
+
+

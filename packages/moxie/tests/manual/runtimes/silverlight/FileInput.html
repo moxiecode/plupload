@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Silverlight: FileInput</title>
+
+<!-- qunit -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css" type="text/css" />
+<script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+
+<!-- testrunner -->
+<script src="../../../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+
+module("Flash: FileInput");
+
+
+test("Change type of accepted files via: setOption('accept', '...'): ", function(assert)
+{
+	$('#qunit-fixture').append([
+		'<div id="container">',
+			'<a id="browse_button" href="javascript:;">Browse...</a>',
+		'</div>'
+	].join(''));
+
+	var fi = new o.FileInput({
+		accept: 'image/jpeg',
+		runtime_order: 'silverlight',
+		browse_button: 'browse_button',
+		xap_url: "../../../../bin/silverlight/Moxie.xap"
+	});
+
+	fi.onready = function() {
+		fi.setOption('accept', 'application/zip');
+	};
+
+
+	fi.onchange = function() {
+		start();
+		assert.equal(this.files[0].type, 'application/zip',
+			"Type of accepted files was successfully changed from image/jpeg to application/zip"
+		);
+	};
+
+
+	fi.bind("Error RuntimeError", function() {
+		assert.ok(true, "Runtime not supported.");
+		start();
+	});
+
+	stop();
+	fi.init();
+});
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important;"></div>
+</body>
+</html>
+
+

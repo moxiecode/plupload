@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>mOxie: Test File</title>
+
+<script src="../loader.js"></script>
+
+<script type="text/javascript">
+
+QUnit.config.reorder = false;
+
+module("File", {
+	beforeEach: function() {
+
+		o.extend(this, {
+
+			XHR: o.XMLHttpRequest,
+
+			DOM: jQuery('#qunit-fixture'),
+
+			runtimeOptions: {
+				container: "qunit-fixture",
+				swf_url: "../../bin/flash/Moxie.swf",
+				xap_url: "../../bin/silverlight/Moxie.xap"
+			},
+
+			runtimeOrder: "html5,flash,silverlight,html4"
+		});
+	}
+});
+
+
+QUnit.test("Check if name and type are properly generated in problematic cases", function(assert) {
+	var file;
+
+	// name
+	file = new o.File(null, {
+		type: "image/jpeg"
+	});
+	assert.ok(/^image_[^\.]+\.jpg$/.test(file.name), "Name generated out of mime (image/jpeg): " + file.name);
+
+	file = new o.File(null, {
+		type: "audio/x-aiff"
+	});
+	assert.ok(/^audio_[^\.]+$/.test(file.name), "... out of mime (audio/x-aiff): " + file.name);
+
+	mOxie.Mime.addMimeType("audio/x-aiff,aif aiff");
+	file = new o.File(null, {
+		type: "audio/x-aiff"
+	});
+	assert.ok(/^audio_[^\.]+\.aif$/.test(file.name), "... out of mime (audio/x-aiff), after adding this mime to internal map: " + file.name);
+
+
+	file = new o.File(null, {
+		type: ""
+	});
+	assert.ok(/^file_[^\.]+$/.test(file.name), "... out of mime (empty string): " + file.name);
+
+	file = new o.File(null, {});
+	assert.ok(/^file_[^\.]+$/.test(file.name), "... out of mime (not set): " + file.name);
+
+
+	// type
+	file = new o.File(null, {
+		type: "image/jpeg",
+		name: "image.png"
+	});
+	assert.equal(file.type, 'image/jpeg', "Mime passed directly, ignore file name: " + file.name);
+
+	file = new o.File(null, {
+		name: "image.png"
+	});
+	assert.equal(file.type, 'image/png', "Mime generated from file name: " + file.name);
+
+	file = new o.File(null, {
+		type: '',
+		name: "image.png"
+	});
+	assert.equal(file.type, 'image/png', "Mime passed as empty string, resulting value generated from file name: " + file.name);
+
+	file = new o.File(null, {
+		type: false,
+		name: "image.png"
+	});
+	assert.equal(file.type, 'image/png', "Mime not truthy, resulting value generated from file name: " + file.name);
+
+
+	file = new o.File(null, "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==");
+	assert.equal(file.type, 'image/gif', "Mime type extracted from dataUrl: " + file.type);
+	assert.equal(o.Mime.getFileExtension(file.name), 'gif', "File extension extracted from dataUrl");
+	assert.ok(/^image_/.test(file.name), "File name prefixed properly with image_");
+});
+
+
+
+</script>
+</head>
+<body>
+	<div id="qunit"></div>
+    <div id="qunit-fixture" style="position: relative; top: 0 !important; left: 0 !important; width: 100%; height: 9px;"></div>
+</body>
+</html>
